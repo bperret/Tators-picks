@@ -727,7 +727,7 @@ async function commishAct(act,ds){
   let r={ok:true},msg="";
   if(act==="run"){const b=document.querySelector(`[data-act="run"][data-job="${ds.job}"]${ds.force?'[data-force]':''}`);if(b){b.disabled=true;b.textContent="Working…"}
     r=await api("/api/admin",{action:"runJob",job:ds.job,force:!!ds.force});
-    if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.ok?"Done. ":"Failed. ")+(o.msg||"");if(["gamelog","ats","scores"].includes(ds.job))state.teamGames=null}else if(b){b.disabled=false}}
+    if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.ok?"Done. ":"Failed. ")+(o.msg||"");if(["gamelog","lines","ats","scores"].includes(ds.job))state.teamGames=null}else if(b){b.disabled=false}}
   if(act==="lock"){if(!(state.lockArm&&NOW()-state.lockArm<8000)){state.lockArm=NOW();renderCommish();setTimeout(()=>{if(state.lockArm&&NOW()-state.lockArm>=8000){state.lockArm=null;renderCommish()}},8200);return}
     state.lockArm=null;r=await api("/api/admin",{action:"lockNow",weekId:wid});msg="Picks locked. Everyone's picks now show."}
   if(act==="unlock"){const v=$("#unlockAt").value;const t=v?new Date(v).getTime():NaN;if(!Number.isFinite(t)){toast("Choose a new deadline first.");return}
@@ -1266,7 +1266,7 @@ function autoPanel(){
   const A=state.auto;if(!A)return "";
   const fl=A.flags||[],runs=A.runs||{},L=A.labels||{};
   const flagsH=fl.length?fl.map(f=>`<div class="aflag"><span class="pill ${f.level==="error"?"bad":"wait"}">${f.level==="error"?"Failed":"Check"}</span><span>${esc(f.msg)}</span>${f.fixed?"<span></span>":`<button class="btn sm" data-act="dismiss" data-key="${esc(f.key)}">Dismiss</button>`}</div>`).join(""):'<p class="note">No flags. Every automated step worked on its last run.</p>';
-  const jobs=[["slate","Build from ESPN"],["open",""],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"],["gamelog","Fill game log"]];
+  const jobs=[["slate","Build from ESPN"],["open",""],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"],["gamelog","Fill game log"],["lines","Fill lines"]];
   const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span>${btn?`<button class="btn sm" data-act="run" data-job="${j}">${btn}</button>`:'<span class="note">Use Open picks in This week</span>'}</div>`}).join("");
   return `<details class="panel auto${fl.some(f=>f.level==="error")?" alert":""}" ${fl.length?"open":""}><summary><h2 style="display:inline">Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:' <span class="pill">All good</span>'}</h2></summary>
     <p class="note">${A.paused?"Paused. Nothing runs on the schedule until you resume it. The buttons below still work.":`Runs every hour.${A.lastTick?" Last run "+esc(when(A.lastTick))+".":""}`}</p>

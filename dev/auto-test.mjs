@@ -58,7 +58,8 @@ function event([id, a, h, date, line, homeFav]) {
 const board = () => ({ season: { year: 2026, type: 2 }, week: { number: 11 }, events: slateGames.map(event) });
 // Earlier weeks for the game log backfill: [eventId, awayId, homeId, kickoff, home line, away score, home score, total]
 const pastGames = {
-  9: [[901, 17, 3, "2026-10-31T14:30:00-05:00", -6.5, 20, 30, 50.5], [902, 15, 10, "2026-10-31T18:30:00-05:00", 3, 28, 24, null]],
+  9: [[901, 17, 3, "2026-10-31T14:30:00-05:00", -6.5, 20, 30, 50.5], [902, 15, 10, "2026-10-31T18:30:00-05:00", 3, 28, 24, null],
+    [903, 9, 16, "2026-10-31T11:00:00-05:00", null, 24, 20, null], [904, 12, 11, "2026-10-31T14:30:00-05:00", null, 21, 27, null]],
   10: [[1001, 3, 15, "2026-11-01T14:30:00-06:00", 2.5, 17, 21, 45]],
 };
 let failWeek = null;
@@ -83,6 +84,14 @@ setFetcher(async (url) => {
   }
   if (url.startsWith(SITE + "/rankings")) return polls;
   if (url.startsWith(FITT)) return fitt;
+  // ESPN's per-game odds feed, for games logged without a line.
+  const od = url.match(/events\/(\d+)\/competitions\/\d+\/odds(?:\/(\d+))?$/);
+  if (od) {
+    if (od[1] === "903" && !od[2]) return { items: [{ $ref: `http://x/events/903/competitions/903/odds/58` }] };
+    if (od[1] === "903") return { provider: { name: "ESPN BET" }, spread: 3.5, overUnder: 47.5, homeTeamOdds: { favorite: false }, awayTeamOdds: { favorite: true } };
+    if (od[1] === "904") return { items: [{ provider: { name: "Caesars" }, spread: -9, overUnder: 40 }, { provider: { name: "DraftKings" }, pointSpread: { home: { close: { line: "-2.5" } } }, total: { over: { close: { line: "o44.5" } } } }] };
+    return { items: [] };
+  }
   const m = url.match(/events\/(\d+)\/competitions\/\d+\/powerindex(?:\/(\d+))?/);
   if (m) {
     const g = slateGames.find((x) => x[0] === +m[1]);
@@ -138,6 +147,11 @@ try {
   out = await tick({ now: CT("2026-11-03T14:30:00-06:00") });
   check("slate is not rebuilt on the next hour", !(out.ran && out.ran.slate));
   check("game log backfill does not repeat", !out.ran.gamelog);
+  check("old lines job runs after the backfill", out.ran.lines && out.ran.lines.ok, JSON.stringify(out.ran.lines));
+  tg = await getKv("teamGames", {});
+  check("old line read through a linked odds record, favorite on the road", tg.games["903"].l === 3.5 && tg.games["903"].t === 47.5, JSON.stringify(tg.games["903"]));
+  check("old line prefers DraftKings and its close line", tg.games["904"].l === -2.5 && tg.games["904"].t === 44.5, JSON.stringify(tg.games["904"]));
+  check("scoreboard line kept when only the total was missing", tg.games["902"].l === 3);
 
   // ---- Wednesday: opens at 6 p.m. ----
   out = await tick({ now: CT("2026-11-04T17:10:00-06:00") });
@@ -208,6 +222,16 @@ try {
   const before = JSON.stringify(R2.ats);
   await tick({ now: CT("2026-11-08T02:10:00-06:00") });
   check("ATS games are counted once", JSON.stringify((await getKv("rankings", {})).ats.teams) === JSON.stringify(R2.ats.teams));
+
+  // ---- old lines: a feed with nothing to give stops the job ----
+  tg = await getKv("teamGames", {});
+  for (let i = 0; i < 12; i++) tg.games["77" + i] = { id: "77" + i, wk: 2, d: "2026-09-06T17:00:00Z", a: "Rice", h: "Navy", as: 10, hs: 20, n: false, l: null, t: null };
+  await setKv("teamGames", tg);
+  out = await runJob("lines", { now: CT("2026-11-08T03:00:00-06:00") });
+  let a5 = await getKv("auto", {});
+  check("empty odds feed stops the lines job with a flag", !out.ran.lines.ok && a5.flags.some((f) => f.key === "lines:failed" && f.msg.includes("points only")), out.ran.lines.msg);
+  out = await tick({ now: CT("2026-11-08T04:10:00-06:00") });
+  check("stopped lines job does not run on the schedule", !out.ran.lines);
 
   // ---- the schedule stops: a stale flag shows ----
   v = await autoView(CT("2026-11-08T08:00:00-06:00"), await getConfig());

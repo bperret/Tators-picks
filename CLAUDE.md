@@ -12,7 +12,7 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - `api/`: `state`, `auth`, `picks`, `admin`, `cron` (5 functions). `lib/`: `db`, `http`, `league`, `auto`, `espn`, `teams`.
 - The server clock enforces the lock (423 after the deadline). Reveals are built server side only after the deadline. Drafts go to the commissioner only.
 - Login: cell number plus 6 digit PIN the commissioner makes. 10 wrong tries pause 15 minutes. No texts sent.
-- Automation: GitHub Actions hourly (`.github/workflows/automation.yml`, secrets SITE_URL and CRON_SECRET) plus a daily Vercel cron call `/api/cron`. Jobs: slate (Tue 1 p.m. CT from ESPN), open (Wed 6 p.m. CT), scores and auto final, rankings (AP, CFP, FPI), ATS, gamelog (fills weeks 1 to now once, then rechecks the last two weeks Sunday 9 a.m.). Failures become flags in the Commish Automation panel. Every job has a manual button. Hand-entered scores are never overwritten.
+- Automation: GitHub Actions hourly (`.github/workflows/automation.yml`, secrets SITE_URL and CRON_SECRET) plus a daily Vercel cron call `/api/cron`. Jobs: slate (Tue 1 p.m. CT from ESPN), open (Wed 6 p.m. CT), scores and auto final, rankings (AP, CFP, FPI), ATS, gamelog (fills weeks 1 to now once, then rechecks the last two weeks Sunday 9 a.m.), lines (fills missing lines and totals from ESPN core per-game odds, 100 games a run, stops if a batch finds none). Failures become flags in the Commish Automation panel. Every job has a manual button. Hand-entered scores are never overwritten.
 - Teams has a Stats view (PPG, PA, SOS from opponents' current SP+, average cover margin, splits, game log). It reads kv `teamGames` through `/api/state?part=teams`. FCS opponents are left out of SOS.
 - Commissioner can lock early and unlock with a new deadline; both log publicly. `origDeadline` keeps the week tied to its Saturday.
 
@@ -28,4 +28,4 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 ## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
 - ESPN rankings and FPI feed shapes were not verified live; watch for flags on the first runs.
-- The game log backfill (weeks 1 to 9) was not run live. ESPN may drop lines from old finished games; the Stats note counts games with no line.
+- ESPN's scoreboard drops lines from finished games, so the weeks 1 to 9 backfill came in without lines. The lines job tries ESPN's core per-game odds feed; its shape was not verified live. Watch the Automation panel.

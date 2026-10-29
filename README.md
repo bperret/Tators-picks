@@ -34,6 +34,7 @@ GitHub Actions (`.github/workflows/automation.yml`) calls `/api/cron` every hour
 | Every 6 hours | AP, CFP, and FPI from ESPN | Refresh rankings, Update rankings |
 | Every hour | Save lines before kickoff, add finished games to team ATS records | Update ATS |
 | First run, then Sunday 9 a.m. | Fill the team game log for weeks 1 to now, then recheck the last two weeks | Fill game log |
+| Every hour until done | Add lines and totals to logged games that lack them, from ESPN's per-game odds feed (100 games a run). Stops itself if the feed has no old lines. | Fill lines |
 
 Any failed job becomes a flag in the Automation panel with the manual fallback. The panel also flags a missing `CRON_SECRET` and a schedule that has not run for three hours. GitHub turns off scheduled workflows in a public repo after 60 days with no repo activity; the stale flag catches that.
 
