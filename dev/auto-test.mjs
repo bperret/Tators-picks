@@ -6,6 +6,8 @@ import { setFetcher, SITE, CORE, FITT, halfPoint } from "../lib/espn.js";
 import { tick, runJob, autoView, chooseGames } from "../lib/auto.js";
 import { getConfig, getWeek, putWeek, teamGamesView } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
+import { redditPage, pastedTable } from "./reddit-fixture.mjs";
+import { parseRedditText } from "../lib/polls.js";
 
 const pg = new PGlite();
 setTestDb(async (t, p) => (await pg.query(t, p)).rows);
@@ -63,6 +65,7 @@ const pastGames = {
   10: [[1001, 3, 15, "2026-11-01T14:30:00-06:00", 2.5, 17, 21, 45]],
 };
 let failWeek = null;
+let redditHtml = redditPage(9);
 function pastEvent([id, a, h, date, line, as, hs, total]) {
   const comp = (tid, ha) => ({ homeAway: ha, team: teams[tid], curatedRank: { current: rankOf(tid) }, score: String(ha === "home" ? hs : as) });
   const odds = line == null ? [] : [{ spread: line, overUnder: total ?? undefined, homeTeamOdds: { favorite: line < 0 } }];
@@ -83,6 +86,7 @@ setFetcher(async (url) => {
     return board();
   }
   if (url.startsWith(SITE + "/rankings")) return polls;
+  if (url.startsWith("https://poll.redditcfb.com/")) { if (redditHtml == null) throw new Error("poll.redditcfb.com answered 503."); return redditHtml; }
   if (url.startsWith(FITT)) return fitt;
   // ESPN's per-game odds feed, for games logged without a line.
   const od = url.match(/events\/(\d+)\/competitions\/\d+\/odds(?:\/(\d+))?$/);
@@ -135,6 +139,10 @@ try {
   check("AP poll refreshed from ESPN", R1.ap && R1.ap.teams[0].team === "Miami" && R1.ap.teams[0].prev === 2);
   check("FPI covers every team listed", R1.power.fpi.teams.length === 30 && R1.power.fpi.teams.some((t) => t.team === "San José State"));
   check("SP+ kept as loaded", R1.power.sp.teams.length === seed.power.sp.teams.length);
+  check("r/CFB poll read from its page", R1.reddit && R1.reddit.teams.length === 25 && R1.reddit.teams[0].team === "Miami" && R1.reddit.teams[0].fpv === 229 && R1.reddit.asOf === "Week 9", JSON.stringify(R1.reddit && R1.reddit.teams[0]));
+  check("r/CFB mascots dropped to school names", ["Texas A&M", "Hawai'i", "San José State", "Miami (OH)", "Penn State"].every((n) => R1.reddit.teams.some((t) => t.team === n)));
+  check("r/CFB movement read from the change column", R1.reddit.teams[2].prev === 9 && R1.reddit.teams[3].prev === 3 && R1.reddit.teams[4].prev === "NR");
+  check("r/CFB others receiving votes", R1.reddit.others.length === 5 && R1.reddit.others[0].team === "UTSA");
 
   // ---- game log: the first run fills weeks 1 to now ----
   check("first run fills the team game log", out.ran.gamelog && out.ran.gamelog.ok, JSON.stringify(out.ran.gamelog));
@@ -222,6 +230,18 @@ try {
   const before = JSON.stringify(R2.ats);
   await tick({ now: CT("2026-11-08T02:10:00-06:00") });
   check("ATS games are counted once", JSON.stringify((await getKv("rankings", {})).ats.teams) === JSON.stringify(R2.ats.teams));
+
+  // ---- r/CFB poll: a page change becomes a flag, and the paste fallback works ----
+  redditHtml = "<html><body><h1>2026 Week 10</h1><div>new layout</div></body></html>";
+  out = await runJob("rankings", { now: CT("2026-11-08T02:30:00-06:00") });
+  let a6 = await getKv("auto", {});
+  check("changed r/CFB page flags with the paste fallback", !out.ran.rankings.ok && a6.flags.some((f) => f.key === "rankings:failed" && f.msg.includes("r/CFB poll") && f.msg.includes("poll.redditcfb.com")), out.ran.rankings.msg);
+  check("other rankings still saved when r/CFB fails", (await getKv("rankings", {})).reddit.asOf === "Week 9");
+  const pasted = parseRedditText(pastedTable);
+  check("pasted r/CFB table reads the same as the page", pasted.teams.length === 25 && pasted.teams[21].team === "Hawai'i" && pasted.teams[0].fpv === 229 && pasted.asOf === "Week 9");
+  let threw = false; try { parseRedditText("not a poll"); } catch { threw = true; }
+  check("pasting something else is refused", threw);
+  redditHtml = redditPage(9);
 
   // ---- old lines: a feed with nothing to give stops the job ----
   tg = await getKv("teamGames", {});

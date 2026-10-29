@@ -167,9 +167,17 @@ details.manual .inner{margin-top:12px}
 .board-h{color:var(--board-dim)!important}
 .prow{display:grid;grid-template-columns:30px 32px 1fr 48px 40px 34px;gap:6px;align-items:center;padding-block:6px;border-bottom:1px solid var(--board-line);font-family:var(--cond);font-size:1rem;color:var(--board-ink)}
 .prow .num{text-align:right;font-variant-numeric:tabular-nums}
-.srow{display:grid;grid-template-columns:26px 32px 1fr 40px 40px 36px 44px;gap:6px;align-items:center;width:100%;padding:6px 0;border:0;border-bottom:1px solid var(--board-line);background:none;color:var(--board-ink);font:inherit;font-family:var(--cond);font-size:1rem;text-align:left;cursor:pointer}
+.srow{display:grid;gap:6px;align-items:center;width:100%;padding:6px 0;border:0;border-bottom:1px solid var(--board-line);background:none;color:var(--board-ink);font:inherit;font-family:var(--cond);font-size:1rem;text-align:left;cursor:pointer}
 .srow .num{text-align:right;font-variant-numeric:tabular-nums}
 .srow .up,.slg .up{color:#4fc585}.srow .dn,.slg .dn{color:#ff7a70}
+.srow.g-pol{grid-template-columns:32px 1fr 48px 48px 52px}
+.srow.g-rat{grid-template-columns:36px 32px 1fr 46px 40px 36px}
+.srow.g-sco{grid-template-columns:24px 32px 1fr 38px 38px 44px 36px}
+.srow.g-ats{grid-template-columns:24px 32px 1fr 54px 44px 50px}
+.srow .rnum i,.srow .num i{font-style:normal;font-size:.7rem;margin-left:2px}
+.srow i.up{color:#4fc585}.srow i.dn{color:#ff7a70}
+.rrec2{margin-left:6px;font-size:.8rem;color:var(--board-dim);font-variant-numeric:tabular-nums}
+.seg.pmode{margin:4px 0 8px}.segb.sm{font-size:.85rem;padding:3px 10px}
 .srow.shead{cursor:default;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--board-dim)}
 .ssort{font:inherit;background:none;border:0;color:inherit;text-align:right;cursor:pointer;padding:4px 0;text-transform:uppercase;letter-spacing:inherit}
 .ssort[aria-pressed="true"]{color:var(--board-ink);text-decoration:underline;text-underline-offset:3px}
@@ -505,7 +513,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
 <script>
 (function(){
 const $=s=>document.querySelector(s);
-const state={db:null,user:null,uid:null,isOwner:false,canWrite:null,config:null,weeks:{},reveals:{},roster:[],myPicks:null,allPicks:null,names:{},draft:null,dirty:false,view:"picks",rankings:null,rankView:"ap",profile:null,incTest:null,seenScores:{},log:[],history:{}};
+const state={db:null,user:null,uid:null,isOwner:false,canWrite:null,config:null,weeks:{},reveals:{},roster:[],myPicks:null,allPicks:null,names:{},draft:null,dirty:false,view:"picks",rankings:null,rankView:"polls",profile:null,incTest:null,seenScores:{},log:[],history:{}};
 const TZ="America/Chicago";
 const TEAMS={"Alabama":["BAMA","#9E1B32","#FFFFFF","🐘"],"Arkansas":["ARK","#9D2235","#FFFFFF","🐗"],"Auburn":["AUB","#0C2340","#E87722","🦅"],"Florida":["UF","#0021A5","#FA4616","🐊"],"Georgia":["UGA","#BA0C2F","#000000","🐶"],"Kentucky":["UK","#0033A0","#FFFFFF","🐱"],"LSU":["LSU","#461D7C","#FDD023","🐯"],"Mississippi State":["MSST","#660000","#FFFFFF","🔔"],"Missouri":["MIZ","#F1B82D","#000000","🏛️"],"Oklahoma":["OU","#841617","#FDF9D8","🛞"],"Ole Miss":["MISS","#CE1126","#14213D","🦈"],"South Carolina":["USCe","#73000A","#000000","🐓"],"Tennessee":["TENN","#FF8200","#FFFFFF","🚤"],"Texas":["TEX","#BF5700","#FFFFFF","🤘"],"Texas A&M":["A&M","#500000","#FFFFFF","👍"],"Vanderbilt":["VANDY","#000000","#CFAE70","⛵"],"Illinois":["ILL","#E84A27","#13294B","🔶"],"Indiana":["IU","#990000","#EEEDEB","🏀"],"Iowa":["IOWA","#FFCD00","#000000","👋"],"Maryland":["UMD","#E03A3E","#FFD520","🦀"],"Michigan":["MICH","#00274C","#FFCB05","〽️"],"Michigan State":["MSU","#18453B","#FFFFFF","🛡️"],"Minnesota":["MINN","#7A0019","#FFCC33","🐿️"],"Nebraska":["NEB","#E41C38","#FFFFFF","🌽"],"Northwestern":["NU","#4E2A84","#FFFFFF","😼"],"Ohio State":["tOSU","#BB0000","#666666","🌰"],"Oregon":["ORE","#154733","#FEE123","🦆"],"Penn State":["PSU","#041E42","#FFFFFF","🦁"],"Purdue":["PUR","#CEB888","#000000","🚂"],"Rutgers":["RU","#CC0033","#5F6A72","🍅"],"UCLA":["UCLA","#2D68C4","#F2A900","🎬"],"USC":["USCw","#990000","#FFC72C","⚔️"],"Washington":["UW","#4B2E83","#B7A57A","☔"],"Wisconsin":["WIS","#C5050C","#FFFFFF","🧀"],"Boston College":["BC","#8A100B","#BC9B6A","🦞"],"California":["CAL","#003262","#FDB515","🌉"],"Clemson":["CLEM","#F56600","#522D80","🐾"],"Duke":["DUKE","#003087","#FFFFFF","😈"],"Florida State":["FSU","#782F40","#CEB888","🔥"],"Georgia Tech":["GT","#B3A369","#003057","🐝"],"Louisville":["UofL","#AD0000","#000000","🏇"],"Miami":["MIA","#F47321","#005030","🦩"],"NC State":["NCSU","#CC0000","#000000","🐺"],"North Carolina":["UNC","#7BAFD4","#13294B","🐏"],"Pittsburgh":["PITT","#003594","#FFB81C","🐆"],"SMU":["SMU","#0033A0","#C8102E","🐎"],"Stanford":["STAN","#8C1515","#FFFFFF","🌲"],"Syracuse":["CUSE","#F76900","#002D72","🍊"],"Virginia":["UVA","#232D4B","#F84C1E","🐟"],"Virginia Tech":["VT","#630031","#CF4420","🦃"],"Wake Forest":["WAKE","#9E7E38","#000000","🎩"],"Arizona":["ARIZ","#CC0033","#003366","🌵"],"Arizona State":["ASU","#8C1D40","#FFC627","☀️"],"Baylor":["BU","#154734","#FFB81C","🥤"],"BYU":["BYU","#002E5D","#FFFFFF","🍦"],"Cincinnati":["UC","#E00122","#000000","🐻"],"Colorado":["CU","#CFB87C","#000000","🦬"],"Houston":["UH","#C8102E","#FFFFFF","🛢️"],"Iowa State":["ISU","#C8102E","#F1BE48","🌪️"],"Kansas":["KU","#0051BA","#E8000D","🐦"],"Kansas State":["KSU","#512888","#FFFFFF","🌾"],"Oklahoma State":["OKST","#FF7300","#000000","🤠"],"TCU":["TCU","#4D1979","#A3A9AC","🐸"],"Texas Tech":["TTU","#CC0000","#000000","🏜️"],"UCF":["UCF","#000000","#BA9B37","🏰"],"Utah":["UTAH","#CC0000","#FFFFFF","🏔️"],"West Virginia":["WVU","#002855","#EAAA00","⛏️"],"Notre Dame":["ND","#0C2340","#C99700","☘️"],"UConn":["UCONN","#000E2F","#E4002B","🐕"],"Oregon State":["ORST","#DC4405","#000000","🦫"],"Washington State":["WSU","#981E32","#5E6A71","🍎"],"Boise State":["BSU","#0033A0","#D64309","🥔"],"Colorado State":["CSU","#1E4D2B","#C8C372","🐑"],"Fresno State":["FRES","#DB0032","#002E6D","🍇"],"San Diego State":["SDSU","#A6192E","#000000","🏖️"],"Utah State":["USU","#0F2439","#8A8D8F","🐮"],"Texas State":["TXST","#501214","#8D734A","🛟"],"Air Force":["AFA","#003087","#8A8D8F","✈️"],"Hawai'i":["HAW","#024731","#FFFFFF","🌈"],"Nevada":["NEV","#003366","#807F84","🎰"],"New Mexico":["UNM","#BA0C2F","#63666A","🎈"],"San José State":["SJSU","#0055A2","#E5A823","💻"],"UNLV":["UNLV","#CF0A2C","#666666","🎲"],"Wyoming":["WYO","#492F24","#FFC425","🐂"],"UTEP":["UTEP","#041E42","#FF8200","🌄"],"Northern Illinois":["NIU","#BA0C2F","#000000","❄️"],"North Dakota State":["NDSU","#0A5640","#FFC82E","🏆"],"Army":["ARMY","#000000","#D3BC8D","🪖"],"Charlotte":["CLT","#046A38","#B9975B","🏎️"],"East Carolina":["ECU","#592A8A","#FDC82F","🏴‍☠️"],"Florida Atlantic":["FAU","#003366","#CC0000","🌅"],"Memphis":["MEM","#003087","#898D8D","🍖"],"Navy":["NAVY","#00205B","#C5B783","⚓"],"North Texas":["UNT","#00853E","#000000","💚"],"Rice":["RICE","#00205B","#7C7E7F","🍚"],"South Florida":["USF","#006747","#CFC493","🌩️"],"Temple":["TEM","#9D2235","#FFFFFF","🦉"],"Tulane":["TUL","#006747","#41B6E6","🌊"],"Tulsa":["TU","#002D72","#C5B783","🌀"],"UAB":["UAB","#1E6B52","#FFC845","🐉"],"UTSA":["UTSA","#0C2340","#F15A22","🏃"],"App State":["APP","#000000","#FFCC00","🎻"],"Arkansas State":["ARST","#CC092F","#000000","🦊"],"Coastal Carolina":["CCU","#006F71","#A27752","🏄"],"Georgia Southern":["GASO","#041E42","#A3AAAE","🔱"],"Georgia State":["GSU","#0039A6","#C60C30","🍑"],"James Madison":["JMU","#450084","#CBB677","📜"],"Louisiana":["ULL","#CE181E","#000000","🎷"],"UL Monroe":["ULM","#840029","#BA9B37","🛩️"],"Marshall":["MU","#00B140","#000000","🐃"],"Old Dominion":["ODU","#003057","#7C878E","👑"],"South Alabama":["USA","#00205B","#BF0D3E","🎭"],"Southern Miss":["USM","#000000","#FFAB00","🥇"],"Troy":["TROY","#8A2432","#B3B5B8","🐴"],"Louisiana Tech":["LT","#002F8B","#E31B23","🔧"],"Akron":["AKR","#041E42","#A89968","🦘"],"Ball State":["BALL","#BA0C2F","#FFFFFF","🫙"],"Bowling Green":["BGSU","#FE5000","#4F2C1D","🎳"],"Buffalo":["UB","#005BBB","#FFFFFF","🍗"],"Central Michigan":["CMU","#6A0032","#FFC82E","🍁"],"Eastern Michigan":["EMU","#006633","#FFFFFF","🛸"],"Kent State":["KENT","#002664","#EAAB00","⚡"],"Miami (OH)":["MIOH","#C3142D","#000000","🧢"],"Ohio":["OHIO","#00694E","#FFFFFF","🧱"],"Toledo":["TOL","#15397F","#FFDA00","🚀"],"Western Michigan":["WMU","#6C4023","#B5A167","🍒"],"UMass":["UMASS","#881C1C","#000000","🍂"],"Sacramento State":["SAC","#043927","#C4B581","🪲"],"FIU":["FIU","#081E3F","#B6862C","🏝️"],"Jacksonville State":["JSU","#CC0000","#FFFFFF","🥊"],"Kennesaw State":["KENN","#FDBB30","#000000","⛰️"],"Liberty":["LIB","#002D62","#C41230","🗽"],"Middle Tennessee":["MTSU","#0066CC","#FFFFFF","🔷"],"New Mexico State":["NMSU","#861F41","#FFFFFF","🌶️"],"Sam Houston":["SHSU","#F76902","#002B49","⭐"],"Western Kentucky":["WKU","#C60C30","#FFFFFF","🧣"],"Delaware":["UD","#00539F","#FFD200","🐔"],"Missouri State":["MOST","#5E0009","#FFFFFF","🎣"]};
 const ALIAS={"alabama":"Alabama","arkansas":"Arkansas","auburn":"Auburn","florida":"Florida","georgia":"Georgia","kentucky":"Kentucky","lsu":"LSU","louisianastate":"LSU","mississippistate":"Mississippi State","missstate":"Mississippi State","missouri":"Missouri","mizzou":"Missouri","oklahoma":"Oklahoma","olemiss":"Ole Miss","mississippi":"Ole Miss","southcarolina":"South Carolina","tennessee":"Tennessee","texas":"Texas","texasaandm":"Texas A&M","texasam":"Texas A&M","vanderbilt":"Vanderbilt","vandy":"Vanderbilt","illinois":"Illinois","indiana":"Indiana","iowa":"Iowa","maryland":"Maryland","michigan":"Michigan","michiganstate":"Michigan State","minnesota":"Minnesota","nebraska":"Nebraska","northwestern":"Northwestern","ohiostate":"Ohio State","oregon":"Oregon","pennstate":"Penn State","purdue":"Purdue","rutgers":"Rutgers","ucla":"UCLA","usc":"USC","southerncalifornia":"USC","washington":"Washington","wisconsin":"Wisconsin","bostoncollege":"Boston College","california":"California","cal":"California","clemson":"Clemson","duke":"Duke","floridastate":"Florida State","georgiatech":"Georgia Tech","louisville":"Louisville","miami":"Miami","miamifl":"Miami","miamiflorida":"Miami","ncstate":"NC State","northcarolinastate":"NC State","northcarolina":"North Carolina","pittsburgh":"Pittsburgh","pitt":"Pittsburgh","smu":"SMU","southernmethodist":"SMU","stanford":"Stanford","syracuse":"Syracuse","virginia":"Virginia","virginiatech":"Virginia Tech","wakeforest":"Wake Forest","arizona":"Arizona","arizonastate":"Arizona State","baylor":"Baylor","byu":"BYU","brighamyoung":"BYU","cincinnati":"Cincinnati","colorado":"Colorado","houston":"Houston","iowastate":"Iowa State","kansas":"Kansas","kansasstate":"Kansas State","kstate":"Kansas State","oklahomastate":"Oklahoma State","tcu":"TCU","texaschristian":"TCU","texastech":"Texas Tech","ucf":"UCF","centralflorida":"UCF","utah":"Utah","westvirginia":"West Virginia","notredame":"Notre Dame","uconn":"UConn","connecticut":"UConn","oregonstate":"Oregon State","washingtonstate":"Washington State","boisestate":"Boise State","coloradostate":"Colorado State","fresnostate":"Fresno State","sandiegostate":"San Diego State","utahstate":"Utah State","texasstate":"Texas State","airforce":"Air Force","hawaii":"Hawai'i","nevada":"Nevada","newmexico":"New Mexico","sanjosstate":"San José State","sanjosestate":"San José State","unlv":"UNLV","wyoming":"Wyoming","utep":"UTEP","northernillinois":"Northern Illinois","northdakotastate":"North Dakota State","army":"Army","charlotte":"Charlotte","eastcarolina":"East Carolina","floridaatlantic":"Florida Atlantic","fau":"Florida Atlantic","memphis":"Memphis","navy":"Navy","northtexas":"North Texas","rice":"Rice","southflorida":"South Florida","usf":"South Florida","temple":"Temple","tulane":"Tulane","tulsa":"Tulsa","uab":"UAB","utsa":"UTSA","appstate":"App State","appalachianstate":"App State","arkansasstate":"Arkansas State","coastalcarolina":"Coastal Carolina","georgiasouthern":"Georgia Southern","georgiastate":"Georgia State","jamesmadison":"James Madison","louisiana":"Louisiana","louisianalafayette":"Louisiana","ullafayette":"Louisiana","ulmonroe":"UL Monroe","louisianamonroe":"UL Monroe","ulm":"UL Monroe","marshall":"Marshall","olddominion":"Old Dominion","southalabama":"South Alabama","southernmiss":"Southern Miss","southernmississippi":"Southern Miss","troy":"Troy","louisianatech":"Louisiana Tech","akron":"Akron","ballstate":"Ball State","bowlinggreen":"Bowling Green","buffalo":"Buffalo","centralmichigan":"Central Michigan","easternmichigan":"Eastern Michigan","kentstate":"Kent State","miamioh":"Miami (OH)","miamiohio":"Miami (OH)","ohio":"Ohio","toledo":"Toledo","westernmichigan":"Western Michigan","umass":"UMass","massachusetts":"UMass","sacramentostate":"Sacramento State","sacstate":"Sacramento State","fiu":"FIU","floridainternational":"FIU","jacksonvillestate":"Jacksonville State","jaxstate":"Jacksonville State","kennesawstate":"Kennesaw State","liberty":"Liberty","middletennessee":"Middle Tennessee","middletennesseestate":"Middle Tennessee","newmexicostate":"New Mexico State","samhouston":"Sam Houston","samhoustonstate":"Sam Houston","westernkentucky":"Western Kentucky","delaware":"Delaware","missouristate":"Missouri State"};
@@ -677,7 +685,10 @@ document.addEventListener("submit",async e=>{
     $("#slateJson").value="";toast("Slate loaded as a draft");await refresh();renderCommish();
   }
   if(f.id==="rankForm"){
-    let data;try{data=JSON.parse($("#rankJson").value)}catch(x){toast("That is not valid JSON.");return}
+    const raw=$("#rankJson").value;let data;try{data=JSON.parse(raw)}catch(x){data=null}
+    if(!data){if(!/\d/.test(raw)){toast("Paste rankings JSON or the r/CFB poll table.");return}
+      const rr=await api("/api/admin",{action:"importRedditPoll",text:raw});if(!rr.ok){toast(rr.error);return}
+      $("#rankJson").value="";toast(`r/CFB poll updated: ${rr.count} teams.${rr.unknown&&rr.unknown.length?" Check these names: "+rr.unknown.join(", ")+".":""}`);await refresh();renderCommish();return}
     const r=await api("/api/admin",{action:"importRankings",data,snapshotWeek:currentWeekId()});if(!r.ok){toast(r.error);return}
     $("#rankJson").value="";toast("Rankings updated");await refresh();renderCommish();
   }
@@ -706,7 +717,7 @@ function loginsPanel(){
     <p class="note">Adding a picker creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Removing a picker hides them from standings and blocks new picks.</p></div>`}
 function importPanel(){
   return `<details class="panel manual"><summary><h2 style="display:inline">Manual backups</h2> <span class="note">paste a slate or rankings by hand</span></summary><form id="slateForm" class="inner" novalidate><h2>Load a slate</h2><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
-  <form id="rankForm" class="inner" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings. Paste rankings JSON for the Rankings tab. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form></details>`}
+  <form id="rankForm" class="inner" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings. Paste rankings JSON for the Teams tab. For the r/CFB poll, select its table on poll.redditcfb.com, copy, and paste it here. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form></details>`}
 
 /* ---------- saving picks ---------- */
 async function savePicks(force){
@@ -957,7 +968,8 @@ document.addEventListener("click",async e=>{
   if(e.target.id==="warnSave"){state.warn=null;savePicks(true)}
   if(e.target.id==="warnBack"){state.warn=null;renderPicks()}
   const seg=e.target.closest("[data-rank]");if(seg){state.rankView=seg.dataset.rank;renderRankings();return}
-  const ss=e.target.closest("[data-ssort]");if(ss){const k=ss.dataset.ssort;state.statRev=(state.statSort||"ppg")===k?!state.statRev:false;state.statSort=k;renderRankings();return}
+  const ts=e.target.closest("[data-tsort]");if(ts){const [view,k]=ts.dataset.tsort.split(":");state.tsort=state.tsort||{};const o=state.tsort[view]||{};state.tsort[view]={k,rev:o.k===k?!o.rev:false};renderRankings();return}
+  const pm=e.target.closest("[data-pmode]");if(pm){state.powerMode=pm.dataset.pmode;renderRankings();return}
   const stm=e.target.closest("[data-steam]");if(stm){const k=stm.dataset.steam;state.statOpen=state.statOpen===k?null:k;renderRankings();return}
   const act=e.target.closest("[data-act]");if(act)commishAct(act.dataset.act,act.dataset);
 });
@@ -1090,20 +1102,22 @@ function renderSurvivor(){
 }
 
 /* ---------- rankings ---------- */
-// ---------- Teams: Stats ----------
-// Built from the team game log (every finished FBS game this season, from ESPN).
+// ---------- Teams: Polls, Power, ATS ----------
+// Polls: AP, CFP, and r/CFB side by side. Power: ratings (SP+, VSiN, FPI) or scoring (PPG, PA,
+// margin, SOS). ATS: record, cover margin, over/under. Tap any team for the same team card.
+// Scoring, ATS, and the card use the team game log, loaded only when Teams opens.
 async function loadTeamGames(){state.tgLoading=true;const d=await api("/api/state?part=teams");state.tgLoading=false;
   state.teamGames=d.ok?{games:d.games||[],updatedAt:d.updatedAt||null}:{games:[],error:d.error};
-  if(state.view==="rankings"&&state.rankView==="stats")renderRankings()}
+  if(state.view==="rankings")renderRankings()}
 function teamStatRows(games,R){
   const sp={};((R.power&&R.power.sp&&R.power.sp.teams)||[]).forEach(t=>sp[canon(t.team)]=t.rating);
-  const fbs=new Set(Object.keys(sp)),conf={},ap={};
-  ((R.ats&&R.ats.teams)||[]).forEach(t=>{fbs.add(canon(t.team));conf[canon(t.team)]=t.conf});
+  const fbs=new Set(Object.keys(sp)),ap={};
+  ((R.ats&&R.ats.teams)||[]).forEach(t=>fbs.add(canon(t.team)));
   ((R.ap&&R.ap.teams)||[]).forEach(t=>ap[canon(t.team)]=t.rank);
   const T={},z=()=>[0,0,0];
   for(const g of games)for(const side of ["a","h"]){
     const me=canon(g[side]),opp=canon(g[side==="a"?"h":"a"]);if(!fbs.has(me))continue;
-    const t=T[me]||(T[me]={team:me,conf:conf[me]||"",g:0,w:0,l:0,pf:0,pa:0,opp:[],fcs:0,ats:z(),fav:z(),dog:z(),home:z(),road:z(),cov:[],ou:z(),vsAp:[0,0],log:[]});
+    const t=T[me]||(T[me]={team:me,g:0,w:0,l:0,pf:0,pa:0,opp:[],fcs:0,ats:z(),fav:z(),dog:z(),home:z(),road:z(),cov:[],ou:z(),vsAp:[0,0],log:[]});
     const pf=side==="a"?g.as:g.hs,pa=side==="a"?g.hs:g.as;
     t.g++;pf>pa?t.w++:t.l++;t.pf+=pf;t.pa+=pa;
     if(sp[opp]!=null)t.opp.push(sp[opp]);else if(!fbs.has(opp))t.fcs++;
@@ -1115,82 +1129,146 @@ function teamStatRows(games,R){
     t.log.push({d:g.d,opp,at:!g.n&&side==="a",n:!!g.n,pf,pa,line,cov,hand:!!g.hand});
   }
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
-  const rows=Object.values(T).map(t=>({...t,ppg:t.pf/t.g,pag:t.pa/t.g,mgn:(t.pf-t.pa)/t.g,sos:avg(t.opp),cvr:avg(t.cov),ap:ap[t.team]||null}));
+  const rows=Object.values(T).map(t=>({...t,ppg:t.pf/t.g,pag:t.pa/t.g,mgn:(t.pf-t.pa)/t.g,sos:avg(t.opp),cvr:avg(t.cov)}));
   rows.filter(r=>r.sos!=null).sort((x,y)=>y.sos-x.sos).forEach((r,i)=>r.sosRank=i+1);
   rows.forEach(r=>r.log.sort((x,y)=>x.d<y.d?-1:1));
   return rows;
 }
-function statsBoard(R,onSlate){
-  const D=state.teamGames;
-  if(!D){if(!state.tgLoading)loadTeamGames();return '<div class="panel empty">Loading team stats…</div>'}
-  if(D.error)return `<div class="panel empty">${esc(D.error)}</div>`;
-  if(!D.games.length)return '<div class="panel empty">Team stats fill in after the first game log run. It runs by itself within the hour. The commissioner can also tap Fill game log.</div>';
-  let rows=teamStatRows(D.games,R);
-  const confs=[...new Set(rows.map(r=>r.conf).filter(Boolean))].sort();
+const tF1=x=>x==null?"–":x.toFixed(1),tSg=x=>x==null?"–":(x>0?"+":"")+x.toFixed(1),tRs=a=>a[0]+"-"+a[1]+(a[2]?"-"+a[2]:"");
+const tPct=a=>{const n=a[0]+a[1];return n?a[0]/n:null};
+const tRec=s=>String(s||"").split("-").map(Number);
+const tMv=(rank,prev)=>prev==null||rank==null?"":prev==="NR"?'<i class="up">new</i>':prev>rank?`<i class="up">▲${prev-rank}</i>`:prev<rank?`<i class="dn">▼${rank-prev}</i>`:"";
+const tChip=t=>{const L=teamLook(t);return `<span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span>`};
+const tName=(t,extra)=>{const L=teamLook(t);return `<span class="rteam">${esc(t)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${extra||""}</span>`};
+// Everything the three views and the team card share, keyed by our team name.
+function teamsCtx(R){
+  const C={R,ap:{},cfp:{},rc:{},sp:{},vsin:{},fpi:{},conf:{},covers:{},stats:{},onSlate:new Set()};
+  const poll=(P,into)=>((P&&P.teams)||[]).forEach(t=>into[canon(t.team)]=t);
+  poll(R.ap,C.ap);poll(R.cfp,C.cfp);poll(R.reddit,C.rc);
+  const P=R.power||{};poll(P.sp,C.sp);poll(P.vsin,C.vsin);poll(P.fpi,C.fpi);
+  ((R.ats&&R.ats.teams)||[]).forEach(t=>{C.conf[canon(t.team)]=t.conf||"";C.covers[canon(t.team)]=t});
+  const w=curWeek();((w&&w.games)||[]).forEach(g=>{C.onSlate.add(canon(g.away));C.onSlate.add(canon(g.home))});
+  const D=state.teamGames;C.loaded=!!(D&&!D.error);C.error=D&&D.error;
+  if(C.loaded){teamStatRows(D.games,R).forEach(r=>C.stats[r.team]=r);C.games=D.games.length;C.noLine=D.games.filter(g=>g.l==null).length;C.updatedAt=D.updatedAt}
+  // League call: show the game log's ATS record when 5% or fewer of its games lack a line.
+  C.useLog=C.loaded&&C.games>0&&C.noLine/C.games<=0.05;
+  const hist=Object.keys(state.history).sort().filter(k=>k<currentWeekId());const ph=hist.length&&state.history[hist[hist.length-1]];
+  C.prevSp={};((ph&&ph.power&&ph.power.sp&&ph.power.sp.teams)||[]).forEach(t=>C.prevSp[canon(t.team)]=t.rank);
+  return C;
+}
+function tFilter(teams,C){
+  const confs=[...new Set(Object.values(C.conf).filter(Boolean))].sort();
   const cf=state.statConf&&confs.includes(state.statConf)?state.statConf:"";
-  const only=!!state.statSlate&&onSlate.size>0;
-  if(cf)rows=rows.filter(r=>r.conf===cf);
-  if(only)rows=rows.filter(r=>onSlate.has(r.team));
-  // [key, label, 1 when higher is better, -1 when lower is better]
-  const COLS=[["ppg","PPG",1],["pag","PA",-1],["sos","SOS",1],["cvr","Cvr",1]];
-  const col=COLS.find(c=>c[0]===state.statSort)||COLS[0],dir=col[2]*(state.statRev?-1:1);
-  rows.sort((x,y)=>{const a=x[col[0]],b=y[col[0]];if(a==null||b==null)return (a==null)-(b==null);return dir*(b-a)||y.mgn-x.mgn});
-  const f1=x=>x==null?"–":x.toFixed(1),sg=x=>x==null?"–":(x>0?"+":"")+x.toFixed(1),rs=a=>a[0]+"-"+a[1]+(a[2]?"-"+a[2]:"");
-  const ln=x=>x==null?"no line":x===0?"PK":(x>0?"+":"")+x;
+  const only=!!state.statSlate&&C.onSlate.size>0;
+  const list=teams.filter(t=>(!cf||C.conf[t]===cf)&&(!only||C.onSlate.has(t)));
+  const bar=`<div class="bar"><label for="statConf" class="note">Conference</label><select id="statConf"><option value="">All conferences</option>${confs.map(k=>`<option ${k===cf?"selected":""}>${esc(k)}</option>`).join("")}</select>${C.onSlate.size?`<label class="note"><input type="checkbox" id="statSlate" ${only?"checked":""}> This week's slate only</label>`:""}</div>`;
+  return {list,bar,only};
+}
+// cols: [key, label, 1 when higher is better or -1 when lower is better, value getter]
+function tSort(rows,view,cols,def){
+  const S=(state.tsort||{})[view]||{};const col=cols.find(c=>c[0]===S.k)||cols.find(c=>c[0]===def)||cols[0];const dir=col[2]*(S.rev?-1:1);
+  rows.sort((x,y)=>{const a=col[3](x),b=col[3](y);if(a==null||b==null)return (a==null)-(b==null)||(x.tie??99)-(y.tie??99);return dir*(b-a)||(x.tie??99)-(y.tie??99)});
+  const head=k=>{const c=cols.find(c=>c[0]===k);return `<button class="ssort" data-tsort="${view}:${k}" aria-pressed="${c===col}">${c[1]}${c===col&&S.rev?" ↑":""}</button>`};
+  return {col,head};
+}
+function teamCard(t,C){
+  const r=C.stats[t],ap=C.ap[t],cfp=C.cfp[t],rc=C.rc[t],sp=C.sp[t],cv=C.covers[t];
   const day=d=>new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"America/Chicago"});
-  const spAsOf=R.power&&R.power.sp?R.power.sp.asOf:"";
-  const noLine=D.games.filter(g=>g.l==null).length;
-  let h=`<div class="board"><h2>Team stats</h2><p class="note">2026 season, every finished FBS game from ESPN${D.updatedAt?", updated "+esc(when(D.updatedAt)):""}. PPG and PA are raw points, not adjusted for opponent. SOS ranks each team by its opponents' average SP+ rating${spAsOf?" as of "+esc(spAsOf):""}; 1 is the hardest schedule, and FCS opponents are left out. Cvr is the average margin against the closing line (DraftKings via ESPN); plus means the team beat the number. ATS records here use ESPN lines, so they can differ from the ATS records view.${noLine?` ${noLine} game${noLine>1?"s have":" has"} no line and count for points only.`:""} Tap a team for splits and its game log.</p>
-  <div class="bar"><label for="statConf" class="note">Conference</label><select id="statConf"><option value="">All conferences</option>${confs.map(k=>`<option ${k===cf?"selected":""}>${esc(k)}</option>`).join("")}</select>${onSlate.size?`<label class="note"><input type="checkbox" id="statSlate" ${only?"checked":""}> This week's slate only</label>`:""}</div>
-  <div class="srow shead"><span></span><span></span><span>Team</span>${COLS.map(c=>`<button class="ssort" data-ssort="${c[0]}" aria-pressed="${c[0]===col[0]}">${c[1]}${c[0]===col[0]&&state.statRev?" ↑":""}</button>`).join("")}</div>`;
-  if(!rows.length)h+='<p class="note">No teams match.</p>';
-  rows.forEach((r,i)=>{const L=teamLook(r.team);const open=state.statOpen===r.team;
-    h+=`<button class="srow" data-steam="${esc(r.team)}" aria-expanded="${open}"><span class="rnum">${i+1}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(r.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${r.ap?'<span class="bye">AP '+r.ap+'</span>':""}${onSlate.has(r.team)&&!only?'<span class="bye on">On slate</span>':""}</span><span class="num">${f1(r.ppg)}</span><span class="num">${f1(r.pag)}</span><span class="num">${r.sosRank||"–"}</span><span class="num ${r.cvr>0?"up":r.cvr<0?"dn":""}">${sg(r.cvr)}</span></button>`;
-    if(open){const lines=r.g-r.cov.length;
-      h+=`<div class="sdet"><div class="sgrid">
-      <span>Record</span><b>${r.w}-${r.l}, ${sg(r.mgn)} a game</b>
-      <span>Schedule</span><b>${r.sos==null?"No FBS opponents rated":"Opponents' SP+ "+sg(r.sos)+", #"+r.sosRank+" hardest"}${r.fcs?`, plus ${r.fcs} FCS game${r.fcs>1?"s":""}`:""}</b>
-      <span>vs AP top 25</span><b>${r.vsAp[0]}-${r.vsAp[1]}</b>
-      <span>ATS</span><b>${rs(r.ats)}, average cover ${sg(r.cvr)}${lines?` (${lines} game${lines>1?"s":""} with no line)`:""}</b>
-      <span>As favorite</span><b>${rs(r.fav)}</b><span>As underdog</span><b>${rs(r.dog)}</b>
-      <span>Home</span><b>${rs(r.home)}</b><span>Road</span><b>${rs(r.road)}</b>
-      <span>Over/under</span><b>${rs(r.ou)} (overs first)</b></div>
-      ${r.log.map(g=>{const O=teamLook(g.opp);const win=g.pf>g.pa;return `<div class="slg"><span>${esc(day(g.d))}</span><span>${g.at?"at":"vs"} ${esc(O.abbr||g.opp)}${g.n?" (N)":""}</span><span class="${win?"up":"dn"}">${win?"W":"L"} ${g.pf}-${g.pa}${g.hand?"*":""}</span><span class="num">${esc(ln(g.line))}</span><span class="num ${g.cov>0?"up":g.cov<0?"dn":""}">${g.cov==null?"":g.cov>0?"Covered":g.cov<0?"Missed":"Push"}</span></div>`}).join("")}
-      ${r.log.some(g=>g.hand)?'<p class="note">* Score entered by the commissioner.</p>':""}</div>`}});
+  const ln=x=>x==null?"no line":x===0?"PK":(x>0?"+":"")+x;
+  let h=`<div class="sdet"><div class="sgrid">
+    <span>Polls</span><b>AP ${ap?ap.rank:"–"} · CFP ${cfp?cfp.rank:"–"} · r/CFB ${rc?rc.rank:"–"}</b>
+    <span>Ratings</span><b>SP+ ${sp?tSg(sp.rating)+" (#"+sp.rank+")":"–"} · VSiN ${C.vsin[t]?"#"+C.vsin[t].rank:"–"} · FPI ${C.fpi[t]?"#"+C.fpi[t].rank:"–"}</b>`;
+  if(r){const nl=r.g-r.cov.length;
+    h+=`<span>Record</span><b>${r.w}-${r.l}, ${tSg(r.mgn)} a game (${tF1(r.ppg)} scored, ${tF1(r.pag)} allowed)</b>
+    <span>Schedule</span><b>${r.sos==null?"No FBS opponents rated":"Opponents' SP+ "+tSg(r.sos)+", #"+r.sosRank+" hardest"}${r.fcs?`, plus ${r.fcs} FCS game${r.fcs>1?"s":""}`:""}</b>
+    <span>vs AP top 25</span><b>${r.vsAp[0]}-${r.vsAp[1]}</b>
+    <span>ATS</span><b>${tRs(r.ats)}, average cover ${tSg(r.cvr)}${nl?` (${nl} game${nl>1?"s":""} with no line)`:""}</b>
+    ${!C.useLog&&cv?`<span>ATS, Covers</span><b>${esc(String(cv.ats).replace(/-0$/,""))} for the season</b>`:""}
+    <span>As favorite</span><b>${tRs(r.fav)}</b><span>As underdog</span><b>${tRs(r.dog)}</b>
+    <span>Home</span><b>${tRs(r.home)}</b><span>Road</span><b>${tRs(r.road)}</b>
+    <span>Over/under</span><b>${tRs(r.ou)} (overs first)</b></div>
+    ${r.log.map(g=>{const O=teamLook(g.opp);const win=g.pf>g.pa;return `<div class="slg"><span>${esc(day(g.d))}</span><span>${g.at?"at":"vs"} ${esc(O.abbr||g.opp)}${g.n?" (N)":""}</span><span class="${win?"up":"dn"}">${win?"W":"L"} ${g.pf}-${g.pa}${g.hand?"*":""}</span><span class="num">${esc(ln(g.line))}</span><span class="num ${g.cov>0?"up":g.cov<0?"dn":""}">${g.cov==null?"":g.cov>0?"Covered":g.cov<0?"Missed":"Push"}</span></div>`}).join("")}
+    ${r.log.some(g=>g.hand)?'<p class="note">* Score entered by the commissioner.</p>':""}`}
+  else h+=`${cv?`<span>Record</span><b>${esc(cv.su)}</b><span>ATS, Covers</span><b>${esc(String(cv.ats).replace(/-0$/,""))}</b>`:""}</div><p class="note">${C.loaded?"No games in the log for this team.":C.error?esc(C.error):"Loading games…"}</p>`;
   return h+"</div>";
 }
+// A tappable row followed by the team card when it is open.
+const tRow=(cls,t,cells,C)=>{const open=state.statOpen===t;return `<button class="srow ${cls}" data-steam="${esc(t)}" aria-expanded="${open}">${cells}</button>${open?teamCard(t,C):""}`};
+
+function pollsView(C){
+  const R=C.R;const all=[...new Set([...Object.keys(C.ap),...Object.keys(C.cfp),...Object.keys(C.rc)])];
+  if(!all.length)return '<div class="panel empty">The AP poll updates Sunday afternoons.</div>';
+  const F=tFilter(all,C);
+  const rows=F.list.map(t=>({team:t,ap:C.ap[t],cfp:C.cfp[t],rc:C.rc[t],tie:Math.min(C.ap[t]?C.ap[t].rank:99,C.cfp[t]?C.cfp[t].rank:99,C.rc[t]?C.rc[t].rank:99)}));
+  const hasCfp=Object.keys(C.cfp).length>0;
+  const S=tSort(rows,"polls",[["ap","AP",-1,r=>r.ap&&r.ap.rank],["cfp","CFP",-1,r=>r.cfp&&r.cfp.rank],["rc","r/CFB",-1,r=>r.rc&&r.rc.rank]],hasCfp?"cfp":"ap");
+  const k=S.col[0];
+  const cell=(p,key)=>`<span class="num">${p?p.rank+(key===k?tMv(p.rank,p.prev):""):"–"}</span>`;
+  const rec=t=>{const r=C.stats[t];return r?r.w+"-"+r.l:C.ap[t]&&C.ap[t].record?C.ap[t].record:C.covers[t]?C.covers[t].su:""};
+  const src=[R.ap?`AP poll of ${R.ap.asOf}`:"",hasCfp?`CFP rankings of ${R.cfp.asOf}`:"",R.reddit?`r/CFB poll, ${R.reddit.asOf}`:""].filter(Boolean).join("; ");
+  let h=`<div class="board"><h2>Polls</h2><p class="note">${esc(src)}.${hasCfp?"":" The playoff committee's first top 25 comes out in early November, then every Tuesday night through December."} Tap a poll to sort by it; arrows show that poll's movement. Tap a team for its card.</p>${F.bar}
+  <div class="srow g-pol shead"><span></span><span>Team</span>${S.head("ap")}${S.head("cfp")}${S.head("rc")}</div>`;
+  if(!rows.length)h+='<p class="note">No teams match.</p>';
+  rows.forEach(r=>{h+=tRow("g-pol",r.team,`${tChip(r.team)}${tName(r.team,`<span class="rrec2">${esc(rec(r.team))}</span>`+(C.onSlate.has(r.team)&&!F.only?'<span class="bye on">On slate</span>':""))}${cell(r.ap,"ap")}${cell(r.cfp,"cfp")}${cell(r.rc,"rc")}`,C)});
+  const others=[["AP",R.ap&&R.ap.others],["r/CFB",R.reddit&&R.reddit.others]].filter(([,o])=>o&&o.length);
+  h+=others.map(([n,o])=>`<p class="note">Also receiving votes, ${n}: ${o.map(x=>esc(x.team)+" "+x.pts).join(", ")}.</p>`).join("");
+  return h+"</div>";
+}
+
+function powerView(C){
+  const R=C.R,P=R.power;const mode=state.powerMode==="scoring"?"scoring":"ratings";
+  const tog=`<div class="seg pmode" role="group" aria-label="Power view">${[["ratings","Ratings"],["scoring","Scoring"]].map(([m,l])=>`<button class="segb sm" data-pmode="${m}" aria-pressed="${mode===m}">${l}</button>`).join("")}</div>`;
+  let h=`<div class="board"><h2>Power</h2>${tog}`;
+  if(mode==="ratings"){
+    if(!P||!P.sp)return h+'<p class="note">Power ratings load with the weekly update.</p></div>';
+    const F=tFilter(P.sp.teams.map(t=>canon(t.team)),C);
+    const rows=F.list.map(t=>({team:t,sp:C.sp[t],tie:C.sp[t].rank}));
+    const S=tSort(rows,"ratings",[["sp","Rtg",1,r=>r.sp.rating],["vsin","VSiN",-1,r=>C.vsin[r.team]&&C.vsin[r.team].rank],["fpi","FPI",-1,r=>C.fpi[r.team]&&C.fpi[r.team].rank]],"sp");
+    h+=`<p class="note">SP+ rating is points better than an average FBS team; the first column is SP+ rank with its weekly movement. VSiN and FPI show each team's rank in those systems.${P.fpi&&P.fpi.teams&&P.fpi.teams.length<=25?" FPI shows its top 25 only.":""} Sources: ${esc(P.sp.source)}, ${esc(P.sp.asOf)}${P.vsin?"; "+esc(P.vsin.source+", "+P.vsin.asOf):""}${P.fpi?"; "+esc(P.fpi.source+", "+P.fpi.asOf):""}.</p>${F.bar}
+    <div class="srow g-rat shead"><span>SP+</span><span></span><span>Team</span>${S.head("sp")}${S.head("vsin")}${S.head("fpi")}</div>`;
+    if(!rows.length)h+='<p class="note">No teams match.</p>';
+    rows.forEach(r=>{const t=r.team,ap=C.ap[t];const pv=C.prevSp[t];const mv=pv==null?"":tMv(r.sp.rank,pv);
+      h+=tRow("g-rat",t,`<span class="rnum">${r.sp.rank}${mv}</span>${tChip(t)}${tName(t,ap?' <span class="bye">AP '+ap.rank+'</span>':"")}<span class="num">${r.sp.rating>0?"+":""}${r.sp.rating}</span><span class="num">${C.vsin[t]?C.vsin[t].rank:"–"}</span><span class="num">${C.fpi[t]?C.fpi[t].rank:"–"}</span>`,C)});
+    return h+"</div>";
+  }
+  if(!C.loaded)return h+`<p class="note">${C.error?esc(C.error):"Loading team stats…"}</p></div>`;
+  if(!C.games)return h+'<p class="note">Team stats fill in after the first game log run. It runs by itself, or the commissioner can tap Fill game log.</p></div>';
+  const F=tFilter(Object.keys(C.stats),C);
+  const rows=F.list.map(t=>({...C.stats[t],tie:C.sp[t]?C.sp[t].rank:999}));
+  const S=tSort(rows,"scoring",[["ppg","PPG",1,r=>r.ppg],["pag","PA",-1,r=>r.pag],["mgn","Mgn",1,r=>r.mgn],["sos","SOS",-1,r=>r.sosRank]],"mgn");
+  const spAsOf=P&&P.sp?P.sp.asOf:"";
+  h+=`<p class="note">Every finished FBS game this season, from ESPN${C.updatedAt?", updated "+esc(when(C.updatedAt)):""}. PPG, PA, and margin are raw points, not adjusted for opponent. SOS ranks opponents' average SP+ rating${spAsOf?" as of "+esc(spAsOf):""}; 1 is the hardest schedule, and FCS opponents are left out.</p>${F.bar}
+  <div class="srow g-sco shead"><span></span><span></span><span>Team</span>${S.head("ppg")}${S.head("pag")}${S.head("mgn")}${S.head("sos")}</div>`;
+  if(!rows.length)h+='<p class="note">No teams match.</p>';
+  rows.forEach((r,i)=>{h+=tRow("g-sco",r.team,`<span class="rnum">${i+1}</span>${tChip(r.team)}${tName(r.team,C.onSlate.has(r.team)&&!F.only?'<span class="bye on">On slate</span>':"")}<span class="num">${tF1(r.ppg)}</span><span class="num">${tF1(r.pag)}</span><span class="num ${r.mgn>0?"up":r.mgn<0?"dn":""}">${tSg(r.mgn)}</span><span class="num">${r.sosRank||"–"}</span>`,C)});
+  return h+"</div>";
+}
+
+function atsView(C){
+  const R=C.R;
+  if(!C.loaded&&!Object.keys(C.covers).length)return `<div class="panel empty">${C.error?esc(C.error):"Loading team stats…"}</div>`;
+  const F=tFilter([...new Set([...Object.keys(C.covers),...Object.keys(C.stats)])],C);
+  const recOf=t=>C.useLog&&C.stats[t]?C.stats[t].ats:C.covers[t]?tRec(C.covers[t].ats):C.stats[t]?C.stats[t].ats:null;
+  const rows=F.list.map(t=>({team:t,ats:recOf(t),cvr:C.stats[t]?C.stats[t].cvr:null,ou:C.stats[t]?C.stats[t].ou:null,tie:C.sp[t]?C.sp[t].rank:999}));
+  const S=tSort(rows,"ats",[["ats","ATS",1,r=>r.ats&&tPct(r.ats)],["cvr","Cvr",1,r=>r.cvr],["ou","O/U",1,r=>r.ou&&tPct(r.ou)]],"ats");
+  const share=C.games?Math.round(100*C.noLine/C.games):0;
+  const srcNote=C.useLog?`Records use closing lines from ESPN (DraftKings when listed) for every finished FBS game${C.noLine?`; ${C.noLine} game${C.noLine>1?"s have":" has"} no line and count for nothing here`:""}.`
+    :`Season records come from ${esc((R.ats&&R.ats.source)||"Covers")}${R.ats&&R.ats.asOf?", as of "+esc(R.ats.asOf):""}. ${C.loaded?`Cover margin and over/under use ESPN lines, and ${share}% of logged games have no line, so they cover fewer games.`:""}`;
+  let h=`<div class="board"><h2>Against the spread</h2><p class="note">${srcNote} Cvr is the average margin against the line; plus means the team beat the number. O/U is overs first. Tap a team for favorite, underdog, home, and road splits and its game log.</p>${F.bar}
+  <div class="srow g-ats shead"><span></span><span></span><span>Team</span>${S.head("ats")}${S.head("cvr")}${S.head("ou")}</div>`;
+  if(!rows.length)h+='<p class="note">No teams match.</p>';
+  rows.forEach((r,i)=>{h+=tRow("g-ats",r.team,`<span class="rnum">${i+1}</span>${tChip(r.team)}${tName(r.team,(C.ap[r.team]?' <span class="bye">AP '+C.ap[r.team].rank+'</span>':"")+(C.onSlate.has(r.team)&&!F.only?'<span class="bye on">On slate</span>':""))}<span class="num">${r.ats?tRs(r.ats):"–"}</span><span class="num ${r.cvr>0?"up":r.cvr<0?"dn":""}">${tSg(r.cvr)}</span><span class="num">${r.ou?tRs(r.ou):"–"}</span>`,C)});
+  return h+"</div>";
+}
+
 function renderRankings(){
-  const el=$("#v-rankings");const R=state.rankings;const v=state.rankView||"ap";
-  const seg=`<div class="seg" role="group" aria-label="Ranking view">${[["ap","AP Poll"],["cfp","CFP"],["power","Power"],["ats","ATS records"],["stats","Stats"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${v===k}">${l}</button>`).join("")}</div>`;
+  const el=$("#v-rankings");const R=state.rankings;
+  const v={ap:"polls",cfp:"polls",stats:"power"}[state.rankView]||state.rankView||"polls";state.rankView=["polls","power","ats"].includes(v)?v:"polls";
+  const seg=`<div class="seg" role="group" aria-label="Teams view">${[["polls","Polls"],["power","Power"],["ats","ATS"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${state.rankView===k}">${l}</button>`).join("")}</div>`;
   if(!R){el.innerHTML=seg+'<div class="panel empty">Team rankings update by themselves from ESPN. They show here after the first update.</div>';return}
-  const w=curWeek();const onSlate=new Set();((w&&w.games)||[]).forEach(g=>{onSlate.add(canon(g.away));onSlate.add(canon(g.home))});
-  const row=(t,extra)=>{const L=teamLook(t.team);const mv=t.prev==null?'<span class="mv">–</span>':t.prev==="NR"?'<span class="mv up">New</span>':t.prev>t.rank?`<span class="mv up">▲${t.prev-t.rank}</span>`:t.prev<t.rank?`<span class="mv dn">▼${t.rank-t.prev}</span>`:'<span class="mv">–</span>';
-    return `<div class="rrow"><span class="rnum">${t.tie?"T-":""}${t.rank}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(t.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${onSlate.has(canon(t.team))?'<span class="bye on">On slate</span>':""}</span><span class="rrec">${esc(t.record||"")}</span>${extra||mv}</div>`};
-  let h=seg;
-  if(v==="stats"){el.innerHTML=h+statsBoard(R,onSlate);return}
-  if(v==="ap"){const P=R.ap;if(!P){el.innerHTML=h+'<div class="panel empty">The AP poll updates Sunday afternoons.</div>';return}
-    const ties={};P.teams.forEach(t=>ties[t.rank]=(ties[t.rank]||0)+1);
-    h+=`<div class="board"><h2>AP Top 25</h2><p class="note">Poll of ${esc(P.asOf)}.${P.teams.some(t=>t.prev!=null)?"":" Movement arrows start with next week's poll."}</p><div class="rlist">${P.teams.map(t=>row({...t,tie:ties[t.rank]>1})).join("")}</div>${P.others&&P.others.length?`<p class="note">Also receiving votes: ${P.others.map(o=>esc(o.team)+" "+o.pts).join(", ")}.</p>`:""}</div>`}
-  if(v==="cfp"){const P=R.cfp;if(!P||!P.teams||!P.teams.length){el.innerHTML=h+'<div class="panel empty">The playoff committee\'s first top 25 comes out in early November, then every Tuesday night through December.</div>';return}
-    h+=`<div class="board"><h2>CFP Rankings</h2><p class="note">Released ${esc(P.asOf)}.</p><div class="rlist">${P.teams.map(t=>row(t)).join("")}</div></div>`}
-  if(v==="power"){const P=R.power;if(!P||!P.sp){el.innerHTML=h+'<div class="panel empty">Power ratings load with the weekly update.</div>';return}
-    const hist=Object.keys(state.history).sort().filter(k=>k<currentWeekId());const prevSp={};const ph=hist.length&&state.history[hist[hist.length-1]];((ph&&ph.power&&ph.power.sp&&ph.power.sp.teams)||[]).forEach(t=>prevSp[canon(t.team)]=t.rank);
-    const vr={},fr={},apr={};((P.vsin&&P.vsin.teams)||[]).forEach(t=>vr[canon(t.team)]=t);((P.fpi&&P.fpi.teams)||[]).forEach(t=>fr[canon(t.team)]=t.rank);((R.ap&&R.ap.teams)||[]).forEach(t=>apr[canon(t.team)]=t.rank);
-    h+=`<div class="board"><h2>Power ratings</h2><p class="note">Sorted by SP+. SP+ rating is points better than an average FBS team. VSiN and FPI columns show each team's rank in those systems. ${P.fpi&&P.fpi.teams&&P.fpi.teams.length<=25?"FPI shows its top 25 only. ":""}Sources: ${esc(P.sp.source)}, ${esc(P.sp.asOf)}; ${esc(P.vsin?P.vsin.source+", "+P.vsin.asOf:"")}; ${esc(P.fpi?P.fpi.source+", "+P.fpi.asOf:"")}.</p>
-    <div class="prow phead"><span>SP+</span><span></span><span>Team</span><span class="num">Rtg</span><span class="num">VSiN</span><span class="num">FPI</span></div>
-    ${P.sp.teams.map(t=>{const k=canon(t.team);const L=teamLook(t.team);const ap=apr[k];const pv=prevSp[k];const mv=pv==null?"":pv>t.rank?`<i class="up">\u25b2${pv-t.rank}</i>`:pv<t.rank?`<i class="dn">\u25bc${t.rank-pv}</i>`:"";return `<div class="prow"><span class="rnum">${t.rank}${mv}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(t.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${ap?' <span class="bye">AP '+ap+'</span>':""}</span><span class="num">${t.rating>0?"+":""}${t.rating}</span><span class="num">${vr[k]?vr[k].rank:"\u2013"}</span><span class="num">${fr[k]||"\u2013"}</span></div>`}).join("")}</div>`}
-  if(v==="ats"){const P=R.ats;if(!P||!P.teams||!P.teams.length){el.innerHTML=h+'<div class="panel empty">Team records against the spread load with the weekly update.</div>';return}
-    const apr={};((R.ap&&R.ap.teams)||[]).forEach(t=>apr[canon(t.team)]=t.rank);
-    const pct=x=>{const [w,l]=String(x).split("-").map(Number);return w+l?w/(w+l):0};
-    const confs={};P.teams.forEach(t=>{(confs[t.conf||"Other"]=confs[t.conf||"Other"]||[]).push(t)});
-    const cf=state.atsConf&&confs[state.atsConf]?state.atsConf:"";
-    h+=`<div class="board"><h2>Every team against the spread</h2><p class="note">2026 season, from ${esc(P.source||"the weekly update")}, as of ${esc(P.asOf)}. ${P.teams.length} of 138 FBS teams loaded. Sorted by cover rate within each conference.</p>
-    <div class="bar"><label for="confSel" class="note">Conference</label><select id="confSel"><option value="">All conferences</option>${Object.keys(confs).sort().map(k=>`<option ${k===cf?"selected":""}>${esc(k)}</option>`).join("")}</select></div>
-    <div class="rrow rhead"><span></span><span></span><span>Team</span><span class="rrec">Straight up</span><span class="rrec ats">ATS</span></div>`;
-    for(const [cfn,list] of Object.entries(confs)){if(cf&&cfn!==cf)continue;const cf2=cfn;list.sort((x,y)=>pct(y.ats)-pct(x.ats)||pct(y.su)-pct(x.su));
-      h+=`<h3 class="rh board-h">${esc(cf2)}</h3><div class="rlist">${list.map((t,i)=>{const L=teamLook(t.team);const rk=apr[canon(t.team)];return `<div class="rrow"><span class="rnum">${rk?"#"+rk:""}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(t.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="rrec">${esc(t.su)}</span><span class="rrec ats">${esc(String(t.ats).replace(/-0$/,""))}</span></div>`}).join("")}</div>`}
-    h+="</div>"}
-  el.innerHTML=h;
+  if(!state.teamGames&&!state.tgLoading)loadTeamGames();
+  const C=teamsCtx(R);
+  el.innerHTML=seg+(state.rankView==="polls"?pollsView(C):state.rankView==="power"?powerView(C):atsView(C));
 }
 
 /* ---------- players ---------- */

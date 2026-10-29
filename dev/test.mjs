@@ -158,24 +158,45 @@ try {
   check("survivor board fills in", (await m.textContent("#v-survivor")).includes("MIA"));
   await m.evaluate(() => (location.hash = "#rules")); await m.waitForTimeout(300);
   check("log shows commissioner actions", (await m.textContent("#logPanel")).includes("Marked week final"));
-  // ---- Teams: Stats ----
+  // ---- Teams: Polls, Power, ATS ----
   const tgames = { games: {
     1: { id: "1", wk: 9, d: "2026-10-31T19:30:00Z", a: "Florida", h: "Georgia", as: 20, hs: 31, n: false, l: -10.5, t: 48.5 },
     2: { id: "2", wk: 9, d: "2026-10-31T23:30:00Z", a: "LSU", h: "Alabama", as: 27, hs: 24, n: false, l: -3, t: 51.5 },
     3: { id: "3", wk: 1, d: "2026-08-30T17:00:00Z", a: "Austin Peay", h: "Georgia", as: 3, hs: 45, n: false, l: null, t: null },
   }, weeksDone: [1, 9], backfilledAt: "2026-10-29T18:00:00Z", updatedAt: "2026-10-29T18:00:00Z" };
   await pg.query("insert into kv (key, value) values ('teamGames', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(tgames)]);
-  await m.evaluate(() => (location.hash = "#rankings")); await m.waitForTimeout(300);
-  await m.click('[data-rank="stats"]');
-  await m.waitForSelector('[data-steam="Georgia"]', { timeout: 10000 });
-  check("Stats view lists teams from the game log", (await m.locator("[data-steam]").count()) === 4, String(await m.locator("[data-steam]").count()));
+  const reddit = { asOf: "Week 9", stamp: "2026-w9", source: "r/CFB poll", teams: [{ rank: 1, team: "Georgia", pts: 7000, fpv: 200, prev: 3 }, { rank: 2, team: "Miami", pts: 6800, fpv: 50, prev: 1 }, { rank: 3, team: "Tulane", pts: 900, fpv: 0, prev: "NR" }], others: [{ team: "UTSA", pts: 361 }] };
+  await pg.query("update kv set value = jsonb_set(value, '{reddit}', $1::jsonb) where key = 'rankings'", [JSON.stringify(reddit)]);
+  await m.reload(); await m.waitForSelector("#app:not([hidden])");
+  await m.evaluate(() => (location.hash = "#rankings")); await m.waitForTimeout(400);
+  const segs = await m.locator("#v-rankings [data-rank]").allTextContents();
+  check("Teams has Polls, Power, ATS", segs.join(",") === "Polls,Power,ATS", segs.join(","));
+  check("Polls lists teams from all three polls", (await m.locator('#v-rankings [data-steam="Tulane"]').count()) === 1 && (await m.locator("#v-rankings .g-pol[data-steam]").count()) >= 26);
+  await m.click('[data-tsort="polls:rc"]'); await m.waitForTimeout(200);
+  check("sorting by r/CFB puts its #1 first", (await m.getAttribute("#v-rankings .g-pol[data-steam] >> nth=0", "data-steam")) === "Georgia");
   await m.click('[data-steam="Georgia"]'); await m.waitForTimeout(200);
-  const det = await m.textContent(".sdet");
-  check("team detail shows record, FCS game, and cover", det.includes("2-0") && det.includes("1 FCS game") && det.includes("Covered") && det.includes("no line"), det.slice(0, 200));
-  await m.click('[data-ssort="pag"]'); await m.waitForTimeout(200);
-  check("sorting by PA puts the best defense first", (await m.getAttribute("[data-steam] >> nth=0", "data-steam")) === "Georgia");
-  const swidth = await m.evaluate(() => document.documentElement.scrollWidth);
-  check("Stats view has no sideways scroll on a phone", swidth <= 390, String(swidth));
+  let det = await m.textContent(".sdet");
+  check("team card shows polls, record, FCS game, and cover", det.includes("r/CFB 1") && det.includes("2-0") && det.includes("1 FCS game") && det.includes("Covered") && det.includes("no line"), det.slice(0, 240));
+  let sw = await m.evaluate(() => document.documentElement.scrollWidth);
+  check("Polls has no sideways scroll on a phone", sw <= 390, String(sw));
+  await m.click('[data-rank="power"]'); await m.waitForTimeout(200);
+  check("Power opens on ratings", (await m.locator("#v-rankings .g-rat[data-steam]").count()) > 100);
+  await m.click('[data-pmode="scoring"]'); await m.waitForTimeout(200);
+  check("Power scoring lists FBS teams from the game log", (await m.locator("#v-rankings .g-sco[data-steam]").count()) === 4, String(await m.locator("#v-rankings .g-sco[data-steam]").count()));
+  await m.click('[data-tsort="scoring:pag"]'); await m.waitForTimeout(200);
+  check("sorting by PA puts the best defense first", (await m.getAttribute("#v-rankings .g-sco[data-steam] >> nth=0", "data-steam")) === "Georgia");
+  sw = await m.evaluate(() => document.documentElement.scrollWidth);
+  check("Power has no sideways scroll on a phone", sw <= 390, String(sw));
+  await m.click('[data-rank="ats"]'); await m.waitForTimeout(200);
+  const atsText = await m.textContent("#v-rankings");
+  check("ATS falls back to season records when many games lack a line", atsText.includes("Season records come from") && atsText.includes("33% of logged games"), atsText.slice(0, 300));
+  await pg.query("update kv set value = jsonb_set(value, '{games,3,l}', '-40') where key = 'teamGames'");
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#rankings")); await m.waitForTimeout(400);
+  await m.click('[data-rank="ats"]'); await m.waitForTimeout(400);
+  const atsRow = await m.textContent('#v-rankings .g-ats[data-steam="Georgia"]');
+  check("ATS uses the game log when every game has a line", (await m.textContent("#v-rankings")).includes("closing lines from ESPN") && atsRow.includes("2-0+1.3"), atsRow);
+  sw = await m.evaluate(() => document.documentElement.scrollWidth);
+  check("ATS has no sideways scroll on a phone", sw <= 390, String(sw));
   const width = await m.evaluate(() => document.documentElement.scrollWidth);
   check("no sideways scroll on a phone", width <= 390, String(width));
   await m.evaluate(() => (location.hash = "#profile")); await m.waitForTimeout(300);

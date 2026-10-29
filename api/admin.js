@@ -1,6 +1,7 @@
 // Commissioner actions. Every change is written to the public log.
 import bcrypt from "bcryptjs";
-import { q, one, addLog, setKv } from "../lib/db.js";
+import { q, one, addLog, setKv, getKv } from "../lib/db.js";
+import { parseRedditText } from "../lib/polls.js";
 import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../lib/http.js";
 import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings } from "../lib/league.js";
 import { runJob, dismissFlag, JOB_NAMES } from "../lib/auto.js";
@@ -179,6 +180,15 @@ export default async function handler(req, res) {
         if (b.snapshotWeek) await q("insert into snapshots (week_id, data) values ($1, $2::jsonb) on conflict (week_id) do update set data = excluded.data", [b.snapshotWeek, JSON.stringify(b.data)]);
         await addLog(BY, "Updated rankings", b.snapshotWeek ? `Saved a snapshot for ${b.snapshotWeek}` : "");
         return send(res, 200, { ok: true });
+      }
+      case "importRedditPoll": {
+        let rp;
+        try { rp = parseRedditText(b.text); } catch (e) { return fail(res, 400, "That did not look like the r/CFB poll table: " + e.message); }
+        const R = (await getKv("rankings", null)) || {};
+        R.reddit = { ...rp, asOf: rp.asOf || "pasted " + new Date().toLocaleDateString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric" }) };
+        await setKv("rankings", R);
+        await addLog(BY, "Updated rankings", `r/CFB poll ${R.reddit.asOf}, pasted`);
+        return send(res, 200, { ok: true, count: rp.teams.length, unknown: rp.unknown });
       }
       default:
         return fail(res, 400, "Unknown action.");

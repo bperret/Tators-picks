@@ -31,7 +31,7 @@ GitHub Actions (`.github/workflows/automation.yml`) calls `/api/cron` twice an h
 | Tue 1 p.m. to Fri | Build the coming Saturday's slate from ESPN as a draft | Build from ESPN, or Load a slate |
 | Wed 6 p.m. | Open picks, unless turned off or moved back to draft | Open picks |
 | After the lock | Pull scores hourly, mark the week final when every game is final or void | Pull scores now, Scores, Mark week final |
-| Every 6 hours | AP, CFP, and FPI from ESPN | Refresh rankings, Update rankings |
+| Every 6 hours | AP, CFP, and FPI from ESPN; the r/CFB poll from poll.redditcfb.com | Refresh rankings, Update rankings (accepts the r/CFB table copied from the site) |
 | Every hour | Save lines before kickoff, add finished games to team ATS records | Update ATS |
 | First run, then Sunday 9 a.m. | Fill the team game log for weeks 1 to now, then recheck the last two weeks | Fill game log |
 | Every hour until done | Add lines and totals to logged games that lack them, from ESPN's per-game odds feed (100 games a run). Stops itself if the feed has no old lines. | Fill lines |
