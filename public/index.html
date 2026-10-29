@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Tator's Picks</title>
+<meta name="theme-color" content="#1f5d34">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Graduate&family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: stadium night. Turf header band with yard lines, ref-stripe rule, ticket-style game cards with team colors, scoreboard standings. */
+:root{
+  --bg:#e9edf1; --card:#ffffff; --ink:#111a24; --muted:#56636f; --line:#cfd6dd; --chip:#dfe5eb;
+  --turf:#1f5d34; --turf2:#2a6f40; --chalk:#f4f6f2; --stripe-a:#111111; --stripe-b:#f4f4f4;
+  --flag:#ffd100; --flag-ink:#1b1600; --win:#1c7a45; --loss:#b3261e;
+  --board:#0b0f14; --board-line:#232c36; --board-ink:#f2c230; --board-dim:#8a7a3c;
+  --glow:rgba(255,255,255,0);
+  --display:"Graduate","Rockwell","Courier New",serif;
+  --cond:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070b10; --card:#111821; --ink:#e8edf2; --muted:#93a0ad; --line:#24303c; --chip:#1a2430;
+  --turf:#17482a; --turf2:#1e5633; --win:#4fc585; --loss:#ff7a70; --glow:rgba(190,215,255,.10); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070b10; --card:#111821; --ink:#e8edf2; --muted:#93a0ad; --line:#24303c; --chip:#1a2430;
+  --turf:#17482a; --turf2:#1e5633; --win:#4fc585; --loss:#ff7a70; --glow:rgba(190,215,255,.10); color-scheme:dark}
+body{background:radial-gradient(120% 60% at 50% -10%,var(--glow),transparent 60%) var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:660px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+.field{position:relative;border-radius:10px;overflow:hidden;color:var(--chalk);padding:18px 16px 16px;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(244,246,242,.55) calc(10% - 2px) 10%),repeating-linear-gradient(90deg,var(--turf) 0 10%,var(--turf2) 10% 20%)}
+.field::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:repeating-linear-gradient(90deg,rgba(244,246,242,.7) 0 2px,transparent 2px 2%)}
+.field-row{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.yard{font-family:var(--cond);font-weight:600;font-size:.8rem;letter-spacing:.2em;opacity:.85;text-transform:uppercase}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2rem,8vw,2.9rem);line-height:1;margin:4px 0 0;text-shadow:0 2px 0 rgba(0,0,0,.35);text-wrap:balance}
+.sub{font-family:var(--cond);font-size:1rem;letter-spacing:.03em;margin-top:6px;color:var(--chalk);opacity:.92}
+.badge{font-family:var(--cond);font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:4px;white-space:nowrap;color:var(--stripe-a);background:repeating-linear-gradient(90deg,var(--stripe-b) 0 7px,var(--stripe-b) 7px 7px);border:2px solid var(--stripe-a)}
+.badge.open{background:var(--flag);color:var(--flag-ink);border-color:var(--flag-ink)}
+.refrule{height:8px;margin:12px 0 0;border-radius:2px;background:repeating-linear-gradient(90deg,var(--stripe-a) 0 10px,var(--stripe-b) 10px 20px);box-shadow:0 0 0 1px var(--line)}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:2px;margin:6px 0 14px;padding-block:6px;overflow-x:auto}
+nav.tabs a{font-family:var(--cond);font-weight:700;font-size:1.1rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-decoration:none;padding:6px 12px;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs a[aria-current="page"]{color:var(--ink);border-image:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px) 1}
+nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
+.view{display:flex;flex-direction:column;gap:12px}
+.note{font-size:.88rem;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
+.panel h2{font-family:var(--cond);font-weight:700;font-size:1.35rem;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+.empty{padding:28px 14px;text-align:center;color:var(--muted)}
+.game{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.game.void{opacity:.55}
+.gmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--cond);font-size:.9rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.gmeta .slot{color:var(--ink);font-weight:700}
+.gmeta .tbtag{font:inherit;color:var(--board-ink);background:var(--board);border:0;border-radius:3px;padding:1px 7px;margin-left:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em}
+.sides{display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;align-items:stretch}
+.side{--tc:#555;--tc2:#999;--ti:#fff;position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;min-width:0;text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-left:6px solid var(--tc);border-radius:6px;padding:8px 8px 8px 8px;cursor:pointer}
+.mono{grid-row:1/3;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--tc);color:var(--ti);box-shadow:inset 0 0 0 3px var(--tc2);font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.02em;line-height:1}
+.side .tm{font-weight:600;line-height:1.15;overflow-wrap:anywhere;font-size:.95rem}
+.side .tm .emo{font-size:1.05em;white-space:nowrap}
+.side .tm .rk{font-family:var(--cond);font-size:.8rem;color:var(--muted);font-weight:600;margin-right:3px}
+.side .ln{font-family:var(--cond);font-weight:700;font-size:1.15rem;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.side[aria-pressed="true"]{background:var(--tc);border-color:var(--tc);color:var(--ti)}
+.side[aria-pressed="true"] .rk{color:inherit;opacity:.8}
+.side[aria-pressed="true"] .mono{background:var(--ti);color:var(--tc);box-shadow:inset 0 0 0 3px var(--tc2)}
+.side:disabled{cursor:default}
+.side .cv{position:absolute;top:-8px;right:6px;font-family:var(--cond);font-weight:700;font-size:.7rem;letter-spacing:.08em;background:var(--win);color:#fff;border-radius:3px;padding:1px 5px}
+.flagbtn{font:inherit;cursor:pointer;border-radius:6px;border:1px dashed var(--line);background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase}
+.flagbtn svg{width:22px;height:22px}
+.flagbtn .cloth{fill:var(--line)}
+.flagbtn[aria-pressed="true"]{border:1px solid var(--flag-ink);background:var(--flag);color:var(--flag-ink)}
+.flagbtn[aria-pressed="true"] .cloth{fill:var(--flag-ink)}
+.flagbtn:disabled{cursor:default}
+.res{font-family:var(--cond);font-size:.95rem;letter-spacing:.03em;display:flex;gap:10px;flex-wrap:wrap;color:var(--muted)}
+.res .w{color:var(--win);font-weight:700} .res .l{color:var(--loss);font-weight:700}
+.tb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.9rem}
+input[type=number],select,input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+input[type=number]{width:84px;font-family:var(--cond);font-size:1.05rem;font-weight:600}
+.btn{font:inherit;font-family:var(--cond);font-weight:700;font-size:1rem;letter-spacing:.05em;text-transform:uppercase;border-radius:6px;padding:8px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.danger{color:var(--loss)}
+.btn:disabled{opacity:.5;cursor:default}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.savebar{position:sticky;bottom:0;background:var(--bg);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));border-top:4px solid transparent;border-image:repeating-linear-gradient(90deg,var(--stripe-a) 0 8px,var(--stripe-b) 8px 16px) 4;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.board{background:var(--board);border:1px solid var(--board-line);border-radius:8px;padding:14px;color:var(--board-ink)}
+.board h2{font-family:var(--display);font-weight:400;font-size:1.3rem;margin:0 0 4px;color:var(--board-ink)}
+.board .note{color:var(--board-dim)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-family:var(--cond);font-size:1.02rem;letter-spacing:.02em}
+th,td{padding:7px 6px;border-bottom:1px solid var(--board-line);text-align:left;white-space:nowrap}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--board-dim);font-weight:600}
+td{color:var(--board-ink)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.num{text-shadow:0 0 6px rgba(242,194,48,.35)}
+tr.me td{background:rgba(242,194,48,.12)}
+tr.out td{color:var(--board-dim);text-decoration:line-through;text-shadow:none}
+.who{font-size:.82rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.who span{background:var(--chip);border-radius:3px;padding:1px 6px}
+.who span.lk{background:var(--flag);color:var(--flag-ink)}
+.rules{max-width:65ch} .rules li{margin-bottom:6px} .rules ul{margin:0 0 6px;padding-left:20px}
+.rh{font-family:var(--cond);font-weight:700;font-size:1.05rem;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 4px;color:var(--muted)}
+.swaplog{font-size:.85rem;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--flag);color:var(--flag-ink);font-family:var(--cond);font-weight:700;letter-spacing:.04em;padding:8px 14px;border-radius:6px;font-size:1rem;z-index:20;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.grid2{display:grid;grid-template-columns:1fr auto auto auto;gap:6px 8px;align-items:center;font-size:.9rem}
+.grid2 .t{min-width:0;overflow-wrap:anywhere}
+
+.countdown{font-family:var(--cond);font-weight:700;font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase;background:var(--board);color:var(--board-ink);border-radius:6px;padding:8px 12px;text-align:center;font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(242,194,48,.35)}
+.side .cv.live{background:var(--flag);color:var(--flag-ink)}
+.sig{width:18px;height:18px;vertical-align:-4px;margin-right:3px;fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.sig path{fill:none}
+.res .w,.res .l{display:inline-flex;align-items:center}
+.cbar{display:flex;height:22px;border-radius:4px;overflow:hidden;font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.04em}
+.cbar span{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;min-width:0}
+.who b{font-family:var(--cond);margin-right:2px}
+.who i{font-style:normal;opacity:.7}
+.wolf{font-family:var(--cond);font-weight:700;letter-spacing:.04em;font-size:.95rem;color:var(--win)}
+@keyframes flip{0%{transform:rotateX(90deg);opacity:.2}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:no-preference){.score.flip{display:inline-block;animation:flip .5s ease-out}}
+.ref .refitem{display:flex;flex-direction:column;gap:2px;padding-block:8px;border-top:1px solid var(--line)}
+.ref .reft{display:flex;align-items:center;gap:6px;font-family:var(--cond);font-size:1.05rem;letter-spacing:.04em;text-transform:uppercase}
+.ref .reft .note{text-transform:none;letter-spacing:0;font-family:var(--body);font-size:.85rem}
+.minif{width:12px;height:14px;background:var(--flag);border:1px solid var(--flag-ink);border-radius:1px 3px 3px 1px;display:inline-block;margin:0 4px 0 2px}
+.yd{height:6px;margin-top:4px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--board-line) 0 calc(10% - 1px),var(--board-dim) calc(10% - 1px) 10%);overflow:hidden;max-width:160px}
+.yd span{display:block;height:100%;background:linear-gradient(90deg,#1f5d34,#3b8f55)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.segb{font:inherit;font-family:var(--cond);font-weight:700;font-size:1rem;letter-spacing:.05em;text-transform:uppercase;padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer}
+.segb[aria-pressed="true"]{background:var(--stripe-b);color:var(--stripe-a);border:2px solid var(--stripe-a)}
+.rlist{display:flex;flex-direction:column}
+.rrow{display:grid;grid-template-columns:34px 32px 1fr auto 44px;gap:8px;align-items:center;padding-block:6px;border-bottom:1px solid var(--board-line);font-family:var(--cond);font-size:1.02rem}
+.rnum{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(242,194,48,.35)}
+.mono.sm{width:30px;height:30px;font-size:.66rem;grid-row:auto}
+.mono.sm[data-long]{font-size:.55rem}
+.rteam{min-width:0;overflow-wrap:anywhere;color:var(--board-ink)}
+.rrec{color:var(--board-dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rrec.ats{color:var(--board-ink);text-align:right}
+.mv{text-align:right;color:var(--board-dim);font-variant-numeric:tabular-nums}
+.mv.up{color:#4fc585}.mv.dn{color:#ff7a70}
+.bye{margin-left:6px;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--board-dim);color:var(--board-dim);border-radius:3px;padding:0 4px}
+.board-h{color:var(--board-dim)!important}
+.prow{display:grid;grid-template-columns:30px 32px 1fr 48px 40px 34px;gap:6px;align-items:center;padding-block:6px;border-bottom:1px solid var(--board-line);font-family:var(--cond);font-size:1rem;color:var(--board-ink)}
+.prow .num{text-align:right;font-variant-numeric:tabular-nums}
+.phead{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--board-dim)}
+.model{font-family:var(--cond);font-size:.92rem;letter-spacing:.02em;color:var(--muted);border-left:3px solid var(--flag);padding-left:8px}
+.botrow td{font-style:italic;color:#C9CED4!important;text-shadow:none!important}
+.botrow .pchip.bot{box-shadow:inset 0 0 0 2px #C9CED4,0 0 0 1px #9AA3AD}
+.pchip{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:.85rem;margin-right:6px;vertical-align:-4px}
+.pchip.bot{background:#111111;box-shadow:inset 0 0 0 2px #9AA3AD}
+.pchip.big{width:34px;height:34px;font-size:1.1rem;margin-right:8px;vertical-align:-7px}
+.surv select{width:100%;max-width:100%}
+.svrow{display:flex;justify-content:space-between;gap:8px;padding-block:5px;border-top:1px solid var(--line);flex-wrap:wrap}
+.svrow.out b{text-decoration:line-through;color:var(--muted)}
+.logl{display:flex;flex-direction:column}
+.logi{display:flex;flex-direction:column;gap:1px;padding-block:7px;border-top:1px solid var(--line)}
+.prow .rnum i{font-style:normal;font-size:.7rem;margin-left:2px}
+.prow .rnum i.up{color:#4fc585}.prow .rnum i.dn{color:#ff7a70}
+table.plain td{color:var(--ink)} table.plain th{color:var(--muted)} table.plain th,table.plain td{border-bottom:1px solid var(--line)}
+.warn{flex:1 1 100%;border:2px solid var(--flag);border-radius:8px;padding:10px 12px;background:var(--card);max-height:55vh;overflow:auto}
+.warn h2{font-family:var(--cond);font-weight:700;font-size:1.15rem;text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
+.warn ul{margin:0 0 8px;padding-left:20px}
+.warn li{margin-bottom:4px}
+.cks{display:flex;flex-wrap:wrap;gap:6px}
+.ck{font-family:var(--cond);font-weight:700;font-size:.85rem;letter-spacing:.04em;border-radius:4px;padding:2px 7px;white-space:nowrap}
+.ck.ok{background:var(--chip);color:var(--muted)}
+.ck.no{background:var(--flag);color:var(--flag-ink)}
+.svhead h2{margin-bottom:8px}
+.svstats{display:flex;gap:18px;flex-wrap:wrap}
+.svstats div{display:flex;flex-direction:column}
+.svstats b{font-family:var(--cond);font-size:2rem;line-height:1;color:var(--board-ink);font-variant-numeric:tabular-nums}
+.svstats span{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:.8rem;color:var(--board-dim)}
+.svwin{margin:10px 0 0;font-family:var(--cond);font-size:1.1rem;color:var(--board-ink)}
+.svbars{display:flex;gap:10px;align-items:flex-end;overflow-x:auto;padding-top:6px}
+.svbar{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:34px}
+.svb{width:22px;border-radius:3px 3px 0 0;background:var(--win)}
+.svn{font-family:var(--cond);font-weight:700;font-variant-numeric:tabular-nums}
+table.svtab{font-family:var(--body);font-size:.85rem}
+table.svtab th{color:var(--muted);border-bottom:1px solid var(--line)}
+table.svtab td{color:var(--ink);border-bottom:1px solid var(--line);vertical-align:top;padding:6px 5px}
+table.svtab tr.svout .svp{color:var(--muted);text-decoration:line-through}
+table.svtab tr.me td{background:transparent}
+table.svtab tr.me .svp{font-weight:700}
+.svp{white-space:nowrap;position:sticky;left:0;background:var(--card);z-index:1}
+table.svtab th:first-child{position:sticky;left:0;background:var(--card);z-index:1}
+.svc .svt{display:block;font-family:var(--cond);font-weight:700;font-size:.9rem;padding-left:5px;white-space:nowrap}
+.svc .svl{display:block;font-size:.72rem;color:var(--muted);padding-left:5px;white-space:nowrap}
+td.svc.win{background:color-mix(in srgb,var(--win) 16%,transparent)}
+td.svc.loss{background:color-mix(in srgb,var(--loss) 18%,transparent)}
+td.svc.pending{background:color-mix(in srgb,var(--flag) 18%,transparent)}
+td.svc.void{background:var(--chip)}
+td.svc.gone{background:repeating-linear-gradient(135deg,transparent 0 5px,var(--line) 5px 6px)}
+td.svc.next{border:1px dashed var(--line)}
+.svs{font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;border-radius:4px;padding:2px 6px;white-space:nowrap}
+.svs.alive{background:var(--win);color:#fff}
+.svs.out{background:var(--chip);color:var(--muted)}
+.svkey{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.svkey .svc{border-radius:4px;padding:2px 4px}
+.svkey .svc.win{background:color-mix(in srgb,var(--win) 16%,transparent)}
+.svkey .svc.loss{background:color-mix(in srgb,var(--loss) 18%,transparent)}
+.svkey .svc.pending{background:color-mix(in srgb,var(--flag) 18%,transparent)}
+.svkey .svc.void{background:var(--chip)}
+.tbgame{box-shadow:inset 0 0 0 2px var(--board)}
+.tbpanel{display:flex;flex-direction:column;gap:6px}
+.tbtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.tbpanel h2{margin:0}
+.tblink{color:var(--board-ink)!important}
+.tbq{margin:0;color:var(--board-ink)}
+.tbrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tbrow .note{flex:1 1 160px;color:var(--board-dim)}
+#tbInput{width:110px;font-family:var(--display);font-size:2.2rem;text-align:center;padding:6px 8px;background:#000;color:var(--board-ink);border:2px solid var(--board-dim);border-radius:6px;text-shadow:0 0 8px rgba(242,194,48,.45)}
+#tbInput:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
+.conflict{margin-top:8px;border-left:4px solid var(--loss);background:color-mix(in srgb,var(--loss) 12%,transparent);padding:6px 10px;border-radius:4px;font-size:.9rem}
+.flash{animation:flash 1.2s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 4px var(--flag)}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none}}
+[hidden]{display:none!important}
+.auth{display:flex;flex-direction:column;gap:12px;max-width:460px;margin:0 auto}
+.authfield{padding-block:22px}
+.authcard{display:flex;flex-direction:column;gap:6px}
+.authcard label{font-family:var(--cond);font-weight:700;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase;margin-top:6px}
+.authcard input,.authcard select,#v-profile input,#v-profile select{font:inherit;font-size:1.05rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%;box-sizing:border-box}
+#v-profile label{display:block;font-family:var(--cond);font-weight:700;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase;margin:8px 0 4px}
+#v-profile .bar{margin-top:10px}
+.authcard .btn{margin-top:10px;padding:12px}
+.autherr{margin:6px 0 0;color:var(--loss);font-weight:600}
+.linkbtn{font:inherit;background:none;border:0;color:var(--ink);text-decoration:underline;cursor:pointer;padding:0;font-weight:400}
+.pinopt summary{cursor:pointer;margin-top:8px;color:var(--muted)}
+.demohint{border-style:dashed}
+.hintrow{display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;align-items:center;padding-block:4px;font-variant-numeric:tabular-nums}
+.hintrow b{font-family:var(--cond);font-size:1.05rem;letter-spacing:.03em}
+@media (max-width:420px){.hintrow{grid-template-columns:1fr 1fr}.hintrow span{grid-column:1/-1}}
+.scen{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.pchip{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:.85rem;margin-right:6px;vertical-align:-4px}
+.pchip.bot{background:#111111;box-shadow:inset 0 0 0 2px #9AA3AD}
+.talk{margin:0 0 8px;color:var(--muted);font-style:italic}
+.pchip.big{width:34px;height:34px;font-size:1.1rem;margin-right:8px;vertical-align:-7px}
+.ptag{display:inline-block;border-radius:4px;padding:1px 7px 3px;font-size:.82rem;font-weight:600}
+.who .ptag{background:var(--chip)}
+.ptag.lk{outline:2px solid var(--flag);outline-offset:1px}
+.lookf{border:0;padding:0;margin:10px 0 0;min-width:0}
+.lookf legend{font-family:var(--cond);font-weight:700;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase;padding:0;margin-bottom:6px}
+.emgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px}
+.emb{font-size:1.35rem;height:42px;border-radius:8px;border:1px solid var(--line);background:var(--bg);cursor:pointer;padding:0}
+.emb[aria-pressed="true"]{border:2px solid var(--ink);background:var(--chip)}
+.emb:disabled{opacity:.3;cursor:not-allowed}
+.swgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:6px}
+.swb{height:36px;border-radius:50%;border:1px solid var(--line);cursor:pointer;padding:0}
+.swb[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px}
+.lookprev{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding:10px;border:1px dashed var(--line);border-radius:8px}
+.phist summary{cursor:pointer;font-family:var(--cond);font-weight:700;letter-spacing:.04em}
+.lglist{display:flex;flex-direction:column}
+.lgrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding-block:8px;border-top:1px solid var(--line)}
+.lgrow .t .pill{align-self:flex-start;margin-top:3px}
+.btn.sm{padding:6px 10px;font-size:.88rem}
+.lgrow .t{display:flex;flex-direction:column;min-width:0}
+
+.pill{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;border-radius:4px;padding:2px 8px;background:var(--chip);color:var(--ink);white-space:nowrap}
+.pill.wait{background:var(--flag);color:var(--flag-ink)}
+.pill.bad{background:var(--loss);color:#fff}
+.pinbox{border:2px solid var(--flag);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.pinbox p{margin:0}
+.bigpin{font-family:var(--cond);font-size:2rem;letter-spacing:.2em;font-variant-numeric:tabular-nums}
+.addp{margin-top:10px}
+.addp input{flex:1 1 140px;min-width:0}
+
+.addp input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.side .tm{overflow-wrap:normal;word-break:normal;hyphens:none}
+.side .tm .rk{display:block;margin:0 0 1px}
+@media (max-width:420px){.side{padding:7px 6px;column-gap:6px}.side .tm{font-size:.86rem}.side .ln{font-size:1.02rem}}
+
+.emmore{margin-top:8px}
+.emmore summary{cursor:pointer;font-family:var(--cond);font-weight:700;letter-spacing:.04em;padding-block:6px}
+.emh{font-family:var(--cond);font-weight:700;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+.emtype{margin-top:10px}
+.emtype label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:400}
+.emtype input{width:5em!important;flex:0 0 auto;text-align:center;font-size:1.3rem!important}
+
+textarea{font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;width:100%;box-sizing:border-box}
+.lgbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+
+.trophies{display:flex;flex-wrap:wrap;gap:8px}
+.tro{display:flex;align-items:center;gap:6px;background:var(--chip);border-radius:6px;padding:6px 10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.stats>div{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.stats b{font-family:var(--cond);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.teamrec{display:flex;flex-wrap:wrap;gap:6px}
+.tchip{font-family:var(--cond);font-size:.95rem;background:var(--bg);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:4px;padding:3px 8px}
+.h2h{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:.95rem}
+.h2h b{font-family:var(--cond);font-variant-numeric:tabular-nums}
+svg.trend{width:100%;min-width:280px;height:auto}
+svg.trend .ax{font-family:var(--cond);font-size:10px;fill:var(--muted)}
+svg.trend .gl{stroke:var(--line);stroke-width:1}
+svg.trend .ln2{fill:none;stroke:var(--muted);stroke-width:1.5;opacity:.45}
+svg.trend .ln1{fill:none;stroke:var(--flag);stroke-width:3}
+svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
+@media (max-width:420px){.sides{grid-template-columns:1fr 1fr 50px}.mono{width:32px;height:32px;font-size:.7rem}}
+@media (prefers-reduced-motion:no-preference){.side,.flagbtn{transition:background .12s,border-color .12s,color .12s}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <section id="auth" class="auth">
+    <div class="field authfield"><div class="yard">College football against the spread</div><h1>Tator's Picks</h1></div>
+    <div class="refrule" aria-hidden="true"></div>
+    <form id="firstForm" class="panel authcard" novalidate hidden>
+      <h2>Set up the league</h2>
+      <p class="note">This runs once. Enter the setup code from your Vercel settings and your own cell number. You become the commissioner.</p>
+      <label for="fsCode">Setup code</label><input id="fsCode" type="text" autocomplete="off">
+      <label for="fsPhone">Your cell number</label><input id="fsPhone" type="tel" inputmode="tel" autocomplete="tel">
+      <label for="fsPin1">Choose a 6 digit PIN</label><input id="fsPin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
+      <label for="fsPin2">PIN again</label><input id="fsPin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
+      <p class="autherr" id="firstErr" role="alert" hidden></p>
+      <button class="btn primary" type="submit">Create the league</button>
+    </form>
+    <form id="loginForm" class="panel authcard" novalidate hidden>
+      <h2>Log in</h2>
+      <label for="loginPhone">Cell number</label>
+      <input id="loginPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 555-5555">
+      <label for="loginPin">PIN</label>
+      <input id="loginPin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 digits">
+      <p class="autherr" id="loginErr" role="alert" hidden></p>
+      <button class="btn primary" type="submit" id="loginBtn">Log in</button>
+      <p class="note">Forgot your PIN? Text the commissioner. Only the commissioner can reset it.</p>
+    </form>
+    <form id="setupForm" class="panel authcard" novalidate hidden>
+      <h2>Set up your profile</h2>
+      <p class="note">This is how the league sees you. You can change it any time.</p>
+      <label for="setupName">Display name</label>
+      <input id="setupName" type="text" maxlength="24" placeholder="Big Tony">
+      <div id="setupLook"></div>
+      <details class="pinopt"><summary>Change your PIN now (optional)</summary>
+        <label for="setupPin1">New PIN</label><input id="setupPin1" type="password" inputmode="numeric" maxlength="6" placeholder="6 digits" autocomplete="new-password">
+        <label for="setupPin2">New PIN again</label><input id="setupPin2" type="password" inputmode="numeric" maxlength="6" placeholder="6 digits" autocomplete="new-password">
+      </details>
+      <p class="autherr" id="setupErr" role="alert" hidden></p>
+      <button class="btn primary" type="submit">Save and continue</button>
+    </form>
+  </section>
+  <div id="app" hidden>
+  <header class="field">
+    <div class="field-row">
+      <div>
+        <div class="yard">College football against the spread</div>
+        <h1 id="lgName">Tator's Picks</h1>
+        <div class="sub" id="weekLine">Loading this week's slate…</div>
+      </div>
+      <span class="badge" id="statusBadge">Loading</span>
+    </div>
+  </header>
+  <div class="refrule" aria-hidden="true"></div>
+  <nav class="tabs" aria-label="Sections">
+    <a href="#picks" data-v="picks">Picks</a>
+    <a href="#standings" data-v="standings">Standings</a>
+    <a href="#rankings" data-v="rankings">Rankings</a>
+    <a href="#players" data-v="players">Players</a>
+    <a href="#survivor" data-v="survivor">Survivor</a>
+    <a href="#rules" data-v="rules">Rules</a>
+    <a href="#profile" data-v="profile">Profile</a>
+    <a href="#commish" data-v="commish" id="commishTab" hidden>Commissioner</a>
+  </nav>
+
+  <section class="view" id="v-picks"></section>
+  <section class="view" id="v-standings" hidden></section>
+  <section class="view" id="v-rankings" hidden></section>
+  <section class="view" id="v-players" hidden></section>
+  <section class="view" id="v-survivor" hidden></section>
+  <section class="view" id="v-rules" hidden>
+    <div class="panel rules">
+      <h2>Rules</h2>
+      <h3 class="rh">The slate</h3>
+      <ul>
+        <li>Each week has 10 Saturday games that kick off at 11 a.m. Central or later. Slots 1 to 5 are the top games by AP rank. A game between two ranked teams comes first.</li>
+        <li>Slots 6 to 10 are the five closest spreads among the other games with a ranked team. On a tie, the better ranked team wins the slot.</li>
+        <li>The commissioner may swap any game before picks open. Each swap shows on the slate. The slate does not change after picks open.</li>
+      </ul>
+      <h3 class="rh">The lines</h3>
+      <ul>
+        <li>Lines come from DraftKings, as ESPN shows them when the slate posts. They do not move after that.</li>
+        <li>Every line is a half point, so no game can push. When the posted line is a whole number, the underdog gets the extra half point.</li>
+      </ul>
+      <h3 class="rh">Your picks</h3>
+      <ul>
+        <li>Pick a side in each game against the spread. A correct pick is 1 point. A wrong or missed pick is 0.</li>
+        <li>Throw your yellow flag on one game you picked. If that pick is correct, it scores 3 points instead of 1.</li>
+        <li>Guess the total points in the tiebreaker game, slot 1. No guess counts as a guess of 0.</li>
+        <li>All picks lock Saturday at 10:15 a.m. Central, before the first kickoff. After the lock, the site refuses every save. The site checks its own clock, not your phone's.</li>
+        <li>Every save goes into your pick history with the time. After the lock, everyone can see everyone's picks and history.</li>
+        <li>Nobody sees other picks until the lock.</li>
+      </ul>
+      <h3 class="rh">Scoring</h3>
+      <ul>
+        <li>A postponed or cancelled game is void and scores for nobody. A flag on a void game earns nothing.</li>
+        <li>If slot 1 is void, slot 2 becomes the tiebreaker game.</li>
+        <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. The weekly title is for bragging rights only.</li>
+        <li>Season: most total points, then most flag wins, then the smallest total of tiebreaker misses. Test weeks do not count.</li>
+        <li>Bowl games are a separate contest.</li>
+      </ul>
+      <h3 class="rh">Logins</h3>
+      <ul>
+        <li>You log in with your cell number and a PIN. The commissioner gives you your first PIN.</li>
+        <li>You can change your PIN on your Profile after you log in. Only the commissioner can reset a forgotten PIN.</li>
+        <li>After 10 wrong PINs in a row, that number pauses for 15 minutes. Text the commissioner if you need in sooner.</li>
+        <li>Your cell number is never shown to other players.</li>
+      </ul>
+      <h3 class="rh">Robo-Sharp</h3>
+      <ul>
+        <li>Robo-Sharp is a computer player. Each week it takes the side the model line favors against the betting line in every game, and throws its flag on the game with the biggest gap. The model line is VSiN's projected spread.</li>
+        <li>Robo-Sharp shows in the standings so you can see who beats the computer. It holds no rank and cannot win a week, the season, or money.</li>
+      </ul>
+      <h3 class="rh">Survivor</h3>
+      <ul>
+        <li>Each week, also pick one team from the slate against the spread. If it covers, you stay alive. If it does not, you are out.</li>
+        <li>You cannot pick the same team twice. A void game keeps you alive. A missed survivor pick puts you out.</li>
+        <li>Survivor picks lock and reveal with your regular picks. The last player alive wins. If the final players go out in the same week, they share it.</li>
+        <li>The Survivor tab shows every player's pick each week, who is still alive, and which teams you have left.</li>
+      </ul>
+      <h3 class="rh">Money and players</h3>
+      <ul>
+        <li>Buy ins and payouts happen outside this page.</li>
+        <li>The commissioner removes any player who has not paid. A removed player cannot pick and shows greyed out in the standings.</li>
+      </ul>
+      <p class="note">Full disclosure: the commissioner runs the site and could read the database before the lock. The site never shows picks to anyone before the lock.</p>
+    </div>
+    <div class="panel" id="logPanel"></div>
+  </section>
+  <section class="view" id="v-profile" hidden></section>
+  <section class="view" id="v-commish" hidden></section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const state={db:null,user:null,uid:null,isOwner:false,canWrite:null,config:null,weeks:{},reveals:{},roster:[],myPicks:null,allPicks:null,names:{},draft:null,dirty:false,view:"picks",rankings:null,rankView:"ap",profile:null,incTest:null,seenScores:{},log:[],history:{}};
+const TZ="America/Chicago";
+const TEAMS={"Alabama":["BAMA","#9E1B32","#FFFFFF","🐘"],"Arkansas":["ARK","#9D2235","#FFFFFF","🐗"],"Auburn":["AUB","#0C2340","#E87722","🦅"],"Florida":["UF","#0021A5","#FA4616","🐊"],"Georgia":["UGA","#BA0C2F","#000000","🐶"],"Kentucky":["UK","#0033A0","#FFFFFF","🐱"],"LSU":["LSU","#461D7C","#FDD023","🐯"],"Mississippi State":["MSST","#660000","#FFFFFF","🔔"],"Missouri":["MIZ","#F1B82D","#000000","🏛️"],"Oklahoma":["OU","#841617","#FDF9D8","🛞"],"Ole Miss":["MISS","#CE1126","#14213D","🦈"],"South Carolina":["USCe","#73000A","#000000","🐓"],"Tennessee":["TENN","#FF8200","#FFFFFF","🚤"],"Texas":["TEX","#BF5700","#FFFFFF","🤘"],"Texas A&M":["A&M","#500000","#FFFFFF","👍"],"Vanderbilt":["VANDY","#000000","#CFAE70","⛵"],"Illinois":["ILL","#E84A27","#13294B","🔶"],"Indiana":["IU","#990000","#EEEDEB","🏀"],"Iowa":["IOWA","#FFCD00","#000000","👋"],"Maryland":["UMD","#E03A3E","#FFD520","🦀"],"Michigan":["MICH","#00274C","#FFCB05","〽️"],"Michigan State":["MSU","#18453B","#FFFFFF","🛡️"],"Minnesota":["MINN","#7A0019","#FFCC33","🐿️"],"Nebraska":["NEB","#E41C38","#FFFFFF","🌽"],"Northwestern":["NU","#4E2A84","#FFFFFF","😼"],"Ohio State":["tOSU","#BB0000","#666666","🌰"],"Oregon":["ORE","#154733","#FEE123","🦆"],"Penn State":["PSU","#041E42","#FFFFFF","🦁"],"Purdue":["PUR","#CEB888","#000000","🚂"],"Rutgers":["RU","#CC0033","#5F6A72","🍅"],"UCLA":["UCLA","#2D68C4","#F2A900","🎬"],"USC":["USCw","#990000","#FFC72C","⚔️"],"Washington":["UW","#4B2E83","#B7A57A","☔"],"Wisconsin":["WIS","#C5050C","#FFFFFF","🧀"],"Boston College":["BC","#8A100B","#BC9B6A","🦞"],"California":["CAL","#003262","#FDB515","🌉"],"Clemson":["CLEM","#F56600","#522D80","🐾"],"Duke":["DUKE","#003087","#FFFFFF","😈"],"Florida State":["FSU","#782F40","#CEB888","🔥"],"Georgia Tech":["GT","#B3A369","#003057","🐝"],"Louisville":["UofL","#AD0000","#000000","🏇"],"Miami":["MIA","#F47321","#005030","🦩"],"NC State":["NCSU","#CC0000","#000000","🐺"],"North Carolina":["UNC","#7BAFD4","#13294B","🐏"],"Pittsburgh":["PITT","#003594","#FFB81C","🐆"],"SMU":["SMU","#0033A0","#C8102E","🐎"],"Stanford":["STAN","#8C1515","#FFFFFF","🌲"],"Syracuse":["CUSE","#F76900","#002D72","🍊"],"Virginia":["UVA","#232D4B","#F84C1E","🐟"],"Virginia Tech":["VT","#630031","#CF4420","🦃"],"Wake Forest":["WAKE","#9E7E38","#000000","🎩"],"Arizona":["ARIZ","#CC0033","#003366","🌵"],"Arizona State":["ASU","#8C1D40","#FFC627","☀️"],"Baylor":["BU","#154734","#FFB81C","🥤"],"BYU":["BYU","#002E5D","#FFFFFF","🍦"],"Cincinnati":["UC","#E00122","#000000","🐻"],"Colorado":["CU","#CFB87C","#000000","🦬"],"Houston":["UH","#C8102E","#FFFFFF","🛢️"],"Iowa State":["ISU","#C8102E","#F1BE48","🌪️"],"Kansas":["KU","#0051BA","#E8000D","🐦"],"Kansas State":["KSU","#512888","#FFFFFF","🌾"],"Oklahoma State":["OKST","#FF7300","#000000","🤠"],"TCU":["TCU","#4D1979","#A3A9AC","🐸"],"Texas Tech":["TTU","#CC0000","#000000","🏜️"],"UCF":["UCF","#000000","#BA9B37","🏰"],"Utah":["UTAH","#CC0000","#FFFFFF","🏔️"],"West Virginia":["WVU","#002855","#EAAA00","⛏️"],"Notre Dame":["ND","#0C2340","#C99700","☘️"],"UConn":["UCONN","#000E2F","#E4002B","🐕"],"Oregon State":["ORST","#DC4405","#000000","🦫"],"Washington State":["WSU","#981E32","#5E6A71","🍎"],"Boise State":["BSU","#0033A0","#D64309","🥔"],"Colorado State":["CSU","#1E4D2B","#C8C372","🐑"],"Fresno State":["FRES","#DB0032","#002E6D","🍇"],"San Diego State":["SDSU","#A6192E","#000000","🏖️"],"Utah State":["USU","#0F2439","#8A8D8F","🐮"],"Texas State":["TXST","#501214","#8D734A","🛟"],"Air Force":["AFA","#003087","#8A8D8F","✈️"],"Hawai'i":["HAW","#024731","#FFFFFF","🌈"],"Nevada":["NEV","#003366","#807F84","🎰"],"New Mexico":["UNM","#BA0C2F","#63666A","🎈"],"San José State":["SJSU","#0055A2","#E5A823","💻"],"UNLV":["UNLV","#CF0A2C","#666666","🎲"],"Wyoming":["WYO","#492F24","#FFC425","🐂"],"UTEP":["UTEP","#041E42","#FF8200","🌄"],"Northern Illinois":["NIU","#BA0C2F","#000000","❄️"],"North Dakota State":["NDSU","#0A5640","#FFC82E","🏆"],"Army":["ARMY","#000000","#D3BC8D","🪖"],"Charlotte":["CLT","#046A38","#B9975B","🏎️"],"East Carolina":["ECU","#592A8A","#FDC82F","🏴‍☠️"],"Florida Atlantic":["FAU","#003366","#CC0000","🌅"],"Memphis":["MEM","#003087","#898D8D","🍖"],"Navy":["NAVY","#00205B","#C5B783","⚓"],"North Texas":["UNT","#00853E","#000000","💚"],"Rice":["RICE","#00205B","#7C7E7F","🍚"],"South Florida":["USF","#006747","#CFC493","🌩️"],"Temple":["TEM","#9D2235","#FFFFFF","🦉"],"Tulane":["TUL","#006747","#41B6E6","🌊"],"Tulsa":["TU","#002D72","#C5B783","🌀"],"UAB":["UAB","#1E6B52","#FFC845","🐉"],"UTSA":["UTSA","#0C2340","#F15A22","🏃"],"App State":["APP","#000000","#FFCC00","🎻"],"Arkansas State":["ARST","#CC092F","#000000","🦊"],"Coastal Carolina":["CCU","#006F71","#A27752","🏄"],"Georgia Southern":["GASO","#041E42","#A3AAAE","🔱"],"Georgia State":["GSU","#0039A6","#C60C30","🍑"],"James Madison":["JMU","#450084","#CBB677","📜"],"Louisiana":["ULL","#CE181E","#000000","🎷"],"UL Monroe":["ULM","#840029","#BA9B37","🛩️"],"Marshall":["MU","#00B140","#000000","🐃"],"Old Dominion":["ODU","#003057","#7C878E","👑"],"South Alabama":["USA","#00205B","#BF0D3E","🎭"],"Southern Miss":["USM","#000000","#FFAB00","🥇"],"Troy":["TROY","#8A2432","#B3B5B8","🐴"],"Louisiana Tech":["LT","#002F8B","#E31B23","🔧"],"Akron":["AKR","#041E42","#A89968","🦘"],"Ball State":["BALL","#BA0C2F","#FFFFFF","🫙"],"Bowling Green":["BGSU","#FE5000","#4F2C1D","🎳"],"Buffalo":["UB","#005BBB","#FFFFFF","🍗"],"Central Michigan":["CMU","#6A0032","#FFC82E","🍁"],"Eastern Michigan":["EMU","#006633","#FFFFFF","🛸"],"Kent State":["KENT","#002664","#EAAB00","⚡"],"Miami (OH)":["MIOH","#C3142D","#000000","🧢"],"Ohio":["OHIO","#00694E","#FFFFFF","🧱"],"Toledo":["TOL","#15397F","#FFDA00","🚀"],"Western Michigan":["WMU","#6C4023","#B5A167","🍒"],"UMass":["UMASS","#881C1C","#000000","🍂"],"Sacramento State":["SAC","#043927","#C4B581","🪲"],"FIU":["FIU","#081E3F","#B6862C","🏝️"],"Jacksonville State":["JSU","#CC0000","#FFFFFF","🥊"],"Kennesaw State":["KENN","#FDBB30","#000000","⛰️"],"Liberty":["LIB","#002D62","#C41230","🗽"],"Middle Tennessee":["MTSU","#0066CC","#FFFFFF","🔷"],"New Mexico State":["NMSU","#861F41","#FFFFFF","🌶️"],"Sam Houston":["SHSU","#F76902","#002B49","⭐"],"Western Kentucky":["WKU","#C60C30","#FFFFFF","🧣"],"Delaware":["UD","#00539F","#FFD200","🐔"],"Missouri State":["MOST","#5E0009","#FFFFFF","🎣"]};
+const ALIAS={"alabama":"Alabama","arkansas":"Arkansas","auburn":"Auburn","florida":"Florida","georgia":"Georgia","kentucky":"Kentucky","lsu":"LSU","louisianastate":"LSU","mississippistate":"Mississippi State","missstate":"Mississippi State","missouri":"Missouri","mizzou":"Missouri","oklahoma":"Oklahoma","olemiss":"Ole Miss","mississippi":"Ole Miss","southcarolina":"South Carolina","tennessee":"Tennessee","texas":"Texas","texasaandm":"Texas A&M","texasam":"Texas A&M","vanderbilt":"Vanderbilt","vandy":"Vanderbilt","illinois":"Illinois","indiana":"Indiana","iowa":"Iowa","maryland":"Maryland","michigan":"Michigan","michiganstate":"Michigan State","minnesota":"Minnesota","nebraska":"Nebraska","northwestern":"Northwestern","ohiostate":"Ohio State","oregon":"Oregon","pennstate":"Penn State","purdue":"Purdue","rutgers":"Rutgers","ucla":"UCLA","usc":"USC","southerncalifornia":"USC","washington":"Washington","wisconsin":"Wisconsin","bostoncollege":"Boston College","california":"California","cal":"California","clemson":"Clemson","duke":"Duke","floridastate":"Florida State","georgiatech":"Georgia Tech","louisville":"Louisville","miami":"Miami","miamifl":"Miami","miamiflorida":"Miami","ncstate":"NC State","northcarolinastate":"NC State","northcarolina":"North Carolina","pittsburgh":"Pittsburgh","pitt":"Pittsburgh","smu":"SMU","southernmethodist":"SMU","stanford":"Stanford","syracuse":"Syracuse","virginia":"Virginia","virginiatech":"Virginia Tech","wakeforest":"Wake Forest","arizona":"Arizona","arizonastate":"Arizona State","baylor":"Baylor","byu":"BYU","brighamyoung":"BYU","cincinnati":"Cincinnati","colorado":"Colorado","houston":"Houston","iowastate":"Iowa State","kansas":"Kansas","kansasstate":"Kansas State","kstate":"Kansas State","oklahomastate":"Oklahoma State","tcu":"TCU","texaschristian":"TCU","texastech":"Texas Tech","ucf":"UCF","centralflorida":"UCF","utah":"Utah","westvirginia":"West Virginia","notredame":"Notre Dame","uconn":"UConn","connecticut":"UConn","oregonstate":"Oregon State","washingtonstate":"Washington State","boisestate":"Boise State","coloradostate":"Colorado State","fresnostate":"Fresno State","sandiegostate":"San Diego State","utahstate":"Utah State","texasstate":"Texas State","airforce":"Air Force","hawaii":"Hawai'i","nevada":"Nevada","newmexico":"New Mexico","sanjosstate":"San José State","sanjosestate":"San José State","unlv":"UNLV","wyoming":"Wyoming","utep":"UTEP","northernillinois":"Northern Illinois","northdakotastate":"North Dakota State","army":"Army","charlotte":"Charlotte","eastcarolina":"East Carolina","floridaatlantic":"Florida Atlantic","fau":"Florida Atlantic","memphis":"Memphis","navy":"Navy","northtexas":"North Texas","rice":"Rice","southflorida":"South Florida","usf":"South Florida","temple":"Temple","tulane":"Tulane","tulsa":"Tulsa","uab":"UAB","utsa":"UTSA","appstate":"App State","appalachianstate":"App State","arkansasstate":"Arkansas State","coastalcarolina":"Coastal Carolina","georgiasouthern":"Georgia Southern","georgiastate":"Georgia State","jamesmadison":"James Madison","louisiana":"Louisiana","louisianalafayette":"Louisiana","ullafayette":"Louisiana","ulmonroe":"UL Monroe","louisianamonroe":"UL Monroe","ulm":"UL Monroe","marshall":"Marshall","olddominion":"Old Dominion","southalabama":"South Alabama","southernmiss":"Southern Miss","southernmississippi":"Southern Miss","troy":"Troy","louisianatech":"Louisiana Tech","akron":"Akron","ballstate":"Ball State","bowlinggreen":"Bowling Green","buffalo":"Buffalo","centralmichigan":"Central Michigan","easternmichigan":"Eastern Michigan","kentstate":"Kent State","miamioh":"Miami (OH)","miamiohio":"Miami (OH)","ohio":"Ohio","toledo":"Toledo","westernmichigan":"Western Michigan","umass":"UMass","massachusetts":"UMass","sacramentostate":"Sacramento State","sacstate":"Sacramento State","fiu":"FIU","floridainternational":"FIU","jacksonvillestate":"Jacksonville State","jaxstate":"Jacksonville State","kennesawstate":"Kennesaw State","liberty":"Liberty","middletennessee":"Middle Tennessee","middletennesseestate":"Middle Tennessee","newmexicostate":"New Mexico State","samhouston":"Sam Houston","samhoustonstate":"Sam Houston","westernkentucky":"Western Kentucky","delaware":"Delaware","missouristate":"Missouri State"};
+function teamLook(name,g,side){const key=ALIAS[String(name).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"")];const t=TEAMS[key]||TEAMS[name];const ov=(state.config&&state.config.teamOverrides&&state.config.teamOverrides[key||name])||{};const abbr=ov.abbr||(g&&g[side+"Abbr"])||(t&&t[0])||String(name).replace(/[^A-Za-z ]/g,"").split(" ").map(w=>w[0]).join("").slice(0,4).toUpperCase();const c1=(g&&g[side+"Color"])||(t&&t[1])||"#5b6672";const c2=(g&&g[side+"Color2"])||(t&&t[2])||"#c9ced4";const emoji=ov.emoji||(g&&g[side+"Emoji"])||(t&&t[3])||"";
+  const hex=c1.replace("#","");const r=parseInt(hex.slice(0,2),16),gg=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);const lum=(0.299*r+0.587*gg+0.114*b)/255;return {abbr,c1,c2,emoji,ink:lum>0.62?"#111111":"#ffffff"}}
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
+const fmtLine=n=>n===0?"PK":(n>0?"+":"−")+Math.abs(n);
+function kick(iso){try{return new Date(iso).toLocaleString("en-US",{timeZone:TZ,weekday:"short",hour:"numeric",minute:"2-digit"})+" CT"}catch(e){return iso}}
+
+/* ---------- scoring ---------- */
+function coverSide(g,r){if(!r||!r.final||r.void)return null;const adj=(r.home-r.away)+g.homeLine;return adj>0?"home":"away"}
+function tbGame(w){const gs=w.games||[];const rs=w.results||{};const g1=gs.find(g=>g.slot===1),g2=gs.find(g=>g.slot===2);if(g1&&!(rs[g1.id]&&rs[g1.id].void))return g1;return g2||g1}
+function scoreWeek(w,p){
+  const out={pts:0,w:0,l:0,lw:0,ll:0,tbMiss:null,graded:0};
+  if(!w||!p)return out;
+  const rs=w.results||{};
+  for(const g of w.games||[]){const c=coverSide(g,rs[g.id]);if(!c)continue;out.graded++;const pick=(p.sel||{})[g.id];const isLock=p.lock===g.id;
+    if(pick&&pick===c){out.w++;out.pts+=isLock?3:1;if(isLock)out.lw++}else if(pick){out.l++;if(isLock)out.ll++}}
+  const tg=tbGame(w);const tr=tg&&rs[tg.id];
+  if(tr&&tr.final&&!tr.void)out.tbMiss=Math.abs((typeof p.tb==="number"?p.tb:0)-(tr.home+tr.away));
+  return out;
+}
+
+/* ---------- data ---------- */
+function currentWeekId(){return state.config&&state.config.currentWeek}
+function curWeek(){return state.weeks[currentWeekId()]||null}
+function removed(){return (state.config&&state.config.removed)||[]}
+async function resolveNames(ids){
+  const need=ids.filter(i=>i&&!(i in state.names));if(!need.length||!state.user)return;
+  need.forEach(i=>state.names[i]=null);
+  try{const ps=await state.user.profiles(need);for(const id of need){state.names[id]=(ps[id]&&ps[id].name)||"Player "+id.slice(-4)}}catch(e){for(const id of need)state.names[id]="Player "+id.slice(-4)}
+  render();
+}
+const canon=n=>ALIAS[String(n).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"")]||n;
+const nm=id=>id===BOT?"Robo-Sharp (bot)":(state.names[id]||"Player");
+const first=id=>id===BOT?"Robo-Sharp":nm(id).split(" ")[0];
+
+/* ---------- app layer: talks to the Tator's Picks server ---------- */
+let SERVER_OFFSET=0,PLAYERS={},ME=null,POLL=null;
+const NOW=()=>Date.now()+SERVER_OFFSET;
+const nowISO=()=>new Date(NOW()).toISOString();
+const when=iso=>{try{return new Date(iso).toLocaleString("en-US",{timeZone:TZ,weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}catch(e){return iso}};
+async function api(path,body){
+  try{const r=await fetch(path,{method:body?"POST":"GET",headers:{"content-type":"application/json"},body:body?JSON.stringify(body):undefined,credentials:"same-origin",cache:"no-store"});
+    let d={};try{d=await r.json()}catch(e){}
+    d.status=r.status;d.ok=r.ok&&!d.error;if(!d.ok&&!d.error)d.error="Something went wrong. Try again.";return d}
+  catch(e){return {ok:false,status:0,error:"Could not reach the site. Check your connection and try again."}}}
+function accByUid(uid){return PLAYERS[uid]}
+const QUICK=["🏈","🏆","🔥","💰","🎯","🤠","🐯","🦅","🐊","🐻","🦁","🐺","🐗","🦬","🐶","🦆","🐍","⚡","👑","💀"];
+const MORE=[
+ ["Animals","🐯🦁🐻🐺🦊🐗🦬🐂🐃🐎🦌🐐🐏🐑🐶🐱🐆🦍🐘🦏🦛🐊🐍🦎🐢🦖🐉🦅🦉🦆🐓🦃🦩🐦🐝🦂🦀🦞🐙🦈🐬🐟🦘🐿️🦫🦄"],
+ ["Sports","🏈🏀⚾🥎⚽🏐🏒🏑🏏⛳🎾🏓🥊🥋🏆🥇🥈🥉🏅🎯🎳⛷️🏄🏇🏎️🚴🏋️"],
+ ["Food","🍕🌮🌯🍔🌭🍟🍗🍖🥩🍤🦐🍣🌶️🌽🥔🍅🍎🍊🍑🍒🍇🍉🍓🥥🍩🍪🎂🧀🍦🥤☕🍿"],
+ ["Faces","😎🤠🥶🥵🤑🤓🤡😈👹👺👻💀☠️👽🤖🥷🧙🧛🧟🦸🦹😤😏🤫🫡🥳😴🤯🫠"],
+ ["Things","👑💎💰💵🪙🎲🃏🎰🎸🎷🎺🥁🎤🎬🚀🛸✈️🚂🚤⛵🏎️🛞🧢🎩🕶️⚔️🛡️🔱⚓🪖🔧⛏️🧱🗽🏰🗿🎈🎳🧣🫙📜🛢️💻"],
+ ["Weather and symbols","🔥⚡🌪️❄️☄️🌈☀️🌊🌀🌵🌲🍀☘️🍁🍂🌾🏔️⛰️🏜️🏖️🏝️🌅🌄🌉💚💜💙❤️🧡💛🖤🤍⭐✨〽️🔷🔶💯"]
+];
+function splitEmoji(s){try{return [...new Intl.Segmenter("en",{granularity:"grapheme"}).segment(s)].map(x=>x.segment).filter(x=>x.trim())}catch(e){return Array.from(s).filter(x=>x.trim())}}
+function isOneEmoji(s){const g=splitEmoji(s);return g.length===1&&/\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(g[0])}
+const SWATCH=[["Crimson","#B3121D"],["Orange","#E8590C"],["Gold","#F2B705"],["Green","#1E7A3A"],["Teal","#0F7C80"],["Sky","#4BA3E3"],["Royal","#1D4ED8"],["Navy","#13294B"],["Purple","#5B2C83"],["Pink","#D6336C"],["Maroon","#6E1423"],["Brown","#6B4423"],["Silver","#9AA3AD"],["White","#FFFFFF"],["Black","#111111"]];
+function inkFor(hex){const h=String(hex).replace("#","");const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (0.299*r+0.587*g+0.114*b)/255>0.62?"#111111":"#ffffff"}
+function chip(pid,big){if(pid===BOT)return `<span class="pchip bot${big?" big":""}" aria-hidden="true">🤖</span>`;const a=accByUid(pid);if(!a||!a.emoji)return "";return `<span class="pchip${big?" big":""}" style="background:${a.c1};box-shadow:inset 0 0 0 ${big?4:2}px ${a.c2}" aria-hidden="true">${a.emoji}</span>`}
+function tag(pid,lk){const a=accByUid(pid);const st=a&&a.c1?` style="background:${a.c1};color:${inkFor(a.c1)};box-shadow:inset 0 -3px 0 ${a.c2}"`:"";return `<span class="ptag${lk?" lk":""}"${st}>${a&&a.emoji?a.emoji+" ":""}${esc(first(pid))}</span>`}
+function talkLine(pid){if(pid===BOT)return '<p class="talk">Robo-Sharp takes the model side in every game. Beat the bot.</p>';return ""}
+function emBtn(pre,a,e,label){return `<button type="button" class="emb" data-pick="${pre}:emoji" data-val="${e}" aria-pressed="${a.emoji===e}"${label?` title="${esc(label)}" aria-label="${esc(label)}"`:""}>${e}</button>`}
+function lookPicker(pre,a){
+  const teamEm=[];const seen=new Set();Object.keys(TEAMS).sort().forEach(n=>{const e=TEAMS[n][3];if(e&&!seen.has(e)){seen.add(e);teamEm.push([e,n])}});
+  return `<fieldset class="lookf"><legend>Your emoji</legend><div class="emgrid">${QUICK.map(e=>emBtn(pre,a,e)).join("")}</div>
+  <details class="emmore"><summary>More emoji</summary>
+    <h4 class="emh">School emojis</h4><div class="emgrid">${teamEm.map(([e,n])=>emBtn(pre,a,e,n)).join("")}</div>
+    ${MORE.map(([h,s])=>`<h4 class="emh">${h}</h4><div class="emgrid">${[...new Set(splitEmoji(s))].map(e=>emBtn(pre,a,e)).join("")}</div>`).join("")}
+  </details>
+  <div class="emtype"><label for="${pre}EmIn">Or type any emoji from your keyboard</label><div class="bar"><input id="${pre}EmIn" type="text" maxlength="16" placeholder="😀" inputmode="text"><button type="button" class="btn sm" data-emuse="${pre}">Use it</button></div></div></fieldset>
+  <fieldset class="lookf"><legend>Main color</legend><div class="swgrid">${SWATCH.map(([n,c])=>`<button type="button" class="swb" data-pick="${pre}:c1" data-val="${c}" aria-pressed="${a.c1===c}" aria-label="${n}" title="${n}" style="background:${c}"></button>`).join("")}</div></fieldset>
+  <fieldset class="lookf"><legend>Second color</legend><div class="swgrid">${SWATCH.map(([n,c])=>`<button type="button" class="swb" data-pick="${pre}:c2" data-val="${c}" aria-pressed="${a.c2===c}" aria-label="${n}" title="${n}" style="background:${c}"></button>`).join("")}</div></fieldset>
+  <div class="lookprev" id="${pre}Prev"></div>`}
+function paintPreview(pre,draft,name){const el=$("#"+pre+"Prev");if(!el)return;const c1=draft.c1||"#9AA3AD",c2=draft.c2||"#FFFFFF";
+  el.innerHTML=`<span class="pchip big" style="background:${c1};box-shadow:inset 0 0 0 4px ${c2}">${draft.emoji||"?"}</span><span class="ptag" style="background:${c1};color:${inkFor(c1)};box-shadow:inset 0 -3px 0 ${c2}">${draft.emoji?draft.emoji+" ":""}${esc(name||"Your name")}</span><span class="note">This is how you show up in standings and picks.</span>`}
+const LOOK={setup:{},pf:{}};
+const lookName=pre=>((pre==="setup"?$("#setupName"):$("#pfName"))||{value:""}).value.trim();
+document.addEventListener("click",e=>{const u=e.target.closest("[data-emuse]");if(!u)return;const pre=u.dataset.emuse;const v=$("#"+pre+"EmIn").value.trim();
+  if(!isOneEmoji(v)){toast("Type or paste a single emoji.");return}
+  LOOK[pre].emoji=v;document.querySelectorAll(`[data-pick="${pre}:emoji"]`).forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.val===v)));if(pre==="setup")showErr("#setupErr","");
+  paintPreview(pre,LOOK[pre],lookName(pre));toast("Emoji set")});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-pick]");if(!b||b.disabled)return;const [pre,k]=b.dataset.pick.split(":");LOOK[pre][k]=b.dataset.val;const dm=b.closest("details.emmore");if(dm){dm.open=false;dm.closest(".lookf").scrollIntoView({block:"nearest"})}
+  if(pre==="setup")showErr("#setupErr","");document.querySelectorAll(`[data-pick="${pre}:${k}"]`).forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.val===b.dataset.val)));paintPreview(pre,LOOK[pre],lookName(pre))});
+document.addEventListener("input",e=>{if(e.target.id==="setupName")paintPreview("setup",LOOK.setup,e.target.value.trim());if(e.target.id==="pfName")paintPreview("pf",LOOK.pf,e.target.value.trim())});
+function lookErr(L){if(!L.emoji)return "Pick an emoji.";if(!L.c1||!L.c2)return "Pick both colors.";if(L.c1===L.c2)return "Pick two different colors.";return ""}
+const digits=x=>String(x||"").replace(/\D/g,"").replace(/^1(?=\d{10}$)/,"");
+const fmtPhone=n=>n&&n.length===10?`(${n.slice(0,3)}) ${n.slice(3,6)}-${n.slice(6)}`:(n||"");
+function showErr(id,msg){const e=$(id);if(!e)return;e.textContent=msg||"";e.hidden=!msg}
+function abbrMap(w){const m={};for(const g of (w&&w.games)||[]){m[g.away]=teamLook(g.away,g,"away").abbr;m[g.home]=teamLook(g.home,g,"home").abbr}return m}
+
+/* ---------- screens ---------- */
+function showAuth(which){
+  clearInterval(POLL);POLL=null;
+  $("#app").hidden=true;$("#auth").hidden=false;
+  for(const id of ["firstForm","loginForm","setupForm"])$("#"+id).hidden=id!==which;
+  if(which==="setupForm"){LOOK.setup={};$("#setupLook").innerHTML=lookPicker("setup",{});paintPreview("setup",{},"");setTimeout(()=>$("#setupName").focus(),50)}
+  window.scrollTo(0,0);
+}
+function applyState(S){
+  SERVER_OFFSET=Date.parse(S.now)-Date.now();
+  PLAYERS={};S.players.forEach(p=>PLAYERS[p.id]=p);ME=S.me;
+  const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Player");
+  Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
+    uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,
+    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{}});
+  $("#commishTab").hidden=!state.isOwner;
+  syncDraft();
+}
+async function refresh(quiet){
+  const S=await api("/api/state");
+  if(S.status===401){showAuth(S.needsSetup?"firstForm":"loginForm");return false}
+  if(!S.ok){if(!quiet)toast(S.error);return false}
+  applyState(S);
+  if(!S.me.setupDone){showAuth("setupForm");return false}
+  if($("#app").hidden){$("#auth").hidden=true;$("#app").hidden=false;route();window.scrollTo(0,0)}
+  else{const ae=document.activeElement;if(!(ae&&ae.closest&&ae.closest("form,select,input")))render()}
+  if(!POLL)POLL=setInterval(()=>{if(!document.hidden&&!state.dirty)refresh(true)},60000);
+  return true;
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ME&&!state.dirty)refresh(true)});
+
+/* ---------- forms ---------- */
+document.addEventListener("submit",async e=>{
+  const f=e.target;if(!["firstForm","loginForm","setupForm","profileForm","pinForm","addPlayerForm","slateForm","rankForm"].includes(f.id))return;
+  e.preventDefault();const btn=f.querySelector("button[type=submit]");if(btn)btn.disabled=true;
+  try{
+  if(f.id==="firstForm"){
+    const p1=$("#fsPin1").value.trim(),p2=$("#fsPin2").value.trim();
+    if(!/^\d{6}$/.test(p1)){showErr("#firstErr","Choose a 6 digit PIN.");return}if(p1!==p2){showErr("#firstErr","The two PINs do not match.");return}
+    const r=await api("/api/auth",{action:"setup",code:$("#fsCode").value,phone:$("#fsPhone").value,pin:p1});
+    if(!r.ok){showErr("#firstErr",r.error);return}showErr("#firstErr","");await refresh();
+  }
+  if(f.id==="loginForm"){
+    const r=await api("/api/auth",{action:"login",phone:$("#loginPhone").value,pin:$("#loginPin").value.trim()});
+    if(!r.ok){showErr("#loginErr",r.error);return}
+    showErr("#loginErr","");$("#loginPin").value="";await refresh();
+  }
+  if(f.id==="setupForm"){
+    const name=$("#setupName").value.trim(),p1=$("#setupPin1").value.trim(),p2=$("#setupPin2").value.trim();
+    if(!name){showErr("#setupErr","Enter a display name.");return}
+    const le=lookErr(LOOK.setup);if(le){showErr("#setupErr",le);return}
+    if(p1||p2){if(!/^\d{6}$/.test(p1)){showErr("#setupErr","A PIN is 6 digits.");return}if(p1!==p2){showErr("#setupErr","The two PINs do not match.");return}}
+    const r=await api("/api/auth",{action:"profile",name,emoji:LOOK.setup.emoji,c1:LOOK.setup.c1,c2:LOOK.setup.c2,newPin:p1||undefined});
+    if(!r.ok){showErr("#setupErr",r.error);return}showErr("#setupErr","");await refresh();
+  }
+  if(f.id==="profileForm"){
+    const name=$("#pfName").value.trim();if(!name){toast("Enter a display name.");return}
+    const le=lookErr(LOOK.pf);if(le){toast(le);return}
+    const r=await api("/api/auth",{action:"profile",name,emoji:LOOK.pf.emoji,c1:LOOK.pf.c1,c2:LOOK.pf.c2});
+    if(!r.ok){toast(r.error);return}toast("Profile saved");document.activeElement&&document.activeElement.blur();await refresh();
+  }
+  if(f.id==="pinForm"){
+    const c=$("#pfCur").value.trim(),p1=$("#pfNew1").value.trim(),p2=$("#pfNew2").value.trim();
+    if(!/^\d{6}$/.test(p1)){toast("A PIN is 6 digits.");return}if(p1!==p2){toast("The two new PINs do not match.");return}
+    const r=await api("/api/auth",{action:"pin",current:c,newPin:p1});if(!r.ok){toast(r.error);return}f.reset();toast("PIN changed");
+  }
+  if(f.id==="addPlayerForm"){
+    const r=await api("/api/admin",{action:"addPlayer",phone:$("#apPhone").value,name:$("#apName").value.trim()});
+    if(!r.ok){toast(r.error);return}state.shownPin={num:r.phone,pin:r.pin,what:"added"};await refresh();renderCommish();
+  }
+  if(f.id==="slateForm"){
+    let week;try{week=JSON.parse($("#slateJson").value)}catch(x){toast("That is not valid JSON. Paste the slate exactly as Claude gave it.");return}
+    const r=await api("/api/admin",{action:"importWeek",week});if(!r.ok){toast(r.error);return}
+    $("#slateJson").value="";toast("Slate loaded as a draft");await refresh();renderCommish();
+  }
+  if(f.id==="rankForm"){
+    let data;try{data=JSON.parse($("#rankJson").value)}catch(x){toast("That is not valid JSON.");return}
+    const r=await api("/api/admin",{action:"importRankings",data,snapshotWeek:currentWeekId()});if(!r.ok){toast(r.error);return}
+    $("#rankJson").value="";toast("Rankings updated");await refresh();renderCommish();
+  }
+  }finally{if(btn)btn.disabled=false}
+});
+document.addEventListener("click",async e=>{
+  const d=e.target.closest("[data-dact]");if(!d)return;const k=d.dataset.dact;
+  if(k==="logout"){await api("/api/auth",{action:"logout"});ME=null;location.hash="#picks";showAuth("loginForm")}
+  if(k==="reset"){const r=await api("/api/admin",{action:"resetPin",id:d.dataset.id});if(!r.ok){toast(r.error);return}state.shownPin={num:r.phone,pin:r.pin,what:"reset",self:r.self};if(!r.self)await refresh();renderCommish()}
+  if(k==="hidepin"){const self=state.shownPin&&state.shownPin.self;state.shownPin=null;if(self){showAuth("loginForm");return}renderCommish()}
+  if(k==="remove"||k==="restore"){const r=await api("/api/admin",{action:"setRemoved",id:d.dataset.id,removed:k==="remove"});if(!r.ok){toast(r.error);return}toast(k==="remove"?"Player removed":"Player restored");await refresh();renderCommish()}
+});
+
+/* ---------- commissioner panels ---------- */
+function loginsPanel(){
+  const L=state.logins||[];const t=NOW();
+  const rows=L.map(a=>{const locked=a.lockedUntil&&Date.parse(a.lockedUntil)>t;
+    const st=a.removed?'<span class="pill">Removed</span>':locked?`<span class="pill bad">Paused ${Math.ceil((Date.parse(a.lockedUntil)-t)/60000)} min</span>`:a.setupDone?'<span class="pill">Active</span>':'<span class="pill wait">Waiting for first login</span>';
+    const rm=a.isCommish?"":`<button class="btn sm${a.removed?"":" danger"}" data-dact="${a.removed?"restore":"remove"}" data-id="${esc(a.id)}">${a.removed?"Restore":"Remove"}</button>`;
+    return `<div class="lgrow"><span class="t"><b>${chip(a.id)}${esc(a.name||a.invited||"New player")}${a.isCommish?" (you)":""}</b><span class="note">${fmtPhone(a.phone)}${a.lockouts?" · "+a.lockouts+" pause"+(a.lockouts>1?"s":""):""}</span>${st}</span><span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${rm}</span></div>`}).join("");
+  const sp=state.shownPin;
+  return `<div class="panel"><h2>Logins</h2>
+    ${sp?`<div class="pinbox" role="status"><p>${sp.what==="added"?"Player added.":"PIN reset."} ${sp.self?"This is your new PIN. You will log in again with it.":"Text this PIN to "+fmtPhone(sp.num)+"."} It shows only once.</p><b class="bigpin">${sp.pin}</b><button class="btn" data-dact="hidepin">Done</button></div>`:""}
+    <div class="lglist">${rows}</div>
+    <form id="addPlayerForm" class="bar addp" novalidate><input id="apName" type="text" maxlength="24" placeholder="Name (for you)" aria-label="Player name"><input id="apPhone" type="tel" inputmode="tel" placeholder="Cell number" aria-label="Cell number"><button class="btn primary" type="submit">Add player</button></form>
+    <p class="note">Adding a player creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later. Resetting a PIN also signs that player out. Removing a player hides them from standings and blocks new picks.</p></div>`}
+function importPanel(){
+  return `<form id="slateForm" class="panel" novalidate><h2>Load a slate</h2><p class="note">Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
+  <form id="rankForm" class="panel" novalidate><h2>Update rankings</h2><p class="note">Paste rankings JSON for the Rankings tab. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form>`}
+
+/* ---------- saving picks ---------- */
+async function savePicks(force){
+  const w=curWeek(),wid=currentWeekId();if(!w||!state.uid)return;
+  if(pastDeadline(w)){toast("Picks locked at the deadline. The site refused this save.");return}
+  if(state.draft.lock&&!state.draft.sel[state.draft.lock]){toast("Pick a side in your flag game first.");return}
+  if(!force){const m=missingItems(w,wid,state.draft);if(m.length){state.warn=m;renderPicks();return}}
+  const b=$("#saveBtn");if(b){b.disabled=true;b.textContent="Saving…"}
+  const r=await api("/api/picks",{weekId:wid,sel:state.draft.sel,lock:state.draft.lock,tb:state.draft.tb,surv:state.draft.surv||null,abbr:abbrMap(w)});
+  if(!r.ok){toast(r.error);if(b){b.disabled=false;b.textContent="Save picks"}if(r.status===423||r.status===401)await refresh(true);return}
+  state.dirty=false;state.warn=null;toast("Picks saved");await refresh(true);
+}
+async function logAction(){} /* the server writes the log */
+
+/* ---------- commissioner actions ---------- */
+async function commishAct(act,ds){
+  const wid=currentWeekId(),w=curWeek();if(!state.isOwner)return;
+  let r={ok:true},msg="";
+  if(act==="open"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"open"});msg="Picks are open"}
+  if(act==="todraft"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"draft"});msg="Moved back to draft"}
+  if(act==="final"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"final"});msg="Week marked final"}
+  if(act==="unfinal"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"locked"});msg="Scoring reopened"}
+  if(act==="swap"){const sel=$("#sw-"+CSS.escape(ds.g));const nid=sel&&sel.value;if(!nid){toast("Choose a replacement game first.");return}
+    r=await api("/api/admin",{action:"swap",weekId:wid,outId:ds.g,inId:nid});msg="Game swapped and logged"}
+  if(act==="scores"){const results={};
+    for(const g of w.games){const a=$("#ra-"+CSS.escape(g.id)).value,hm=$("#rh-"+CSS.escape(g.id)).value,f=$("#rf-"+CSS.escape(g.id)).value;
+      if(f==="void"){results[g.id]={void:true};continue}if(a===""&&hm==="")continue;results[g.id]={away:Number(a)||0,home:Number(hm)||0,final:f==="final"}}
+    r=await api("/api/admin",{action:"scores",weekId:wid,results});msg="Scores saved"}
+  if(act==="remove"||act==="restore"){r=await api("/api/admin",{action:"setRemoved",id:ds.p,removed:act==="remove"});msg=act==="remove"?"Player removed":"Player restored"}
+  if(act==="override"){const n=$("#ovTeam").value,a=$("#ovAbbr").value.trim(),em=$("#ovEmoji").value.trim();const ovs={...((state.config&&state.config.teamOverrides)||{})};
+    const clash=a&&Object.entries(TEAMS).some(([k,v])=>k!==n&&((ovs[k]&&ovs[k].abbr)||v[0]).toLowerCase()===a.toLowerCase());if(clash){toast("Another school already uses those letters.");return}
+    if(!a&&!em)delete ovs[n];else ovs[n]={...(a?{abbr:a}:{}),...(em?{emoji:em}:{})};
+    r=await api("/api/admin",{action:"config",teamOverrides:ovs,logAction:"Changed a team label",logDetail:n+(a?" letters "+a:"")+(em?" emoji "+em:"")});msg="Label saved"}
+  if(act==="rename"){const v=$("#nameInput").value.trim();if(!v){toast("Enter a name first.");return}r=await api("/api/admin",{action:"config",name:v,logAction:"Renamed the league",logDetail:v});msg="Name saved"}
+  if(!r.ok){toast(r.error);return}if(msg)toast(msg);await refresh(true);renderCommish();
+}
+
+function renderProfile(){
+  const el=$("#v-profile");const a=ME&&PLAYERS[ME.id];if(!a){el.innerHTML="";return}
+  if(el.contains(document.activeElement)&&el.innerHTML)return;
+  LOOK.pf={emoji:a.emoji,c1:a.c1,c2:a.c2};
+  el.innerHTML=`<form id="profileForm" class="panel" novalidate><h2>Your profile</h2>
+    <label for="pfName">Display name</label><input id="pfName" type="text" maxlength="24" value="${esc(a.name)}">
+    ${lookPicker("pf",a)}
+    <div class="bar"><button class="btn primary" type="submit">Save profile</button></div></form>
+    <form id="pinForm" class="panel" novalidate><h2>Change your PIN</h2>
+    <label for="pfCur">Current PIN</label><input id="pfCur" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password">
+    <label for="pfNew1">New PIN</label><input id="pfNew1" type="password" inputmode="numeric" maxlength="6" placeholder="6 digits" autocomplete="new-password">
+    <label for="pfNew2">New PIN again</label><input id="pfNew2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
+    <div class="bar"><button class="btn primary" type="submit">Change PIN</button></div></form>
+    <div class="panel"><h2>Account</h2><p class="note">You log in as ${fmtPhone(ME.phone)}. Other players never see your number.</p><div class="bar"><button class="btn" data-dact="logout">Log out</button></div></div>`;
+  paintPreview("pf",LOOK.pf,a.name)}
+
+async function start(){
+  setInterval(()=>{tickCountdown();if(state.view==="commish"&&state.isOwner&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest("#v-commish form,#v-commish select,#v-commish input")))renderCommish()},30000);
+  await refresh();
+}
+
+function err(e){console.warn(e);if(e&&e.code==="revoked")toast("Your access to this page changed.")}
+function syncDraft(){
+  const wid=currentWeekId();if(!wid||state.dirty)return;
+  const mine=(state.myPicks&&state.myPicks.weeks&&state.myPicks.weeks[wid])||{};
+  state.draft={sel:{...(mine.sel||{})},lock:mine.lock||null,tb:typeof mine.tb==="number"?mine.tb:null,surv:mine.surv||null};
+}
+
+/* ---------- routing ---------- */
+const VIEWS=["picks","standings","rankings","players","survivor","rules","profile","commish"];
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if(v==="commish"&&!state.isOwner)v="picks";state.view=v;
+  document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render()}
+window.addEventListener("hashchange",route);
+
+/* ---------- shared helpers ---------- */
+const BOT="bot";
+const baseChip=pid=>pid===BOT?'<span class="pchip bot" aria-hidden="true">\ud83e\udd16</span>':"";
+function modelSide(g){if(typeof g.modelLine!=="number")return null;const e=g.modelLine-g.homeLine;if(e>0)return "away";if(e<0)return "home";return g.homeLine<0?"away":"home"}
+function botPicks(w){const sel={};let best=null;for(const g of [...(w.games||[])].sort((a,b)=>a.slot-b.slot)){const s=modelSide(g);if(!s)continue;sel[g.id]=s;const e=Math.abs(g.modelLine-g.homeLine);if(!best||e>best.e)best={id:g.id,e}}return Object.keys(sel).length?{sel,lock:best&&best.id,tb:null}:null}
+function weekPlayers(wid,withBot){const r=state.reveals[wid];if(!r)return {};const o={};for(const [p,v] of Object.entries(r.players||{}))if(!removed().includes(p)&&p!==BOT)o[p]=v;if(withBot&&state.weeks[wid]){const b=botPicks(state.weeks[wid]);if(b)o[BOT]=b}return o}
+function survivorStart(){return state.config&&state.config.survivorStart}
+function survivorBoard(){
+  const start=survivorStart();if(!start)return null;
+  const weeks=Object.keys(state.weeks).sort().filter(w=>w>=start&&state.reveals[w]&&["locked","final"].includes(state.weeks[w].status));
+  const ids=allPlayerIds(false).filter(p=>!removed().includes(p));
+  return ids.map(pid=>{const row={pid,alive:true,pending:false,out:null,used:[],picks:[]};
+    for(const wid of weeks){const w=state.weeks[wid];const p=(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;
+      if(!sp){row.alive=false;row.out={week:w.week,team:"no pick"};break}
+      const g=w.games.find(x=>x.id===sp.g);if(!g){row.alive=false;row.out={week:w.week,team:"no pick"};break}
+      const team=sp.s==="home"?g.home:g.away;row.used.push(team);row.picks.push({wid,week:w.week,team,line:sp.s==="home"?g.homeLine:-g.homeLine});
+      const r=(w.results||{})[g.id];if(r&&r.void)continue;const c=coverSide(g,r);if(!c){row.pending=true;continue}
+      if(c!==sp.s){row.alive=false;row.out={week:w.week,team};break}}
+    return row});
+}
+function survivorUsed(pid){const start=survivorStart();const used=[];if(!start)return used;for(const wid of Object.keys(state.reveals).sort()){if(wid<start||wid===currentWeekId())continue;const p=(state.reveals[wid].players||{})[pid];const w=state.weeks[wid];if(p&&p.surv&&w){const g=w.games.find(x=>x.id===p.surv.g);if(g)used.push(canon(p.surv.s==="home"?g.home:g.away))}}return used}
+function modelStats(pid,weeks){const st={agree:[0,0],fade:[0,0]};for(const wid of weeks){const w=state.weeks[wid];const p=pid===BOT?botPicks(w):((state.reveals[wid].players||{})[pid]);if(!p)continue;for(const g of w.games){const ms=modelSide(g);const pick=(p.sel||{})[g.id];const c=coverSide(g,(w.results||{})[g.id]);if(!ms||!pick||!c)continue;const k=pick===ms?"agree":"fade";st[k][pick===c?0:1]++}}return st}
+function margin(g,r){return (r.home-r.away)+g.homeLine} /* >0 home covers */
+function split(g,players){const s={away:[],home:[]};for(const [pid,p] of Object.entries(players)){const x=(p.sel||{})[g.id];if(x)s[x].push(pid)}return s}
+function allPlayerIds(withBot){const s=new Set(state.roster);Object.values(state.reveals).forEach(r=>Object.keys(r.players||{}).forEach(p=>{if(p!==BOT)s.add(p)}));if(withBot&&Object.keys(state.reveals).some(wid=>state.weeks[wid]&&botPicks(state.weeks[wid])))s.add(BOT);return [...s]}
+function countedWeeks(includeTest){return Object.keys(state.weeks).sort().filter(wid=>state.reveals[wid]&&(includeTest||state.weeks[wid].scored!==false))}
+function weekWinners(wid){const w=state.weeks[wid];if(!w||w.status!=="final")return [];const ps=weekPlayers(wid);const rows=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));if(!rows.length)return [];rows.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));return rows.filter(r=>r.pts===rows[0].pts&&r.tbMiss===rows[0].tbMiss).map(r=>r.pid)}
+const SIG={
+  td:'<svg class="sig" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7m0 0-3 7m3-7 3 7M12 10 7 2m5 8 5-8"/></svg>',
+  inc:'<svg class="sig" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7m0 0-3 7m3-7 3 7M4 10h16"/></svg>'
+};
+
+/* ---------- render ---------- */
+function render(){
+  const c=state.config,w=curWeek();
+  if(c&&c.name){$("#lgName").textContent=c.name}
+  if(w){
+    $("#weekLine").textContent=`${w.season} · Week ${w.week} · Picks lock ${kick(w.deadline)}`;
+    const labels={draft:"Slate draft",open:"Picks open",locked:"Picks locked",final:"Final"};
+    const b=$("#statusBadge");b.textContent=(w.scored===false?"Test week · ":"")+(labels[w.status]||w.status);b.className="badge"+(w.status==="open"?" open":"");
+  }else if(state.db){$("#weekLine").textContent="No slate posted yet.";$("#statusBadge").textContent="Off week"}
+  if(state.view==="picks")renderPicks();
+  if(state.view==="standings")renderStandings();
+  if(state.view==="rankings")renderRankings();
+  if(state.view==="players")renderPlayers();
+  if(state.view==="survivor")renderSurvivor();
+  if(state.view==="commish")renderCommish();
+  if(state.view==="rules")renderLog();
+  if(state.view==="profile")renderProfile();
+}
+function renderLog(){const el=$("#logPanel");if(!el)return;const L=state.log||[];el.innerHTML=`<h2>Commissioner log</h2><p class="note">Every commissioner action and scheduled run that changes the league, newest first.</p>${L.length?`<div class="logl">${L.map(x=>`<div class="logi"><span class="note">${esc(new Date(x.at).toLocaleString("en-US",{timeZone:TZ,month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))} \u00b7 ${esc(x.by)}</span><b>${esc(x.action)}</b>${x.detail?`<span>${esc(x.detail)}</span>`:""}</div>`).join("")}</div>`:'<p class="note">No entries yet.</p>'}`}
+
+function pastDeadline(w){return w&&NOW()>=new Date(w.deadline).getTime()}
+function countdownText(w){const ms=new Date(w.deadline).getTime()-NOW();if(ms<=0)return "Picks are locked";const m=Math.floor(ms/60000),d=Math.floor(m/1440),h=Math.floor((m%1440)/60),mm=m%60;return "Picks lock in "+(d?d+"d ":"")+(d||h?h+"h ":"")+mm+"m"}
+function tickCountdown(){const el=$("#countdown"),w=curWeek();if(el&&w){el.textContent=countdownText(w);if(pastDeadline(w)&&w.status==="open"&&state.view==="picks"&&!tickCountdown.busy){tickCountdown.busy=true;refresh(true).finally(()=>tickCountdown.busy=false)}}}
+
+function renderPicks(){
+  const el=$("#v-picks"),w=curWeek(),wid=currentWeekId();
+  if(!state.db){el.innerHTML='<div class="panel empty">This league page needs you signed in to Claude, opened from the invite your commissioner sent.</div>';return}
+  if(!w){el.innerHTML='<div class="panel empty">The commissioner posts each week\'s 10 games on Tuesday. They will show here.</div>';return}
+  if(w.status==="draft"&&!state.isOwner){el.innerHTML='<div class="panel empty">The commissioner is finalizing this week\'s slate. Picks open soon.</div>';return}
+  const out=removed().includes(state.uid);
+  const editable=w.status==="open"&&!pastDeadline(w)&&state.uid&&!out&&state.canWrite!==false;
+  const rev=state.reveals[wid];const players=weekPlayers(wid);const nPlayers=Object.keys(players).length;
+  const mineRev=rev&&players[state.uid];
+  const d=editable?(state.draft||{sel:{},lock:null,tb:null}):(mineRev||state.draft||{sel:{},lock:null,tb:null});
+  const rs=w.results||{};
+  let h="";
+  if(w.status==="open"||w.status==="draft")h+=`<div class="countdown" id="countdown">${countdownText(w)}</div>`;
+  if(w.status==="draft")h+='<div class="note">Draft view. Only you see this until you open picks in the Commissioner tab.</div>';
+  if(out)h+='<div class="panel">You are not active in the league this season. Contact the commissioner.</div>';
+  if(state.uid===null)h+='<div class="panel">Your account has no league identity on this page, so you can view but not pick.</div>';
+  if(state.canWrite===false&&!out)h+='<div class="panel">You can view the league but cannot save picks. Ask the commissioner to invite you as an editor.</div>';
+  const gs=[...w.games].sort((a,b)=>a.slot-b.slot);
+  const tg=tbGame(w);
+  const flag='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="cloth" d="M6 3c3 2 6-2 10 0 1.5.7 2.5.5 3 0v9c-.5.5-1.5.7-3 0-4-2-7 2-10 0z"/><rect x="5" y="2" width="1.6" height="20" rx=".8" fill="currentColor"/></svg>';
+  for(const g of gs){
+    const r=rs[g.id];const isVoid=r&&r.void;const c=coverSide(g,r);
+    const live=r&&!r.final&&!r.void&&(r.away||r.home)?(margin(g,r)>0?"home":"away"):null;
+    const awayLn=fmtLine(-g.homeLine),homeLn=fmtLine(g.homeLine);
+    const sideBtn=(s,team,rk,ln)=>{const L=teamLook(team,g,s);return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-g="${esc(g.id)}" data-s="${s}" aria-pressed="${d.sel&&d.sel[g.id]===s}" aria-label="${esc(team)} ${ln}" ${editable&&!isVoid?"":"disabled"}>${c===s?'<span class="cv">Covered</span>':(live===s?'<span class="cv live">Covering</span>':"")}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${rk&&rk<99?'<span class="rk">#'+rk+'</span>':""}${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="ln">${ln}${s==="home"&&g.neutral?' <span class="rk">N</span>':""}</span></button>`};
+    const conflictHere=survConflict(w,d)===g.id;
+    h+=`<div class="game${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}"><div class="gmeta"><span class="slot">${g.slot<=5?"Top "+g.slot:"Tight "+g.slot}${g.swap?" · swap":""}${tg&&tg.id===g.id?'<button type="button" class="tbtag" data-jump="tb">Tiebreaker game \u2193</button>':""}</span><span>${isVoid?"VOID":kick(g.kickoff)}</span></div>
+      <div class="sides">${sideBtn("away",g.away,g.awayRank,awayLn)}${sideBtn("home",g.home,g.homeRank,homeLn)}<button class="flagbtn" data-lock="${esc(g.id)}" aria-pressed="${d.lock===g.id}" aria-label="Throw your flag: 3x lock on this game" ${editable&&!isVoid?"":"disabled"}>${flag}<span>3x</span></button></div>`;
+    if(r&&!isVoid&&(r.final||r.away||r.home)){
+      const key=g.id+":"+r.away+"-"+r.home;const changed=state.seenScores[g.id]&&state.seenScores[g.id]!==key;state.seenScores[g.id]=key;
+      const myPick=d.sel&&d.sel[g.id];
+      let verdict="";
+      if(c&&myPick)verdict=myPick===c?`<span class="w">${SIG.td}Touchdown${d.lock===g.id?" · flag hit, +3":" · +1"}</span>`:`<span class="l">${SIG.inc}Incomplete</span>`;
+      else if(live&&myPick)verdict=myPick===live?'<span class="w">Your pick is covering</span>':'<span class="l">Your pick is not covering</span>';
+      h+=`<div class="res"><span class="score${changed?" flip":""}">${esc(teamLook(g.away,g,"away").abbr)} ${r.away} – ${esc(teamLook(g.home,g,"home").abbr)} ${r.home}${r.final?" · Final":" · Live"}</span>${verdict}</div>`;
+    }
+    if(typeof g.modelLine==="number"){const fav=g.modelLine<0?"home":"away";const fl=-Math.abs(g.modelLine);const Lf=teamLook(fav==="home"?g.home:g.away,g,fav);const edge=Math.round((g.modelLine-g.homeLine)*10)/10;const side=edge>0?"away":"home";const Ls=teamLook(side==="home"?g.home:g.away,g,side);
+      const bp=botPicks(w);const bs=modelSide(g);const Lb=teamLook(bs==="home"?g.home:g.away,g,bs);
+      h+=`<div class="model">${esc(g.modelSource||"Model")} line: ${esc(Lf.abbr)} ${g.modelLine===0?"PK":fl} \u00b7 ${edge===0?"matches the betting line":"likes "+esc(Ls.abbr)+" by "+Math.abs(edge)+" against the line"} \u00b7 Robo-Sharp takes ${esc(Lb.abbr)}${bp&&bp.lock===g.id?" with its flag":""}</div>`}
+    if(conflictHere)h+=`<div class="conflict" role="alert">Your survivor pick is the other side of this game. <button type="button" class="linkbtn" data-jump="surv">Review survivor</button></div>`;
+    if(rev&&nPlayers){
+      const sp=split(g,players);const na=sp.away.length,nh=sp.home.length,tot=na+nh||1;
+      const LA=teamLook(g.away,g,"away"),LH=teamLook(g.home,g,"home");
+      h+=`<div class="cbar" role="img" aria-label="${na} picked ${esc(g.away)}, ${nh} picked ${esc(g.home)}"><span style="flex:${na||0.0001};background:${LA.c1};color:${LA.ink}">${na?LA.abbr+" "+na:""}</span><span style="flex:${nh||0.0001};background:${LH.c1};color:${LH.ink}">${nh?LH.abbr+" "+nh:""}</span></div>`;
+      const names=s=>sp[s].map(pid=>tag(pid,players[pid].lock===g.id)).join("")||'<i>nobody</i>';
+      h+=`<div class="who"><b>${esc(LA.abbr)}</b>${names("away")}</div><div class="who"><b>${esc(LH.abbr)}</b>${names("home")}</div>`;
+      if(c&&nPlayers>=3&&sp[c].length===1)h+=`<div class="wolf">Lone wolf: ${esc(nm(sp[c][0]))} was the only one on ${esc(c==="home"?g.home:g.away)}</div>`;
+    }
+    h+="</div>";
+  }
+  if(tg){const r=rs[tg.id];const LA=teamLook(tg.away,tg,"away"),LH=teamLook(tg.home,tg,"home");const tot=r&&r.final&&!r.void?r.home+r.away:null;
+    h+=`<div class="board tbpanel" id="tbPanel"><div class="tbtop"><h2>Tiebreaker</h2><button type="button" class="linkbtn tblink" data-jump="game-${esc(tg.id)}">Go to the game \u2191</button></div>
+      <p class="tbq">Guess the total points scored in <b>${esc(LA.abbr)} ${LA.emoji||""} vs ${esc(LH.abbr)} ${LH.emoji||""}</b>, ${kick(tg.kickoff)}.</p>
+      <div class="tbrow"><input id="tbInput" type="number" min="0" max="200" inputmode="numeric" placeholder="\u2013" aria-label="Tiebreaker: total points" value="${d.tb??""}" ${editable?"":"disabled"}><span class="note">${tot!=null?`Final total: ${tot}.${d.tb!=null?" Your miss: "+Math.abs(d.tb-tot)+".":""}`:"Closest guess wins a tied week. No guess counts as 0."}</span></div></div>`}
+  if(survivorStart()&&wid>=survivorStart()&&state.uid&&!out){
+    const board=survivorBoard()||[];const me=board.find(r=>r.pid===state.uid);
+    if(me&&!me.alive)h+=`<div class="panel surv"><h2>Survivor</h2><p>You are out. Week ${me.out.week}: ${esc(me.out.team)}.</p></div>`;
+    else{const used=survivorUsed(state.uid);const cur=d.surv?d.surv.g+"|"+d.surv.s:"";
+      const opts=gs.flatMap(g=>["away","home"].map(sd=>{const team=sd==="home"?g.home:g.away;const ln=sd==="home"?g.homeLine:-g.homeLine;const L=teamLook(team,g,sd);const usedT=used.includes(canon(team));return `<option value="${esc(g.id+"|"+sd)}" ${cur===g.id+"|"+sd?"selected":""} ${usedT?"disabled":""}>${esc(L.abbr)} ${esc(team)} ${fmtLine(ln)}${usedT?" (used)":""}</option>`})).join("");
+      h+=`<div class="panel surv" id="survPanel"><h2>Survivor</h2><p class="note">Pick one team against the spread. If it covers you stay alive. You cannot use a team twice.${used.length?" Used: "+used.map(esc).join(", ")+".":""}</p><select id="survSel" aria-label="Survivor pick" ${editable?"":"disabled"}><option value="">Choose your survivor team</option>${opts}</select>${(()=>{const cg=survConflict(w,d);if(!cg)return "";const g=w.games.find(x=>x.id===cg);const st=d.surv.s,pk=d.sel[cg];const Ls=teamLook(st==="home"?g.home:g.away,g,st),Lp=teamLook(pk==="home"?g.home:g.away,g,pk);
+        return `<div class="conflict" role="alert"><b>Conflict.</b> Your survivor pick is ${esc(Ls.abbr)}, but your pick in that game is ${esc(Lp.abbr)}. Only one of them can cover, so one is sure to lose. <button type="button" class="linkbtn" data-jump="game-${esc(cg)}">Go to the game</button></div>`})()}</div>`}
+  }
+  if(w.swaps&&w.swaps.length)h+=`<div class="swaplog">Commissioner swaps: ${w.swaps.map(s=>esc(s.out)+" replaced by "+esc(s.in)).join("; ")}</div>`;
+  const myWeek=state.myPicks&&state.myPicks.weeks&&state.myPicks.weeks[wid];
+  if(myWeek&&myWeek.history&&myWeek.history.length){h+=`<details class="panel phist"><summary>Your pick history \u00b7 last saved ${esc(when(myWeek.history[myWeek.history.length-1].at))}</summary>${myWeek.history.slice().reverse().map(x=>`<div class="logi"><span class="note">${esc(when(x.at))}</span><span>${esc(x.note)}</span></div>`).join("")}</details>`}
+  if(editable){const miss=missingItems(w,wid,d);const nvoid=gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).length;const n=gs.filter(g=>d.sel[g.id]).length;
+    const ck=(ok,t)=>`<span class="ck ${ok?"ok":"no"}">${ok?"\u2713":"!"} ${t}</span>`;
+    const warnH=state.warn&&state.warn.length?`<div class="warn" role="alert"><h2>Your sheet is not complete</h2><ul>${state.warn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div class="bar"><button class="btn" id="warnBack">Keep picking</button><button class="btn primary" id="warnSave">Save anyway</button></div></div>`:"";
+    h+=`<div class="savebar">${warnH}<span class="cks">${ck(n>=nvoid,n+" of "+nvoid+" picked")}${ck(!!d.lock,"Flag")}${ck(d.tb!=null,"Tiebreaker")}${survivorStart()&&wid>=survivorStart()?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Survivor conflict":"Survivor"):""}</span><button class="btn primary" id="saveBtn" ${state.dirty?"":"disabled"}>${state.dirty?"Save picks":"Saved"}</button></div>`}
+  else if(w.status==="open"&&pastDeadline(w))h+='<div class="note">Picks are locked. Everyone\'s picks show here in a moment.</div>';
+  el.innerHTML=h;
+}
+
+document.addEventListener("click",async e=>{
+  const jp=e.target.closest("[data-jump]");if(jp){const k=jp.dataset.jump;const el=k==="tb"?$("#tbPanel"):k==="surv"?$("#survPanel"):document.getElementById("g-"+k.slice(5));
+    if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),1200);if(k==="tb"){const i=$("#tbInput");if(i&&!i.disabled)setTimeout(()=>i.focus({preventScroll:true}),350)}}return}
+  const s=e.target.closest(".side[data-g]");const lk=e.target.closest("[data-lock]");
+  if((s||lk)&&state.draft){
+    state.warn=null;
+    if(s&&!s.disabled){const g=s.dataset.g,side=s.dataset.s;state.draft.sel[g]=state.draft.sel[g]===side?undefined:side;if(!state.draft.sel[g])delete state.draft.sel[g];state.dirty=true;renderPicks()}
+    if(lk&&!lk.disabled){const g=lk.dataset.lock;state.draft.lock=state.draft.lock===g?null:g;state.dirty=true;renderPicks()}
+    return;
+  }
+  if(e.target.id==="saveBtn")savePicks();
+  if(e.target.id==="warnSave"){state.warn=null;savePicks(true)}
+  if(e.target.id==="warnBack"){state.warn=null;renderPicks()}
+  const seg=e.target.closest("[data-rank]");if(seg){state.rankView=seg.dataset.rank;renderRankings();return}
+  const act=e.target.closest("[data-act]");if(act)commishAct(act.dataset.act,act.dataset);
+});
+document.addEventListener("input",e=>{if(e.target.id==="tbInput"&&state.draft){const v=e.target.value;state.draft.tb=v===""?null:Math.max(0,Math.round(Number(v)));state.dirty=true;const b=$("#saveBtn");if(b){b.disabled=false;b.textContent="Save picks"}}});
+document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
+
+function survConflict(w,d){if(!d||!d.surv||!d.sel)return null;const p=d.sel[d.surv.g];return p&&p!==d.surv.s?d.surv.g:null}
+function missingItems(w,wid,d){const rs=w.results||{};const m=[];
+  const open=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void));const left=open.filter(g=>!d.sel[g.id]).length;
+  if(left)m.push(left+" game"+(left===1?" has":"s have")+" no pick. A missed pick scores 0.");
+  if(!d.lock)m.push("You have not thrown your flag. A correct flag pick scores 3 points instead of 1.");
+  if(d.tb==null)m.push("You have no tiebreaker guess. A blank guess counts as 0.");
+  if(survivorStart()&&wid>=survivorStart()&&!d.surv)m.push("You have no survivor pick. A missed survivor pick puts you out.");
+  if(survConflict(w,d))m.push("Your survivor pick is the other side of one of your game picks. One of them is sure to lose.");
+  return m}
+
+/* ---------- referee report ---------- */
+function refReport(wid){
+  const w=state.weeks[wid];const players=weekPlayers(wid);const ids=Object.keys(players);if(!w||!ids.length)return "";
+  const rs=w.results||{};const graded=w.games.filter(g=>coverSide(g,rs[g.id]));
+  if(!graded.length)return "";
+  const items=[];
+  let best=null;
+  for(const g of graded){const c=coverSide(g,rs[g.id]);const sp=split(g,players);const n=sp[c].length;if(n&&(!best||n<best.n))best={g,c,n,pids:sp[c]}}
+  if(best)items.push(["Touchdown","Best call",`${best.pids.map(nm).map(esc).join(", ")} took ${esc(best.c==="home"?best.g.home:best.g.away)} ${fmtLine(best.c==="home"?best.g.homeLine:-best.g.homeLine)}. Only ${best.n} of ${ids.length} did.`]);
+  const flags=ids.map(pid=>{const p=players[pid];const g=w.games.find(x=>x.id===p.lock);if(!g)return null;const c=coverSide(g,rs[g.id]);if(!c)return null;const m=margin(g,rs[g.id]);const by=Math.abs(m);return {pid,g,hit:(p.sel||{})[g.id]===c,by}}).filter(Boolean);
+  const hits=flags.filter(f=>f.hit),miss=flags.filter(f=>!f.hit).sort((a,b)=>b.by-a.by);
+  if(flags.length)items.push(["Flag on the play",`${hits.length} of ${flags.length} flags hit`,`${hits.length?"Hit: "+hits.map(f=>esc(first(f.pid))).join(", ")+".":"No flag has hit yet."}${miss.length?" Worst miss: "+esc(first(miss[0].pid))+", by "+miss[0].by+" against the spread.":""}`]);
+  const beats=[];for(const g of graded){const r=rs[g.id];const m=margin(g,r);if(Math.abs(m)===0.5){const c=coverSide(g,r);const sp=split(g,players);const loser=c==="home"?"away":"home";if(sp[loser].length)beats.push(`${sp[loser].map(first).map(esc).join(", ")} on ${esc(loser==="home"?g.home:g.away)}`)}}
+  if(beats.length)items.push(["Bad beat","Lost by half a point",beats.join("; ")+"."]);
+  const active=state.roster.filter(p=>!removed().includes(p));
+  const late=active.filter(p=>!players[p]).map(first);
+  const blanks=ids.filter(p=>Object.keys(players[p].sel||{}).length<w.games.length).map(first);
+  const delay=[...late.map(n=>n+" (no sheet)"),...blanks.map(n=>n+" (blank picks)")];
+  if(delay.length)items.push(["Delay of game","Missed picks",delay.map(esc).join(", ")+"."]);
+  return `<div class="panel ref"><h2>Referee report · Week ${w.week}</h2><p class="note">${w.status==="final"?"Final.":"Provisional, based on "+graded.length+" graded games."}</p>${items.map(([t,s,b])=>`<div class="refitem"><div class="reft">${t==="Touchdown"?SIG.td:t==="Delay of game"||t==="Bad beat"?SIG.inc:'<span class="minif"></span>'}<b>${t}</b><span class="note">${s}</span></div><div>${b}</div></div>`).join("")}</div>`;
+}
+
+/* ---------- standings ---------- */
+function seasonRows(includeTest,withBot){
+  const weeks=countedWeeks(includeTest);
+  return allPlayerIds(withBot).map(pid=>{const t={pid,pts:0,w:0,l:0,lw:0,ll:0,tb:0,weeks:0};
+    for(const wid of weeks){const p=pid===BOT?botPicks(state.weeks[wid]):(state.reveals[wid].players&&state.reveals[wid].players[pid]);if(!p)continue;const s=scoreWeek(state.weeks[wid],p);t.pts+=s.pts;t.w+=s.w;t.l+=s.l;t.lw+=s.lw;t.ll+=s.ll;t.tb+=s.tbMiss||0;t.weeks++}
+    return t}).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb);
+}
+function renderStandings(){
+  const el=$("#v-standings");
+  const rows=seasonRows(false,true);
+  const active=rows.filter(r=>!removed().includes(r.pid)),out=rows.filter(r=>removed().includes(r.pid));
+  let rk=0;active.forEach(r=>{r.rk=r.pid===BOT?"":++rk});
+  let h="";
+  const w=curWeek(),wid=currentWeekId(),rev=state.reveals[wid];
+  if(w&&rev){
+    h+=refReport(wid);
+    const wk=Object.entries(weekPlayers(wid,true)).map(([pid,p])=>({pid,...scoreWeek(w,p)}));
+    wk.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));
+    const allFinal=w.status==="final";const win=weekWinners(wid);
+    const nGames=(w.games||[]).filter(g=>!(w.results&&w.results[g.id]&&w.results[g.id].void)).length;
+    h+=`<div class="board"><h2>Week ${w.week}${w.scored===false?" (test)":""}</h2><p class="note">${allFinal?"Final.":"Provisional: "+(wk[0]?wk[0].graded:0)+" of "+nGames+" games graded."}${win.length?(win.length>1?" Shared weekly title: ":" Weekly winner: ")+win.map(nm).map(esc).join(", ").replace(/\.?$/,"."):""}</p>
+    <div class="tablewrap"><table><thead><tr><th>Player</th><th class="num">Pts</th><th class="num">W-L</th><th class="num">Flag</th><th class="num">TB miss</th></tr></thead><tbody>${wk.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw?"W":r.ll?"L":"–"}</td><td class="num">${r.tbMiss??"–"}</td></tr>`).join("")}</tbody></table></div></div>`;
+  }else if(w){h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">Weekly standings appear after picks lock at ${kick(w.deadline)}.</p></div>`}
+  const max=Math.max(1,...active.map(r=>r.pts));
+  h+=`<div class="board"><h2>Season ${state.config?state.config.season:""}</h2>`;
+  if(!active.length||!countedWeeks(false).length)h+='<p class="note">No scored weeks yet. Test weeks do not count toward the season.</p>';
+  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Player</th><th class="num">Pts</th><th class="num">ATS</th><th class="num">Flag</th><th class="num">TB miss</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td>${chip(r.pid)}${esc(nm(r.pid))}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then flag wins, then smallest total tiebreaker miss. The bar shows points against the leader. Robo-Sharp plays every week but holds no rank and wins nothing.</p>`;
+  h+="</div>";
+  const sb=survivorBoard();
+  if(sb&&sb.length){const alive=sb.filter(r=>r.alive);
+    h+=`<div class="panel surv"><h2>Survivor</h2><p>${alive.length} of ${sb.length} still alive${alive.length&&alive.length<=4?": "+alive.map(r=>esc(nm(r.pid))).join(", "):""}.</p><p class="note"><a href="#survivor">See the full Survivor board</a></p></div>`}
+  el.innerHTML=h;
+}
+
+/* ---------- survivor ---------- */
+function survivorGrid(){
+  const start=survivorStart();if(!start)return null;
+  const weeks=Object.keys(state.weeks).sort().filter(w=>w>=start&&state.reveals[w]&&["locked","final"].includes(state.weeks[w].status));
+  const ids=allPlayerIds(false).filter(p=>!removed().includes(p));
+  const rows=ids.map(pid=>{const row={pid,alive:true,outWeek:null,cells:{},wins:0,used:[]};
+    for(const wid of weeks){const w=state.weeks[wid];if(!row.alive){row.cells[wid]={st:"gone"};continue}
+      const p=(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;const g=sp&&w.games.find(x=>x.id===sp.g);
+      if(!g){row.cells[wid]={st:"miss"};row.alive=false;row.outWeek=w.week;continue}
+      const team=sp.s==="home"?g.home:g.away;const line=sp.s==="home"?g.homeLine:-g.homeLine;row.used.push(team);
+      const r=(w.results||{})[g.id];let st="pending";
+      if(r&&r.void)st="void";else{const c=coverSide(g,r);if(c)st=c===sp.s?"win":"loss"}
+      let mg=null;if(r&&!r.void&&(r.final||r.away||r.home)){const m=(r.home-r.away)+g.homeLine;mg=Math.round((sp.s==="home"?m:-m)*10)/10}
+      row.cells[wid]={st,team,line,g,side:sp.s,mg};
+      if(st==="win")row.wins++;if(st==="loss"){row.alive=false;row.outWeek=w.week}}
+    return row});
+  const lastOut=Math.max(0,...rows.filter(r=>!r.alive).map(r=>r.outWeek));
+  rows.sort((a,b)=>(b.alive-a.alive)||((b.outWeek||0)-(a.outWeek||0))||b.wins-a.wins||nm(a.pid).localeCompare(nm(b.pid)));
+  return {weeks,rows,lastOut}}
+function renderSurvivor(){
+  const el=$("#v-survivor");const G=survivorGrid();
+  if(!G){el.innerHTML='<div class="panel empty">Survivor has not started yet.</div>';return}
+  const {weeks,rows}=G;const alive=rows.filter(r=>r.alive);const cw=currentWeekId();const curOpen=!state.reveals[cw];
+  let h=`<div class="board svhead"><h2>Survivor</h2><div class="svstats"><div><b>${alive.length}</b><span>alive</span></div><div><b>${rows.length-alive.length}</b><span>out</span></div><div><b>${weeks.length}</b><span>week${weeks.length===1?"":"s"} played</span></div></div>`;
+  if(!rows.length)h+='<p class="note">Players appear here after their first revealed week.</p>';
+  else if(alive.length===1&&weeks.length)h+=`<p class="svwin">${esc(nm(alive[0].pid))} is the last one standing.</p>`;
+  else if(!alive.length&&weeks.length){const lw=Math.max(...rows.map(r=>r.outWeek||0));const co=rows.filter(r=>r.outWeek===lw);h+=`<p class="svwin">Everyone is out. ${co.map(r=>esc(nm(r.pid))).join(", ")} went out last in week ${lw} and share the title.</p>`}
+  h+="</div>";
+  /* alive count by week */
+  if(weeks.length){const counts=weeks.map(wid=>rows.filter(r=>{const c=r.cells[wid];return c&&c.st!=="gone"&&c.st!=="miss"&&c.st!=="loss"}).length);const start=rows.length;
+    h+=`<div class="panel"><h2>Alive after each week</h2><div class="svbars">${[start,...counts].map((n,i)=>`<div class="svbar"><span class="svn">${n}</span><span class="svb" style="height:${start?Math.max(4,n/start*80):4}px"></span><span class="note">${i===0?"Start":"W"+state.weeks[weeks[i-1]].week}</span></div>`).join("")}</div></div>`}
+  /* grid */
+  const head=weeks.map(wid=>`<th class="num">W${state.weeks[wid].week}</th>`).join("")+(curOpen&&cw>=survivorStart()?`<th class="num">W${state.weeks[cw]?state.weeks[cw].week:""}</th>`:"");
+  const cell=(c)=>{if(!c)return '<td></td>';if(c.st==="gone")return '<td class="svc gone" aria-label="out"></td>';if(c.st==="miss")return '<td class="svc loss"><span class="svt">No pick</span></td>';
+    const L=teamLook(c.team,c.g,c.side);const lab={win:"Covered",loss:"Lost",void:"Void",pending:"Pending"}[c.st];
+    return `<td class="svc ${c.st}" title="${esc(c.team)} ${fmtLine(c.line)}: ${lab}${c.mg!=null?" by "+Math.abs(c.mg):""}"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">${fmtLine(c.line)}${c.mg!=null&&c.st!=="void"?" \u00b7 "+(c.mg>0?"+":"")+c.mg:""}</span></td>`};
+  const myCur=state.myPicks&&state.myPicks.weeks&&state.myPicks.weeks[cw]&&state.myPicks.weeks[cw].surv;
+  const curCell=pid=>{if(!(curOpen&&cw>=survivorStart()))return "";const r=rows.find(x=>x.pid===pid);if(r&&!r.alive)return '<td class="svc gone"></td>';
+    if(pid===state.uid){if(!myCur)return '<td class="svc next"><span class="svt">Not picked</span></td>';const w=state.weeks[cw];const g=w&&w.games.find(x=>x.id===myCur.g);if(!g)return '<td class="svc next"></td>';const team=myCur.s==="home"?g.home:g.away;const L=teamLook(team,g,myCur.s);return `<td class="svc next"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">Your pick</span></td>`}
+    return '<td class="svc next"><span class="svl">Hidden until the lock</span></td>'};
+  h+=`<div class="panel"><h2>Board</h2><p class="note">Each cell shows the team, its line, and how far it covered or missed. Picks stay hidden until the weekly lock.</p><div class="tablewrap"><table class="svtab"><thead><tr><th>Player</th>${head}<th class="num">Status</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.alive?"":" svout"}"><td class="svp">${typeof chip==="function"?chip(r.pid):""}${esc(nm(r.pid))}</td>${weeks.map(wid=>cell(r.cells[wid])).join("")}${curCell(r.pid)}<td class="num">${r.alive?'<span class="svs alive">Alive</span>':'<span class="svs out">Out W'+r.outWeek+'</span>'}</td></tr>`).join("")}</tbody></table></div>
+  <div class="svkey"><span class="svc win"><span class="svt">Covered</span></span><span class="svc loss"><span class="svt">Lost</span></span><span class="svc pending"><span class="svt">Pending</span></span><span class="svc void"><span class="svt">Void, still alive</span></span></div></div>`;
+  /* teams left for me */
+  const me=rows.find(r=>r.pid===state.uid);
+  if(me&&me.alive){const usedSet=new Set(me.used.map(canon));const w=state.weeks[cw];const avail=w?[...new Set(w.games.flatMap(g=>[g.away,g.home]))].filter(t=>!usedSet.has(canon(t))):[];
+    h+=`<div class="panel"><h2>Your teams</h2><p class="note">Used: ${me.used.length?me.used.map(t=>{const L=teamLook(t);return esc(L.abbr)+" "+(L.emoji||"")}).join(", "):"none yet"}.</p>${avail.length?`<p class="note">Still available on this week's slate: ${avail.map(t=>{const L=teamLook(t);return esc(L.abbr)+" "+(L.emoji||"")}).join(", ")}.</p>`:""}</div>`}
+  el.innerHTML=h;
+}
+
+/* ---------- rankings ---------- */
+function renderRankings(){
+  const el=$("#v-rankings");const R=state.rankings;const v=state.rankView||"ap";
+  const seg=`<div class="seg" role="group" aria-label="Ranking view">${[["ap","AP Top 25"],["cfp","CFP"],["power","Power ratings"],["ats","All teams ATS"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${v===k}">${l}</button>`).join("")}</div>`;
+  if(!R){el.innerHTML=seg+'<div class="panel empty">Rankings load each Tuesday with the new slate.</div>';return}
+  const w=curWeek();const playing=new Set();((w&&w.pool)||[]).forEach(g=>{playing.add(canon(g.away));playing.add(canon(g.home))});
+  const row=(t,extra)=>{const L=teamLook(t.team);const mv=t.prev==null?'<span class="mv">–</span>':t.prev==="NR"?'<span class="mv up">New</span>':t.prev>t.rank?`<span class="mv up">▲${t.prev-t.rank}</span>`:t.prev<t.rank?`<span class="mv dn">▼${t.rank-t.prev}</span>`:'<span class="mv">–</span>';
+    return `<div class="rrow"><span class="rnum">${t.tie?"T-":""}${t.rank}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(t.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${w&&w.pool&&!playing.has(canon(t.team))?'<span class="bye">Bye</span>':""}</span><span class="rrec">${esc(t.record||"")}</span>${extra||mv}</div>`};
+  let h=seg;
+  if(v==="ap"){const P=R.ap;if(!P){el.innerHTML=h+'<div class="panel empty">The AP poll loads each Tuesday.</div>';return}
+    const ties={};P.teams.forEach(t=>ties[t.rank]=(ties[t.rank]||0)+1);
+    h+=`<div class="board"><h2>AP Top 25</h2><p class="note">Poll of ${esc(P.asOf)}.${P.teams.some(t=>t.prev!=null)?"":" Movement arrows start with next week's poll."}</p><div class="rlist">${P.teams.map(t=>row({...t,tie:ties[t.rank]>1})).join("")}</div>${P.others&&P.others.length?`<p class="note">Also receiving votes: ${P.others.map(o=>esc(o.team)+" "+o.pts).join(", ")}.</p>`:""}</div>`}
+  if(v==="cfp"){const P=R.cfp;if(!P||!P.teams||!P.teams.length){el.innerHTML=h+'<div class="panel empty">The playoff committee releases its rankings on Tuesdays in November and December. They show here once released.</div>';return}
+    h+=`<div class="board"><h2>CFP Rankings</h2><p class="note">Released ${esc(P.asOf)}.</p><div class="rlist">${P.teams.map(t=>row(t)).join("")}</div></div>`}
+  if(v==="power"){const P=R.power;if(!P||!P.sp){el.innerHTML=h+'<div class="panel empty">Power ratings load with the weekly update.</div>';return}
+    const hist=Object.keys(state.history).sort().filter(k=>k<currentWeekId());const prevSp={};const ph=hist.length&&state.history[hist[hist.length-1]];((ph&&ph.power&&ph.power.sp&&ph.power.sp.teams)||[]).forEach(t=>prevSp[canon(t.team)]=t.rank);
+    const vr={},fr={},apr={};((P.vsin&&P.vsin.teams)||[]).forEach(t=>vr[canon(t.team)]=t);((P.fpi&&P.fpi.teams)||[]).forEach(t=>fr[canon(t.team)]=t.rank);((R.ap&&R.ap.teams)||[]).forEach(t=>apr[canon(t.team)]=t.rank);
+    h+=`<div class="board"><h2>Power ratings</h2><p class="note">Sorted by SP+. SP+ rating is points better than an average FBS team. VSiN and FPI columns show each team's rank in those systems. FPI shows its top 25 only. Sources: ${esc(P.sp.source)}, ${esc(P.sp.asOf)}; ${esc(P.vsin?P.vsin.source+", "+P.vsin.asOf:"")}; ${esc(P.fpi?P.fpi.source+", "+P.fpi.asOf:"")}.</p>
+    <div class="prow phead"><span>SP+</span><span></span><span>Team</span><span class="num">Rtg</span><span class="num">VSiN</span><span class="num">FPI</span></div>
+    ${P.sp.teams.map(t=>{const k=canon(t.team);const L=teamLook(t.team);const ap=apr[k];const pv=prevSp[k];const mv=pv==null?"":pv>t.rank?`<i class="up">\u25b2${pv-t.rank}</i>`:pv<t.rank?`<i class="dn">\u25bc${t.rank-pv}</i>`:"";return `<div class="prow"><span class="rnum">${t.rank}${mv}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(t.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${ap?' <span class="bye">AP '+ap+'</span>':""}</span><span class="num">${t.rating>0?"+":""}${t.rating}</span><span class="num">${vr[k]?vr[k].rank:"\u2013"}</span><span class="num">${fr[k]||"\u2013"}</span></div>`}).join("")}</div>`}
+  if(v==="ats"){const P=R.ats;if(!P||!P.teams||!P.teams.length){el.innerHTML=h+'<div class="panel empty">Team records against the spread load with the weekly update.</div>';return}
+    const apr={};((R.ap&&R.ap.teams)||[]).forEach(t=>apr[canon(t.team)]=t.rank);
+    const pct=x=>{const [w,l]=String(x).split("-").map(Number);return w+l?w/(w+l):0};
+    const confs={};P.teams.forEach(t=>{(confs[t.conf||"Other"]=confs[t.conf||"Other"]||[]).push(t)});
+    h+=`<div class="board"><h2>Every team against the spread</h2><p class="note">2026 season, from ${esc(P.source||"the weekly update")}, as of ${esc(P.asOf)}. ${P.teams.length} of 138 FBS teams loaded. Sorted by cover rate within each conference.</p>`;
+    for(const [cf,list] of Object.entries(confs)){list.sort((x,y)=>pct(y.ats)-pct(x.ats)||pct(y.su)-pct(x.su));
+      h+=`<h3 class="rh board-h">${esc(cf)}</h3><div class="rlist">${list.map((t,i)=>{const L=teamLook(t.team);const rk=apr[canon(t.team)];return `<div class="rrow"><span class="rnum">${rk?"#"+rk:""}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(t.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="rrec">SU ${esc(t.su)}</span><span class="rrec ats">${esc(String(t.ats).replace(/-0$/,""))}</span></div>`}).join("")}</div>`}
+    h+="</div>"}
+  el.innerHTML=h;
+}
+
+/* ---------- players ---------- */
+function renderPlayers(){
+  const el=$("#v-players");
+  const ids=allPlayerIds(true);const humans=ids.filter(p=>p!==BOT);
+  if(!humans.length){el.innerHTML='<div class="panel empty">Player stats appear after the first week\'s picks are revealed.</div>';return}
+  if(state.incTest==null)state.incTest=!countedWeeks(false).length;
+  const weeks=countedWeeks(state.incTest);
+  const sel=state.profile&&ids.includes(state.profile)?state.profile:(ids.includes(state.uid)?state.uid:ids[0]);
+  let h=`<div class="bar"><label for="profileSel" class="note">Player</label><select id="profileSel">${ids.map(p=>`<option value="${esc(p)}" ${p===sel?"selected":""}>${esc(nm(p))}</option>`).join("")}</select><label class="note"><input type="checkbox" id="incTest" ${state.incTest?"checked":""}> Include test weeks</label></div>`;
+  /* trophy case */
+  const trophies={};for(const wid of weeks)for(const p of weekWinners(wid))trophies[p]=(trophies[p]||0)+1;
+  const tlist0=Object.entries(trophies);const tlist=tlist0.sort((a,b)=>b[1]-a[1]);
+  h+=`<div class="panel"><h2>Trophy case</h2>${tlist.length?`<div class="trophies">${tlist.map(([p,n])=>`<div class="tro"><span class="cup" aria-hidden="true">🏆</span><b>${esc(nm(p))}</b><span class="note">${n} weekly title${n>1?"s":""}</span></div>`).join("")}</div>`:'<p class="note">No weekly titles yet. A title goes to the top score once a week is marked final.</p>'}</div>`;
+  /* rank trend */
+  h+=`<div class="panel"><h2>Rank by week</h2>${trendChart(weeks,humans,sel===BOT?humans[0]:sel)}</div>`;
+  const ms=ids.map(p=>({p,...modelStats(p,weeks)})).filter(x=>x.agree[0]+x.agree[1]+x.fade[0]+x.fade[1]);
+  const pc=a=>a[0]+a[1]?Math.round(a[0]/(a[0]+a[1])*100)+"%":"\u2013";
+  h+=`<div class="panel"><h2>Against the model</h2><p class="note">Agree means you took the side Robo-Sharp took. Fade means you took the other side.</p>${ms.length?`<div class="tablewrap"><table class="plain"><thead><tr><th>Player</th><th class="num">Agree</th><th class="num">Win %</th><th class="num">Fade</th><th class="num">Win %</th></tr></thead><tbody>${ms.map(x=>`<tr><td>${esc(nm(x.p))}</td><td class="num">${x.agree[0]}-${x.agree[1]}</td><td class="num">${pc(x.agree)}</td><td class="num">${x.fade[0]}-${x.fade[1]}</td><td class="num">${pc(x.fade)}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Fills in once games with a model line are graded.</p>'}</div>`;
+  /* profile */
+  const st={w:0,l:0,lw:0,ll:0,fav:[0,0],dog:[0,0],home:[0,0],away:[0,0],teams:{}};
+  for(const wid of weeks){const w=state.weeks[wid];const p=weekPlayers(wid,true)[sel];if(!p)continue;const rs=w.results||{};
+    for(const g of w.games){const c=coverSide(g,rs[g.id]);const pick=(p.sel||{})[g.id];if(!c||!pick)continue;const win=pick===c?0:1;
+      if(win===0)st.w++;else st.l++;if(p.lock===g.id){if(win===0)st.lw++;else st.ll++}
+      const line=pick==="home"?g.homeLine:-g.homeLine;(line<0?st.fav:st.dog)[win]++;st[pick][win]++;
+      const team=pick==="home"?g.home:g.away;st.teams[team]=st.teams[team]||[0,0];st.teams[team][win]++}}
+  const rec=a=>a[0]+"-"+a[1];const pct=(a,b)=>a+b?Math.round(a/(a+b)*100)+"%":"–";
+  const teams=Object.entries(st.teams).sort((a,b)=>(b[1][0]+b[1][1])-(a[1][0]+a[1][1])||b[1][0]-a[1][0]);
+  h+=`<div class="panel"><h2>${chip(sel,true)}${esc(nm(sel))}</h2>${talkLine(sel)}<div class="stats">
+    <div><span class="note">Against the spread</span><b>${st.w}-${st.l}</b><span class="note">${pct(st.w,st.l)}</span></div>
+    <div><span class="note">Flag record</span><b>${st.lw}-${st.ll}</b></div>
+    <div><span class="note">Favorites</span><b>${rec(st.fav)}</b></div>
+    <div><span class="note">Underdogs</span><b>${rec(st.dog)}</b></div>
+    <div><span class="note">Home teams</span><b>${rec(st.home)}</b></div>
+    <div><span class="note">Road teams</span><b>${rec(st.away)}</b></div></div>
+    ${teams.length?`<h3 class="rh">Record when picking each team</h3><div class="teamrec">${teams.map(([t,a])=>{const L=teamLook(t);return `<span class="tchip" style="border-left-color:${L.c1}">${esc(L.abbr)} ${L.emoji} <b>${rec(a)}</b></span>`}).join("")}</div>`:'<p class="note">No graded picks yet.</p>'}</div>`;
+  /* pick history */
+  {const ph=[];for(const wid of Object.keys(state.reveals).sort().reverse()){const p=(state.reveals[wid].players||{})[sel];if(p&&p.history)ph.push([wid,p.history])}
+   if(sel!==BOT)h+=`<div class="panel"><h2>Pick history</h2>${ph.length?ph.map(([wid,hs])=>`<h3 class="rh">Week ${state.weeks[wid]?state.weeks[wid].week:""}</h3>${hs.map(x=>`<div class="logi"><span class="note">${esc(when(x.at))}</span><span>${esc(x.note)}</span></div>`).join("")}`).join(""):'<p class="note">History shows after each lock.</p>'}</div>`}
+  /* head to head */
+  const h2h=ids.filter(o=>o!==sel).map(o=>{let W=0,L=0,T=0;for(const wid of weeks){const P=weekPlayers(wid,true);if(!P[sel]||!P[o])continue;const w=state.weeks[wid];const a=scoreWeek(w,P[sel]).pts,b=scoreWeek(w,P[o]).pts;if(a>b)W++;else if(a<b)L++;else T++}return {o,W,L,T}}).filter(x=>x.W+x.L+x.T);
+  h+=`<div class="panel"><h2>Head to head</h2>${h2h.length?`<p class="note">Weekly points against each player.</p><div class="h2h">${h2h.map(x=>`<span>${esc(nm(x.o))}</span><b>${x.W}-${x.L}${x.T?"-"+x.T:""}</b>`).join("")}</div>`:'<p class="note">Head to head records start after a week with at least two players.</p>'}</div>`;
+  el.innerHTML=h;
+}
+function trendChart(weeks,ids,sel){
+  if(weeks.length<2)return '<p class="note">The chart starts after two weeks. Each line shows one player\'s season rank after each week.</p>';
+  const ranks={};ids.forEach(p=>ranks[p]=[]);const cum={};ids.forEach(p=>cum[p]={pts:0,lw:0,tb:0});
+  weeks.forEach((wid,i)=>{const P=state.reveals[wid].players||{};for(const p of ids){if(P[p]){const s=scoreWeek(state.weeks[wid],P[p]);cum[p].pts+=s.pts;cum[p].lw+=s.lw;cum[p].tb+=s.tbMiss||0}}
+    const order=[...ids].sort((a,b)=>cum[b].pts-cum[a].pts||cum[b].lw-cum[a].lw||cum[a].tb-cum[b].tb);order.forEach((p,k)=>ranks[p].push(k+1))});
+  const W=320,H=Math.max(120,ids.length*18+30),pl=26,pr=10,pt=10,pb=20;const n=ids.length;
+  const x=i=>pl+(W-pl-pr)*i/(weeks.length-1),y=r=>pt+(H-pt-pb)*(r-1)/Math.max(1,n-1);
+  let s=`<div class="tablewrap"><svg class="trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="Season rank by week">`;
+  for(let r=1;r<=n;r++)s+=`<text x="4" y="${y(r)+4}" class="ax">${r}</text><line x1="${pl}" x2="${W-pr}" y1="${y(r)}" y2="${y(r)}" class="gl"/>`;
+  weeks.forEach((wid,i)=>s+=`<text x="${x(i)}" y="${H-4}" class="ax" text-anchor="middle">W${state.weeks[wid].week}</text>`);
+  for(const p of ids.filter(p=>p!==sel))s+=`<polyline class="ln2" points="${ranks[p].map((r,i)=>x(i)+","+y(r)).join(" ")}"/>`;
+  s+=`<polyline class="ln1" points="${ranks[sel].map((r,i)=>x(i)+","+y(r)).join(" ")}"/>`;
+  const last=ranks[sel].length-1;s+=`<circle class="dot" cx="${x(last)}" cy="${y(ranks[sel][last])}" r="4"/></svg></div><p class="note">Highlighted: ${esc(nm(sel))}. Grey lines: everyone else.</p>`;
+  return s;
+}
+
+/* ---------- commissioner ---------- */
+function renderCommish(){
+  const el=$("#v-commish"),w=curWeek(),wid=currentWeekId();
+  if(!state.isOwner){el.innerHTML="";return}
+  let h="";
+  if(!w){el.innerHTML=loginsPanel()+'<div class="panel empty">No week loaded yet. Paste a slate below.</div>'+importPanel();return}
+  const nSub=(state.sheetCount||{})[wid]||0;
+  h+=`<div class="panel"><h2>Week ${w.week} control</h2><p class="note">Status: ${esc(w.status)}. ${nSub} pick sheet${nSub===1?"":"s"} submitted. Deadline ${kick(w.deadline)}.</p><div class="bar">
+    ${w.status==="draft"?'<button class="btn primary" data-act="open">Open picks</button>':""}
+    ${w.status==="open"?'<button class="btn" data-act="todraft">Move back to draft</button>':""}
+    ${w.status==="locked"?'<button class="btn primary" data-act="final">Mark week final</button>':""}
+    ${w.status==="final"?'<button class="btn" data-act="unfinal">Reopen scoring</button>':""}
+  </div><p class="note">Picks lock and show to everyone by themselves at the deadline. The site refuses any save after it. Every commissioner action is logged.</p></div>`;
+  if(w.status==="draft"){
+    const inSlate=new Set(w.games.map(g=>g.id));const pool=(w.pool||[]).filter(g=>!inSlate.has(g.id));
+    h+=`<div class="panel"><h2>Swap games</h2><p class="note">Swaps are allowed only before picks open, and each one is shown on the slate.</p><div class="grid2">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>`<span class="t">${g.slot}. ${esc(g.away)} at ${esc(g.home)}</span><select id="sw-${esc(g.id)}" aria-label="Replacement for slot ${g.slot}"><option value="">Replace with…</option>${pool.map(p=>`<option value="${esc(p.id)}">${esc(p.away)} at ${esc(p.home)} (${fmtLine(p.homeLine)})</option>`).join("")}</select><button class="btn" data-act="swap" data-g="${esc(g.id)}">Swap</button><span></span>`).join("")}</div></div>`;
+  }
+  if(w.status!=="draft"){
+    const rs=w.results||{};
+    h+=`<div class="panel"><h2>Scores</h2><p class="note">Enter scores as games finish. Standings update for everyone right away. Check every game before marking the week final.</p><div class="grid2" style="grid-template-columns:1fr auto auto auto">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot}. ${esc(g.away)} / ${esc(g.home)}</span><input type="number" id="ra-${esc(g.id)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status"><option value="">Not final</option><option value="final" ${r.final&&!r.void?"selected":""}>Final</option><option value="void" ${r.void?"selected":""}>Void</option></select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button></div></div>`;
+  }
+  const ovs=(state.config&&state.config.teamOverrides)||{};
+  h+=`<div class="panel"><h2>Team labels</h2><p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters" aria-label="Letters" style="width:90px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}</div>`;
+  h+=`<div class="panel"><h2>League name</h2><div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div></div>`;
+  el.innerHTML=loginsPanel()+h+importPanel();
+}
+
+
+start();
+})();
+</script>
+
+</body>
+</html>
