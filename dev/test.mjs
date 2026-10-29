@@ -58,9 +58,10 @@ try {
 
   // ---- load slate, add a player ----
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(200);
+  await c.click("details.manual summary");
   await c.fill("#slateJson", JSON.stringify(slate));
   await c.click("#slateForm button[type=submit]"); await c.waitForTimeout(400);
-  check("slate loads as draft", (await c.textContent("#v-commish")).includes("Status: draft"));
+  check("slate loads as draft", (await c.textContent("#v-commish")).includes("This week · Week 10") && (await c.textContent("#v-commish h2 .pill")) === "Draft");
   await c.click('[data-act="open"]'); await c.waitForTimeout(400);
   check("picks open", (await c.textContent("#statusBadge")).toLowerCase().includes("picks open"));
   await c.fill("#apName", "Mike"); await c.fill("#apPhone", "(214) 555-0123");
