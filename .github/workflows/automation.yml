@@ -5,7 +5,7 @@ name: Hourly automation
 # Needs two repository secrets: SITE_URL (for example https://tators-picks.vercel.app) and CRON_SECRET.
 on:
   schedule:
-    - cron: "17,47 * * * *"
+    - cron: "19,49 * * * *"
   workflow_dispatch: {}
 
 jobs:
