@@ -24,7 +24,7 @@ College football pick em against the spread for one league. Ten games a week, a 
 
 ## Weekly automation
 
-GitHub Actions (`.github/workflows/automation.yml`) calls `/api/cron` every hour. Vercel's daily cron calls it once a day as a backup. The site decides what is due:
+GitHub Actions (`.github/workflows/automation.yml`) calls `/api/cron` twice an hour. Vercel's daily cron calls it once a day as a backup. The site decides what is due:
 
 | When (Central) | Job | Manual fallback in the Commissioner tab |
 |---|---|---|

@@ -1,10 +1,11 @@
 name: Hourly automation
 
-# Calls the site's automation endpoint at minute 7 of every hour. The site decides what is due.
+# Calls the site's automation endpoint twice an hour (minutes 17 and 47). The site decides what is due.
+# Twice an hour because GitHub can delay or drop scheduled runs; extra calls do nothing when nothing is due.
 # Needs two repository secrets: SITE_URL (for example https://tators-picks.vercel.app) and CRON_SECRET.
 on:
   schedule:
-    - cron: "7 * * * *"
+    - cron: "17,47 * * * *"
   workflow_dispatch: {}
 
 jobs:
