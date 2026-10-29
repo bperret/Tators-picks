@@ -44,7 +44,7 @@ Rules the automation keeps:
 * A postponed or canceled game waits for the commissioner to void it.
 * Moving a week back to draft stops the automatic open for that week. Reopening scoring stops the automatic final.
 * Robo-Sharp's line is ESPN FPI's projected margin for each game. SP+ and VSiN stay as last loaded.
-* The team game log keeps every finished FBS game: scores, the line saved before kickoff, and the total. The hourly ATS run adds games as they finish. Teams, Stats reads it from `/api/state?part=teams`, so the main state stays small. A hand-entered slate score shows in place of ESPN's.
+* The team game log keeps every finished FBS game: scores, the line saved before kickoff, and the total. The hourly ATS run adds games as they finish. The Teams tab reads it from `/api/state?part=teams`, so the main state stays small. A hand-entered slate score shows in place of ESPN's.
 
 ESPN's feeds are unofficial and can change without notice.
 
