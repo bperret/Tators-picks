@@ -215,6 +215,17 @@ try {
   check("no sideways scroll on a phone", width <= 390, String(width));
   await m.evaluate(() => (location.hash = "#profile")); await m.waitForTimeout(300);
   check("profile shows own number only", (await m.textContent("#v-profile")).includes("(214) 555-0123"));
+  const bg = () => m.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const lightBg = await bg();
+  await m.click('[data-theme-set="dark"]'); await m.waitForTimeout(150);
+  const darkBg = await bg();
+  check("Dark choice switches the page to dark colors", (await m.getAttribute("html", "data-theme")) === "dark" && darkBg !== lightBg, lightBg + " -> " + darkBg);
+  await m.reload(); await m.waitForSelector("#app:not([hidden])");
+  check("Dark choice stays after a reload", (await m.getAttribute("html", "data-theme")) === "dark");
+  await m.evaluate(() => (location.hash = "#profile")); await m.waitForTimeout(300);
+  check("Profile shows the saved choice", (await m.getAttribute('[data-theme-set="dark"]', "aria-pressed")) === "true");
+  await m.click('[data-theme-set="auto"]'); await m.waitForTimeout(150);
+  check("Auto hands the choice back to the device", (await m.getAttribute("html", "data-theme")) === null && (await bg()) === lightBg);
   const mstate = await m.evaluate(() => fetch("/api/state").then((r) => r.json()));
   check("players never receive phone numbers", !JSON.stringify(mstate.players).includes("5550100") && !mstate.logins);
   check("players never receive sheet status", !mstate.sheetStatus);
