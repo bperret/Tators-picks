@@ -109,6 +109,25 @@ try {
   const before = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
   check("picks hidden from others before the lock", !before.reveals["2026-w10"]);
 
+  // ---- commissioner locks early, then unlocks ----
+  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+  await c.click('[data-act="lock"]'); await c.waitForTimeout(150);
+  check("lock asks for a second tap", (await c.textContent('[data-act="lock"]')).includes("Tap again"));
+  await c.click('[data-act="lock"]'); await c.waitForTimeout(500);
+  const lockedSave = await m.evaluate(() => fetch("/api/picks", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ weekId: "2026-w10", sel: { g1: "home" } }) }).then((r) => r.status));
+  check("early lock refuses saves", lockedSave === 423, String(lockedSave));
+  const afterLock = await m.evaluate(() => fetch("/api/state").then((r) => r.json()));
+  check("early lock shows everyone's picks", !!afterLock.reveals["2026-w10"]);
+  await c.waitForSelector('[data-act="unlock"]');
+  await c.fill("#unlockAt", await c.evaluate(() => { const d = new Date(Date.now() + 3 * 3600e3); const z = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; }));
+  await c.click('[data-act="unlock"]'); await c.waitForTimeout(500);
+  const afterUnlock = await m.evaluate(() => fetch("/api/state").then((r) => r.json()));
+  check("unlock hides picks again", !afterUnlock.reveals["2026-w10"]);
+  const reSave = await m.evaluate(() => fetch("/api/picks", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ weekId: "2026-w10", sel: { g1: "away", g2: "home", g3: "home", g4: "away", g5: "away" }, lock: "g2", tb: 51, surv: { g: "g5", s: "away" }, abbr: {} }) }).then((r) => r.status));
+  check("players can save again after unlock", reSave === 200, String(reSave));
+  const logNow = afterUnlock.log.map((l) => l.action);
+  check("lock and unlock are in the commissioner log", logNow.includes("Locked picks early") && logNow.includes("Unlocked picks"));
+
   // ---- move the deadline into the past: the server must refuse saves ----
   const past = iso(new Date(Date.now() - 60e3));
   await pg.query("update weeks set data = jsonb_set(data, '{deadline}', to_jsonb($1::text)) where id = '2026-w10'", [past]);

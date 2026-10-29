@@ -7,6 +7,7 @@ import { runJob, dismissFlag, JOB_NAMES } from "../lib/auto.js";
 
 const BY = "Commissioner";
 
+const ctTime = (t) => new Date(t).toLocaleString("en-US", { timeZone: "America/Chicago", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " CT";
 const label = (p) => p.name || p.invited || "a new player";
 
 export default async function handler(req, res) {
@@ -73,6 +74,34 @@ export default async function handler(req, res) {
         if (to === "final") await snapshotRankings(w.id);
         const words = { open: "Opened picks", draft: "Moved the week back to draft", final: "Marked week final", locked: "Reopened scoring" };
         await addLog(BY, words[to], `Week ${w.week}`);
+        return send(res, 200, { ok: true });
+      }
+      case "lockNow": {
+        const w = await getWeek(b.weekId);
+        if (!w) return fail(res, 404, "Week not found.");
+        if (effectiveStatus(w) !== "open") return fail(res, 409, "Only a week with picks open can be locked.");
+        const now = new Date();
+        if (!w.origDeadline) w.origDeadline = w.deadline;
+        const was = w.deadline;
+        w.deadline = now.toISOString();
+        w.lockEvents = [...(w.lockEvents || []), { at: w.deadline, action: "lock", was }];
+        await putWeek(w);
+        await addLog(BY, "Locked picks early", `Week ${w.week} locked ${ctTime(now)}. The deadline was ${ctTime(was)}. Everyone's picks now show.`);
+        return send(res, 200, { ok: true });
+      }
+      case "unlock": {
+        const w = await getWeek(b.weekId);
+        if (!w) return fail(res, 404, "Week not found.");
+        if (effectiveStatus(w) !== "locked") return fail(res, 409, w.status === "final" ? "Reopen scoring first, then unlock." : "Only a locked week can be unlocked.");
+        const until = Date.parse(b.until);
+        if (!Number.isFinite(until) || until <= Date.now() + 60e3) return fail(res, 400, "Choose a new deadline at least a minute from now.");
+        if (until > Date.now() + 14 * 86400e3) return fail(res, 400, "Choose a new deadline within two weeks.");
+        const was = w.deadline;
+        if (!w.origDeadline) w.origDeadline = was; // the slate's Saturday stays tied to the first deadline
+        w.deadline = new Date(until).toISOString();
+        w.lockEvents = [...(w.lockEvents || []), { at: new Date().toISOString(), action: "unlock", until: w.deadline }];
+        await putWeek(w);
+        await addLog(BY, "Unlocked picks", `Week ${w.week} reopened ${ctTime(new Date())}. New deadline ${ctTime(w.deadline)}. Picks were showing from ${ctTime(was)} and are hidden again until the new deadline.`);
         return send(res, 200, { ok: true });
       }
       case "swap": {

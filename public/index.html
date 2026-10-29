@@ -659,6 +659,10 @@ async function commishAct(act,ds){
   if(act==="run"){const b=document.querySelector(`[data-act="run"][data-job="${ds.job}"]${ds.force?'[data-force]':''}`);if(b){b.disabled=true;b.textContent="Working…"}
     r=await api("/api/admin",{action:"runJob",job:ds.job,force:!!ds.force});
     if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.ok?"Done. ":"Failed. ")+(o.msg||"")}else if(b){b.disabled=false}}
+  if(act==="lock"){if(!(state.lockArm&&NOW()-state.lockArm<8000)){state.lockArm=NOW();renderCommish();setTimeout(()=>{if(state.lockArm&&NOW()-state.lockArm>=8000){state.lockArm=null;renderCommish()}},8200);return}
+    state.lockArm=null;r=await api("/api/admin",{action:"lockNow",weekId:wid});msg="Picks locked. Everyone's picks now show."}
+  if(act==="unlock"){const v=$("#unlockAt").value;const t=v?new Date(v).getTime():NaN;if(!Number.isFinite(t)){toast("Choose a new deadline first.");return}
+    r=await api("/api/admin",{action:"unlock",weekId:wid,until:new Date(t).toISOString()});msg="Picks unlocked until "+kick(new Date(t).toISOString())}
   if(act==="dismiss"){r=await api("/api/admin",{action:"dismissFlag",key:ds.key});msg="Flag dismissed"}
   if(act==="pause"){r=await api("/api/admin",{action:"autoSettings",autoPaused:!(state.auto&&state.auto.paused)});msg=state.auto&&state.auto.paused?"Automation resumed":"Automation paused"}
   if(act==="open"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"open"});msg="Picks are open"}
@@ -1075,6 +1079,10 @@ function trendChart(weeks,ids,sel){
 function commishWeekId(){const c=state.cwk;return c&&state.weeks[c]&&state.weeks[c].status!=="final"?c:currentWeekId()}
 function weekPicker(wid){const open=Object.values(state.weeks).filter(x=>x.id===currentWeekId()||x.status==="locked").sort((a,b)=>a.id<b.id?1:-1);
   if(open.length<2)return "";return `<div class="bar"><label for="cwkSel" class="note">Working on</label><select id="cwkSel">${open.map(x=>`<option value="${esc(x.id)}" ${x.id===wid?"selected":""}>Week ${x.week}${x.id===currentWeekId()?" (current)":" (not final)"}</option>`).join("")}</select></div>`}
+function toLocalInput(ms){const d=new Date(ms);const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
+function unlockForm(w){const orig=w.origDeadline&&Date.parse(w.origDeadline)>NOW()+60e3?Date.parse(w.origDeadline):NOW()+30*60e3;
+  return `<div class="autobar"><label for="unlockAt" class="note">New deadline</label><input type="datetime-local" id="unlockAt" value="${toLocalInput(orig)}"><button class="btn" data-act="unlock">Unlock picks</button></div>
+  <p class="note">Unlocking hides everyone's picks again and lets players change them until the new deadline. Players already saw the picks while the week was locked. Games that already kicked off can still be picked, so set the deadline before the first kickoff you care about.${w.origDeadline?" The original deadline was "+kick(w.origDeadline)+".":""}</p>`}
 function autoPanel(){
   const A=state.auto;if(!A)return "";
   const fl=A.flags||[],runs=A.runs||{},L=A.labels||{};
@@ -1097,8 +1105,9 @@ function renderCommish(){
   const nSub=(state.sheetCount||{})[wid]||0;
   h+=`<div class="panel"><h2>Week ${w.week} control</h2><p class="note">Status: ${esc(w.status)}. ${nSub} pick sheet${nSub===1?"":"s"} submitted. Deadline ${kick(w.deadline)}.</p><div class="bar">
     ${w.status==="draft"?'<button class="btn primary" data-act="open">Open picks</button><button class="btn" data-act="run" data-job="slate" data-force="1">Rebuild from ESPN</button>':""}
-    ${w.status==="open"?'<button class="btn" data-act="todraft">Move back to draft</button>':""}
+    ${w.status==="open"?`<button class="btn${state.lockArm&&NOW()-state.lockArm<8000?" danger":""}" data-act="lock">${state.lockArm&&NOW()-state.lockArm<8000?"Tap again to lock now":"Lock picks now"}</button><button class="btn" data-act="todraft">Move back to draft</button>`:""}
     ${w.status==="locked"?'<button class="btn primary" data-act="final">Mark week final</button>':""}
+  </div>${w.status==="locked"?unlockForm(w):""}<div class="bar">
     ${w.status==="final"?'<button class="btn" data-act="unfinal">Reopen scoring</button>':""}
   </div><p class="note">Picks lock and show to everyone by themselves at the deadline. The site refuses any save after it. Every commissioner action is logged.${w.status==="draft"?" Rebuild from ESPN replaces this draft with fresh lines and undoes your swaps.":""}${w.holdOpen&&w.status==="draft"?" You moved this week back to draft, so it will not open by itself.":""}${w.holdFinal&&w.status==="locked"?" You reopened scoring, so the week will not be marked final by itself.":""}</p>${w.source?`<p class="note">${esc(w.source)}</p>`:""}</div>`;
   if(w.status==="draft"){
