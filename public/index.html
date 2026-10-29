@@ -225,7 +225,23 @@ td.svc.next{border:1px dashed var(--line)}
 .svkey .svc.loss{background:color-mix(in srgb,var(--loss) 18%,transparent)}
 .svkey .svc.pending{background:color-mix(in srgb,var(--flag) 18%,transparent)}
 .svkey .svc.void{background:var(--chip)}
-.tbgame{box-shadow:inset 0 0 0 2px var(--board)}
+.game.mq{border-left:5px solid #c9a227}
+.game.tl{border-left:5px solid #2a8c8c}
+.legend{display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;margin:0}
+.legend span{white-space:nowrap}
+.lg{display:inline-block;width:14px;height:10px;border-radius:2px}
+.lg.mq{background:#c9a227}.lg.tl{background:#2a8c8c}
+.game.tbgame{border:3px solid var(--board-ink);border-left-width:5px;padding-top:0;overflow:hidden;box-shadow:0 0 0 3px var(--board)}
+.tbband{display:flex;justify-content:space-between;gap:8px;margin:0 -12px 2px;padding:6px 12px;background:var(--board);color:var(--board-ink);border:0;font-family:var(--cond);font-weight:700;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-align:left}
+.tbband span:last-child{opacity:.8}
+.survbox{background:#3a0d12;color:#fbe9e7;border:3px solid #b3261e;border-radius:10px;padding:14px;box-shadow:0 0 0 3px #1a0507;display:flex;flex-direction:column;gap:8px}
+.survbox h2{font-family:var(--display);font-weight:400;font-size:1.3rem;margin:0;color:#ffb4a9}
+.survbox .note{color:#f3c9c3}
+.survbox p{margin:0}
+.survtop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.survtag{font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;background:#b3261e;color:#fff;border-radius:3px;padding:2px 8px}
+.survbox select{width:100%;font:inherit;padding:8px;border-radius:6px;border:2px solid #b3261e;background:#fff;color:#111}
+.survbox .conflict{background:#fff3cd;color:#3a2a00;border-radius:6px;padding:8px}
 .tbpanel{display:flex;flex-direction:column;gap:6px}
 .tbtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .tbpanel h2{margin:0}
@@ -466,7 +482,6 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Buy ins and payouts happen outside this page.</li>
         <li>The commissioner removes any picker who has not paid. A removed picker cannot pick and shows greyed out in the standings.</li>
       </ul></details>
-      <p class="note">Full disclosure: the commissioner runs the site and could read the database before the lock. The site never shows picks to anyone before the lock.</p>
     </div>
     <div class="panel" id="logPanel"></div>
   </section>
@@ -861,13 +876,14 @@ function renderPicks(){
   const gs=[...w.games].sort((a,b)=>a.slot-b.slot);
   const tg=tbGame(w);
   const flag='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="cloth" d="M6 3c3 2 6-2 10 0 1.5.7 2.5.5 3 0v9c-.5.5-1.5.7-3 0-4-2-7 2-10 0z"/><rect x="5" y="2" width="1.6" height="20" rx=".8" fill="currentColor"/></svg>';
+  h+='<p class="note legend"><span><i class="lg mq"></i> 1 to 5: top AP matchups</span><span><i class="lg tl"></i> 6 to 10: tightest lines</span></p>';
   for(const g of gs){
     const r=rs[g.id];const isVoid=r&&r.void;const c=coverSide(g,r);
     const live=r&&!r.final&&!r.void&&(r.away||r.home)?(margin(g,r)>0?"home":"away"):null;
     const awayLn=fmtLine(-g.homeLine),homeLn=fmtLine(g.homeLine);
     const sideBtn=(s,team,rk,ln)=>{const L=teamLook(team,g,s);return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-g="${esc(g.id)}" data-s="${s}" aria-pressed="${d.sel&&d.sel[g.id]===s}" aria-label="${esc(team)} ${ln}" ${editable&&!isVoid?"":"disabled"}>${c===s?'<span class="cv">Covered</span>':(live===s?'<span class="cv live">Covering</span>':"")}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${rk&&rk<99?'<span class="rk">#'+rk+'</span>':""}${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="ln">${ln}</span></button>`};
     const conflictHere=survConflict(w,d)===g.id;
-    h+=`<div class="game${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}"><div class="gmeta"><span class="slot">Game ${g.slot} · ${g.slot<=5?"Marquee":"Tight line"}${g.swap?" · swapped in":""}${tg&&tg.id===g.id?'<button type="button" class="tbtag" data-jump="tb">Tiebreaker \u2193</button>':""}</span><span class="when">${isVoid?"VOID":esc(teamLook(g.away,g,"away").abbr)+(g.neutral?" vs ":" at ")+esc(teamLook(g.home,g,"home").abbr)+" · "+kick(g.kickoff)}${g.neutral&&!isVoid?" · Neutral site":""}</span></div>
+    h+=`<div class="game ${g.slot<=5?"mq":"tl"}${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}">${tg&&tg.id===g.id?'<button type="button" class="tbband" data-jump="tb"><span>🎯 Tiebreaker game</span><span>Total \u2193</span></button>':""}<div class="gmeta"><span class="slot">Game ${g.slot}${g.swap?" · swapped in":""}</span><span class="when">${isVoid?"VOID":esc(teamLook(g.away,g,"away").abbr)+(g.neutral?" vs ":" at ")+esc(teamLook(g.home,g,"home").abbr)+" · "+kick(g.kickoff)}${g.neutral&&!isVoid?" · Neutral site":""}</span></div>
       <div class="sides">${sideBtn("away",g.away,g.awayRank,awayLn)}${sideBtn("home",g.home,g.homeRank,homeLn)}<button class="flagbtn" data-lock="${esc(g.id)}" aria-pressed="${d.lock===g.id}" aria-label="Throw your flag on this game: 3 points if it covers" ${editable&&!isVoid?"":"disabled"}>${flag}<span>Flag</span><span class="fl3">3 pts</span></button></div>`;
     if(r&&!isVoid&&(r.final||r.away||r.home)){
       const key=g.id+":"+r.away+"-"+r.home;const changed=state.seenScores[g.id]&&state.seenScores[g.id]!==key;state.seenScores[g.id]=key;
@@ -899,10 +915,10 @@ function renderPicks(){
       <div class="tbrow"><input id="tbInput" type="number" min="0" max="200" inputmode="numeric" placeholder="\u2013" aria-label="Tiebreaker: total points" value="${d.tb??""}" ${editable?"":"disabled"}><span class="note">${tot!=null?`Final total: ${tot}.${d.tb!=null?" Your miss: "+Math.abs(d.tb-tot)+".":""}`:"Closest guess wins a tied week. No guess counts as 0."}</span></div></div>`}
   if(survivorStart()&&wid>=survivorStart()&&state.uid&&!out){
     const board=survivorBoard()||[];const me=board.find(r=>r.pid===state.uid);
-    if(me&&!me.alive)h+=`<div class="panel surv"><h2>Survivor</h2><p>💀 You are out. Week ${me.out.week}: ${esc(me.out.team)}.</p></div>`;
+    if(me&&!me.alive)h+=`<div class="survbox"><h2>Survivor</h2><p>💀 You are out. Week ${me.out.week}: ${esc(me.out.team)}.</p></div>`;
     else{const used=survivorUsed(state.uid);const cur=d.surv?d.surv.g+"|"+d.surv.s:"";
       const opts=gs.flatMap(g=>["away","home"].map(sd=>{const team=sd==="home"?g.home:g.away;const ln=sd==="home"?g.homeLine:-g.homeLine;const L=teamLook(team,g,sd);const usedT=used.includes(canon(team));return `<option value="${esc(g.id+"|"+sd)}" ${cur===g.id+"|"+sd?"selected":""} ${usedT?"disabled":""}>${esc(L.abbr)} ${esc(team)} ${fmtLine(ln)}${usedT?" (used)":""}</option>`})).join("");
-      h+=`<div class="panel surv" id="survPanel"><h2>Survivor</h2><p class="note">Pick one team against the spread. If it covers you stay alive. You cannot use a team twice.${used.length?" Used: "+used.map(esc).join(", ")+".":""}</p><select id="survSel" aria-label="Survivor pick" ${editable?"":"disabled"}><option value="">Pick your survivor team (each team once a season)</option>${opts}</select>${(()=>{const cg=survConflict(w,d);if(!cg)return "";const g=w.games.find(x=>x.id===cg);const st=d.surv.s,pk=d.sel[cg];const Ls=teamLook(st==="home"?g.home:g.away,g,st),Lp=teamLook(pk==="home"?g.home:g.away,g,pk);
+      h+=`<div class="survbox" id="survPanel"><div class="survtop"><h2>Survivor</h2><span class="survtag">One team · win or go home</span></div><p class="note">Pick one team against the spread. If it covers you stay alive. You cannot use a team twice.${used.length?" Used: "+used.map(esc).join(", ")+".":""}</p><select id="survSel" aria-label="Survivor pick" ${editable?"":"disabled"}><option value="">Pick your survivor team (each team once a season)</option>${opts}</select>${(()=>{const cg=survConflict(w,d);if(!cg)return "";const g=w.games.find(x=>x.id===cg);const st=d.surv.s,pk=d.sel[cg];const Ls=teamLook(st==="home"?g.home:g.away,g,st),Lp=teamLook(pk==="home"?g.home:g.away,g,pk);
         return `<div class="conflict" role="alert"><b>Conflict.</b> Your survivor pick is ${esc(Ls.abbr)}, but your pick in that game is ${esc(Lp.abbr)}. Only one of them can cover, so one is sure to lose. <button type="button" class="linkbtn" data-jump="game-${esc(cg)}">Go to the game</button></div>`})()}</div>`}
   }
   if(w.swaps&&w.swaps.length)h+=`<div class="swaplog">Commissioner swaps: ${w.swaps.map(s=>esc(s.out)+" replaced by "+esc(s.in)).join("; ")}</div>`;
