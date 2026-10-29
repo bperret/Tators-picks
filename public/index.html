@@ -73,9 +73,9 @@ nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-v
 .side .cv{position:absolute;top:-8px;right:6px;font-family:var(--cond);font-weight:700;font-size:.7rem;letter-spacing:.08em;background:var(--win);color:#fff;border-radius:3px;padding:1px 5px}
 .flagbtn{font:inherit;cursor:pointer;border-radius:6px;border:1px dashed var(--line);background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase}
 .flagbtn svg{width:22px;height:22px}
-.flagbtn .cloth{fill:var(--line)}
+.flagbtn .gp{width:22px;height:22px;margin:0;stroke:var(--muted)}
 .flagbtn[aria-pressed="true"]{border:1px solid var(--flag-ink);background:var(--flag);color:var(--flag-ink)}
-.flagbtn[aria-pressed="true"] .cloth{fill:var(--flag-ink)}
+.flagbtn[aria-pressed="true"] .gp{stroke:var(--flag-ink)}
 .flagbtn:disabled{cursor:default}
 .res{font-family:var(--cond);font-size:.95rem;letter-spacing:.03em;display:flex;gap:10px;flex-wrap:wrap;color:var(--muted)}
 .res .w{color:var(--win);font-weight:700} .res .l{color:var(--loss);font-weight:700}
@@ -145,7 +145,7 @@ details.manual .inner{margin-top:12px}
 .ref .refitem{display:flex;flex-direction:column;gap:2px;padding-block:8px;border-top:1px solid var(--line)}
 .ref .reft{display:flex;align-items:center;gap:6px;font-family:var(--cond);font-size:1.05rem;letter-spacing:.04em;text-transform:uppercase}
 .ref .reft .note{text-transform:none;letter-spacing:0;font-family:var(--body);font-size:.85rem}
-.minif{width:12px;height:14px;background:var(--flag);border:1px solid var(--flag-ink);border-radius:1px 3px 3px 1px;display:inline-block;margin:0 4px 0 2px}
+.gp{width:1em;height:1em;vertical-align:-.12em;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;margin-right:3px}
 .yd{height:6px;margin-top:4px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--board-line) 0 calc(10% - 1px),var(--board-dim) calc(10% - 1px) 10%);overflow:hidden;max-width:160px}
 .yd span{display:block;height:100%;background:linear-gradient(90deg,#1f5d34,#3b8f55)}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
@@ -415,7 +415,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#players" data-v="players">Pickers</a>
     <a href="#rankings" data-v="rankings">Teams</a>
     <a href="#rules" data-v="rules">Rules</a>
-    <a href="#profile" data-v="profile">Me</a>
+    <a href="#profile" data-v="profile">Profile</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
 
@@ -429,7 +429,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <h2>How to play</h2>
       <ol>
         <li>Pick 10 games against the spread. Each correct pick is 1 point.</li>
-        <li>Throw your 🚩 flag on one pick. If it covers, it is worth 3.</li>
+        <li>Kick your field goal (FG) on one pick. If it covers, it is worth 3, the same as a real field goal.</li>
         <li>Guess the total points in game 1 for the tiebreaker.</li>
         <li>Pick one Survivor team. Each team once a season.</li>
         <li>Everything locks Saturday at 10:15 a.m. CT. Then everyone's picks show.</li>
@@ -451,7 +451,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <details><summary class="rh">Your picks</summary>
       <ul>
         <li>Pick a side in each game against the spread. A correct pick is 1 point. A wrong or missed pick is 0.</li>
-        <li>Throw your yellow flag on one game you picked. If that pick is correct, it scores 3 points instead of 1.</li>
+        <li>Kick your field goal on one game you picked. If that pick is correct, the field goal is good and scores 3 points instead of 1. If not, it is no good and scores 0.</li>
         <li>Guess the total points in the tiebreaker game, slot 1. No guess counts as a guess of 0.</li>
         <li>All picks lock Saturday at 10:15 a.m. Central, before the first kickoff. After the lock, the site refuses every save. The site checks its own clock, not your phone's.</li>
         <li>Every save goes into your pick history with the time. After the lock, everyone can see everyone's picks and history.</li>
@@ -459,22 +459,22 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       </ul></details>
       <details><summary class="rh">Scoring</summary>
       <ul>
-        <li>A postponed or cancelled game is void and scores for nobody. A flag on a void game earns nothing.</li>
+        <li>A postponed or cancelled game is void and scores for nobody. A field goal on a void game earns nothing.</li>
         <li>If slot 1 is void, slot 2 becomes the tiebreaker game.</li>
         <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. The weekly title is for bragging rights only.</li>
-        <li>Season: most total points, then most flag wins, then the smallest total of tiebreaker misses. Test weeks do not count.</li>
+        <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses. Test weeks do not count.</li>
         <li>Bowl games are a separate contest.</li>
       </ul></details>
       <details><summary class="rh">Logins</summary>
       <ul>
         <li>You log in with your cell number and a PIN. The commissioner gives you your first PIN.</li>
-        <li>You can change your PIN on the Me tab after you log in. Only the commissioner can reset a forgotten PIN.</li>
+        <li>You can change your PIN on the Profile tab after you log in. Only the commissioner can reset a forgotten PIN.</li>
         <li>After 10 wrong PINs in a row, that number pauses for 15 minutes. Text the commissioner if you need in sooner.</li>
         <li>Your cell number is never shown to other pickers.</li>
       </ul></details>
       <details><summary class="rh">Robo-Sharp</summary>
       <ul>
-        <li>Robo-Sharp is a computer picker. Each week it takes the side the model line favors against the betting line in every game, and throws its flag on the game with the biggest gap. The model line is a computer projection of the spread. Each game shows it with its source (ESPN FPI from week 10 on).</li>
+        <li>Robo-Sharp is a computer picker. Each week it takes the side the model line favors against the betting line in every game, and kicks its field goal on the game with the biggest gap. The model line is a computer projection of the spread. Each game shows it with its source (ESPN FPI from week 10 on).</li>
         <li>Its tiebreaker guess is the betting total for the tiebreaker game. In Survivor it takes the biggest edge on a team it has not used.</li>
         <li>Robo-Sharp shows in the standings where its score lands, but it takes no rank and cannot win a week, a trophy, Survivor, or the season. If it finishes on top, the best picker wins.</li>
       </ul></details>
@@ -567,8 +567,10 @@ function isOneEmoji(s){const g=splitEmoji(s);return g.length===1&&/\p{Extended_P
 const SWATCH=[["Crimson","#B3121D"],["Orange","#E8590C"],["Gold","#F2B705"],["Green","#1E7A3A"],["Teal","#0F7C80"],["Sky","#4BA3E3"],["Royal","#1D4ED8"],["Navy","#13294B"],["Purple","#5B2C83"],["Pink","#D6336C"],["Maroon","#6E1423"],["Brown","#6B4423"],["Silver","#9AA3AD"],["White","#FFFFFF"],["Black","#111111"]];
 function inkFor(hex){const h=String(hex).replace("#","");const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (0.299*r+0.587*g+0.114*b)/255>0.62?"#111111":"#ffffff"}
 function chip(pid,big){if(pid===BOT)return `<span class="pchip bot${big?" big":""}" aria-hidden="true">🤖</span>`;const a=accByUid(pid);if(!a||!a.emoji)return "";return `<span class="pchip${big?" big":""}" style="background:${a.c1};box-shadow:inset 0 0 0 ${big?4:2}px ${a.c2}" aria-hidden="true">${a.emoji}</span>`}
-function tag(pid,lk){const a=accByUid(pid);const st=a&&a.c1?` style="background:${a.c1};color:${inkFor(a.c1)};box-shadow:inset 0 -3px 0 ${a.c2}"`:"";return `<span class="ptag${lk?" lk":""}"${st}>${lk?"🚩 ":""}${a&&a.emoji?a.emoji+" ":""}${esc(first(pid))}</span>`}
-function talkLine(pid){if(pid===BOT)return '<p class="talk">Robo-Sharp takes the model side in every game, flags its biggest edge, guesses the betting total, and rides its biggest unused edge in Survivor. Beat the bot.</p>';return ""}
+// Field goal icon: a goalpost (base post, crossbar, two uprights). No emoji exists for it.
+const GP='<svg class="gp" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 23v-10M3 13h18M3 13V1.5M21 13V1.5"/></svg>';
+function tag(pid,lk){const a=accByUid(pid);const st=a&&a.c1?` style="background:${a.c1};color:${inkFor(a.c1)};box-shadow:inset 0 -3px 0 ${a.c2}"`:"";return `<span class="ptag${lk?" lk":""}"${st}>${lk?GP:""}${a&&a.emoji?a.emoji+" ":""}${esc(first(pid))}</span>`}
+function talkLine(pid){if(pid===BOT)return '<p class="talk">Robo-Sharp takes the model side in every game, kicks its field goal on its biggest edge, guesses the betting total, and rides its biggest unused edge in Survivor. Beat the bot.</p>';return ""}
 function emBtn(pre,a,e,label){return `<button type="button" class="emb" data-pick="${pre}:emoji" data-val="${e}" aria-pressed="${a.emoji===e}"${label?` title="${esc(label)}" aria-label="${esc(label)}"`:""}>${e}</button>`}
 function lookPicker(pre,a){
   const teamEm=[];const seen=new Set();Object.keys(TEAMS).sort().forEach(n=>{const e=TEAMS[n][3];if(e&&!seen.has(e)){seen.add(e);teamEm.push([e,n])}});
@@ -703,7 +705,7 @@ function sheetCheck(){
   for(const a of state.logins||[]){if(a.removed)continue;const s=SS[a.id];
     if(!s){by[a.id]={st:"none",label:a.setupDone?"No sheet":"No sheet, not logged in yet"};continue}
     const miss=[];const n=need.filter(id=>s.games.includes(id)).length;
-    if(n<need.length)miss.push(`${n} of ${need.length} picks`);if(!s.flag)miss.push("no flag");if(!s.tb)miss.push("no tiebreaker");if(survNeeded(a.id)&&!s.surv)miss.push("no survivor");
+    if(n<need.length)miss.push(`${n} of ${need.length} picks`);if(!s.flag)miss.push("no field goal");if(!s.tb)miss.push("no tiebreaker");if(survNeeded(a.id)&&!s.surv)miss.push("no survivor");
     by[a.id]=miss.length?{st:"part",label:"Missing: "+miss.join(", "),at:s.at}:{st:"done",label:"Complete",at:s.at}}
   const ids=Object.keys(by);const grp=k=>ids.filter(id=>by[id].st===k);
   return {w,by,done:grp("done"),part:grp("part"),none:grp("none")};
@@ -731,7 +733,7 @@ function importPanel(){
 async function savePicks(force){
   const w=curWeek(),wid=currentWeekId();if(!w||!state.uid)return;
   if(pastDeadline(w)){toast("Picks locked at the deadline. The site refused this save.");return}
-  if(state.draft.lock&&!state.draft.sel[state.draft.lock]){toast("Pick a side in your flag game first.");return}
+  if(state.draft.lock&&!state.draft.sel[state.draft.lock]){toast("Pick a side in your field goal game first.");return}
   if(!force){const m=missingItems(w,wid,state.draft);if(m.length){state.warn=m;renderPicks();return}}
   const b=$("#saveBtn");if(b){b.disabled=true;b.textContent="Saving…"}
   const r=await api("/api/picks",{weekId:wid,sel:state.draft.sel,lock:state.draft.lock,tb:state.draft.tb,surv:state.draft.surv||null,abbr:abbrMap(w)});
@@ -811,7 +813,7 @@ window.addEventListener("hashchange",route);
 const BOT="bot";
 const baseChip=pid=>pid===BOT?'<span class="pchip bot" aria-hidden="true">\ud83e\udd16</span>':"";
 function modelSide(g){if(typeof g.modelLine!=="number")return null;const e=g.modelLine-g.homeLine;if(e>0)return "away";if(e<0)return "home";return g.homeLine<0?"away":"home"}
-/* Robo-Sharp plays like everyone else: model side in every game, flag on the biggest edge,
+/* Robo-Sharp plays like everyone else: model side in every game, field goal on the biggest edge,
    the betting total as its tiebreaker, and in Survivor the biggest edge it has not used. */
 function botPicks(w){const sel={};let best=null;for(const g of [...(w.games||[])].sort((a,b)=>a.slot-b.slot)){const s=modelSide(g);if(!s)continue;sel[g.id]=s;const e=Math.abs(g.modelLine-g.homeLine);if(!best||e>best.e)best={id:g.id,e}}
   if(!Object.keys(sel).length)return null;const tg=tbGame(w);const tb=tg&&typeof tg.total==="number"?Math.round(tg.total):null;
@@ -905,7 +907,7 @@ function renderPicks(){
   if(state.canWrite===false&&!out)h+='<div class="panel">You can view the league but cannot save picks. Ask the commissioner to invite you as an editor.</div>';
   const gs=[...w.games].sort((a,b)=>a.slot-b.slot);
   const tg=tbGame(w);
-  const flag='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="cloth" d="M6 3c3 2 6-2 10 0 1.5.7 2.5.5 3 0v9c-.5.5-1.5.7-3 0-4-2-7 2-10 0z"/><rect x="5" y="2" width="1.6" height="20" rx=".8" fill="currentColor"/></svg>';
+  const flag=GP;
   h+='<p class="note legend"><span><i class="lg mq"></i> 1 to 5: top AP matchups</span><span><i class="lg tl"></i> 6 to 10: tightest lines</span></p>';
   for(const g of gs){
     const r=rs[g.id];const isVoid=r&&r.void;const c=coverSide(g,r);
@@ -914,19 +916,19 @@ function renderPicks(){
     const sideBtn=(s,team,rk,ln)=>{const L=teamLook(team,g,s);return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-g="${esc(g.id)}" data-s="${s}" aria-pressed="${d.sel&&d.sel[g.id]===s}" aria-label="${esc(team)} ${ln}" ${editable&&!isVoid?"":"disabled"}>${c===s?'<span class="cv">Covered</span>':(live===s?'<span class="cv live">Covering</span>':"")}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${rk&&rk<99?'<span class="rk">#'+rk+'</span>':""}${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="ln">${ln}</span></button>`};
     const conflictHere=survConflict(w,d)===g.id;
     h+=`<div class="game ${g.slot<=5?"mq":"tl"}${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}">${tg&&tg.id===g.id?'<button type="button" class="tbband" data-jump="tb"><span>🎯 Tiebreaker game</span><span>Total \u2193</span></button>':""}<div class="gmeta"><span class="slot">Game ${g.slot}${g.swap?" · swapped in":""}</span><span class="when">${isVoid?"VOID":esc(teamLook(g.away,g,"away").abbr)+(g.neutral?" vs ":" at ")+esc(teamLook(g.home,g,"home").abbr)+" · "+kick(g.kickoff)}${g.neutral&&!isVoid?" · Neutral site":""}</span></div>
-      <div class="sides">${sideBtn("away",g.away,g.awayRank,awayLn)}${sideBtn("home",g.home,g.homeRank,homeLn)}<button class="flagbtn" data-lock="${esc(g.id)}" aria-pressed="${d.lock===g.id}" aria-label="Throw your flag on this game: 3 points if it covers" ${editable&&!isVoid?"":"disabled"}>${flag}<span>Flag</span><span class="fl3">3 pts</span></button></div>`;
+      <div class="sides">${sideBtn("away",g.away,g.awayRank,awayLn)}${sideBtn("home",g.home,g.homeRank,homeLn)}<button class="flagbtn" data-lock="${esc(g.id)}" aria-pressed="${d.lock===g.id}" aria-label="Kick your field goal on this game: 3 points if it covers" ${editable&&!isVoid?"":"disabled"}>${flag}<span>FG</span><span class="fl3">3 pts</span></button></div>`;
     if(r&&!isVoid&&(r.final||r.away||r.home)){
       const key=g.id+":"+r.away+"-"+r.home;const changed=state.seenScores[g.id]&&state.seenScores[g.id]!==key;state.seenScores[g.id]=key;
       const myPick=d.sel&&d.sel[g.id];
       let verdict="";
-      if(c&&myPick)verdict=myPick===c?`<span class="w">${SIG.td}Touchdown${d.lock===g.id?" · flag hit, +3":" · +1"}</span>`:`<span class="l">${SIG.inc}Incomplete</span>`;
+      if(c&&myPick)verdict=myPick===c?`<span class="w">${SIG.td}${d.lock===g.id?"Field goal is good · +3":"Touchdown · +1"}</span>`:`<span class="l">${SIG.inc}${d.lock===g.id?"Field goal no good":"Incomplete"}</span>`;
       else if(live&&myPick)verdict=myPick===live?'<span class="w">Your pick is covering</span>':'<span class="l">Your pick is not covering</span>';
       h+=`<div class="res"><span class="score${changed?" flip":""}">${esc(teamLook(g.away,g,"away").abbr)} ${r.away} – ${esc(teamLook(g.home,g,"home").abbr)} ${r.home}${r.final?" · Final":" · Live"}</span>${verdict}</div>`;
     }
     if(typeof g.modelLine==="number"){const fav=g.modelLine<0?"home":"away";const fl=-Math.abs(g.modelLine);const Lf=teamLook(fav==="home"?g.home:g.away,g,fav);const edge=Math.round((g.modelLine-g.homeLine)*10)/10;const side=edge>0?"away":"home";const Ls=teamLook(side==="home"?g.home:g.away,g,side);
       const bp=botPicks(w);const bs=modelSide(g);const Lb=teamLook(bs==="home"?g.home:g.away,g,bs);
       const bl=bs==="home"?g.homeLine:-g.homeLine;
-      h+=`<div class="model">🤖 Robo-Sharp: <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · flag":""} <span class="note">(${esc(g.modelSource||"model")} ${esc(Lf.abbr)} ${g.modelLine===0?"PK":fl})</span></div>`}
+      h+=`<div class="model">🤖 Robo-Sharp: <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · field goal":""} <span class="note">(${esc(g.modelSource||"model")} ${esc(Lf.abbr)} ${g.modelLine===0?"PK":fl})</span></div>`}
     if(conflictHere)h+=`<div class="conflict" role="alert">Your survivor pick is the other side of this game. <button type="button" class="linkbtn" data-jump="surv">Review survivor</button></div>`;
     if(rev&&nPlayers){
       const sp=split(g,players);const na=sp.away.length,nh=sp.home.length,tot=na+nh||1;
@@ -934,7 +936,7 @@ function renderPicks(){
       h+=`<div class="cbar" role="img" aria-label="${na} picked ${esc(g.away)}, ${nh} picked ${esc(g.home)}"><span style="flex:${na||0.0001};background:${LA.c1};color:${LA.ink}">${na?LA.abbr+" "+na:""}</span><span style="flex:${nh||0.0001};background:${LH.c1};color:${LH.ink}">${nh?LH.abbr+" "+nh:""}</span></div>`;
       const names=s=>sp[s].map(pid=>tag(pid,players[pid].lock===g.id)).join("")||'<i>nobody</i>';
       h+=`<div class="who"><b>${esc(LA.abbr)}</b>${names("away")}</div><div class="who"><b>${esc(LH.abbr)}</b>${names("home")}</div>`;
-      if(Object.values(players).some(p=>p.lock===g.id))h+='<div class="note flagkey">🚩 = flag, worth 3 points</div>';
+      if(Object.values(players).some(p=>p.lock===g.id))h+='<div class="note flagkey">'+GP+'= field goal, worth 3 points</div>';
       if(c&&nPlayers>=3&&sp[c].length===1)h+=`<div class="wolf">Lone wolf: ${esc(nm(sp[c][0]))} was the only one on ${esc(c==="home"?g.home:g.away)}</div>`;
     }
     h+="</div>";
@@ -957,7 +959,7 @@ function renderPicks(){
   if(editable){const miss=missingItems(w,wid,d);const nvoid=gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).length;const n=gs.filter(g=>d.sel[g.id]).length;
     const ck=(ok,t)=>`<span class="ck ${ok?"ok":"no"}">${ok?"\u2713":"!"} ${t}</span>`;
     const warnH=state.warn&&state.warn.length?`<div class="warn" role="alert"><h2>Your sheet is not complete</h2><ul>${state.warn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div class="bar"><button class="btn" id="warnBack">Keep picking</button><button class="btn primary" id="warnSave">Save anyway</button></div></div>`:"";
-    h+=`<div class="savebar">${warnH}<div class="chain" aria-hidden="true">${gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>`<i class="${d.sel[g.id]?"on":""}"></i>`).join("")}</div><span class="cks">${ck(n>=nvoid,n>=nvoid?"First down: "+n+" of "+nvoid+" picked":n+" of "+nvoid+" picked · "+(nvoid-n)+" to go")}${ck(!!d.lock,"Flag")}${ck(d.tb!=null,"Tiebreaker")}${survivorStart()&&wid>=survivorStart()?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Survivor conflict":"Survivor"):""}</span><button class="btn primary" id="saveBtn" ${state.dirty?"":"disabled"}>${state.dirty?"Save picks":"Saved"}</button></div>`}
+    h+=`<div class="savebar">${warnH}<div class="chain" aria-hidden="true">${gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>`<i class="${d.sel[g.id]?"on":""}"></i>`).join("")}</div><span class="cks">${ck(n>=nvoid,n>=nvoid?"First down: "+n+" of "+nvoid+" picked":n+" of "+nvoid+" picked · "+(nvoid-n)+" to go")}${ck(!!d.lock,"Field goal")}${ck(d.tb!=null,"Tiebreaker")}${survivorStart()&&wid>=survivorStart()?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Survivor conflict":"Survivor"):""}</span><button class="btn primary" id="saveBtn" ${state.dirty?"":"disabled"}>${state.dirty?"Save picks":"Saved"}</button></div>`}
   else if(w.status==="open"&&pastDeadline(w))h+='<div class="note">Picks are locked. Everyone\'s picks show here in a moment.</div>';
   el.innerHTML=h;
 }
@@ -991,7 +993,7 @@ function survConflict(w,d){if(!d||!d.surv||!d.sel)return null;const p=d.sel[d.su
 function missingItems(w,wid,d){const rs=w.results||{};const m=[];
   const open=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void));const left=open.filter(g=>!d.sel[g.id]).length;
   if(left)m.push(left+" game"+(left===1?" has":"s have")+" no pick. A missed pick scores 0.");
-  if(!d.lock)m.push("You have not thrown your flag. A correct flag pick scores 3 points instead of 1.");
+  if(!d.lock)m.push("You have not kicked your field goal. A correct field goal pick scores 3 points instead of 1.");
   if(d.tb==null)m.push("You have no tiebreaker guess. A blank guess counts as 0.");
   if(survivorStart()&&wid>=survivorStart()&&!d.surv)m.push("You have no survivor pick. A missed survivor pick puts you out.");
   if(survConflict(w,d))m.push("Your survivor pick is the other side of one of your game picks. One of them is sure to lose.");
@@ -1008,7 +1010,7 @@ function refReport(wid){
   if(best)items.push(["Touchdown","Best call",`${best.pids.map(nm).map(esc).join(", ")} took ${esc(best.c==="home"?best.g.home:best.g.away)} ${fmtLine(best.c==="home"?best.g.homeLine:-best.g.homeLine)}. Only ${best.n} of ${ids.length} did.`]);
   const flags=ids.map(pid=>{const p=players[pid];const g=w.games.find(x=>x.id===p.lock);if(!g)return null;const c=coverSide(g,rs[g.id]);if(!c)return null;const m=margin(g,rs[g.id]);const by=Math.abs(m);return {pid,g,hit:(p.sel||{})[g.id]===c,by}}).filter(Boolean);
   const hits=flags.filter(f=>f.hit),miss=flags.filter(f=>!f.hit).sort((a,b)=>b.by-a.by);
-  if(flags.length)items.push(["Flag on the play",`${hits.length} of ${flags.length} flags hit`,`${hits.length?"Hit: "+hits.map(f=>esc(first(f.pid))).join(", ")+".":"No flag has hit yet."}${miss.length?" Worst miss: "+esc(first(miss[0].pid))+", by "+miss[0].by+" against the spread.":""}`]);
+  if(flags.length)items.push(["Special teams",`${hits.length} of ${flags.length} field goals good`,`${hits.length?"Good: "+hits.map(f=>esc(first(f.pid))).join(", ")+".":"No field goal is good yet."}${miss.length?" Widest miss: "+esc(first(miss[0].pid))+", wide right by "+miss[0].by+" against the spread.":""}`]);
   const beats=[];for(const g of graded){const r=rs[g.id];const m=margin(g,r);if(Math.abs(m)===0.5){const c=coverSide(g,r);const sp=split(g,players);const loser=c==="home"?"away":"home";if(sp[loser].length)beats.push(`${sp[loser].map(first).map(esc).join(", ")} on ${esc(loser==="home"?g.home:g.away)}`)}}
   if(beats.length)items.push(["Bad beat","Lost by half a point",beats.join("; ")+"."]);
   const active=state.roster.filter(p=>!removed().includes(p));
@@ -1042,12 +1044,12 @@ function renderStandings(){
     const allFinal=w.status==="final";const win=weekWinners(wid);
     const nGames=(w.games||[]).filter(g=>!(w.results&&w.results[g.id]&&w.results[g.id].void)).length;
     h+=`<div class="board"><h2>Week ${w.week}${w.scored===false?" (test)":""}</h2><p class="note">${allFinal?"Final.":"Provisional: "+(wk[0]?wk[0].graded:0)+" of "+nGames+" games graded."}${win.length?(win.length>1?" Shared weekly title: ":" Weekly winner: ")+win.map(nm).map(esc).join(", ").replace(/\.?$/,"."):""}</p>
-    <div class="tablewrap"><table><thead><tr><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num">Flag</th><th class="num">TB</th></tr></thead><tbody>${wk.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${win.includes(r.pid)?" 🏆":""}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw?"Hit":r.ll?"Miss":"–"}</td><td class="num">${r.pid===BOT&&!(botPicks(w)||{}).tb?"–":r.tbMiss??"–"}</td></tr>`).join("")}</tbody></table></div><p class="note">ATS = correct picks against the spread. TB = how far off the tiebreaker guess was. Lower is better.</p></div>`;
+    <div class="tablewrap"><table><thead><tr><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${wk.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${win.includes(r.pid)?" 🏆":""}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw?"Hit":r.ll?"Miss":"–"}</td><td class="num">${r.pid===BOT&&!(botPicks(w)||{}).tb?"–":r.tbMiss??"–"}</td></tr>`).join("")}</tbody></table></div><p class="note">ATS = correct picks against the spread. TB = how far off the tiebreaker guess was. Lower is better.</p></div>`;
   }else if(w){h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">Weekly standings appear after picks lock at ${kick(w.deadline)}.</p></div>`}
   const max=Math.max(1,...active.map(r=>r.pts));
   h+=`<div class="board"><h2>Season ${state.config?state.config.season:""}</h2>`;
   if(!active.length||!countedWeeks(false).length)h+='<p class="note">No scored weeks yet. Test weeks do not count toward the season.</p>';
-  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num">Flag</th><th class="num">TB</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then flag wins, then smallest total tiebreaker miss. Flag shows flag hits and misses. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.</p>`;
+  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then field goals made, then smallest total tiebreaker miss. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.</p>`;
   {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of Robo-Sharp.</p>`}}
   h+="</div>";
   h+=titlesPanel()+beatBotPanel();
@@ -1302,7 +1304,7 @@ function renderPlayers(){
   const teams=Object.entries(st.teams).sort((a,b)=>(b[1][0]+b[1][1])-(a[1][0]+a[1][1])||b[1][0]-a[1][0]);
   h+=`<div class="panel"><h2>${chip(sel,true)}${esc(nm(sel))}</h2>${talkLine(sel)}<div class="stats">
     <div><span class="note">Against the spread</span><b>${st.w}-${st.l}</b><span class="note">${pct(st.w,st.l)}</span></div>
-    <div><span class="note">Flag record</span><b>${st.lw}-${st.ll}</b></div>
+    <div><span class="note">Field goals</span><b>${st.lw}-${st.ll}</b></div>
     <div><span class="note">Favorites</span><b>${rec(st.fav)}</b></div>
     <div><span class="note">Underdogs</span><b>${rec(st.dog)}</b></div>
     <div><span class="note">Home teams</span><b>${rec(st.home)}</b></div>

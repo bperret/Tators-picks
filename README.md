@@ -1,6 +1,6 @@
 # Tator's Picks
 
-College football pick em against the spread for one league. Ten games a week, a 3x flag pick, a tiebreaker, Survivor, and Robo-Sharp, the computer player.
+College football pick em against the spread for one league. Ten games a week, a 3 point field goal pick, a tiebreaker, Survivor, and Robo-Sharp, the computer player.
 
 ## How it runs
 

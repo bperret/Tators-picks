@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       sel[gid] = side;
     }
     let lock = b.lock || null;
-    if (lock && !sel[lock]) return fail(res, 400, "Pick a side in your flag game first.");
+    if (lock && !sel[lock]) return fail(res, 400, "Pick a side in your field goal game first.");
     let tb = b.tb;
     if (tb === "" || tb === undefined) tb = null;
     if (tb !== null && (!Number.isInteger(tb) || tb < 0 || tb > 200)) return fail(res, 400, "The tiebreaker must be a whole number from 0 to 200.");

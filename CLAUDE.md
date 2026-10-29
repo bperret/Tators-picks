@@ -15,16 +15,16 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Automation: GitHub Actions twice an hour at :17 and :47 (`.github/workflows/automation.yml`, secrets SITE_URL and CRON_SECRET) plus a daily Vercel cron call `/api/cron`. Jobs: slate (Tue 1 p.m. CT from ESPN), open (Wed 6 p.m. CT), scores and auto final, rankings (AP, CFP, FPI from ESPN; r/CFB poll from poll.redditcfb.com HTML, `lib/polls.js`), ATS, gamelog (fills weeks 1 to now once, then rechecks the last two weeks Sunday 9 a.m.), lines (fills missing lines and totals from ESPN core per-game odds, 100 games a run, stops if a batch finds none). Failures become flags in the Commish Automation panel. Every job has a manual button. Hand-entered scores are never overwritten.
 - Teams has three views. Polls: AP, CFP, r/CFB merged, sortable by any poll (CFP default once out). Power: Ratings (SP+, VSiN, FPI) or Scoring (PPG, PA, margin, SOS from opponents' current SP+; FCS left out). ATS: record, cover margin, O/U; uses the game log record when 5% or fewer of logged games lack a line, else the Covers season record. Tap any team for one shared team card with splits and its game log. Conference and slate filters carry across views. Game log comes from kv `teamGames` through `/api/state?part=teams`.
 - No team logos: they are trademarked marks. Teams show as color chips with abbreviations.
-- Commish League members shows each picker's sheet for the week in view: complete, missing parts (picks count, flag, tiebreaker, survivor if still alive), or not in. The server sends the commissioner game ids and yes or no only (`sheetStatus`), never sides.
+- Commish League members shows each picker's sheet for the week in view: complete, missing parts (picks count, field goal, tiebreaker, survivor if still alive), or not in. The server sends the commissioner game ids and yes or no only (`sheetStatus`), never sides.
 - Commissioner can lock early and unlock with a new deadline; both log publicly. `origDeadline` keeps the week tied to its Saturday.
 
 ## League rules (decided)
 - 10 Saturday games kicking off 11 a.m. CT or later: 5 top AP games (ranked v ranked first), then 5 tightest lines among other ranked-team games. Half-point lines; on a whole number the underdog gets the half.
-- 1 point per correct pick, one 3 point flag, tiebreaker = total points in game 1 (game 2 if game 1 is void; blank = 0). Void games score for nobody.
-- Weekly winner: points, then tiebreaker, else shared. Bragging rights only. Season: points, flag wins, smallest total tiebreaker misses.
+- 1 point per correct pick, one 3 point field goal (FG; stored as `lock` in pick data; goalpost icon `GP`, no emoji exists), tiebreaker = total points in game 1 (game 2 if game 1 is void; blank = 0). Void games score for nobody.
+- Weekly winner: points, then tiebreaker, else shared. Bragging rights only. Season: points, field goals made, smallest total tiebreaker misses.
 - Survivor: one team ATS a week, no repeats, a miss means out.
-- Robo-Sharp (🤖, black and silver): model side in every game, flag on biggest edge, betting total as tiebreaker, biggest unused edge in Survivor. Shows in standings with no rank and never wins a week, trophy, Survivor, or the season; the best picker wins instead.
-- People are "pickers". The public log never shows the commissioner's private nickname for a picker.
+- Robo-Sharp (🤖, black and silver): model side in every game, field goal on biggest edge, betting total as tiebreaker, biggest unused edge in Survivor. Shows in standings with no rank and never wins a week, trophy, Survivor, or the season; the best picker wins instead.
+- People are "pickers". Tabs: Picks, Standings, Survivor, Pickers, Teams, Rules, Profile, Commish. The public log never shows the commissioner's private nickname for a picker.
 - Money is off the site. 2026 is a test season (`scored: false`). Bowls are a separate contest.
 
 ## Open items
