@@ -53,19 +53,19 @@ nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-v
 .panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
 .panel h2{font-family:var(--cond);font-weight:700;font-size:1.35rem;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
 .empty{padding:28px 14px;text-align:center;color:var(--muted)}
-.game{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.game{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
 .game.void{opacity:.55}
 .gmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--cond);font-size:.9rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .gmeta{flex-wrap:wrap;row-gap:2px}
 .gmeta .slot{color:var(--ink);font-weight:700}
-.gmeta .when{flex-basis:100%;font-size:.82rem}
+.gmeta .when{font-size:.82rem;text-align:right}
 .gmeta .tbtag{font:inherit;color:var(--board-ink);background:var(--board);border:0;border-radius:3px;padding:1px 7px;margin-left:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em}
 .sides{display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;align-items:stretch}
 .side{--tc:#555;--tc2:#999;--ti:#fff;position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;min-width:0;text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-left:6px solid var(--tc);border-radius:6px;padding:8px 8px 8px 8px;cursor:pointer}
 .mono{grid-row:1/3;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--tc);color:var(--ti);box-shadow:inset 0 0 0 3px var(--tc2);font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.02em;line-height:1}
 .side .tm{font-weight:600;line-height:1.15;overflow-wrap:anywhere;font-size:.95rem}
 .side .tm .emo{font-size:1.05em;white-space:nowrap}
-.side .tm .rk{font-family:var(--cond);font-size:.8rem;color:var(--muted);font-weight:600;margin-right:3px}
+.side .rk{font-family:var(--cond);font-size:.82rem;color:var(--muted);font-weight:600;margin-left:6px;letter-spacing:.02em}
 .side .ln{font-family:var(--cond);font-weight:700;font-size:1.15rem;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .side[aria-pressed="true"]{background:var(--tc);border-color:var(--tc);color:var(--ti)}
 .side[aria-pressed="true"] .rk{color:inherit;opacity:.8}
@@ -177,7 +177,7 @@ details.manual .inner{margin-top:12px}
 .sgrid span{color:var(--board-dim)}
 .slg{display:grid;grid-template-columns:50px 1fr 68px 50px 62px;gap:6px;padding-block:3px;font-size:.95rem;border-top:1px dashed var(--board-line)}
 .slg .num{text-align:right;font-variant-numeric:tabular-nums}
-.model{font-family:var(--cond);font-size:.92rem;letter-spacing:.02em;color:var(--muted);border-left:3px solid var(--flag);padding-left:8px}
+.model{font-family:var(--cond);font-size:.92rem;letter-spacing:.02em;color:var(--muted);border-left:3px solid var(--flag);padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .botrow td{font-style:italic;color:#C9CED4!important;text-shadow:none!important}
 .botrow .pchip.bot{box-shadow:inset 0 0 0 2px #C9CED4,0 0 0 1px #9AA3AD}
 .pchip{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:.85rem;margin-right:6px;vertical-align:-4px}
@@ -322,7 +322,6 @@ td.svc.next{border:1px dashed var(--line)}
 
 .addp input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
 .side .tm{overflow-wrap:normal;word-break:normal;hyphens:none}
-.side .tm .rk{display:block;margin:0 0 1px}
 @media (max-width:420px){.side{padding:7px 6px;column-gap:6px}.side .tm{font-size:.86rem}.side .ln{font-size:1.02rem}}
 
 .emmore{margin-top:8px}
@@ -920,7 +919,7 @@ function renderPicks(){
     const r=rs[g.id];const isVoid=r&&r.void;const c=coverSide(g,r);
     const live=r&&!r.final&&!r.void&&(r.away||r.home)?(margin(g,r)>0?"home":"away"):null;
     const awayLn=fmtLine(-g.homeLine),homeLn=fmtLine(g.homeLine);
-    const sideBtn=(s,team,rk,ln)=>{const L=teamLook(team,g,s);return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-g="${esc(g.id)}" data-s="${s}" aria-pressed="${d.sel&&d.sel[g.id]===s}" aria-label="${esc(team)} ${ln}" ${editable&&!isVoid?"":"disabled"}>${c===s?'<span class="cv">Covered</span>':(live===s?'<span class="cv live">Covering</span>':"")}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${rk&&rk<99?'<span class="rk">#'+rk+'</span>':""}${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="ln">${ln}</span></button>`};
+    const sideBtn=(s,team,rk,ln)=>{const L=teamLook(team,g,s);return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-g="${esc(g.id)}" data-s="${s}" aria-pressed="${d.sel&&d.sel[g.id]===s}" aria-label="${esc(team)} ${ln}" ${editable&&!isVoid?"":"disabled"}>${c===s?'<span class="cv">Covered</span>':(live===s?'<span class="cv live">Covering</span>':"")}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="ln">${ln}${rk&&rk<99?'<span class="rk">#'+rk+'</span>':""}</span></button>`};
     const conflictHere=survConflict(w,d)===g.id;
     h+=`<div class="game ${g.slot<=5?"mq":"tl"}${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}">${tg&&tg.id===g.id?'<button type="button" class="tbband" data-jump="tb"><span>🎯 Tiebreaker game</span><span>Total \u2193</span></button>':""}<div class="gmeta"><span class="slot">Game ${g.slot}${g.swap?" · swapped in":""}</span><span class="when">${isVoid?"VOID":esc(teamLook(g.away,g,"away").abbr)+(g.neutral?" vs ":" at ")+esc(teamLook(g.home,g,"home").abbr)+" · "+kick(g.kickoff)}${g.neutral&&!isVoid?" · Neutral site":""}</span></div>
       <div class="sides">${sideBtn("away",g.away,g.awayRank,awayLn)}${sideBtn("home",g.home,g.homeRank,homeLn)}<button class="flagbtn" data-lock="${esc(g.id)}" aria-pressed="${d.lock===g.id}" aria-label="Kick your field goal on this game: 3 points if it covers" ${editable&&!isVoid?"":"disabled"}>${flag}<span>FG</span><span class="fl3">3 pts</span></button></div>`;
@@ -935,7 +934,7 @@ function renderPicks(){
     if(typeof g.modelLine==="number"){const fav=g.modelLine<0?"home":"away";const fl=-Math.abs(g.modelLine);const Lf=teamLook(fav==="home"?g.home:g.away,g,fav);const edge=Math.round((g.modelLine-g.homeLine)*10)/10;const side=edge>0?"away":"home";const Ls=teamLook(side==="home"?g.home:g.away,g,side);
       const bp=botPicks(w);const bs=modelSide(g);const Lb=teamLook(bs==="home"?g.home:g.away,g,bs);
       const bl=bs==="home"?g.homeLine:-g.homeLine;
-      h+=`<div class="model">🤖 Robo-Sharp: <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · field goal":""} <span class="note">(${esc(g.modelSource||"model")} ${esc(Lf.abbr)} ${g.modelLine===0?"PK":fl})</span></div>`}
+      h+=`<div class="model" title="Robo-Sharp's pick, then the model line it comes from">🤖 Robo-Sharp: <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · FG":""} <span class="note">· ${esc(String(g.modelSource||"model").replace(/^ESPN /,""))} ${esc(Lf.abbr)} ${g.modelLine===0?"PK":"\u2212"+Math.abs(fl)}</span></div>`}
     if(conflictHere)h+=`<div class="conflict" role="alert">Your survivor pick is the other side of this game. <button type="button" class="linkbtn" data-jump="surv">Review survivor</button></div>`;
     if(rev&&nPlayers){
       const sp=split(g,players);const na=sp.away.length,nh=sp.home.length,tot=na+nh||1;
