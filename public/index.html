@@ -90,7 +90,9 @@ input[type=number]{width:84px;font-family:var(--cond);font-size:1.05rem;font-wei
 .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 td.pn{max-width:8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .botline{margin:8px 0 0;font-family:var(--cond);font-size:1.02rem;color:var(--board-ink)}
-.savebar{flex-wrap:wrap;position:sticky;bottom:0;background:var(--bg);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));border-top:4px solid transparent;border-image:repeating-linear-gradient(90deg,var(--stripe-a) 0 8px,var(--stripe-b) 8px 16px) 4;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.savebar{flex-wrap:wrap;position:sticky;bottom:0;background:var(--bg);padding-block:7px calc(7px + env(safe-area-inset-bottom,0px));border-top:4px solid transparent;border-image:repeating-linear-gradient(90deg,var(--stripe-a) 0 8px,var(--stripe-b) 8px 16px) 4;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.savebar .cks{flex:1 1 0;min-width:0}
+.savebar #saveBtn{padding-block:7px}
 .board{background:var(--board);border:1px solid var(--board-line);border-radius:8px;padding:14px;color:var(--board-ink)}
 .board h2{font-family:var(--display);font-weight:400;font-size:1.3rem;margin:0 0 4px;color:var(--board-ink)}
 .board .note{color:var(--board-dim)}
@@ -111,6 +113,7 @@ tr.out td{color:var(--board-dim);text-decoration:line-through;text-shadow:none}
 .rh{font-family:var(--cond);font-weight:700;font-size:1.05rem;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 4px;color:var(--muted)}
 .swaplog{font-size:.85rem;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--flag);color:var(--flag-ink);font-family:var(--cond);font-weight:700;letter-spacing:.04em;padding:8px 14px;border-radius:6px;font-size:1rem;z-index:20;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+body:has(.savebar:not([hidden])) .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .grid2{display:grid;grid-template-columns:1fr auto auto auto;gap:6px 8px;align-items:center;font-size:.9rem}
 .grid2 .t{min-width:0;overflow-wrap:anywhere;grid-column:1/-1;font-weight:600;margin-top:6px}
 .grid2.scoreg{grid-template-columns:1fr 1fr 1.4fr}
@@ -128,7 +131,7 @@ details.manual .inner{margin-top:12px}
 .flagbtn .fl3{display:block;font-size:.68rem;opacity:.8}
 .flagkey{margin:2px 0 0}
 .sheets{margin:0}
-.chain{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;width:100%;margin-bottom:6px}
+.chain{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;width:100%;margin-bottom:0}
 .chain i{height:6px;border-radius:2px;background:var(--line)}
 .chain i.on{background:var(--flag)}
 .model b{font-weight:700}
@@ -193,7 +196,7 @@ table.plain td{color:var(--ink)} table.plain th{color:var(--muted)} table.plain 
 .warn h2{font-family:var(--cond);font-weight:700;font-size:1.15rem;text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
 .warn ul{margin:0 0 8px;padding-left:20px}
 .warn li{margin-bottom:4px}
-.cks{display:flex;flex-wrap:wrap;gap:6px}
+.cks{display:flex;flex-wrap:wrap;gap:5px}
 .ck{font-family:var(--cond);font-weight:700;font-size:.85rem;letter-spacing:.04em;border-radius:4px;padding:2px 7px;white-space:nowrap}
 .ck.ok{background:var(--chip);color:var(--muted)}
 .ck.no{background:var(--flag);color:var(--flag-ink)}
@@ -963,9 +966,10 @@ function renderPicks(){
   const myWeek=state.myPicks&&state.myPicks.weeks&&state.myPicks.weeks[wid];
   if(myWeek&&myWeek.history&&myWeek.history.length){h+=`<details class="panel phist"><summary>Your pick history \u00b7 last saved ${esc(when(myWeek.history[myWeek.history.length-1].at))}</summary>${myWeek.history.slice().reverse().map(x=>`<div class="logi"><span class="note">${esc(when(x.at))}</span><span>${esc(x.note)}</span></div>`).join("")}</details>`}
   if(editable){const miss=missingItems(w,wid,d);const nvoid=gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).length;const n=gs.filter(g=>d.sel[g.id]).length;
-    const ck=(ok,t)=>`<span class="ck ${ok?"ok":"no"}">${ok?"\u2713":"!"} ${t}</span>`;
+    // Short chip labels keep the sticky bar to one row; the full wording is in the title and for screen readers.
+    const ck=(ok,t,full)=>`<span class="ck ${ok?"ok":"no"}" title="${esc(full)}" aria-label="${esc(full)}">${ok?"\u2713":"!"} ${t}</span>`;
     const warnH=state.warn&&state.warn.length?`<div class="warn" role="alert"><h2>Your sheet is not complete</h2><ul>${state.warn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div class="bar"><button class="btn" id="warnBack">Keep picking</button><button class="btn primary" id="warnSave">Save anyway</button></div></div>`:"";
-    h+=`<div class="savebar">${warnH}<div class="chain" aria-hidden="true">${gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>`<i class="${d.sel[g.id]?"on":""}"></i>`).join("")}</div><span class="cks">${ck(n>=nvoid,n>=nvoid?"First down: "+n+" of "+nvoid+" picked":n+" of "+nvoid+" picked · "+(nvoid-n)+" to go")}${ck(!!d.lock,"Field goal")}${ck(d.tb!=null,"Tiebreaker")}${survivorStart()&&wid>=survivorStart()?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Survivor conflict":"Survivor"):""}</span><button class="btn primary" id="saveBtn" ${state.dirty?"":"disabled"}>${state.dirty?"Save picks":"Saved"}</button></div>`}
+    h+=`<div class="savebar">${warnH}<div class="chain" aria-hidden="true">${gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>`<i class="${d.sel[g.id]?"on":""}"></i>`).join("")}</div><span class="cks">${ck(n>=nvoid,n+" of "+nvoid,n>=nvoid?"First down: all "+nvoid+" games picked":n+" of "+nvoid+" games picked, "+(nvoid-n)+" to go")}${ck(!!d.lock,"FG",d.lock?"Field goal kicked":"No field goal yet")}${ck(d.tb!=null,"TB",d.tb!=null?"Tiebreaker entered":"No tiebreaker yet")}${survivorStart()&&wid>=survivorStart()?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Surv clash":"Survivor",survConflict(w,d)?"Survivor pick is the other side of one of your game picks":d.surv?"Survivor picked":"No survivor pick yet"):""}</span><button class="btn primary" id="saveBtn" ${state.dirty?"":"disabled"}>${state.dirty?"Save picks":"Saved"}</button></div>`}
   else if(w.status==="open"&&pastDeadline(w))h+='<div class="note">Picks are locked. Everyone\'s picks show here in a moment.</div>';
   el.innerHTML=h;
 }
