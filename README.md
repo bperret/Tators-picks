@@ -33,6 +33,7 @@ GitHub Actions (`.github/workflows/automation.yml`) calls `/api/cron` every hour
 | After the lock | Pull scores hourly, mark the week final when every game is final or void | Pull scores now, Scores, Mark week final |
 | Every 6 hours | AP, CFP, and FPI from ESPN | Refresh rankings, Update rankings |
 | Every hour | Save lines before kickoff, add finished games to team ATS records | Update ATS |
+| First run, then Sunday 9 a.m. | Fill the team game log for weeks 1 to now, then recheck the last two weeks | Fill game log |
 
 Any failed job becomes a flag in the Automation panel with the manual fallback. The panel also flags a missing `CRON_SECRET` and a schedule that has not run for three hours. GitHub turns off scheduled workflows in a public repo after 60 days with no repo activity; the stale flag catches that.
 
@@ -42,6 +43,7 @@ Rules the automation keeps:
 * A postponed or canceled game waits for the commissioner to void it.
 * Moving a week back to draft stops the automatic open for that week. Reopening scoring stops the automatic final.
 * Robo-Sharp's line is ESPN FPI's projected margin for each game. SP+ and VSiN stay as last loaded.
+* The team game log keeps every finished FBS game: scores, the line saved before kickoff, and the total. The hourly ATS run adds games as they finish. Teams, Stats reads it from `/api/state?part=teams`, so the main state stays small. A hand-entered slate score shows in place of ESPN's.
 
 ESPN's feeds are unofficial and can change without notice.
 

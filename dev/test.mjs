@@ -158,6 +158,24 @@ try {
   check("survivor board fills in", (await m.textContent("#v-survivor")).includes("MIA"));
   await m.evaluate(() => (location.hash = "#rules")); await m.waitForTimeout(300);
   check("log shows commissioner actions", (await m.textContent("#logPanel")).includes("Marked week final"));
+  // ---- Teams: Stats ----
+  const tgames = { games: {
+    1: { id: "1", wk: 9, d: "2026-10-31T19:30:00Z", a: "Florida", h: "Georgia", as: 20, hs: 31, n: false, l: -10.5, t: 48.5 },
+    2: { id: "2", wk: 9, d: "2026-10-31T23:30:00Z", a: "LSU", h: "Alabama", as: 27, hs: 24, n: false, l: -3, t: 51.5 },
+    3: { id: "3", wk: 1, d: "2026-08-30T17:00:00Z", a: "Austin Peay", h: "Georgia", as: 3, hs: 45, n: false, l: null, t: null },
+  }, weeksDone: [1, 9], backfilledAt: "2026-10-29T18:00:00Z", updatedAt: "2026-10-29T18:00:00Z" };
+  await pg.query("insert into kv (key, value) values ('teamGames', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(tgames)]);
+  await m.evaluate(() => (location.hash = "#rankings")); await m.waitForTimeout(300);
+  await m.click('[data-rank="stats"]');
+  await m.waitForSelector('[data-steam="Georgia"]', { timeout: 10000 });
+  check("Stats view lists teams from the game log", (await m.locator("[data-steam]").count()) === 4, String(await m.locator("[data-steam]").count()));
+  await m.click('[data-steam="Georgia"]'); await m.waitForTimeout(200);
+  const det = await m.textContent(".sdet");
+  check("team detail shows record, FCS game, and cover", det.includes("2-0") && det.includes("1 FCS game") && det.includes("Covered") && det.includes("no line"), det.slice(0, 200));
+  await m.click('[data-ssort="pag"]'); await m.waitForTimeout(200);
+  check("sorting by PA puts the best defense first", (await m.getAttribute("[data-steam] >> nth=0", "data-steam")) === "Georgia");
+  const swidth = await m.evaluate(() => document.documentElement.scrollWidth);
+  check("Stats view has no sideways scroll on a phone", swidth <= 390, String(swidth));
   const width = await m.evaluate(() => document.documentElement.scrollWidth);
   check("no sideways scroll on a phone", width <= 390, String(width));
   await m.evaluate(() => (location.hash = "#profile")); await m.waitForTimeout(300);

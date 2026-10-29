@@ -4,7 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
 import { setFetcher, SITE, CORE, FITT, halfPoint } from "../lib/espn.js";
 import { tick, runJob, autoView, chooseGames } from "../lib/auto.js";
-import { getConfig, getWeek, putWeek } from "../lib/league.js";
+import { getConfig, getWeek, putWeek, teamGamesView } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 
 const pg = new PGlite();
@@ -56,13 +56,31 @@ function event([id, a, h, date, line, homeFav]) {
       status: { type: { name: s.name, state: s.state, completed: s.completed, shortDetail: s.state === "post" ? "Final" : s.state === "in" ? "3rd 4:12" : "Sat" } } }] };
 }
 const board = () => ({ season: { year: 2026, type: 2 }, week: { number: 11 }, events: slateGames.map(event) });
+// Earlier weeks for the game log backfill: [eventId, awayId, homeId, kickoff, home line, away score, home score, total]
+const pastGames = {
+  9: [[901, 17, 3, "2026-10-31T14:30:00-05:00", -6.5, 20, 30, 50.5], [902, 15, 10, "2026-10-31T18:30:00-05:00", 3, 28, 24, null]],
+  10: [[1001, 3, 15, "2026-11-01T14:30:00-06:00", 2.5, 17, 21, 45]],
+};
+let failWeek = null;
+function pastEvent([id, a, h, date, line, as, hs, total]) {
+  const comp = (tid, ha) => ({ homeAway: ha, team: teams[tid], curatedRank: { current: rankOf(tid) }, score: String(ha === "home" ? hs : as) });
+  const odds = line == null ? [] : [{ spread: line, overUnder: total ?? undefined, homeTeamOdds: { favorite: line < 0 } }];
+  return { id: String(id), date: new Date(date).toISOString(), shortName: "P" + id, competitions: [{ id: String(id), neutralSite: false, competitors: [comp(h, "home"), comp(a, "away")], odds,
+    status: { type: { name: "STATUS_FINAL", state: "post", completed: true, shortDetail: "Final" } } }] };
+}
 const polls = { rankings: [{ name: "AP Top 25", shortName: "AP Poll", type: "ap", date: "2026-11-01T18:00Z",
   ranks: Object.values(teams).filter((t) => rankOf(+t.id) < 99).map((t) => ({ current: +t.id, previous: +t.id === 1 ? 2 : +t.id === 2 ? 1 : +t.id, points: 1600 - +t.id * 50, recordSummary: "7-1", team: t })),
   others: [{ team: teams[31], points: 12 }] }] };
 const fitt = { teams: Object.values(teams).map((t, i) => ({ team: { id: t.id, nickname: t.location }, categories: [{ totals: [String(25 - i * 0.7)] }] })) };
 
 setFetcher(async (url) => {
-  if (url.startsWith(SITE + "/scoreboard")) { if (failScoreboard) throw new Error("ESPN answered 503 for /scoreboard."); return board(); }
+  if (url.startsWith(SITE + "/scoreboard")) {
+    if (failScoreboard) throw new Error("ESPN answered 503 for /scoreboard.");
+    const wk = (url.match(/[&?]week=(\d+)/) || [])[1];
+    if (wk && +wk === failWeek) throw new Error("ESPN answered 503 for /scoreboard.");
+    if (wk && +wk !== 11) return { season: { year: 2026, type: 2 }, week: { number: +wk }, events: (pastGames[wk] || []).map(pastEvent) };
+    return board();
+  }
   if (url.startsWith(SITE + "/rankings")) return polls;
   if (url.startsWith(FITT)) return fitt;
   const m = url.match(/events\/(\d+)\/competitions\/\d+\/powerindex(?:\/(\d+))?/);
@@ -109,9 +127,17 @@ try {
   check("FPI covers every team listed", R1.power.fpi.teams.length === 30 && R1.power.fpi.teams.some((t) => t.team === "San José State"));
   check("SP+ kept as loaded", R1.power.sp.teams.length === seed.power.sp.teams.length);
 
+  // ---- game log: the first run fills weeks 1 to now ----
+  check("first run fills the team game log", out.ran.gamelog && out.ran.gamelog.ok, JSON.stringify(out.ran.gamelog));
+  let tg = await getKv("teamGames", {});
+  check("game log keeps scores, line, and total", tg.games["901"] && tg.games["901"].hs === 30 && tg.games["901"].l === -6.5 && tg.games["901"].t === 50.5 && tg.games["901"].wk === 9, JSON.stringify(tg.games["901"]));
+  check("game log marks the backfill done", !!tg.backfilledAt && tg.weeksDone.includes(9) && tg.weeksDone.includes(10) && !tg.weeksDone.includes(11));
+  check("game log leaves out unplayed games", !tg.games["101"]);
+
   // ---- second Tuesday run does not rebuild ----
   out = await tick({ now: CT("2026-11-03T14:30:00-06:00") });
   check("slate is not rebuilt on the next hour", !(out.ran && out.ran.slate));
+  check("game log backfill does not repeat", !out.ran.gamelog);
 
   // ---- Wednesday: opens at 6 p.m. ----
   out = await tick({ now: CT("2026-11-04T17:10:00-06:00") });
@@ -154,6 +180,13 @@ try {
   await tick({ now: CT("2026-11-08T00:10:00-06:00") });
   wk = await getWeek("2026-w11");
   check("manual score never overwritten", wk.results.e109.away === 21 && wk.results.e109.src === "manual");
+  tg = await getKv("teamGames", {});
+  check("hourly run logs finished games with the line saved before kickoff", tg.games["101"] && tg.games["101"].l === -7 && tg.games["101"].hs === 24, JSON.stringify(tg.games["101"]));
+  check("postponed game stays out of the game log", !tg.games["108"]);
+  const tv = await teamGamesView();
+  const g109 = tv.games.find((g) => g.id === "109");
+  check("game log shows the hand-entered score", g109 && g109.as === 21 && g109.hs === 20 && g109.hand === true, JSON.stringify(g109));
+  check("stored game log keeps ESPN's score", tg.games["109"].as === 17);
   check("week waits on the postponed game", wk.status === "open");
 
   // ---- commissioner voids the postponed game; next run marks final ----
@@ -179,6 +212,19 @@ try {
   // ---- the schedule stops: a stale flag shows ----
   v = await autoView(CT("2026-11-08T08:00:00-06:00"), await getConfig());
   check("missed schedule shows a flag", v.flags.some((f) => f.key === "stale"));
+
+  // ---- game log rechecks the last two weeks on Sunday; a failed week becomes a flag ----
+  failWeek = 10;
+  out = await tick({ now: CT("2026-11-08T09:30:00-06:00") });
+  let a4 = await getKv("auto", {});
+  check("Sunday run rechecks the game log", out.ran.gamelog && out.ran.gamelog.ok, JSON.stringify(out.ran.gamelog));
+  check("a week ESPN skips becomes a flag", a4.flags.some((f) => f.job === "gamelog" && f.msg.includes("week 10")), a4.flags.map((f) => f.key).join(","));
+  failWeek = null;
+  out = await tick({ now: CT("2026-11-08T10:30:00-06:00") });
+  check("Sunday recheck runs once", !out.ran.gamelog);
+  out = await runJob("gamelog", { force: true, now: CT("2026-11-08T10:40:00-06:00") });
+  a4 = await getKv("auto", {});
+  check("Fill game log button refills and clears the flag", out.ran.gamelog.ok && !a4.flags.some((f) => f.job === "gamelog"), out.ran.gamelog.msg);
 
   // ---- pause ----
   await setKv("config", { ...(await getConfig()), autoPaused: true });

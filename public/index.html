@@ -167,6 +167,17 @@ details.manual .inner{margin-top:12px}
 .board-h{color:var(--board-dim)!important}
 .prow{display:grid;grid-template-columns:30px 32px 1fr 48px 40px 34px;gap:6px;align-items:center;padding-block:6px;border-bottom:1px solid var(--board-line);font-family:var(--cond);font-size:1rem;color:var(--board-ink)}
 .prow .num{text-align:right;font-variant-numeric:tabular-nums}
+.srow{display:grid;grid-template-columns:26px 32px 1fr 40px 40px 36px 44px;gap:6px;align-items:center;width:100%;padding:6px 0;border:0;border-bottom:1px solid var(--board-line);background:none;color:var(--board-ink);font:inherit;font-family:var(--cond);font-size:1rem;text-align:left;cursor:pointer}
+.srow .num{text-align:right;font-variant-numeric:tabular-nums}
+.srow .up,.slg .up{color:#4fc585}.srow .dn,.slg .dn{color:#ff7a70}
+.srow.shead{cursor:default;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--board-dim)}
+.ssort{font:inherit;background:none;border:0;color:inherit;text-align:right;cursor:pointer;padding:4px 0;text-transform:uppercase;letter-spacing:inherit}
+.ssort[aria-pressed="true"]{color:var(--board-ink);text-decoration:underline;text-underline-offset:3px}
+.sdet{padding:8px 4px 12px;border-bottom:1px solid var(--board-line);font-family:var(--cond);color:var(--board-ink)}
+.sgrid{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin-bottom:10px}
+.sgrid span{color:var(--board-dim)}
+.slg{display:grid;grid-template-columns:50px 1fr 68px 50px 62px;gap:6px;padding-block:3px;font-size:.95rem;border-top:1px dashed var(--board-line)}
+.slg .num{text-align:right;font-variant-numeric:tabular-nums}
 .phead{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--board-dim)}
 .model{font-family:var(--cond);font-size:.92rem;letter-spacing:.02em;color:var(--muted);border-left:3px solid var(--flag);padding-left:8px}
 .botrow td{font-style:italic;color:#C9CED4!important;text-shadow:none!important}
@@ -716,7 +727,7 @@ async function commishAct(act,ds){
   let r={ok:true},msg="";
   if(act==="run"){const b=document.querySelector(`[data-act="run"][data-job="${ds.job}"]${ds.force?'[data-force]':''}`);if(b){b.disabled=true;b.textContent="Working…"}
     r=await api("/api/admin",{action:"runJob",job:ds.job,force:!!ds.force});
-    if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.ok?"Done. ":"Failed. ")+(o.msg||"")}else if(b){b.disabled=false}}
+    if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.ok?"Done. ":"Failed. ")+(o.msg||"");if(["gamelog","ats","scores"].includes(ds.job))state.teamGames=null}else if(b){b.disabled=false}}
   if(act==="lock"){if(!(state.lockArm&&NOW()-state.lockArm<8000)){state.lockArm=NOW();renderCommish();setTimeout(()=>{if(state.lockArm&&NOW()-state.lockArm>=8000){state.lockArm=null;renderCommish()}},8200);return}
     state.lockArm=null;r=await api("/api/admin",{action:"lockNow",weekId:wid});msg="Picks locked. Everyone's picks now show."}
   if(act==="unlock"){const v=$("#unlockAt").value;const t=v?new Date(v).getTime():NaN;if(!Number.isFinite(t)){toast("Choose a new deadline first.");return}
@@ -946,13 +957,15 @@ document.addEventListener("click",async e=>{
   if(e.target.id==="warnSave"){state.warn=null;savePicks(true)}
   if(e.target.id==="warnBack"){state.warn=null;renderPicks()}
   const seg=e.target.closest("[data-rank]");if(seg){state.rankView=seg.dataset.rank;renderRankings();return}
+  const ss=e.target.closest("[data-ssort]");if(ss){const k=ss.dataset.ssort;state.statRev=(state.statSort||"ppg")===k?!state.statRev:false;state.statSort=k;renderRankings();return}
+  const stm=e.target.closest("[data-steam]");if(stm){const k=stm.dataset.steam;state.statOpen=state.statOpen===k?null:k;renderRankings();return}
   const act=e.target.closest("[data-act]");if(act)commishAct(act.dataset.act,act.dataset);
 });
 document.addEventListener("input",e=>{if(e.target.id==="tbInput"&&state.draft){const v=e.target.value;state.draft.tb=v===""?null:Math.max(0,Math.round(Number(v)));state.dirty=true;const b=$("#saveBtn");if(b){b.disabled=false;b.textContent="Save picks"}}});
 document.addEventListener("change",async e=>{
   if(e.target.id==="autoOpenChk"){const r=await api("/api/admin",{action:"autoSettings",autoOpen:e.target.checked});toast(r.ok?(e.target.checked?"Picks will open by themselves":"Picks open only when you tap Open picks"):r.error);await refresh(true);renderCommish()}
   if(e.target.id==="cwkSel"){state.cwk=e.target.value;renderCommish()}});
-document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="confSel"){state.atsConf=e.target.value;renderRankings()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
+document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="confSel"){state.atsConf=e.target.value;renderRankings()}if(e.target.id==="statConf"){state.statConf=e.target.value;renderRankings()}if(e.target.id==="statSlate"){state.statSlate=e.target.checked;renderRankings()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
 
 function survConflict(w,d){if(!d||!d.surv||!d.sel)return null;const p=d.sel[d.surv.g];return p&&p!==d.surv.s?d.surv.g:null}
 function missingItems(w,wid,d){const rs=w.results||{};const m=[];
@@ -1077,14 +1090,84 @@ function renderSurvivor(){
 }
 
 /* ---------- rankings ---------- */
+// ---------- Teams: Stats ----------
+// Built from the team game log (every finished FBS game this season, from ESPN).
+async function loadTeamGames(){state.tgLoading=true;const d=await api("/api/state?part=teams");state.tgLoading=false;
+  state.teamGames=d.ok?{games:d.games||[],updatedAt:d.updatedAt||null}:{games:[],error:d.error};
+  if(state.view==="rankings"&&state.rankView==="stats")renderRankings()}
+function teamStatRows(games,R){
+  const sp={};((R.power&&R.power.sp&&R.power.sp.teams)||[]).forEach(t=>sp[canon(t.team)]=t.rating);
+  const fbs=new Set(Object.keys(sp)),conf={},ap={};
+  ((R.ats&&R.ats.teams)||[]).forEach(t=>{fbs.add(canon(t.team));conf[canon(t.team)]=t.conf});
+  ((R.ap&&R.ap.teams)||[]).forEach(t=>ap[canon(t.team)]=t.rank);
+  const T={},z=()=>[0,0,0];
+  for(const g of games)for(const side of ["a","h"]){
+    const me=canon(g[side]),opp=canon(g[side==="a"?"h":"a"]);if(!fbs.has(me))continue;
+    const t=T[me]||(T[me]={team:me,conf:conf[me]||"",g:0,w:0,l:0,pf:0,pa:0,opp:[],fcs:0,ats:z(),fav:z(),dog:z(),home:z(),road:z(),cov:[],ou:z(),vsAp:[0,0],log:[]});
+    const pf=side==="a"?g.as:g.hs,pa=side==="a"?g.hs:g.as;
+    t.g++;pf>pa?t.w++:t.l++;t.pf+=pf;t.pa+=pa;
+    if(sp[opp]!=null)t.opp.push(sp[opp]);else if(!fbs.has(opp))t.fcs++;
+    if(ap[opp])t.vsAp[pf>pa?0:1]++;
+    let line=null,cov=null;
+    if(g.l!=null){line=side==="h"?g.l:-g.l;cov=pf-pa+line;const i=cov>0?0:cov<0?1:2;t.ats[i]++;t.cov.push(cov);
+      if(line<0)t.fav[i]++;else if(line>0)t.dog[i]++;if(!g.n)(side==="h"?t.home:t.road)[i]++}
+    if(g.t!=null){const s2=pf+pa;t.ou[s2>g.t?0:s2<g.t?1:2]++}
+    t.log.push({d:g.d,opp,at:!g.n&&side==="a",n:!!g.n,pf,pa,line,cov,hand:!!g.hand});
+  }
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const rows=Object.values(T).map(t=>({...t,ppg:t.pf/t.g,pag:t.pa/t.g,mgn:(t.pf-t.pa)/t.g,sos:avg(t.opp),cvr:avg(t.cov),ap:ap[t.team]||null}));
+  rows.filter(r=>r.sos!=null).sort((x,y)=>y.sos-x.sos).forEach((r,i)=>r.sosRank=i+1);
+  rows.forEach(r=>r.log.sort((x,y)=>x.d<y.d?-1:1));
+  return rows;
+}
+function statsBoard(R,onSlate){
+  const D=state.teamGames;
+  if(!D){if(!state.tgLoading)loadTeamGames();return '<div class="panel empty">Loading team stats…</div>'}
+  if(D.error)return `<div class="panel empty">${esc(D.error)}</div>`;
+  if(!D.games.length)return '<div class="panel empty">Team stats fill in after the first game log run. It runs by itself within the hour. The commissioner can also tap Fill game log.</div>';
+  let rows=teamStatRows(D.games,R);
+  const confs=[...new Set(rows.map(r=>r.conf).filter(Boolean))].sort();
+  const cf=state.statConf&&confs.includes(state.statConf)?state.statConf:"";
+  const only=!!state.statSlate&&onSlate.size>0;
+  if(cf)rows=rows.filter(r=>r.conf===cf);
+  if(only)rows=rows.filter(r=>onSlate.has(r.team));
+  // [key, label, 1 when higher is better, -1 when lower is better]
+  const COLS=[["ppg","PPG",1],["pag","PA",-1],["sos","SOS",1],["cvr","Cvr",1]];
+  const col=COLS.find(c=>c[0]===state.statSort)||COLS[0],dir=col[2]*(state.statRev?-1:1);
+  rows.sort((x,y)=>{const a=x[col[0]],b=y[col[0]];if(a==null||b==null)return (a==null)-(b==null);return dir*(b-a)||y.mgn-x.mgn});
+  const f1=x=>x==null?"–":x.toFixed(1),sg=x=>x==null?"–":(x>0?"+":"")+x.toFixed(1),rs=a=>a[0]+"-"+a[1]+(a[2]?"-"+a[2]:"");
+  const ln=x=>x==null?"no line":x===0?"PK":(x>0?"+":"")+x;
+  const day=d=>new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"America/Chicago"});
+  const spAsOf=R.power&&R.power.sp?R.power.sp.asOf:"";
+  const noLine=D.games.filter(g=>g.l==null).length;
+  let h=`<div class="board"><h2>Team stats</h2><p class="note">2026 season, every finished FBS game from ESPN${D.updatedAt?", updated "+esc(when(D.updatedAt)):""}. PPG and PA are raw points, not adjusted for opponent. SOS ranks each team by its opponents' average SP+ rating${spAsOf?" as of "+esc(spAsOf):""}; 1 is the hardest schedule, and FCS opponents are left out. Cvr is the average margin against the closing line (DraftKings via ESPN); plus means the team beat the number. ATS records here use ESPN lines, so they can differ from the ATS records view.${noLine?` ${noLine} game${noLine>1?"s have":" has"} no line and count for points only.`:""} Tap a team for splits and its game log.</p>
+  <div class="bar"><label for="statConf" class="note">Conference</label><select id="statConf"><option value="">All conferences</option>${confs.map(k=>`<option ${k===cf?"selected":""}>${esc(k)}</option>`).join("")}</select>${onSlate.size?`<label class="note"><input type="checkbox" id="statSlate" ${only?"checked":""}> This week's slate only</label>`:""}</div>
+  <div class="srow shead"><span></span><span></span><span>Team</span>${COLS.map(c=>`<button class="ssort" data-ssort="${c[0]}" aria-pressed="${c[0]===col[0]}">${c[1]}${c[0]===col[0]&&state.statRev?" ↑":""}</button>`).join("")}</div>`;
+  if(!rows.length)h+='<p class="note">No teams match.</p>';
+  rows.forEach((r,i)=>{const L=teamLook(r.team);const open=state.statOpen===r.team;
+    h+=`<button class="srow" data-steam="${esc(r.team)}" aria-expanded="${open}"><span class="rnum">${i+1}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(r.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${r.ap?'<span class="bye">AP '+r.ap+'</span>':""}${onSlate.has(r.team)&&!only?'<span class="bye on">On slate</span>':""}</span><span class="num">${f1(r.ppg)}</span><span class="num">${f1(r.pag)}</span><span class="num">${r.sosRank||"–"}</span><span class="num ${r.cvr>0?"up":r.cvr<0?"dn":""}">${sg(r.cvr)}</span></button>`;
+    if(open){const lines=r.g-r.cov.length;
+      h+=`<div class="sdet"><div class="sgrid">
+      <span>Record</span><b>${r.w}-${r.l}, ${sg(r.mgn)} a game</b>
+      <span>Schedule</span><b>${r.sos==null?"No FBS opponents rated":"Opponents' SP+ "+sg(r.sos)+", #"+r.sosRank+" hardest"}${r.fcs?`, plus ${r.fcs} FCS game${r.fcs>1?"s":""}`:""}</b>
+      <span>vs AP top 25</span><b>${r.vsAp[0]}-${r.vsAp[1]}</b>
+      <span>ATS</span><b>${rs(r.ats)}, average cover ${sg(r.cvr)}${lines?` (${lines} game${lines>1?"s":""} with no line)`:""}</b>
+      <span>As favorite</span><b>${rs(r.fav)}</b><span>As underdog</span><b>${rs(r.dog)}</b>
+      <span>Home</span><b>${rs(r.home)}</b><span>Road</span><b>${rs(r.road)}</b>
+      <span>Over/under</span><b>${rs(r.ou)} (overs first)</b></div>
+      ${r.log.map(g=>{const O=teamLook(g.opp);const win=g.pf>g.pa;return `<div class="slg"><span>${esc(day(g.d))}</span><span>${g.at?"at":"vs"} ${esc(O.abbr||g.opp)}${g.n?" (N)":""}</span><span class="${win?"up":"dn"}">${win?"W":"L"} ${g.pf}-${g.pa}${g.hand?"*":""}</span><span class="num">${esc(ln(g.line))}</span><span class="num ${g.cov>0?"up":g.cov<0?"dn":""}">${g.cov==null?"":g.cov>0?"Covered":g.cov<0?"Missed":"Push"}</span></div>`}).join("")}
+      ${r.log.some(g=>g.hand)?'<p class="note">* Score entered by the commissioner.</p>':""}</div>`}});
+  return h+"</div>";
+}
 function renderRankings(){
   const el=$("#v-rankings");const R=state.rankings;const v=state.rankView||"ap";
-  const seg=`<div class="seg" role="group" aria-label="Ranking view">${[["ap","AP Poll"],["cfp","CFP"],["power","Power"],["ats","ATS records"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${v===k}">${l}</button>`).join("")}</div>`;
+  const seg=`<div class="seg" role="group" aria-label="Ranking view">${[["ap","AP Poll"],["cfp","CFP"],["power","Power"],["ats","ATS records"],["stats","Stats"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${v===k}">${l}</button>`).join("")}</div>`;
   if(!R){el.innerHTML=seg+'<div class="panel empty">Team rankings update by themselves from ESPN. They show here after the first update.</div>';return}
   const w=curWeek();const onSlate=new Set();((w&&w.games)||[]).forEach(g=>{onSlate.add(canon(g.away));onSlate.add(canon(g.home))});
   const row=(t,extra)=>{const L=teamLook(t.team);const mv=t.prev==null?'<span class="mv">–</span>':t.prev==="NR"?'<span class="mv up">New</span>':t.prev>t.rank?`<span class="mv up">▲${t.prev-t.rank}</span>`:t.prev<t.rank?`<span class="mv dn">▼${t.rank-t.prev}</span>`:'<span class="mv">–</span>';
     return `<div class="rrow"><span class="rnum">${t.tie?"T-":""}${t.rank}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(t.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${onSlate.has(canon(t.team))?'<span class="bye on">On slate</span>':""}</span><span class="rrec">${esc(t.record||"")}</span>${extra||mv}</div>`};
   let h=seg;
+  if(v==="stats"){el.innerHTML=h+statsBoard(R,onSlate);return}
   if(v==="ap"){const P=R.ap;if(!P){el.innerHTML=h+'<div class="panel empty">The AP poll updates Sunday afternoons.</div>';return}
     const ties={};P.teams.forEach(t=>ties[t.rank]=(ties[t.rank]||0)+1);
     h+=`<div class="board"><h2>AP Top 25</h2><p class="note">Poll of ${esc(P.asOf)}.${P.teams.some(t=>t.prev!=null)?"":" Movement arrows start with next week's poll."}</p><div class="rlist">${P.teams.map(t=>row({...t,tie:ties[t.rank]>1})).join("")}</div>${P.others&&P.others.length?`<p class="note">Also receiving votes: ${P.others.map(o=>esc(o.team)+" "+o.pts).join(", ")}.</p>`:""}</div>`}
@@ -1183,7 +1266,7 @@ function autoPanel(){
   const A=state.auto;if(!A)return "";
   const fl=A.flags||[],runs=A.runs||{},L=A.labels||{};
   const flagsH=fl.length?fl.map(f=>`<div class="aflag"><span class="pill ${f.level==="error"?"bad":"wait"}">${f.level==="error"?"Failed":"Check"}</span><span>${esc(f.msg)}</span>${f.fixed?"<span></span>":`<button class="btn sm" data-act="dismiss" data-key="${esc(f.key)}">Dismiss</button>`}</div>`).join(""):'<p class="note">No flags. Every automated step worked on its last run.</p>';
-  const jobs=[["slate","Build from ESPN"],["open",""],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"]];
+  const jobs=[["slate","Build from ESPN"],["open",""],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"],["gamelog","Fill game log"]];
   const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span>${btn?`<button class="btn sm" data-act="run" data-job="${j}">${btn}</button>`:'<span class="note">Use Open picks in This week</span>'}</div>`}).join("");
   return `<details class="panel auto${fl.some(f=>f.level==="error")?" alert":""}" ${fl.length?"open":""}><summary><h2 style="display:inline">Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:' <span class="pill">All good</span>'}</h2></summary>
     <p class="note">${A.paused?"Paused. Nothing runs on the schedule until you resume it. The buttons below still work.":`Runs every hour.${A.lastTick?" Last run "+esc(when(A.lastTick))+".":""}`}</p>
