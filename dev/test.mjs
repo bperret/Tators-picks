@@ -53,6 +53,8 @@ try {
   await c.click("#setupForm button[type=submit]");
   await c.waitForSelector("#app:not([hidden])");
   check("commissioner reaches the app", await c.isVisible("#commishTab"));
+  await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(200);
+  check("automation panel flags the missing CRON_SECRET", (await c.textContent("#v-commish")).includes("CRON_SECRET is not set"));
 
   // ---- load slate, add a player ----
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(200);
@@ -118,6 +120,10 @@ try {
 
   // ---- scores and final ----
   await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+  await c.click('[data-act="run"][data-job="scores"]');
+  await c.waitForFunction(() => document.querySelector("#v-commish").textContent.includes("Pull scores failed"), null, { timeout: 30000 });
+  check("a failed ESPN pull shows as a flag", true);
+  await c.evaluate(() => window.scrollTo(0, 0)); await c.screenshot({ path: "dev/test-auto.png", fullPage: false });
   const scores = { g1: [20, 31], g2: [24, 27], g3: [17, 21], g4: [28, 24], g5: [35, 20] };
   for (const [g, [a, h]] of Object.entries(scores)) {
     await c.fill(`#ra-${g}`, String(a)); await c.fill(`#rh-${g}`, String(h)); await c.selectOption(`#rf-${g}`, "final");

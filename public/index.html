@@ -252,6 +252,11 @@ td.svc.next{border:1px dashed var(--line)}
 .btn.sm{padding:6px 10px;font-size:.88rem}
 .lgrow .t{display:flex;flex-direction:column;min-width:0}
 
+.aflag{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:start;padding-block:8px;border-top:1px solid var(--line)}
+.aflag .pill{margin-top:2px;justify-self:start}
+.panel.alert{border:2px solid var(--loss)}
+.autobar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+@media (max-width:420px){.aflag{grid-template-columns:1fr}.aflag .btn{justify-self:start}}
 .pill{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;border-radius:4px;padding:2px 8px;background:var(--chip);color:var(--ink);white-space:nowrap}
 .pill.wait{background:var(--flag);color:var(--flag-ink)}
 .pill.bad{background:var(--loss);color:#fff}
@@ -541,7 +546,7 @@ function applyState(S){
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Player");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,
-    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{}});
+    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},auto:S.auto||null});
   $("#commishTab").hidden=!state.isOwner;
   syncDraft();
 }
@@ -631,8 +636,8 @@ function loginsPanel(){
     <form id="addPlayerForm" class="bar addp" novalidate><input id="apName" type="text" maxlength="24" placeholder="Name (for you)" aria-label="Player name"><input id="apPhone" type="tel" inputmode="tel" placeholder="Cell number" aria-label="Cell number"><button class="btn primary" type="submit">Add player</button></form>
     <p class="note">Adding a player creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later. Resetting a PIN also signs that player out. Removing a player hides them from standings and blocks new picks.</p></div>`}
 function importPanel(){
-  return `<form id="slateForm" class="panel" novalidate><h2>Load a slate</h2><p class="note">Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
-  <form id="rankForm" class="panel" novalidate><h2>Update rankings</h2><p class="note">Paste rankings JSON for the Rankings tab. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form>`}
+  return `<form id="slateForm" class="panel" novalidate><h2>Load a slate</h2><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
+  <form id="rankForm" class="panel" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings. Paste rankings JSON for the Rankings tab. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form>`}
 
 /* ---------- saving picks ---------- */
 async function savePicks(force){
@@ -649,8 +654,13 @@ async function logAction(){} /* the server writes the log */
 
 /* ---------- commissioner actions ---------- */
 async function commishAct(act,ds){
-  const wid=currentWeekId(),w=curWeek();if(!state.isOwner)return;
+  const wid=commishWeekId(),w=state.weeks[wid];if(!state.isOwner)return;
   let r={ok:true},msg="";
+  if(act==="run"){const b=document.querySelector(`[data-act="run"][data-job="${ds.job}"]${ds.force?'[data-force]':''}`);if(b){b.disabled=true;b.textContent="Working…"}
+    r=await api("/api/admin",{action:"runJob",job:ds.job,force:!!ds.force});
+    if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.ok?"Done. ":"Failed. ")+(o.msg||"")}else if(b){b.disabled=false}}
+  if(act==="dismiss"){r=await api("/api/admin",{action:"dismissFlag",key:ds.key});msg="Flag dismissed"}
+  if(act==="pause"){r=await api("/api/admin",{action:"autoSettings",autoPaused:!(state.auto&&state.auto.paused)});msg=state.auto&&state.auto.paused?"Automation resumed":"Automation paused"}
   if(act==="open"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"open"});msg="Picks are open"}
   if(act==="todraft"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"draft"});msg="Moved back to draft"}
   if(act==="final"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"final"});msg="Week marked final"}
@@ -659,7 +669,7 @@ async function commishAct(act,ds){
     r=await api("/api/admin",{action:"swap",weekId:wid,outId:ds.g,inId:nid});msg="Game swapped and logged"}
   if(act==="scores"){const results={};
     for(const g of w.games){const a=$("#ra-"+CSS.escape(g.id)).value,hm=$("#rh-"+CSS.escape(g.id)).value,f=$("#rf-"+CSS.escape(g.id)).value;
-      if(f==="void"){results[g.id]={void:true};continue}if(a===""&&hm==="")continue;results[g.id]={away:Number(a)||0,home:Number(hm)||0,final:f==="final"}}
+      if(f==="auto"){results[g.id]={auto:true};continue}if(f==="void"){results[g.id]={void:true};continue}if(a===""&&hm==="")continue;results[g.id]={away:Number(a)||0,home:Number(hm)||0,final:f==="final"}}
     r=await api("/api/admin",{action:"scores",weekId:wid,results});msg="Scores saved"}
   if(act==="remove"||act==="restore"){r=await api("/api/admin",{action:"setRemoved",id:ds.p,removed:act==="remove"});msg=act==="remove"?"Player removed":"Player restored"}
   if(act==="override"){const n=$("#ovTeam").value,a=$("#ovAbbr").value.trim(),em=$("#ovEmoji").value.trim();const ovs={...((state.config&&state.config.teamOverrides)||{})};
@@ -851,6 +861,9 @@ document.addEventListener("click",async e=>{
   const act=e.target.closest("[data-act]");if(act)commishAct(act.dataset.act,act.dataset);
 });
 document.addEventListener("input",e=>{if(e.target.id==="tbInput"&&state.draft){const v=e.target.value;state.draft.tb=v===""?null:Math.max(0,Math.round(Number(v)));state.dirty=true;const b=$("#saveBtn");if(b){b.disabled=false;b.textContent="Save picks"}}});
+document.addEventListener("change",async e=>{
+  if(e.target.id==="autoOpenChk"){const r=await api("/api/admin",{action:"autoSettings",autoOpen:e.target.checked});toast(r.ok?(e.target.checked?"Picks will open by themselves":"Picks open only when you tap Open picks"):r.error);await refresh(true);renderCommish()}
+  if(e.target.id==="cwkSel"){state.cwk=e.target.value;renderCommish()}});
 document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
 
 function survConflict(w,d){if(!d||!d.surv||!d.sel)return null;const p=d.sel[d.surv.g];return p&&p!==d.surv.s?d.surv.g:null}
@@ -985,7 +998,7 @@ function renderRankings(){
   if(v==="power"){const P=R.power;if(!P||!P.sp){el.innerHTML=h+'<div class="panel empty">Power ratings load with the weekly update.</div>';return}
     const hist=Object.keys(state.history).sort().filter(k=>k<currentWeekId());const prevSp={};const ph=hist.length&&state.history[hist[hist.length-1]];((ph&&ph.power&&ph.power.sp&&ph.power.sp.teams)||[]).forEach(t=>prevSp[canon(t.team)]=t.rank);
     const vr={},fr={},apr={};((P.vsin&&P.vsin.teams)||[]).forEach(t=>vr[canon(t.team)]=t);((P.fpi&&P.fpi.teams)||[]).forEach(t=>fr[canon(t.team)]=t.rank);((R.ap&&R.ap.teams)||[]).forEach(t=>apr[canon(t.team)]=t.rank);
-    h+=`<div class="board"><h2>Power ratings</h2><p class="note">Sorted by SP+. SP+ rating is points better than an average FBS team. VSiN and FPI columns show each team's rank in those systems. FPI shows its top 25 only. Sources: ${esc(P.sp.source)}, ${esc(P.sp.asOf)}; ${esc(P.vsin?P.vsin.source+", "+P.vsin.asOf:"")}; ${esc(P.fpi?P.fpi.source+", "+P.fpi.asOf:"")}.</p>
+    h+=`<div class="board"><h2>Power ratings</h2><p class="note">Sorted by SP+. SP+ rating is points better than an average FBS team. VSiN and FPI columns show each team's rank in those systems. ${P.fpi&&P.fpi.teams&&P.fpi.teams.length<=25?"FPI shows its top 25 only. ":""}Sources: ${esc(P.sp.source)}, ${esc(P.sp.asOf)}; ${esc(P.vsin?P.vsin.source+", "+P.vsin.asOf:"")}; ${esc(P.fpi?P.fpi.source+", "+P.fpi.asOf:"")}.</p>
     <div class="prow phead"><span>SP+</span><span></span><span>Team</span><span class="num">Rtg</span><span class="num">VSiN</span><span class="num">FPI</span></div>
     ${P.sp.teams.map(t=>{const k=canon(t.team);const L=teamLook(t.team);const ap=apr[k];const pv=prevSp[k];const mv=pv==null?"":pv>t.rank?`<i class="up">\u25b2${pv-t.rank}</i>`:pv<t.rank?`<i class="dn">\u25bc${t.rank-pv}</i>`:"";return `<div class="prow"><span class="rnum">${t.rank}${mv}</span><span class="mono sm" style="background:${L.c1};color:${L.ink};box-shadow:inset 0 0 0 2px ${L.c2}"${L.abbr.length>4?' data-long':""}>${esc(L.abbr)}</span><span class="rteam">${esc(t.team)} ${L.emoji?'<span aria-hidden="true">'+L.emoji+'</span>':""}${ap?' <span class="bye">AP '+ap+'</span>':""}</span><span class="num">${t.rating>0?"+":""}${t.rating}</span><span class="num">${vr[k]?vr[k].rank:"\u2013"}</span><span class="num">${fr[k]||"\u2013"}</span></div>`}).join("")}</div>`}
   if(v==="ats"){const P=R.ats;if(!P||!P.teams||!P.teams.length){el.innerHTML=h+'<div class="panel empty">Team records against the spread load with the weekly update.</div>';return}
@@ -1059,30 +1072,47 @@ function trendChart(weeks,ids,sel){
 }
 
 /* ---------- commissioner ---------- */
+function commishWeekId(){const c=state.cwk;return c&&state.weeks[c]&&state.weeks[c].status!=="final"?c:currentWeekId()}
+function weekPicker(wid){const open=Object.values(state.weeks).filter(x=>x.id===currentWeekId()||x.status==="locked").sort((a,b)=>a.id<b.id?1:-1);
+  if(open.length<2)return "";return `<div class="bar"><label for="cwkSel" class="note">Working on</label><select id="cwkSel">${open.map(x=>`<option value="${esc(x.id)}" ${x.id===wid?"selected":""}>Week ${x.week}${x.id===currentWeekId()?" (current)":" (not final)"}</option>`).join("")}</select></div>`}
+function autoPanel(){
+  const A=state.auto;if(!A)return "";
+  const fl=A.flags||[],runs=A.runs||{},L=A.labels||{};
+  const flagsH=fl.length?fl.map(f=>`<div class="aflag"><span class="pill ${f.level==="error"?"bad":"wait"}">${f.level==="error"?"Failed":"Check"}</span><span>${esc(f.msg)}</span>${f.fixed?"<span></span>":`<button class="btn sm" data-act="dismiss" data-key="${esc(f.key)}">Dismiss</button>`}</div>`).join(""):'<p class="note">No flags. Every automated step worked on its last run.</p>';
+  const jobs=[["slate","Build from ESPN"],["open",""],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"]];
+  const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span>${btn?`<button class="btn sm" data-act="run" data-job="${j}">${btn}</button>`:'<span class="note">Use Open picks</span>'}</div>`}).join("");
+  return `<div class="panel${fl.some(f=>f.level==="error")?" alert":""}"><h2>Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:""}</h2>
+    <p class="note">${A.paused?"Paused. Nothing runs on the schedule until you resume it. The buttons below still work.":`Runs every hour.${A.lastTick?" Last run "+esc(when(A.lastTick))+".":""}`}</p>
+    ${flagsH}
+    <h3 class="rh">Jobs</h3><div class="lglist">${rows}</div>
+    <div class="autobar"><label class="note"><input type="checkbox" id="autoOpenChk" ${A.autoOpen?"checked":""}> Open picks by themselves Wednesday 6 p.m. CT</label></div>
+    <div class="autobar"><button class="btn sm" data-act="pause">${A.paused?"Resume automation":"Pause automation"}</button></div>
+    <p class="note">Each week: Tuesday 1 p.m. builds a draft from ESPN. Wednesday 6 p.m. opens picks if you have not. After the lock, scores update every hour, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Every button here does the same job by hand.</p></div>`}
 function renderCommish(){
-  const el=$("#v-commish"),w=curWeek(),wid=currentWeekId();
+  const el=$("#v-commish"),wid=commishWeekId(),w=state.weeks[wid]||null;
   if(!state.isOwner){el.innerHTML="";return}
   let h="";
-  if(!w){el.innerHTML=loginsPanel()+'<div class="panel empty">No week loaded yet. Paste a slate below.</div>'+importPanel();return}
+  if(!w){el.innerHTML=autoPanel()+loginsPanel()+'<div class="panel empty">No week loaded yet. Tap Build from ESPN above, or paste a slate below.</div>'+importPanel();return}
+  h+=weekPicker(wid);
   const nSub=(state.sheetCount||{})[wid]||0;
   h+=`<div class="panel"><h2>Week ${w.week} control</h2><p class="note">Status: ${esc(w.status)}. ${nSub} pick sheet${nSub===1?"":"s"} submitted. Deadline ${kick(w.deadline)}.</p><div class="bar">
-    ${w.status==="draft"?'<button class="btn primary" data-act="open">Open picks</button>':""}
+    ${w.status==="draft"?'<button class="btn primary" data-act="open">Open picks</button><button class="btn" data-act="run" data-job="slate" data-force="1">Rebuild from ESPN</button>':""}
     ${w.status==="open"?'<button class="btn" data-act="todraft">Move back to draft</button>':""}
     ${w.status==="locked"?'<button class="btn primary" data-act="final">Mark week final</button>':""}
     ${w.status==="final"?'<button class="btn" data-act="unfinal">Reopen scoring</button>':""}
-  </div><p class="note">Picks lock and show to everyone by themselves at the deadline. The site refuses any save after it. Every commissioner action is logged.</p></div>`;
+  </div><p class="note">Picks lock and show to everyone by themselves at the deadline. The site refuses any save after it. Every commissioner action is logged.${w.status==="draft"?" Rebuild from ESPN replaces this draft with fresh lines and undoes your swaps.":""}${w.holdOpen&&w.status==="draft"?" You moved this week back to draft, so it will not open by itself.":""}${w.holdFinal&&w.status==="locked"?" You reopened scoring, so the week will not be marked final by itself.":""}</p>${w.source?`<p class="note">${esc(w.source)}</p>`:""}</div>`;
   if(w.status==="draft"){
     const inSlate=new Set(w.games.map(g=>g.id));const pool=(w.pool||[]).filter(g=>!inSlate.has(g.id));
     h+=`<div class="panel"><h2>Swap games</h2><p class="note">Swaps are allowed only before picks open, and each one is shown on the slate.</p><div class="grid2">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>`<span class="t">${g.slot}. ${esc(g.away)} at ${esc(g.home)}</span><select id="sw-${esc(g.id)}" aria-label="Replacement for slot ${g.slot}"><option value="">Replace with…</option>${pool.map(p=>`<option value="${esc(p.id)}">${esc(p.away)} at ${esc(p.home)} (${fmtLine(p.homeLine)})</option>`).join("")}</select><button class="btn" data-act="swap" data-g="${esc(g.id)}">Swap</button><span></span>`).join("")}</div></div>`;
   }
   if(w.status!=="draft"){
     const rs=w.results||{};
-    h+=`<div class="panel"><h2>Scores</h2><p class="note">Enter scores as games finish. Standings update for everyone right away. Check every game before marking the week final.</p><div class="grid2" style="grid-template-columns:1fr auto auto auto">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot}. ${esc(g.away)} / ${esc(g.home)}</span><input type="number" id="ra-${esc(g.id)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status"><option value="">Not final</option><option value="final" ${r.final&&!r.void?"selected":""}>Final</option><option value="void" ${r.void?"selected":""}>Void</option></select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button></div></div>`;
+    h+=`<div class="panel"><h2>Scores</h2><p class="note">ESPN scores fill in every hour. To enter a score yourself, set the game to In progress, Final, or Void and save. Set it back to ESPN to hand it back.</p><div class="grid2" style="grid-template-columns:1fr auto auto auto">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot}. ${esc(g.away)} / ${esc(g.home)}</span><input type="number" id="ra-${esc(g.id)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status">${(()=>{const man=r.src==="manual"||(r.void&&r.src!=="auto");const cur=!man?"auto":r.void?"void":r.final?"final":"";return [["auto","ESPN"+(r.src==="auto"&&r.status?" · "+r.status:"")],["","In progress"],["final","Final"],["void","Void"]].map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`).join("")})()}</select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button><button class="btn" data-act="run" data-job="scores">Pull scores now</button></div></div>`;
   }
   const ovs=(state.config&&state.config.teamOverrides)||{};
   h+=`<div class="panel"><h2>Team labels</h2><p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters" aria-label="Letters" style="width:90px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}</div>`;
   h+=`<div class="panel"><h2>League name</h2><div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div></div>`;
-  el.innerHTML=loginsPanel()+h+importPanel();
+  el.innerHTML=autoPanel()+loginsPanel()+h+importPanel();
 }
 
 

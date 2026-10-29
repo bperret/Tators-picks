@@ -1,0 +1,24 @@
+name: Hourly automation
+
+# Calls the site's automation endpoint at minute 7 of every hour. The site decides what is due.
+# Needs two repository secrets: SITE_URL (for example https://tators-picks.vercel.app) and CRON_SECRET.
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run due jobs
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$SITE_URL" ] || [ -z "$CRON_SECRET" ]; then echo "Add SITE_URL and CRON_SECRET as repository secrets."; exit 1; fi
+          code=$(curl -sS -o out.json -w "%{http_code}" --max-time 280 \
+            -H "Authorization: Bearer $CRON_SECRET" -H "x-source: github" "${SITE_URL%/}/api/cron")
+          cat out.json; echo
+          test "$code" = "200"

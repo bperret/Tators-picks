@@ -5,7 +5,7 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "dev": "node dev/server.mjs",
-    "test": "node dev/test.mjs"
+    "test": "node dev/auto-test.mjs && node dev/test.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "1.1.0",

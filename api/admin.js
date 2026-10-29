@@ -2,20 +2,11 @@
 import bcrypt from "bcryptjs";
 import { q, one, addLog, setKv } from "../lib/db.js";
 import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../lib/http.js";
-import { getConfig, validateWeek, effectiveStatus } from "../lib/league.js";
+import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings } from "../lib/league.js";
+import { runJob, dismissFlag, JOB_NAMES } from "../lib/auto.js";
 
 const BY = "Commissioner";
 
-async function getWeek(id) {
-  const r = await one("select data from weeks where id = $1", [id]);
-  return r ? r.data : null;
-}
-async function putWeek(w) {
-  await q(
-    "insert into weeks (id, data, updated_at) values ($1, $2::jsonb, now()) on conflict (id) do update set data = excluded.data, updated_at = now()",
-    [w.id, JSON.stringify(w)]
-  );
-}
 const label = (p) => p.name || p.invited || "a new player";
 
 export default async function handler(req, res) {
@@ -58,14 +49,12 @@ export default async function handler(req, res) {
         const w = b.week;
         const errs = validateWeek(w);
         if (errs.length) return fail(res, 400, errs.slice(0, 5).join(" "));
-        const old = await getWeek(w.id);
-        if (old && effectiveStatus(old) !== "draft") return fail(res, 409, "That week is already open. Picks cannot be changed under players.");
-        const week = { scored: false, swaps: [], results: {}, pool: w.games, ...w, status: "draft" };
-        await putWeek(week);
-        const cfg = await getConfig();
-        cfg.currentWeek = w.id;
-        if (!cfg.survivorStart) cfg.survivorStart = w.id;
-        await setKv("config", cfg);
+        try {
+          await saveDraft(w);
+        } catch (e) {
+          if (e.code === 409) return fail(res, 409, e.message);
+          throw e;
+        }
         await addLog(BY, "Loaded a slate", `Week ${w.week}: ${w.games.length} games`);
         return send(res, 200, { ok: true });
       }
@@ -77,7 +66,11 @@ export default async function handler(req, res) {
         const allowed = { draft: ["open"], open: ["draft"], locked: ["final"], final: ["locked"] };
         if (!(allowed[cur] || []).includes(to)) return fail(res, 409, `A ${cur} week cannot move to ${to}.`);
         w.status = to === "locked" ? "open" : to; // past the deadline, "open" reads as locked
+        // When the commissioner undoes a step, automation leaves that step to him for this week.
+        if (to === "draft") w.holdOpen = true;
+        if (to === "locked") w.holdFinal = true;
         await putWeek(w);
+        if (to === "final") await snapshotRankings(w.id);
         const words = { open: "Opened picks", draft: "Moved the week back to draft", final: "Marked week final", locked: "Reopened scoring" };
         await addLog(BY, words[to], `Week ${w.week}`);
         return send(res, 200, { ok: true });
@@ -103,15 +96,42 @@ export default async function handler(req, res) {
         for (const [gid, r] of Object.entries(b.results || {})) {
           const g = w.games.find((x) => x.id === gid);
           if (!g) continue;
-          if (r.void) { results[gid] = { away: 0, home: 0, final: false, void: true }; parts.push(`${g.away} at ${g.home} void`); continue; }
+          if (r.auto) {
+            // Hand the game back to automation. It keeps the current score until ESPN updates it.
+            if (results[gid] && results[gid].src === "manual") { results[gid] = { ...results[gid], src: "auto" }; parts.push(`${g.away} at ${g.home} back to ESPN`); }
+            continue;
+          }
+          if (r.void) { results[gid] = { away: 0, home: 0, final: false, void: true, src: "manual" }; parts.push(`${g.away} at ${g.home} void`); continue; }
           const a = Number(r.away), h = Number(r.home);
           if (!Number.isInteger(a) || !Number.isInteger(h) || a < 0 || h < 0) continue;
-          results[gid] = { away: a, home: h, final: !!r.final, void: false };
+          const old = results[gid];
+          if (old && old.src !== "manual" && old.away === a && old.home === h && !!old.final === !!r.final && !old.void) continue; // unchanged ESPN score
+          results[gid] = { away: a, home: h, final: !!r.final, void: false, src: "manual" };
           parts.push(`${g.away} ${a}, ${g.home} ${h}${r.final ? " final" : ""}`);
         }
         w.results = results;
         await putWeek(w);
+        if (!parts.length) return send(res, 200, { ok: true });
         await addLog(BY, "Edited scores", `Week ${w.week}: ${parts.join("; ")}`);
+        return send(res, 200, { ok: true });
+      }
+      case "runJob": {
+        if (!JOB_NAMES.includes(b.job)) return fail(res, 400, "Unknown job.");
+        const out = await runJob(b.job, { by: BY, force: !!b.force });
+        return send(res, 200, { ok: true, ...out });
+      }
+      case "dismissFlag": {
+        await dismissFlag(String(b.key || ""));
+        return send(res, 200, { ok: true });
+      }
+      case "autoSettings": {
+        const cfg = await getConfig();
+        const parts = [];
+        if (typeof b.autoOpen === "boolean" && b.autoOpen !== cfg.autoOpen) { cfg.autoOpen = b.autoOpen; parts.push(b.autoOpen ? "Picks open by themselves Wednesday 6 p.m." : "Picks open only when the commissioner taps Open picks"); }
+        if (typeof b.autoPaused === "boolean" && b.autoPaused !== cfg.autoPaused) { cfg.autoPaused = b.autoPaused; parts.push(b.autoPaused ? "Paused automation" : "Resumed automation"); }
+        if (!parts.length) return send(res, 200, { ok: true });
+        await setKv("config", cfg);
+        await addLog(BY, "Changed automation", parts.join(". "));
         return send(res, 200, { ok: true });
       }
       case "config": {
