@@ -109,6 +109,20 @@ try {
   check("complete sheet saves", (await m.textContent(".phist summary")).includes("last saved"));
   const before = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
   check("picks hidden from others before the lock", !before.reveals["2026-w10"]);
+  const ss = Object.values((before.sheetStatus || {})["2026-w10"] || {});
+  check("commissioner gets sheet status without sides", ss.length === 1 && ss[0].games.length === 5 && ss[0].flag && ss[0].tb && ss[0].surv && !/"(home|away)"/.test(JSON.stringify(before.sheetStatus)), JSON.stringify(before.sheetStatus));
+  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+  const cm = await c.textContent("#v-commish");
+  check("League members shows who is in and who is complete", cm.includes("Week 10 sheets: 1 complete, 0 missing parts, 1 not in") && cm.includes("Week 10: Complete") && cm.includes("Week 10: No sheet"), cm.slice(cm.indexOf("League members"), cm.indexOf("League members") + 400));
+  // The commissioner saves a partial sheet: two picks, no flag, no tiebreaker.
+  await c.evaluate(() => (location.hash = "#picks")); await c.waitForTimeout(300);
+  const cs = c.locator(".side:not([disabled])");
+  await cs.nth(0).click(); await cs.nth(2).click();
+  await c.click("#saveBtn"); await c.waitForTimeout(200);
+  if (await c.isVisible("#warnSave")) { await c.click("#warnSave"); await c.waitForTimeout(400); }
+  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+  const cm2 = await c.textContent("#v-commish");
+  check("partial sheet lists what is missing", cm2.includes("1 missing parts") && cm2.includes("Missing: 2 of 5 picks, no flag, no tiebreaker"), cm2.slice(cm2.indexOf("League members"), cm2.indexOf("League members") + 500));
 
   // ---- commissioner locks early, then unlocks ----
   await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
@@ -203,6 +217,7 @@ try {
   check("profile shows own number only", (await m.textContent("#v-profile")).includes("(214) 555-0123"));
   const mstate = await m.evaluate(() => fetch("/api/state").then((r) => r.json()));
   check("players never receive phone numbers", !JSON.stringify(mstate.players).includes("5550100") && !mstate.logins);
+  check("players never receive sheet status", !mstate.sheetStatus);
   const adminTry = await m.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "addPlayer", phone: "2145559999" }) }).then((r) => r.status));
   check("players cannot use commissioner actions", adminTry === 403);
   await m.screenshot({ path: "dev/test-standings.png", fullPage: false });

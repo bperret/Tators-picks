@@ -310,6 +310,8 @@ td.svc.next{border:1px dashed var(--line)}
 .pill{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;border-radius:4px;padding:2px 8px;background:var(--chip);color:var(--ink);white-space:nowrap}
 .pill.wait{background:var(--flag);color:var(--flag-ink)}
 .pill.bad{background:var(--loss);color:#fff}
+.pill.ok{background:var(--win,#2f8f5b);color:#fff}
+.sheetsum{margin:4px 0 12px}.sheetsum p{margin:4px 0}.sheetsum .pill{margin-right:6px}
 .pinbox{border:2px solid var(--flag);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .pinbox p{margin:0}
 .bigpin{font-family:var(--cond);font-size:2rem;letter-spacing:.2em;font-variant-numeric:tabular-nums}
@@ -610,7 +612,7 @@ function applyState(S){
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Player");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,
-    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},auto:S.auto||null,upcoming:S.upcoming||null,sheetsIn:S.sheetsIn||[]});
+    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},auto:S.auto||null,upcoming:S.upcoming||null,sheetsIn:S.sheetsIn||[]});
   $("#commishTab").hidden=!state.isOwner;
   syncDraft();
 }
@@ -690,16 +692,35 @@ document.addEventListener("click",async e=>{
 });
 
 /* ---------- commissioner panels ---------- */
+// Sheet status for the week the Commish view shows. Counts and yes or no only, never sides.
+function sheetCheck(){
+  const wid=commishWeekId(),w=state.weeks[wid];if(!w||!["open","locked"].includes(w.status))return null;
+  const SS=(state.sheetStatus||{})[wid]||{},rs=w.results||{};
+  const need=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>g.id);
+  const sb=survivorStart()&&wid>=survivorStart()?survivorBoard():null;
+  const survNeeded=pid=>{if(!sb)return false;const r=sb.find(x=>x.pid===pid);return !r||r.alive||r.pending};
+  const by={};
+  for(const a of state.logins||[]){if(a.removed)continue;const s=SS[a.id];
+    if(!s){by[a.id]={st:"none",label:a.setupDone?"No sheet":"No sheet, not logged in yet"};continue}
+    const miss=[];const n=need.filter(id=>s.games.includes(id)).length;
+    if(n<need.length)miss.push(`${n} of ${need.length} picks`);if(!s.flag)miss.push("no flag");if(!s.tb)miss.push("no tiebreaker");if(survNeeded(a.id)&&!s.surv)miss.push("no survivor");
+    by[a.id]=miss.length?{st:"part",label:"Missing: "+miss.join(", "),at:s.at}:{st:"done",label:"Complete",at:s.at}}
+  const ids=Object.keys(by);const grp=k=>ids.filter(id=>by[id].st===k);
+  return {w,by,done:grp("done"),part:grp("part"),none:grp("none")};
+}
 function loginsPanel(){
-  const L=state.logins||[];const t=NOW();
+  const L=state.logins||[];const t=NOW();const SC=sheetCheck();
+  const nmOf=id=>{const a=L.find(x=>x.id===id);return a?(a.name||a.invited||"New picker"):id};
+  const sheetPill=id=>{const s=SC&&SC.by[id];if(!s)return "";return `<span class="pill ${s.st==="done"?"ok":s.st==="part"?"wait":"bad"}">Week ${SC.w.week}: ${esc(s.label)}</span>${s.at?`<span class="note">Last saved ${esc(when(s.at))}</span>`:""}`};
+  const sheetSum=SC?`<div class="sheetsum"><p><b>Week ${SC.w.week} sheets${SC.w.status==="locked"?" (locked)":""}:</b> ${SC.done.length} complete, ${SC.part.length} missing parts, ${SC.none.length} not in.</p>${[["part","Missing parts",SC.part],["none","Not in",SC.none],["done","Complete",SC.done]].filter(x=>x[2].length).map(([k,l,ids])=>`<p class="note"><span class="pill ${k==="done"?"ok":k==="part"?"wait":"bad"}">${l}</span> ${ids.map(id=>esc(nmOf(id))+(k==="part"?" ("+esc(SC.by[id].label.replace("Missing: ",""))+")":"")).join("; ")}</p>`).join("")}<p class="note">You see what each sheet is missing, never which side anyone picked.</p></div>`:"";
   const rows=L.map(a=>{const locked=a.lockedUntil&&Date.parse(a.lockedUntil)>t;
     const st=a.removed?'<span class="pill">Removed</span>':locked?`<span class="pill bad">Paused ${Math.ceil((Date.parse(a.lockedUntil)-t)/60000)} min</span>`:a.setupDone?'<span class="pill">Active</span>':'<span class="pill wait">Not logged in yet</span>';
     const rm=a.isCommish?"":`<button class="btn sm${a.removed?"":" danger"}" data-dact="${a.removed?"restore":"remove"}" data-id="${esc(a.id)}">${a.removed?"Restore":"Remove"}</button>`;
-    return `<div class="lgrow"><span class="t"><b>${chip(a.id)}${esc(a.name||a.invited||"New picker")}${a.isCommish?" (you)":""}</b><span class="note">${a.invited&&a.invited!==a.name?"Nickname: "+esc(a.invited)+" · ":""}${fmtPhone(a.phone)}${a.lockouts?" · "+a.lockouts+" pause"+(a.lockouts>1?"s":""):""}</span>${st}</span><span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${rm}</span></div>`}).join("");
+    return `<div class="lgrow"><span class="t"><b>${chip(a.id)}${esc(a.name||a.invited||"New picker")}${a.isCommish?" (you)":""}</b><span class="note">${a.invited&&a.invited!==a.name?"Nickname: "+esc(a.invited)+" · ":""}${fmtPhone(a.phone)}${a.lockouts?" · "+a.lockouts+" pause"+(a.lockouts>1?"s":""):""}</span>${st}${a.removed?"":sheetPill(a.id)}</span><span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${rm}</span></div>`}).join("");
   const sp=state.shownPin;
   return `<div class="panel"><h2>League members</h2>
     ${sp?`<div class="pinbox" id="pinbox" role="status"><p>${sp.what==="added"?"Picker added.":"New PIN"+(sp.who?" for "+esc(sp.who):"")+"."} ${sp.self?"This is your new PIN. You will log in again with it.":"Text it to "+fmtPhone(sp.num)+"."} It shows only once.</p><b class="bigpin">${sp.pin}</b><button class="btn" data-dact="hidepin">Done</button></div>`:""}
-    <div class="lglist">${rows}</div>
+    ${sheetSum}<div class="lglist">${rows}</div>
     <form id="addPlayerForm" class="bar addp" novalidate><input id="apName" type="text" maxlength="24" placeholder="Nickname (only you see it)" aria-label="Nickname, only you see it"><input id="apPhone" type="tel" inputmode="tel" placeholder="Cell number" aria-label="Cell number"><button class="btn primary" type="submit">Add picker</button></form>
     <p class="note">Adding a picker creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Removing a picker hides them from standings and blocks new picks.</p></div>`}
 function importPanel(){
