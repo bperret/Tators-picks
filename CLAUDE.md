@@ -28,4 +28,4 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 ## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
 - ESPN rankings and FPI feed shapes were not verified live; watch for flags on the first runs.
-- ESPN's scoreboard drops lines from finished games, so the weeks 1 to 9 backfill came in without lines. The lines job tries ESPN's core per-game odds feed; its shape was not verified live. Watch the Automation panel.
+- Team stats: ESPN's scoreboard drops lines from finished games. The lines job filled weeks 1 to 9 from ESPN's core per-game odds feed, verified live Oct 29. New games get lines saved before kickoff by the hourly ATS run.
