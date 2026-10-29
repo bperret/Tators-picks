@@ -408,8 +408,9 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       </ul>
       <h3 class="rh">Robo-Sharp</h3>
       <ul>
-        <li>Robo-Sharp is a computer player. Each week it takes the side the model line favors against the betting line in every game, and throws its flag on the game with the biggest gap. The model line is VSiN's projected spread.</li>
-        <li>Robo-Sharp shows in the standings so you can see who beats the computer. It holds no rank and cannot win a week, the season, or money.</li>
+        <li>Robo-Sharp is a computer entry. Each week it takes the side the model line favors against the betting line in every game, and throws its flag on the game with the biggest gap. The model line is a computer projection of the spread. Each game shows it with its source (ESPN FPI from week 10 on).</li>
+        <li>Its tiebreaker guess is the betting total for the tiebreaker game. In Survivor it takes the biggest edge on a team it has not used.</li>
+        <li>Robo-Sharp is ranked like everyone else and can win a week. Money stays off the site, so the commissioner decides what happens if the bot finishes in a paying spot.</li>
       </ul>
       <h3 class="rh">Survivor</h3>
       <ul>
@@ -473,7 +474,7 @@ async function resolveNames(ids){
   render();
 }
 const canon=n=>ALIAS[String(n).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"")]||n;
-const nm=id=>id===BOT?"Robo-Sharp (bot)":(state.names[id]||"Player");
+const nm=id=>id===BOT?"Robo-Sharp":(state.names[id]||"Player");
 const first=id=>id===BOT?"Robo-Sharp":nm(id).split(" ")[0];
 
 /* ---------- app layer: talks to the Tator's Picks server ---------- */
@@ -502,7 +503,7 @@ const SWATCH=[["Crimson","#B3121D"],["Orange","#E8590C"],["Gold","#F2B705"],["Gr
 function inkFor(hex){const h=String(hex).replace("#","");const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (0.299*r+0.587*g+0.114*b)/255>0.62?"#111111":"#ffffff"}
 function chip(pid,big){if(pid===BOT)return `<span class="pchip bot${big?" big":""}" aria-hidden="true">🤖</span>`;const a=accByUid(pid);if(!a||!a.emoji)return "";return `<span class="pchip${big?" big":""}" style="background:${a.c1};box-shadow:inset 0 0 0 ${big?4:2}px ${a.c2}" aria-hidden="true">${a.emoji}</span>`}
 function tag(pid,lk){const a=accByUid(pid);const st=a&&a.c1?` style="background:${a.c1};color:${inkFor(a.c1)};box-shadow:inset 0 -3px 0 ${a.c2}"`:"";return `<span class="ptag${lk?" lk":""}"${st}>${a&&a.emoji?a.emoji+" ":""}${esc(first(pid))}</span>`}
-function talkLine(pid){if(pid===BOT)return '<p class="talk">Robo-Sharp takes the model side in every game. Beat the bot.</p>';return ""}
+function talkLine(pid){if(pid===BOT)return '<p class="talk">Robo-Sharp takes the model side in every game, flags its biggest edge, guesses the betting total, and rides its biggest unused edge in Survivor. Beat the bot.</p>';return ""}
 function emBtn(pre,a,e,label){return `<button type="button" class="emb" data-pick="${pre}:emoji" data-val="${e}" aria-pressed="${a.emoji===e}"${label?` title="${esc(label)}" aria-label="${esc(label)}"`:""}>${e}</button>`}
 function lookPicker(pre,a){
   const teamEm=[];const seen=new Set();Object.keys(TEAMS).sort().forEach(n=>{const e=TEAMS[n][3];if(e&&!seen.has(e)){seen.add(e);teamEm.push([e,n])}});
@@ -723,15 +724,24 @@ window.addEventListener("hashchange",route);
 const BOT="bot";
 const baseChip=pid=>pid===BOT?'<span class="pchip bot" aria-hidden="true">\ud83e\udd16</span>':"";
 function modelSide(g){if(typeof g.modelLine!=="number")return null;const e=g.modelLine-g.homeLine;if(e>0)return "away";if(e<0)return "home";return g.homeLine<0?"away":"home"}
-function botPicks(w){const sel={};let best=null;for(const g of [...(w.games||[])].sort((a,b)=>a.slot-b.slot)){const s=modelSide(g);if(!s)continue;sel[g.id]=s;const e=Math.abs(g.modelLine-g.homeLine);if(!best||e>best.e)best={id:g.id,e}}return Object.keys(sel).length?{sel,lock:best&&best.id,tb:null}:null}
+/* Robo-Sharp plays like everyone else: model side in every game, flag on the biggest edge,
+   the betting total as its tiebreaker, and in Survivor the biggest edge it has not used. */
+function botPicks(w){const sel={};let best=null;for(const g of [...(w.games||[])].sort((a,b)=>a.slot-b.slot)){const s=modelSide(g);if(!s)continue;sel[g.id]=s;const e=Math.abs(g.modelLine-g.homeLine);if(!best||e>best.e)best={id:g.id,e}}
+  if(!Object.keys(sel).length)return null;const tg=tbGame(w);const tb=tg&&typeof tg.total==="number"?Math.round(tg.total):null;
+  return {sel,lock:best&&best.id,tb,surv:botSurv(w)}}
+function botSurv(w){const start=survivorStart();if(!start||w.id<start)return null;const used=new Set();
+  for(const wid of Object.keys(state.weeks).sort()){if(wid<start||wid>=w.id)continue;const pw=state.weeks[wid];const s=pw&&botSurvPick(pw,used);if(s){const g=pw.games.find(x=>x.id===s.g);used.add(canon(s.s==="home"?g.home:g.away))}}
+  return botSurvPick(w,used)}
+function botSurvPick(w,used){const opts=(w.games||[]).map(g=>({g,s:modelSide(g),e:typeof g.modelLine==="number"?Math.abs(g.modelLine-g.homeLine):0})).filter(o=>o.s&&!used.has(canon(o.s==="home"?o.g.home:o.g.away)));
+  opts.sort((a,b)=>b.e-a.e||a.g.slot-b.g.slot);return opts[0]?{g:opts[0].g.id,s:opts[0].s}:null}
 function weekPlayers(wid,withBot){const r=state.reveals[wid];if(!r)return {};const o={};for(const [p,v] of Object.entries(r.players||{}))if(!removed().includes(p)&&p!==BOT)o[p]=v;if(withBot&&state.weeks[wid]){const b=botPicks(state.weeks[wid]);if(b)o[BOT]=b}return o}
 function survivorStart(){return state.config&&state.config.survivorStart}
 function survivorBoard(){
   const start=survivorStart();if(!start)return null;
   const weeks=Object.keys(state.weeks).sort().filter(w=>w>=start&&state.reveals[w]&&["locked","final"].includes(state.weeks[w].status));
-  const ids=allPlayerIds(false).filter(p=>!removed().includes(p));
+  const ids=allPlayerIds(true).filter(p=>!removed().includes(p));
   return ids.map(pid=>{const row={pid,alive:true,pending:false,out:null,used:[],picks:[]};
-    for(const wid of weeks){const w=state.weeks[wid];const p=(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;
+    for(const wid of weeks){const w=state.weeks[wid];const p=pid===BOT?botPicks(w):(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;
       if(!sp){row.alive=false;row.out={week:w.week,team:"no pick"};break}
       const g=w.games.find(x=>x.id===sp.g);if(!g){row.alive=false;row.out={week:w.week,team:"no pick"};break}
       const team=sp.s==="home"?g.home:g.away;row.used.push(team);row.picks.push({wid,week:w.week,team,line:sp.s==="home"?g.homeLine:-g.homeLine});
@@ -745,7 +755,7 @@ function margin(g,r){return (r.home-r.away)+g.homeLine} /* >0 home covers */
 function split(g,players){const s={away:[],home:[]};for(const [pid,p] of Object.entries(players)){const x=(p.sel||{})[g.id];if(x)s[x].push(pid)}return s}
 function allPlayerIds(withBot){const s=new Set(state.roster);Object.values(state.reveals).forEach(r=>Object.keys(r.players||{}).forEach(p=>{if(p!==BOT)s.add(p)}));if(withBot&&Object.keys(state.reveals).some(wid=>state.weeks[wid]&&botPicks(state.weeks[wid])))s.add(BOT);return [...s]}
 function countedWeeks(includeTest){return Object.keys(state.weeks).sort().filter(wid=>state.reveals[wid]&&(includeTest||state.weeks[wid].scored!==false))}
-function weekWinners(wid){const w=state.weeks[wid];if(!w||w.status!=="final")return [];const ps=weekPlayers(wid);const rows=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));if(!rows.length)return [];rows.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));return rows.filter(r=>r.pts===rows[0].pts&&r.tbMiss===rows[0].tbMiss).map(r=>r.pid)}
+function weekWinners(wid){const w=state.weeks[wid];if(!w||w.status!=="final")return [];const ps=weekPlayers(wid,true);const rows=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));if(!rows.length)return [];rows.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));return rows.filter(r=>r.pts===rows[0].pts&&r.tbMiss===rows[0].tbMiss).map(r=>r.pid)}
 const SIG={
   td:'<svg class="sig" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7m0 0-3 7m3-7 3 7M12 10 7 2m5 8 5-8"/></svg>',
   inc:'<svg class="sig" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7m0 0-3 7m3-7 3 7M4 10h16"/></svg>'
@@ -913,7 +923,7 @@ function renderStandings(){
   const el=$("#v-standings");
   const rows=seasonRows(false,true);
   const active=rows.filter(r=>!removed().includes(r.pid)),out=rows.filter(r=>removed().includes(r.pid));
-  let rk=0;active.forEach(r=>{r.rk=r.pid===BOT?"":++rk});
+  active.forEach((r,i)=>{const p=active[i-1];r.rk=p&&p.pts===r.pts&&p.lw===r.lw&&p.tb===r.tb?p.rk:i+1});
   let h="";
   const w=curWeek(),wid=currentWeekId(),rev=state.reveals[wid];
   if(w&&rev){
@@ -928,7 +938,7 @@ function renderStandings(){
   const max=Math.max(1,...active.map(r=>r.pts));
   h+=`<div class="board"><h2>Season ${state.config?state.config.season:""}</h2>`;
   if(!active.length||!countedWeeks(false).length)h+='<p class="note">No scored weeks yet. Test weeks do not count toward the season.</p>';
-  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Player</th><th class="num">Pts</th><th class="num">ATS</th><th class="num">Flag</th><th class="num">TB miss</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td>${chip(r.pid)}${esc(nm(r.pid))}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then flag wins, then smallest total tiebreaker miss. The bar shows points against the leader. Robo-Sharp plays every week but holds no rank and wins nothing.</p>`;
+  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Player</th><th class="num">Pts</th><th class="num">ATS</th><th class="num">Flag</th><th class="num">TB miss</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td>${chip(r.pid)}${esc(nm(r.pid))}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then flag wins, then smallest total tiebreaker miss. The bar shows points against the leader. Robo-Sharp is ranked like everyone else.</p>`;
   h+="</div>";
   const sb=survivorBoard();
   if(sb&&sb.length){const alive=sb.filter(r=>r.alive);
@@ -1030,7 +1040,7 @@ function renderPlayers(){
   const tlist0=Object.entries(trophies);const tlist=tlist0.sort((a,b)=>b[1]-a[1]);
   h+=`<div class="panel"><h2>Trophy case</h2>${tlist.length?`<div class="trophies">${tlist.map(([p,n])=>`<div class="tro"><span class="cup" aria-hidden="true">🏆</span><b>${esc(nm(p))}</b><span class="note">${n} weekly title${n>1?"s":""}</span></div>`).join("")}</div>`:'<p class="note">No weekly titles yet. A title goes to the top score once a week is marked final.</p>'}</div>`;
   /* rank trend */
-  h+=`<div class="panel"><h2>Rank by week</h2>${trendChart(weeks,humans,sel===BOT?humans[0]:sel)}</div>`;
+  h+=`<div class="panel"><h2>Rank by week</h2>${trendChart(weeks,ids,sel)}</div>`;
   const ms=ids.map(p=>({p,...modelStats(p,weeks)})).filter(x=>x.agree[0]+x.agree[1]+x.fade[0]+x.fade[1]);
   const pc=a=>a[0]+a[1]?Math.round(a[0]/(a[0]+a[1])*100)+"%":"\u2013";
   h+=`<div class="panel"><h2>Against the model</h2><p class="note">Agree means you took the side Robo-Sharp took. Fade means you took the other side.</p>${ms.length?`<div class="tablewrap"><table class="plain"><thead><tr><th>Player</th><th class="num">Agree</th><th class="num">Win %</th><th class="num">Fade</th><th class="num">Win %</th></tr></thead><tbody>${ms.map(x=>`<tr><td>${esc(nm(x.p))}</td><td class="num">${x.agree[0]}-${x.agree[1]}</td><td class="num">${pc(x.agree)}</td><td class="num">${x.fade[0]}-${x.fade[1]}</td><td class="num">${pc(x.fade)}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Fills in once games with a model line are graded.</p>'}</div>`;
@@ -1062,7 +1072,7 @@ function renderPlayers(){
 function trendChart(weeks,ids,sel){
   if(weeks.length<2)return '<p class="note">The chart starts after two weeks. Each line shows one player\'s season rank after each week.</p>';
   const ranks={};ids.forEach(p=>ranks[p]=[]);const cum={};ids.forEach(p=>cum[p]={pts:0,lw:0,tb:0});
-  weeks.forEach((wid,i)=>{const P=state.reveals[wid].players||{};for(const p of ids){if(P[p]){const s=scoreWeek(state.weeks[wid],P[p]);cum[p].pts+=s.pts;cum[p].lw+=s.lw;cum[p].tb+=s.tbMiss||0}}
+  weeks.forEach((wid,i)=>{const P=state.reveals[wid].players||{};for(const p of ids){const pk=p===BOT?botPicks(state.weeks[wid]):P[p];if(pk){const s=scoreWeek(state.weeks[wid],pk);cum[p].pts+=s.pts;cum[p].lw+=s.lw;cum[p].tb+=s.tbMiss||0}}
     const order=[...ids].sort((a,b)=>cum[b].pts-cum[a].pts||cum[b].lw-cum[a].lw||cum[a].tb-cum[b].tb);order.forEach((p,k)=>ranks[p].push(k+1))});
   const W=320,H=Math.max(120,ids.length*18+30),pl=26,pr=10,pt=10,pb=20;const n=ids.length;
   const x=i=>pl+(W-pl-pr)*i/(weeks.length-1),y=r=>pt+(H-pt-pb)*(r-1)/Math.max(1,n-1);

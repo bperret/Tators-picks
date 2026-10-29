@@ -8,7 +8,8 @@ import { runJob, dismissFlag, JOB_NAMES } from "../lib/auto.js";
 const BY = "Commissioner";
 
 const ctTime = (t) => new Date(t).toLocaleString("en-US", { timeZone: "America/Chicago", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " CT";
-const label = (p) => p.name || p.invited || "a new player";
+// The log is public, so it shows a display name the player chose, never the commissioner's own label.
+const label = (p) => (p.setup_done && p.name ? p.name : "a new entry who has not logged in yet");
 
 export default async function handler(req, res) {
   try {
@@ -26,7 +27,8 @@ export default async function handler(req, res) {
         const pin = newPin();
         const invited = String(b.name || "").trim().slice(0, 24);
         await q("insert into players (id, phone, pin_hash, invited) values ($1, $2, $3, $4)", [newId(), phone, await bcrypt.hash(pin, 10), invited]);
-        await addLog(BY, "Added a player", invited || "new player");
+        const n = (await one("select count(*)::int as n from players")).n - 1; // the commissioner is not counted
+        await addLog(BY, "Added a player", `Entry #${n}. The name stays private until they set up a profile.`);
         return send(res, 200, { ok: true, pin, phone });
       }
       case "resetPin": {
