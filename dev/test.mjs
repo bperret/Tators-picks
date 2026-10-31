@@ -64,6 +64,11 @@ try {
   check("slate loads as draft", (await c.textContent("#v-commish")).includes("This week · Week 10") && (await c.textContent("#v-commish h2 .pill")) === "Draft");
   await c.click('[data-act="open"]'); await c.waitForTimeout(400);
   check("picks open", (await c.textContent("#statusBadge")).toLowerCase().includes("picks open"));
+  check("commish sections fold", (await c.locator('#v-commish details[data-sec]').count()) >= 5);
+  await c.click('[data-csec="0"]'); await c.waitForTimeout(100);
+  check("collapse all shuts every section", (await c.locator('#v-commish details[data-sec][open]').count()) === 0);
+  await c.click('[data-csec="1"]'); await c.waitForTimeout(100);
+  check("expand all opens every section", (await c.locator('#v-commish details[data-sec]:not([open])').count()) === 0);
   await c.fill("#apName", "Mike"); await c.fill("#apPhone", "(214) 555-0123");
   await c.click("#addPlayerForm button[type=submit]"); await c.waitForTimeout(400);
   const pin = (await c.textContent(".bigpin")).trim();
@@ -151,6 +156,26 @@ try {
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
   check("week shows locked", (await m.textContent("#statusBadge")).toLowerCase().includes("locked"));
   check("picks revealed after the lock", (await m.locator(".cbar").count()) > 0);
+  check("Robo-Sharp shows in the pick lists after the lock", (await m.locator(".whocols .wn.bot").count()) === 5);
+  check("Robo-Sharp model line hides after the lock", (await m.locator(".game .model").count()) === 0);
+  const order = await m.evaluate(() => [...document.querySelectorAll("#v-picks .game")].map((e) => e.id));
+  check("same kickoff: better AP game first", order.join() === "g-g4,g-g1,g-g3,g-g2,g-g5", order.join());
+  const live = await m.evaluate(() => {
+    const { gameClock, coverOdds, coverTier } = window.tpLive;
+    const g = { homeLine: -3.5 };
+    const r = (h, a, period, dclock, status) => ({ home: h, away: a, period, dclock, clock: dclock ? +dclock.split(":")[0] * 60 + +dclock.split(":")[1] : null, status: status || "", final: false, void: false });
+    return {
+      q3: gameClock(r(14, 7, 3, "8:42")).label,
+      half: gameClock(r(14, 7, 2, "0:00", "Halftime")).label,
+      ot: gameClock(r(21, 21, 5, "0:00")).label,
+      late: coverTier(coverOdds(g, r(31, 10, 4, "2:00"), "home"))[1],
+      lost: coverTier(coverOdds(g, r(10, 31, 4, "2:00"), "home"))[1],
+      early: coverTier(coverOdds(g, r(3, 0, 1, "12:00"), "home"))[1],
+      grows: coverOdds(g, r(14, 7, 4, "1:00"), "home") > coverOdds(g, r(14, 7, 2, "10:00"), "home"),
+    };
+  });
+  check("clock labels read Q3 · 8:42, Halftime, OT", live.q3 === "Q3 · 8:42" && live.half === "Halftime" && live.ot === "OT", JSON.stringify(live));
+  check("cover tiers: safe late lead, red late deficit, toss up early", live.late === "safe" && live.lost === "red" && live.early === "toss" && live.grows, JSON.stringify(live));
 
   // ---- scores and final ----
   await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);

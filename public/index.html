@@ -80,6 +80,17 @@ nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-v
 .flagbtn:disabled{cursor:default}
 .res{font-family:var(--cond);font-size:.95rem;letter-spacing:.03em;display:flex;gap:10px;flex-wrap:wrap;color:var(--muted)}
 .res .w{color:var(--win);font-weight:700} .res .l{color:var(--loss);font-weight:700}
+.tier{display:inline-flex;align-items:center;font-weight:700;padding:1px 8px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.t-safe{background:#1e7a3c;color:#fff}
+.t-lean{background:#d6f0dc;color:#14532d;border-color:#9fd3ad}
+.t-toss{background:#fde68a;color:#5b4300;border-color:#e5c34a}
+.t-danger{background:#fdba74;color:#5a2300;border-color:#ea8f3f}
+.t-red{background:#b91c1c;color:#fff;animation:tpulse 1.6s ease-in-out infinite}
+@keyframes tpulse{50%{box-shadow:0 0 0 4px rgba(185,28,28,.25)}}
+@media (prefers-reduced-motion:reduce){.t-red{animation:none}}
+.wn.bot{color:var(--muted);font-style:italic}
+.wn.bot span{font-style:normal;margin-right:2px}
+.updated{margin:2px 0 6px}
 .tb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.9rem}
 input[type=number],select,input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
 input[type=number]{width:84px;font-family:var(--cond);font-size:1.05rem;font-weight:600}
@@ -128,6 +139,9 @@ body:has(.savebar:not([hidden])) .toast{bottom:calc(76px + env(safe-area-inset-b
 .grid2.swapg{grid-template-columns:1fr auto}
 .grid2 input,.grid2 select{width:100%;min-width:0;box-sizing:border-box}
 details.panel>summary{cursor:pointer}
+details.csec>summary{padding-block:2px}
+details.csec[open]>summary{margin-bottom:8px}
+.csecbar{justify-content:flex-end;margin-bottom:6px}
 details.manual .inner{margin-top:12px}
 .pinbox{scroll-margin-top:70px}
 
@@ -476,7 +490,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>A postponed or cancelled game is void and scores for nobody. A field goal on a void game earns nothing.</li>
         <li>If slot 1 is void, slot 2 becomes the tiebreaker game.</li>
         <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. The weekly title is for bragging rights only.</li>
-        <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses. Test weeks do not count.</li>
+        <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses.</li>
         <li>Bowl games are a separate contest.</li>
       </ul></details>
       <details><summary class="rh">Logins</summary>
@@ -734,13 +748,14 @@ function loginsPanel(){
     const rm=a.isCommish?"":`<button class="btn sm${a.removed?"":" danger"}" data-dact="${a.removed?"restore":"remove"}" data-id="${esc(a.id)}">${a.removed?"Restore":"Remove"}</button>`;
     return `<div class="lgrow"><span class="t"><b>${chip(a.id)}${esc(a.name||a.invited||"New picker")}${a.isCommish?" (you)":""}</b><span class="note">${a.invited&&a.invited!==a.name?"Nickname: "+esc(a.invited)+" · ":""}${fmtPhone(a.phone)}${a.lockouts?" · "+a.lockouts+" pause"+(a.lockouts>1?"s":""):""}</span>${st}${a.removed?"":sheetPill(a.id)}</span><span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${rm}</span></div>`}).join("");
   const sp=state.shownPin;
-  return `<div class="panel"><h2>League members</h2>
+  const nOn=L.filter(a=>!a.removed).length;
+  return `${secTag("members",false,"",!!sp)}${secHead("League members",nOn+" picker"+(nOn===1?"":"s")+(SC?" · Week "+SC.w.week+": "+SC.done.length+" complete":""))}
     ${sp?`<div class="pinbox" id="pinbox" role="status"><p>${sp.what==="added"?"Picker added.":"New PIN"+(sp.who?" for "+esc(sp.who):"")+"."} ${sp.self?"This is your new PIN. You will log in again with it.":"Text it to "+fmtPhone(sp.num)+"."} It shows only once.</p><b class="bigpin">${sp.pin}</b><button class="btn" data-dact="hidepin">Done</button></div>`:""}
     ${sheetSum}<div class="lglist">${rows}</div>
     <form id="addPlayerForm" class="bar addp" novalidate><input id="apName" type="text" maxlength="24" placeholder="Nickname (only you see it)" aria-label="Nickname, only you see it"><input id="apPhone" type="tel" inputmode="tel" placeholder="Cell number" aria-label="Cell number"><button class="btn primary" type="submit">Add picker</button></form>
-    <p class="note">Adding a picker creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Removing a picker hides them from standings and blocks new picks.</p></div>`}
+    <p class="note">Adding a picker creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Removing a picker hides them from standings and blocks new picks.</p></details>`}
 function importPanel(){
-  return `<details class="panel manual"><summary><h2 style="display:inline">Manual backups</h2> <span class="note">paste a slate or rankings by hand</span></summary><form id="slateForm" class="inner" novalidate><h2>Load a slate</h2><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
+  return `${secTag("backups",false,"manual")}${secHead("Manual backups","paste a slate or rankings by hand")}<form id="slateForm" class="inner" novalidate><h2>Load a slate</h2><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
   <form id="rankForm" class="inner" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings. Paste rankings JSON for the Teams tab. For the r/CFB poll, select its table on poll.redditcfb.com, copy, and paste it here. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form></details>`}
 
 /* ---------- saving picks ---------- */
@@ -860,9 +875,31 @@ function survivorBoard(){
 function survivorUsed(pid){const start=survivorStart();const used=[];if(!start)return used;for(const wid of Object.keys(state.reveals).sort()){if(wid<start||wid===currentWeekId())continue;const p=(state.reveals[wid].players||{})[pid];const w=state.weeks[wid];if(p&&p.surv&&w){const g=w.games.find(x=>x.id===p.surv.g);if(g)used.push(canon(p.surv.s==="home"?g.home:g.away))}}return used}
 function modelStats(pid,weeks){const st={agree:[0,0],fade:[0,0]};for(const wid of weeks){const w=state.weeks[wid];const p=pid===BOT?botPicks(w):((state.reveals[wid].players||{})[pid]);if(!p)continue;for(const g of w.games){const ms=modelSide(g);const pick=(p.sel||{})[g.id];const c=coverSide(g,(w.results||{})[g.id]);if(!ms||!pick||!c)continue;const k=pick===ms?"agree":"fade";st[k][pick===c?0:1]++}}return st}
 function margin(g,r){return (r.home-r.away)+g.homeLine} /* >0 home covers */
+/* Live cover odds. The rest of the game's margin is treated as a normal curve around zero.
+   Its spread is 13.5 points for a full game and shrinks with the time left (13.5 x sqrt(minutes left / 60)).
+   Only the score, the clock, and the line go in, so it runs off the same pull as the score. */
+function normCdf(z){const t=1/(1+0.2316419*Math.abs(z));const d=0.3989423*Math.exp(-z*z/2);const p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p}
+function gameClock(r){if(!r)return null;if(r.void)return {label:"Void",left:0};if(r.final)return {label:"Final",left:0};
+  const st=String(r.status||"");const per=Number.isInteger(r.period)?r.period:null;
+  const sec=typeof r.clock==="number"?r.clock:(r.dclock&&/^\d+:\d\d$/.test(r.dclock)?(+r.dclock.split(":")[0])*60+(+r.dclock.split(":")[1]):null);
+  if(/half/i.test(st))return {label:"Halftime",left:30};
+  if(per&&per>4)return {label:per===5?"OT":(per-4)+"OT",left:4};
+  if(per){const left=(4-per)*15+(sec!=null?sec/60:7.5);const end=sec===0;
+    return {label:end?"End of Q"+per:"Q"+per+(r.dclock?" · "+r.dclock:""),left}}
+  return st?{label:st,left:null}:null}
+function coverOdds(g,r,side){const gc=gameClock(r);if(!gc||gc.left==null||r.final||r.void)return null;
+  const m=margin(g,r);const cushion=side==="home"?m:-m;const sd=13.5*Math.sqrt(Math.max(gc.left,0.25)/60);
+  return Math.min(0.99,Math.max(0.01,normCdf(cushion/sd)))}
+const TIERS=[[0.9,"safe","Safe"],[0.7,"lean","Leaning"],[0.4,"toss","Toss up"],[0.15,"danger","In danger"],[0,"red","Red alert"]];
+function coverTier(p){return TIERS.find(t=>p>=t[0])}
+window.tpLive={gameClock,coverOdds,coverTier}; /* for the browser test */
+/* After the lock: earliest kickoff first. Same kickoff: the better game first, by the two AP ranks added (unranked counts as 26), then the best single rank. */
+function apr(n){return n&&n<99?n:26}
+function lockedOrder(a,b){const k=Date.parse(a.kickoff)-Date.parse(b.kickoff);if(k)return k;const s=(apr(a.awayRank)+apr(a.homeRank))-(apr(b.awayRank)+apr(b.homeRank));if(s)return s;const m=Math.min(apr(a.awayRank),apr(a.homeRank))-Math.min(apr(b.awayRank),apr(b.homeRank));return m||a.slot-b.slot}
 function split(g,players){const s={away:[],home:[]};for(const [pid,p] of Object.entries(players)){const x=(p.sel||{})[g.id];if(x)s[x].push(pid)}return s}
 function allPlayerIds(withBot){const s=new Set(state.roster);Object.values(state.reveals).forEach(r=>Object.keys(r.players||{}).forEach(p=>{if(p!==BOT)s.add(p)}));if(withBot&&Object.keys(state.reveals).some(wid=>state.weeks[wid]&&botPicks(state.weeks[wid])))s.add(BOT);return [...s]}
-function countedWeeks(includeTest){return Object.keys(state.weeks).sort().filter(wid=>state.reveals[wid]&&(includeTest||state.weeks[wid].scored!==false))}
+/* Every revealed week counts. There are no test weeks. */
+function countedWeeks(){return Object.keys(state.weeks).sort().filter(wid=>state.reveals[wid])}
 function weekWinners(wid){const w=state.weeks[wid];if(!w||w.status!=="final")return [];const ps=weekPlayers(wid);const rows=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));if(!rows.length)return [];rows.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));return rows.filter(r=>r.pts===rows[0].pts&&r.tbMiss===rows[0].tbMiss).map(r=>r.pid)}
 const SIG={
   td:'<svg class="sig" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7m0 0-3 7m3-7 3 7M12 10 7 2m5 8 5-8"/></svg>',
@@ -880,7 +917,7 @@ function render(){
     const line={draft:`Week ${w.week} · Draft, only you can see it`,open:`Week ${w.week} · Picks lock ${kick(w.deadline)}`,locked:`Week ${w.week} · Locked · ${nf} of ${w.games.length} final`,final:`Week ${w.week} · Final${win.length?" · "+(win.length>1?"Winners: ":"Winner: ")+win.map(nm).join(", "):""}`}[w.status];
     $("#weekLine").textContent=line||`Week ${w.week}`;
     const labels={draft:"Slate draft",open:"Picks open",locked:"Picks locked",final:"Final"};
-    setB((w.scored===false?"Test week · ":"")+(labels[w.status]||w.status),{open:"open",final:"final",draft:"plain"}[w.status]);
+    setB((labels[w.status]||w.status),{open:"open",final:"final",draft:"plain"}[w.status]);
   }else if(state.db){const lf=lastShownWeek();
     if(state.upcoming){$("#weekLine").textContent=`Week ${state.upcoming.week} slate drops soon.${lf?" Week "+lf.week+" is final.":""}`;setB("Slate coming","plain")}
     else{$("#weekLine").textContent=lf?`Week ${lf.week} is final. The next slate drops Tuesday.`:"The first slate drops Tuesday.";setB("Off week","plain")}}
@@ -924,10 +961,13 @@ function renderPicks(){
   if(out)h+='<div class="panel">You are not active in the league this season. Contact the commissioner.</div>';
   if(state.uid===null)h+='<div class="panel">Your account has no league identity on this page, so you can view but not pick.</div>';
   if(state.canWrite===false&&!out)h+='<div class="panel">You can view the league but cannot save picks. Ask the commissioner to invite you as an editor.</div>';
-  const gs=[...w.games].sort((a,b)=>a.slot-b.slot);
+  const locked=pastDeadline(w)||w.status==="final";
+  const gs=[...w.games].sort(locked?lockedOrder:(a,b)=>a.slot-b.slot);
   const tg=tbGame(w);
   const flag=GP;
-  h+='<p class="note legend"><span><i class="lg mq"></i> 1 to 5: top AP matchups</span><span><i class="lg tl"></i> 6 to 10: tightest lines</span></p>';
+  h+=`<p class="note legend"><span><i class="lg mq"></i> 1 to 5: top AP matchups</span><span><i class="lg tl"></i> 6 to 10: tightest lines</span>${locked?"<span>In kickoff order</span>":""}</p>`;
+  if(locked){const ats=w.games.map(g=>rs[g.id]&&rs[g.id].at).filter(Boolean).sort();const up=w.scoresAt||ats[ats.length-1];
+    if(up&&w.games.some(g=>rs[g.id]&&!rs[g.id].final&&!rs[g.id].void))h+=`<p class="note updated">Scores updated ${esc(new Date(up).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}))} CT. They refresh about twice an hour.</p>`}
   for(const g of gs){
     const r=rs[g.id];const isVoid=r&&r.void;const c=coverSide(g,r);
     const live=r&&!r.final&&!r.void&&(r.away||r.home)?(margin(g,r)>0?"home":"away"):null;
@@ -941,10 +981,12 @@ function renderPicks(){
       const myPick=d.sel&&d.sel[g.id];
       let verdict="";
       if(c&&myPick)verdict=myPick===c?`<span class="w">${SIG.td}${d.lock===g.id?"Field goal is good · +3":"Touchdown · +1"}</span>`:`<span class="l">${SIG.inc}${d.lock===g.id?"Field goal no good":"Incomplete"}</span>`;
-      else if(live&&myPick)verdict=myPick===live?'<span class="w">Your pick is covering</span>':'<span class="l">Your pick is not covering</span>';
-      h+=`<div class="res"><span class="score${changed?" flip":""}">${esc(teamLook(g.away,g,"away").abbr)} ${r.away} – ${esc(teamLook(g.home,g,"home").abbr)} ${r.home}${r.final?" · Final":" · Live"}</span>${verdict}</div>`;
+      else if(live&&myPick){const p=coverOdds(g,r,myPick);const t=p!=null?coverTier(p):null;const txt=myPick===live?"Covering":"Not covering";
+        verdict=t?`<span class="tier t-${t[1]}" title="Chance your pick covers, from the score, the time left, and the line">${txt} · ${t[2]} · ${Math.round(p*100)}%</span>`:(myPick===live?'<span class="w">Your pick is covering</span>':'<span class="l">Your pick is not covering</span>')}
+      const gc=gameClock(r);
+      h+=`<div class="res"><span class="score${changed?" flip":""}">${esc(teamLook(g.away,g,"away").abbr)} ${r.away} – ${esc(teamLook(g.home,g,"home").abbr)} ${r.home} · ${esc(gc?gc.label:(r.final?"Final":"Live"))}</span>${verdict}</div>`;
     }
-    if(typeof g.modelLine==="number"){const fav=g.modelLine<0?"home":"away";const fl=-Math.abs(g.modelLine);const Lf=teamLook(fav==="home"?g.home:g.away,g,fav);const edge=Math.round((g.modelLine-g.homeLine)*10)/10;const side=edge>0?"away":"home";const Ls=teamLook(side==="home"?g.home:g.away,g,side);
+    if(typeof g.modelLine==="number"&&!(locked&&rev&&nPlayers)){const fav=g.modelLine<0?"home":"away";const fl=-Math.abs(g.modelLine);const Lf=teamLook(fav==="home"?g.home:g.away,g,fav);const edge=Math.round((g.modelLine-g.homeLine)*10)/10;const side=edge>0?"away":"home";const Ls=teamLook(side==="home"?g.home:g.away,g,side);
       const bp=botPicks(w);const bs=modelSide(g);const Lb=teamLook(bs==="home"?g.home:g.away,g,bs);
       const bl=bs==="home"?g.homeLine:-g.homeLine;
       h+=`<div class="model" title="Robo-Sharp's pick, then the model line it comes from">🤖 Robo-Sharp: <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · FG":""} <span class="note">· ${esc(String(g.modelSource||"model").replace(/^ESPN /,""))} ${esc(Lf.abbr)} ${g.modelLine===0?"PK":"\u2212"+Math.abs(fl)}</span></div>`}
@@ -954,8 +996,10 @@ function renderPicks(){
       const LA=teamLook(g.away,g,"away"),LH=teamLook(g.home,g,"home");
       h+=`<div class="cbar" role="img" aria-label="${na} picked ${esc(g.away)}, ${nh} picked ${esc(g.home)}"><span style="flex:${na||0.0001};background:${LA.c1};color:${LA.ink}">${na?LA.abbr+" "+na:""}</span><span style="flex:${nh||0.0001};background:${LH.c1};color:${LH.ink}">${nh?LH.abbr+" "+nh:""}</span></div>`;
       /* Two plain columns under the split bar: field goals first, your name in bold, no chips. */
+      const bp=botPicks(w);const botSide=bp&&bp.sel[g.id];
       const col=(s,L)=>{const ids=[...sp[s]].sort((a,b)=>((players[b].lock===g.id)-(players[a].lock===g.id))||nm(a).localeCompare(nm(b)));
-        const items=ids.map(pid=>{const fg=players[pid].lock===g.id,me=pid===state.uid;const n=first(pid);return `<span class="wn${fg?" fg":""}${me?" me":""}"${fg?' title="Field goal"':""}>${fg?GP:""}${esc(n.length>10?n.slice(0,9)+"\u2026":n)}</span>`}).join("");
+        const bot=botSide===s?`<span class="wn bot${bp.lock===g.id?" fg":""}" title="Robo-Sharp${bp.lock===g.id?", field goal":""}">${bp.lock===g.id?GP:""}<span aria-hidden="true">🤖</span>Robo</span>`:"";
+        const items=ids.map(pid=>{const fg=players[pid].lock===g.id,me=pid===state.uid;const n=first(pid);return `<span class="wn${fg?" fg":""}${me?" me":""}"${fg?' title="Field goal"':""}>${fg?GP:""}${esc(n.length>10?n.slice(0,9)+"\u2026":n)}</span>`}).join("")+bot;
         return `<div class="wc" style="--tc:${L.c1}"><div class="wch">${esc(L.abbr)} · ${ids.length}</div>${items||'<span class="wn none">Nobody</span>'}</div>`};
       h+=`<div class="whocols">${col("away",LA)}${col("home",LH)}</div>`;
       if(c&&nPlayers>=3&&sp[c].length===1)h+=`<div class="wolf">Lone wolf: ${esc(nm(sp[c][0]))} was the only one on ${esc(c==="home"?g.home:g.away)}</div>`;
@@ -1066,12 +1110,12 @@ function renderStandings(){
     wk.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));
     const allFinal=w.status==="final";const win=weekWinners(wid);
     const nGames=(w.games||[]).filter(g=>!(w.results&&w.results[g.id]&&w.results[g.id].void)).length;
-    h+=`<div class="board"><h2>Week ${w.week}${w.scored===false?" (test)":""}</h2><p class="note">${allFinal?"Final.":"Provisional: "+(wk[0]?wk[0].graded:0)+" of "+nGames+" games graded."}${win.length?(win.length>1?" Shared weekly title: ":" Weekly winner: ")+win.map(nm).map(esc).join(", ").replace(/\.?$/,"."):""}</p>
+    h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">${allFinal?"Final.":"Provisional: "+(wk[0]?wk[0].graded:0)+" of "+nGames+" games graded."}${win.length?(win.length>1?" Shared weekly title: ":" Weekly winner: ")+win.map(nm).map(esc).join(", ").replace(/\.?$/,"."):""}</p>
     <div class="tablewrap"><table><thead><tr><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${wk.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${win.includes(r.pid)?" 🏆":""}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw?"Hit":r.ll?"Miss":"–"}</td><td class="num">${r.pid===BOT&&!(botPicks(w)||{}).tb?"–":r.tbMiss??"–"}</td></tr>`).join("")}</tbody></table></div><p class="note">ATS = correct picks against the spread. TB = how far off the tiebreaker guess was. Lower is better.</p></div>`;
   }else if(w){h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">Weekly standings appear after picks lock at ${kick(w.deadline)}.</p></div>`}
   const max=Math.max(1,...active.map(r=>r.pts));
   h+=`<div class="board"><h2>Season ${state.config?state.config.season:""}</h2>`;
-  if(!active.length||!countedWeeks(false).length)h+='<p class="note">No scored weeks yet. Test weeks do not count toward the season.</p>';
+  if(!active.length||!countedWeeks(false).length)h+='<p class="note">No scored weeks yet.</p>';
   else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then field goals made, then smallest total tiebreaker miss. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.</p>`;
   {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of Robo-Sharp.</p>`}}
   h+="</div>";
@@ -1309,11 +1353,9 @@ function renderPlayers(){
   const el=$("#v-players");
   const ids=allPlayerIds(true);const humans=ids.filter(p=>p!==BOT);
   if(!humans.length){el.innerHTML='<div class="panel empty">Picker stats appear after the first week locks.</div>';return}
-  if(state.incTest==null)state.incTest=!countedWeeks(false).length;
   const weeks=countedWeeks(state.incTest);
   const sel=state.profile&&ids.includes(state.profile)?state.profile:(ids.includes(state.uid)?state.uid:ids[0]);
-  const hasTest=Object.keys(state.reveals).some(k=>state.weeks[k]&&state.weeks[k].scored===false);
-  let h=`<div class="bar"><label for="profileSel" class="note">Show stats for</label><select id="profileSel">${ids.map(p=>`<option value="${esc(p)}" ${p===sel?"selected":""}>${esc(nm(p))}</option>`).join("")}</select>${hasTest?`<label class="note"><input type="checkbox" id="incTest" ${state.incTest?"checked":""}> Count test weeks</label>`:""}</div>`;
+  let h=`<div class="bar"><label for="profileSel" class="note">Show stats for</label><select id="profileSel">${ids.map(p=>`<option value="${esc(p)}" ${p===sel?"selected":""}>${esc(nm(p))}</option>`).join("")}</select></div>`;
   const top=h;h="";
   const trendH=`<div class="panel"><h2>Rank by week</h2>${trendChart(weeks,ids,sel)}</div>`;
   /* profile */
@@ -1366,6 +1408,13 @@ function trendChart(weeks,ids,sel){
 }
 
 /* ---------- commissioner ---------- */
+/* Each Commish section folds open and shut. The open or shut choice is saved per device. */
+const COPEN=(()=>{try{return JSON.parse(localStorage.getItem("tp-commish-open")||"{}")||{}}catch(e){return {}}})();
+function secOpen(id,def){return Object.prototype.hasOwnProperty.call(COPEN,id)?!!COPEN[id]:!!def}
+function secTag(id,def,cls,force){return `<details class="panel csec${cls?" "+cls:""}" data-sec="${id}"${force||secOpen(id,def)?" open":""}>`}
+function secHead(title,note){return `<summary><h2 style="display:inline">${title}</h2>${note?` <span class="note">${note}</span>`:""}</summary>`}
+document.addEventListener("toggle",e=>{const d=e.target;if(!d||!d.dataset||!d.dataset.sec)return;COPEN[d.dataset.sec]=d.open;try{localStorage.setItem("tp-commish-open",JSON.stringify(COPEN))}catch(x){}},true);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-csec]");if(!b)return;const on=b.dataset.csec==="1";document.querySelectorAll("#v-commish details[data-sec]").forEach(d=>{d.open=on})});
 function commishWeekId(){const c=state.cwk;return c&&state.weeks[c]&&state.weeks[c].status!=="final"?c:currentWeekId()}
 function weekPicker(wid){const open=Object.values(state.weeks).filter(x=>x.id===currentWeekId()||x.status==="locked").sort((a,b)=>a.id<b.id?1:-1);
   if(open.length<2)return "";return `<div class="bar"><label for="cwkSel" class="note">Working on</label><select id="cwkSel">${open.map(x=>`<option value="${esc(x.id)}" ${x.id===wid?"selected":""}>Week ${x.week}${x.id===currentWeekId()?" (current)":" (not final)"}</option>`).join("")}</select></div>`}
@@ -1379,7 +1428,7 @@ function autoPanel(){
   const flagsH=fl.length?fl.map(f=>`<div class="aflag"><span class="pill ${f.level==="error"?"bad":"wait"}">${f.level==="error"?"Failed":"Check"}</span><span>${esc(f.msg)}</span>${f.fixed?"<span></span>":`<button class="btn sm" data-act="dismiss" data-key="${esc(f.key)}">Dismiss</button>`}</div>`).join(""):'<p class="note">No flags. Every automated step worked on its last run.</p>';
   const jobs=[["slate","Build from ESPN"],["open",""],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"],["gamelog","Fill game log"],["lines","Fill lines"]];
   const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span>${btn?`<button class="btn sm" data-act="run" data-job="${j}">${btn}</button>`:'<span class="note">Use Open picks in This week</span>'}</div>`}).join("");
-  return `<details class="panel auto${fl.some(f=>f.level==="error")?" alert":""}" ${fl.length?"open":""}><summary><h2 style="display:inline">Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:' <span class="pill">All good</span>'}</h2></summary>
+  return `${secTag("auto",false,"auto"+(fl.some(f=>f.level==="error")?" alert":""),fl.length>0)}<summary><h2 style="display:inline">Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:' <span class="pill">All good</span>'}</h2></summary>
     <p class="note">${A.paused?"Paused. Nothing runs on the schedule until you resume it. The buttons below still work.":`Runs twice an hour.${A.lastTick?" Last run "+esc(when(A.lastTick))+".":""}`}</p>
     ${flagsH}
     <h3 class="rh">Jobs</h3><div class="lglist">${rows}</div>
@@ -1394,25 +1443,26 @@ function renderCommish(){
   h+=weekPicker(wid);
   const nSub=(state.sheetCount||{})[wid]||0;
   const nAct=(state.logins||[]).filter(a=>!a.removed&&a.setupDone).length;
-  h+=`<div class="panel"><h2>This week · Week ${w.week} <span class="pill ${w.status==="open"?"wait":""}">${esc({draft:"Draft",open:"Picks open",locked:"Locked",final:"Final"}[w.status]||w.status)}</span></h2><p class="note">${nSub} of ${nAct} sheets in. Deadline ${kick(w.deadline)}.</p><div class="bar">
+  h+=`<div class="bar csecbar"><button class="btn sm" data-csec="1">Expand all</button><button class="btn sm" data-csec="0">Collapse all</button></div>`;
+  h+=`${secTag("week",true)}<summary><h2 style="display:inline">This week · Week ${w.week} <span class="pill ${w.status==="open"?"wait":""}">${esc({draft:"Draft",open:"Picks open",locked:"Locked",final:"Final"}[w.status]||w.status)}</span></h2></summary><p class="note">${nSub} of ${nAct} sheets in. Deadline ${kick(w.deadline)}.</p><div class="bar">
     ${w.status==="draft"?'<button class="btn primary" data-act="open">Open picks</button><button class="btn" data-act="run" data-job="slate" data-force="1">Rebuild from ESPN</button>':""}
     ${w.status==="open"?`<button class="btn${state.lockArm&&NOW()-state.lockArm<8000?" danger":""}" data-act="lock">${state.lockArm&&NOW()-state.lockArm<8000?"Tap again to lock now":"Lock picks now"}</button><button class="btn" data-act="todraft">Move back to draft</button>`:""}
     ${w.status==="locked"?'<button class="btn primary" data-act="final">Mark week final</button>':""}
   </div>${w.status==="locked"?unlockForm(w):""}<div class="bar">
     ${w.status==="final"?'<button class="btn" data-act="unfinal">Reopen scoring</button>':""}
-  </div><p class="note">Picks lock and show to everyone by themselves at the deadline. The site refuses any save after it. Every commissioner action is logged.${w.status==="draft"?" Rebuild from ESPN replaces this draft with fresh lines and undoes your swaps.":""}${w.holdOpen&&w.status==="draft"?" You moved this week back to draft, so it will not open by itself.":""}${w.holdFinal&&w.status==="locked"?" You reopened scoring, so the week will not be marked final by itself.":""}</p>${w.source?`<p class="note">${esc(w.source)}</p>`:""}</div>`;
+  </div><p class="note">Picks lock and show to everyone by themselves at the deadline. The site refuses any save after it. Every commissioner action is logged.${w.status==="draft"?" Rebuild from ESPN replaces this draft with fresh lines and undoes your swaps.":""}${w.holdOpen&&w.status==="draft"?" You moved this week back to draft, so it will not open by itself.":""}${w.holdFinal&&w.status==="locked"?" You reopened scoring, so the week will not be marked final by itself.":""}</p>${w.source?`<p class="note">${esc(w.source)}</p>`:""}</details>`;
   if(w.status==="draft"){
     const inSlate=new Set(w.games.map(g=>g.id));const pool=(w.pool||[]).filter(g=>!inSlate.has(g.id));
-    h+=`<div class="panel"><h2>Swap games</h2><p class="note">Swaps are allowed only before picks open, and each one is shown on the slate.</p><div class="grid2 swapg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>`<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)} <span class="note">${esc(g.away)} at ${esc(g.home)}</span></span><select id="sw-${esc(g.id)}" aria-label="Replacement for slot ${g.slot}"><option value="">Replace with…</option>${pool.map(p=>`<option value="${esc(p.id)}">${esc(p.away)} at ${esc(p.home)} (${fmtLine(p.homeLine)})</option>`).join("")}</select><button class="btn" data-act="swap" data-g="${esc(g.id)}">Swap</button>`).join("")}</div></div>`;
+    h+=`${secTag("swap",true)}${secHead("Swap games")}<p class="note">Swaps are allowed only before picks open, and each one is shown on the slate.</p><div class="grid2 swapg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>`<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)} <span class="note">${esc(g.away)} at ${esc(g.home)}</span></span><select id="sw-${esc(g.id)}" aria-label="Replacement for slot ${g.slot}"><option value="">Replace with…</option>${pool.map(p=>`<option value="${esc(p.id)}">${esc(p.away)} at ${esc(p.home)} (${fmtLine(p.homeLine)})</option>`).join("")}</select><button class="btn" data-act="swap" data-g="${esc(g.id)}">Swap</button>`).join("")}</div></details>`;
   }
   if(w.status!=="draft"){
     const rs=w.results||{};
-    h+=`<div class="panel"><h2>Scores</h2><p class="note">Each game: away score, home score, status. ESPN scores fill in twice an hour. To enter a score yourself, set the game to In progress, Final, or Void and save. Set it back to ESPN to hand it back.</p><div class="grid2 scoreg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)}</span><input type="number" id="ra-${esc(g.id)}" placeholder="${esc(teamLook(g.away).abbr)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" placeholder="${esc(teamLook(g.home).abbr)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status">${(()=>{const man=r.src==="manual"||(r.void&&r.src!=="auto");const cur=!man?"auto":r.void?"void":r.final?"final":"";return [["auto","ESPN"+(r.src==="auto"&&r.status?" · "+r.status:"")],["","In progress"],["final","Final"],["void","Void"]].map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`).join("")})()}</select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button><button class="btn" data-act="run" data-job="scores">Pull scores now</button></div></div>`;
+    h+=`${secTag("scores",false)}${secHead("Scores",(()=>{const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;return nf+" of "+w.games.length+" final"})())}<p class="note">Each game: away score, home score, status. ESPN scores fill in twice an hour. To enter a score yourself, set the game to In progress, Final, or Void and save. Set it back to ESPN to hand it back.</p><div class="grid2 scoreg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)}</span><input type="number" id="ra-${esc(g.id)}" placeholder="${esc(teamLook(g.away).abbr)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" placeholder="${esc(teamLook(g.home).abbr)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status">${(()=>{const man=r.src==="manual"||(r.void&&r.src!=="auto");const cur=!man?"auto":r.void?"void":r.final?"final":"";return [["auto","ESPN"+(r.src==="auto"&&r.status?" · "+r.status:"")],["","In progress"],["final","Final"],["void","Void"]].map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`).join("")})()}</select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button><button class="btn" data-act="run" data-job="scores">Pull scores now</button></div></details>`;
   }
   h+="<!--AUTO-->";
   const ovs=(state.config&&state.config.teamOverrides)||{};
-  h+=`<div class="panel"><h2>School letters and emoji</h2><p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters (up to 5)" aria-label="Letters, up to 5" style="width:130px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}</div>`;
-  h+=`<div class="panel"><h2>League name</h2><div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div></div>`;
+  h+=`${secTag("letters",false)}${secHead("School letters and emoji")}<p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters (up to 5)" aria-label="Letters, up to 5" style="width:130px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}</details>`;
+  h+=`${secTag("name",false)}${secHead("League name")}<div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div></details>`;
   el.innerHTML=h.replace("<!--AUTO-->",autoPanel()+loginsPanel())+importPanel();
 }
 

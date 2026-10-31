@@ -55,7 +55,8 @@ function event([id, a, h, date, line, homeFav]) {
   const odds = line == null ? [] : [{ details: "x", spread: parseFloat(line) || 0, homeTeamOdds: { favorite: homeFav }, awayTeamOdds: { favorite: !homeFav }, pointSpread: { home: { close: { line } }, away: { close: { line: "x" } } } }];
   return { id: String(id), date: new Date(date).toISOString().replace(":00.000Z", "Z"), shortName: "G" + id, week: { number: 11 },
     competitions: [{ id: String(id), neutralSite: id === 101, competitors: [comp(h, "home"), comp(a, "away")], odds,
-      status: { type: { name: s.name, state: s.state, completed: s.completed, shortDetail: s.state === "post" ? "Final" : s.state === "in" ? "3rd 4:12" : "Sat" } } }] };
+      status: { clock: s.state === "in" ? (s.clock ?? 252) : 0, displayClock: s.state === "in" ? (s.dclock || "4:12") : "0:00", period: s.state === "in" ? (s.period || 3) : s.state === "post" ? 4 : 0,
+        type: { name: s.name, state: s.state, completed: s.completed, shortDetail: s.state === "post" ? "Final" : s.state === "in" ? "4:12 - 3rd" : "Sat" } } }] };
 }
 const board = () => ({ season: { year: 2026, type: 2 }, week: { number: 11 }, events: slateGames.map(event) });
 // Earlier weeks for the game log backfill: [eventId, awayId, homeId, kickoff, home line, away score, home score, total]
@@ -178,6 +179,12 @@ try {
   let wk = await getWeek("2026-w11");
   check("final score saved", wk.results.e103 && wk.results.e103.final && wk.results.e103.home === 35);
   check("live score saved, not final", wk.results.e105 && !wk.results.e105.final && wk.results.e105.home === 14);
+  check("live game keeps quarter and clock", wk.results.e105.period === 3 && wk.results.e105.dclock === "4:12" && wk.results.e105.clock === 252 && !!wk.results.e105.at, JSON.stringify(wk.results.e105));
+  check("week records when scores were pulled", !!wk.scoresAt);
+  live[105] = { ...live[105], period: 4, dclock: "2:05", clock: 125 };
+  await tick({ now: CT("2026-11-07T13:40:00-06:00") });
+  wk = await getWeek("2026-w11");
+  check("clock moves even when the score does not", wk.results.e105.period === 4 && wk.results.e105.dclock === "2:05" && wk.results.e105.home === 14, JSON.stringify(wk.results.e105));
   let a2 = await getKv("auto", {});
   check("postponed game flagged", a2.flags.some((f) => f.key === "dead:2026-w11:e108"));
 
