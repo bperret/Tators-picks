@@ -880,12 +880,17 @@ function margin(g,r){return (r.home-r.away)+g.homeLine} /* >0 home covers */
    Only the score, the clock, and the line go in, so it runs off the same pull as the score. */
 function normCdf(z){const t=1/(1+0.2316419*Math.abs(z));const d=0.3989423*Math.exp(-z*z/2);const p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p}
 function gameClock(r){if(!r)return null;if(r.void)return {label:"Void",left:0};if(r.final)return {label:"Final",left:0};
-  const st=String(r.status||"");const per=Number.isInteger(r.period)?r.period:null;
-  const sec=typeof r.clock==="number"?r.clock:(r.dclock&&/^\d+:\d\d$/.test(r.dclock)?(+r.dclock.split(":")[0])*60+(+r.dclock.split(":")[1]):null);
+  const st=String(r.status||"");let per=Number.isInteger(r.period)&&r.period>0?r.period:null;let dclock=r.dclock||null;
+  /* Older saves and missing fields: read ESPN's status text, e.g. "10:00 - 3rd", "3rd 4:12", "End of 3rd", "2OT". */
+  if(!per){let m=st.match(/(\d{1,2}:\d\d)\s*-\s*(\d)(?:st|nd|rd|th)/i)||st.match(/(\d)(?:st|nd|rd|th)\s+(\d{1,2}:\d\d)/i);
+    if(m){const a1=/:/.test(m[1]);per=+(a1?m[2]:m[1]);dclock=a1?m[1]:m[2]}
+    else if((m=st.match(/end of (\d)(?:st|nd|rd|th)/i))){per=+m[1];dclock="0:00"}
+    else if((m=st.match(/(\d*)\s*OT\b/i))){per=4+(+m[1]||1);dclock=null}}
+  const sec=typeof r.clock==="number"&&Number.isInteger(r.period)&&r.period>0?r.clock:(dclock&&/^\d+:\d\d$/.test(dclock)?(+dclock.split(":")[0])*60+(+dclock.split(":")[1]):null);
   if(/half/i.test(st))return {label:"Halftime",left:30};
   if(per&&per>4)return {label:per===5?"OT":(per-4)+"OT",left:4};
   if(per){const left=(4-per)*15+(sec!=null?sec/60:7.5);const end=sec===0;
-    return {label:end?"End of Q"+per:"Q"+per+(r.dclock?" · "+r.dclock:""),left}}
+    return {label:end?"End of Q"+per:"Q"+per+(dclock?" · "+dclock:""),left}}
   return st?{label:st,left:null}:null}
 function coverOdds(g,r,side){const gc=gameClock(r);if(!gc||gc.left==null||r.final||r.void)return null;
   const m=margin(g,r);const cushion=side==="home"?m:-m;const sd=13.5*Math.sqrt(Math.max(gc.left,0.25)/60);
@@ -982,7 +987,7 @@ function renderPicks(){
       let verdict="";
       if(c&&myPick)verdict=myPick===c?`<span class="w">${SIG.td}${d.lock===g.id?"Field goal is good · +3":"Touchdown · +1"}</span>`:`<span class="l">${SIG.inc}${d.lock===g.id?"Field goal no good":"Incomplete"}</span>`;
       else if(live&&myPick){const p=coverOdds(g,r,myPick);const t=p!=null?coverTier(p):null;const txt=myPick===live?"Covering":"Not covering";
-        verdict=t?`<span class="tier t-${t[1]}" title="Chance your pick covers, from the score, the time left, and the line">${txt} · ${t[2]} · ${Math.round(p*100)}%</span>`:(myPick===live?'<span class="w">Your pick is covering</span>':'<span class="l">Your pick is not covering</span>')}
+        verdict=t?`<span class="tier t-${t[1]}" title="Chance your pick covers, from the score, the time left, and the line">${txt} · ${t[2]} · ${Math.round(p*100)}% to cover</span>`:(myPick===live?'<span class="w">Your pick is covering</span>':'<span class="l">Your pick is not covering</span>')}
       const gc=gameClock(r);
       h+=`<div class="res"><span class="score${changed?" flip":""}">${esc(teamLook(g.away,g,"away").abbr)} ${r.away} – ${esc(teamLook(g.home,g,"home").abbr)} ${r.home} · ${esc(gc?gc.label:(r.final?"Final":"Live"))}</span>${verdict}</div>`;
     }

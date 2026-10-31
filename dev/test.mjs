@@ -171,10 +171,14 @@ try {
       late: coverTier(coverOdds(g, r(31, 10, 4, "2:00"), "home"))[1],
       lost: coverTier(coverOdds(g, r(10, 31, 4, "2:00"), "home"))[1],
       early: coverTier(coverOdds(g, r(3, 0, 1, "12:00"), "home"))[1],
+      oldText: gameClock({ home: 17, away: 17, status: "10:00 - 3rd", final: false }).label,
+      oldText2: gameClock({ home: 17, away: 17, status: "3rd 4:12", final: false }).label,
+      oldTier: coverTier(coverOdds({ homeLine: -3.5 }, { home: 27, away: 0, status: "7:54 - 3rd", final: false }, "home"))[1],
       grows: coverOdds(g, r(14, 7, 4, "1:00"), "home") > coverOdds(g, r(14, 7, 2, "10:00"), "home"),
     };
   });
   check("clock labels read Q3 · 8:42, Halftime, OT", live.q3 === "Q3 · 8:42" && live.half === "Halftime" && live.ot === "OT", JSON.stringify(live));
+  check("status text alone still gives the clock and a tier", live.oldText === "Q3 · 10:00" && live.oldText2 === "Q3 · 4:12" && live.oldTier === "safe", JSON.stringify(live));
   check("cover tiers: safe late lead, red late deficit, toss up early", live.late === "safe" && live.lost === "red" && live.early === "toss" && live.grows, JSON.stringify(live));
 
   // ---- scores and final ----
