@@ -39,7 +39,7 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Teams tab for NFL: standings (by division), Power (FPI and scoring), ATS. No polls, SP+, or r/CFB.
 - Build behind a toggle only the commissioner sees until NFL tests pass. College tests must pass at every push.
 
-
+## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
 - Later: switch college Survivor from ATS to straight up (SU), the same as the planned NFL Survivor. Do not change it mid-run for a Survivor already in progress; apply it at a new Survivor start or next season.
 - ESPN rankings and FPI feed shapes were not verified live; watch for flags on the first runs.
