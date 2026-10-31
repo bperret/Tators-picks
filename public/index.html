@@ -106,6 +106,14 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 td.num{text-shadow:0 0 6px rgba(242,194,48,.35)}
 tr.me td{background:rgba(242,194,48,.12)}
 tr.out td{color:var(--board-dim);text-decoration:line-through;text-shadow:none}
+.whocols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wc{border-top:3px solid var(--tc);padding-top:4px;display:flex;flex-wrap:wrap;gap:2px 10px;align-content:flex-start;font-size:.86rem;line-height:1.5;min-width:0}
+.wch{flex-basis:100%;font-family:var(--cond);font-weight:700;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wn{white-space:nowrap}
+.wn.me{font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.wn.fg{color:var(--ink);font-weight:600}
+.wn.fg .gp{width:13px;height:13px;vertical-align:-2px;margin-right:2px;stroke:#c9a227;stroke-width:2.6;fill:none}
+.wn.none{color:var(--muted);font-style:italic}
 .who{font-size:.82rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .who span{background:var(--chip);border-radius:3px;padding:1px 6px}
 .who span.lk{background:var(--flag);color:var(--flag-ink)}
@@ -943,9 +951,11 @@ function renderPicks(){
       const sp=split(g,players);const na=sp.away.length,nh=sp.home.length,tot=na+nh||1;
       const LA=teamLook(g.away,g,"away"),LH=teamLook(g.home,g,"home");
       h+=`<div class="cbar" role="img" aria-label="${na} picked ${esc(g.away)}, ${nh} picked ${esc(g.home)}"><span style="flex:${na||0.0001};background:${LA.c1};color:${LA.ink}">${na?LA.abbr+" "+na:""}</span><span style="flex:${nh||0.0001};background:${LH.c1};color:${LH.ink}">${nh?LH.abbr+" "+nh:""}</span></div>`;
-      const names=s=>sp[s].map(pid=>tag(pid,players[pid].lock===g.id)).join("")||'<i>nobody</i>';
-      h+=`<div class="who"><b>${esc(LA.abbr)}</b>${names("away")}</div><div class="who"><b>${esc(LH.abbr)}</b>${names("home")}</div>`;
-      if(Object.values(players).some(p=>p.lock===g.id))h+='<div class="note flagkey">'+GP+'= field goal, worth 3 points</div>';
+      /* Two plain columns under the split bar: field goals first, your name in bold, no chips. */
+      const col=(s,L)=>{const ids=[...sp[s]].sort((a,b)=>((players[b].lock===g.id)-(players[a].lock===g.id))||nm(a).localeCompare(nm(b)));
+        const items=ids.map(pid=>{const fg=players[pid].lock===g.id,me=pid===state.uid;const n=first(pid);return `<span class="wn${fg?" fg":""}${me?" me":""}"${fg?' title="Field goal"':""}>${fg?GP:""}${esc(n.length>10?n.slice(0,9)+"\u2026":n)}</span>`}).join("");
+        return `<div class="wc" style="--tc:${L.c1}"><div class="wch">${esc(L.abbr)} · ${ids.length}</div>${items||'<span class="wn none">Nobody</span>'}</div>`};
+      h+=`<div class="whocols">${col("away",LA)}${col("home",LH)}</div>`;
       if(c&&nPlayers>=3&&sp[c].length===1)h+=`<div class="wolf">Lone wolf: ${esc(nm(sp[c][0]))} was the only one on ${esc(c==="home"?g.home:g.away)}</div>`;
     }
     h+="</div>";
