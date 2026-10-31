@@ -29,8 +29,19 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - People are "pickers". Tabs: Picks, Standings, Survivor, Pickers, Teams, Rules, Profile, Commish. The public log never shows the commissioner's private nickname for a picker.
 - Money is off the site. 2026 is a test season (`scored: false`). Bowls are a separate contest.
 
-## Open items
+## NFL version (planned, not built; decided Oct 31)
+- A toggle at the top flips the whole site between Tator's College Picks and Tator's NFL Picks. Same tabs and navigation. One login (phone, PIN, profile look shared); everything else is fully separate per sport: weeks, picks, standings, Survivor, Teams, Pickers, log, snapshots, config, automation status. No combined views.
+- Slate: every game kicking off after the lock (Sunday and Monday games). Thursday, Friday, and Saturday games are left out. Lock: Sunday 6:00 a.m. CT, one lock per week like college.
+- Order: backwards, latest kickoff first (MNF at top, Sunday early games at the bottom).
+- Tiebreaker: total points in the last game of the week (latest kickoff, normally MNF). Two Monday games: the later kickoff. No Monday game (Week 18): the latest Sunday game. If that game is void, the next latest. Blank = 0.
+- Lines: same half-point rule as college. 1 point per correct pick, one 3 point field goal.
+- Survivor: straight up (SU), one team a week, no repeats. With SU, a Survivor pick against your own ATS pick is not a sure loss, so the conflict warning does not apply. Robo-Sharp's Survivor pick: biggest projected FPI win among unused teams.
+- Teams tab for NFL: standings (by division), Power (FPI and scoring), ATS. No polls, SP+, or r/CFB.
+- Build behind a toggle only the commissioner sees until NFL tests pass. College tests must pass at every push.
+
+
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
+- Later: switch college Survivor from ATS to straight up (SU), the same as the planned NFL Survivor. Do not change it mid-run for a Survivor already in progress; apply it at a new Survivor start or next season.
 - ESPN rankings and FPI feed shapes were not verified live; watch for flags on the first runs.
 - The r/CFB parser was built from the page's table text, not its raw HTML. Watch for a Refresh rankings flag on the first run. Fallback: copy the poll table from the site and paste it in Update rankings.
 - Team stats: ESPN's scoreboard drops lines from finished games. The lines job filled weeks 1 to 9 from ESPN's core per-game odds feed, verified live Oct 29. New games get lines saved before kickoff by the hourly ATS run.
