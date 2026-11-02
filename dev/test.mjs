@@ -262,6 +262,40 @@ try {
   const st = await m.textContent("#v-standings");
   check("standings show the week", st.includes("Week 10") && st.includes("Mike T."));
   check("Robo-Sharp plays", st.includes("Robo-Sharp"));
+  // Survivor end and resurrection, drawn on the page with made-up weeks.
+  const sv = await m.evaluate(() => {
+    const { state, survivorBoard, survivorGrid, survivorRevived, survivorOpen, renderSurvivor } = window.tpRecap;
+    const saved = { weeks: state.weeks, reveals: state.reveals, config: state.config, roster: state.roster };
+    const mk = (id, week, day, res) => ({ id, week, status: "final", deadline: `2026-${day}T16:15:00Z`, games: [{ id: "a", home: "H1", away: "A1", homeLine: -1.5, slot: 1 }, { id: "b", home: "H2", away: "A2", homeLine: -1.5, slot: 2 }], results: { a: { home: res ? 10 : 0, away: res ? 0 : 10, final: true }, b: { home: res ? 10 : 0, away: res ? 0 : 10, final: true } } });
+    state.config = { ...saved.config, survivorStart: "2026-w11", survivorEnd: "2026-11-29T06:00:00Z" }; state.roster = ["x", "y", "z"];
+    const pick = (t) => ({ sel: {}, surv: t });
+    const load = (weeks, reveals) => { state.weeks = weeks; state.reveals = reveals; };
+    const home = (g) => ({ g, s: "home" }), away = (g) => ({ g, s: "away" });
+    const out = {};
+    // Week 11: z goes out. Week 12: x and y both go out, so they are resurrected. Week 13 is the last week.
+    const w = { "2026-w11": mk("2026-w11", 11, "11-14", true), "2026-w12": mk("2026-w12", 12, "11-21", true), "2026-w13": mk("2026-w13", 13, "11-28", true), "2026-w14": { ...mk("2026-w14", 14, "12-05", true), status: "open" } };
+    const r = (a, b, c) => ({ players: { x: pick(a), y: pick(b), z: pick(c) } });
+    load({ "2026-w11": w["2026-w11"], "2026-w12": w["2026-w12"] }, { "2026-w11": r(home("a"), home("b"), away("a")), "2026-w12": r(away("a"), away("b"), null) });
+    const a1 = survivorBoard().filter((x) => x.pid !== "bot"); out.rev = Object.keys(survivorRevived()); out.alive = a1.filter((x) => x.alive).map((x) => x.pid).join();
+    out.grid = survivorGrid().rows.filter((x) => x.alive && x.pid !== "bot").map((x) => x.pid).sort().join();
+    // Both lose in the last week: they share, nobody is revived.
+    load({ "2026-w11": w["2026-w11"], "2026-w12": w["2026-w12"], "2026-w13": w["2026-w13"] }, { "2026-w11": r(home("a"), home("b"), away("a")), "2026-w12": r(away("a"), away("b"), null), "2026-w13": r(away("a"), away("b"), null) });
+    out.lastRev = Object.keys(survivorRevived()); out.lastAlive = survivorBoard().filter((x) => x.pid !== "bot" && x.alive).length;
+    // Two pickers still alive after the last week share the title. Week 14 has no Survivor.
+    load({ "2026-w13": w["2026-w13"], "2026-w14": w["2026-w14"] }, { "2026-w13": r(home("a"), home("b"), away("a")) });
+    state.config.survivorStart = "2026-w13"; location.hash = "#survivor"; renderSurvivor();
+    out.share = document.querySelector("#v-survivor .svwin")?.textContent || ""; out.open14 = survivorOpen("2026-w14"); out.open13 = survivorOpen("2026-w13");
+    // One picker left who loses is not revived.
+    load({ "2026-w11": w["2026-w11"], "2026-w12": w["2026-w12"] }, { "2026-w11": r(home("a"), away("b"), away("a")), "2026-w12": r(away("a"), null, null) });
+    state.config.survivorStart = "2026-w11"; out.lone = Object.keys(survivorRevived()).length;
+    Object.assign(state, saved); return out;
+  });
+  check("everyone out in one week are resurrected", sv.rev.join() === "2026-w12" && sv.alive === "x,y" && sv.grid === "x,y", JSON.stringify(sv));
+  check("no resurrection in Survivor's last week", sv.lastRev.join() === "2026-w12" && sv.lastAlive === 0, JSON.stringify(sv));
+  check("pickers alive after the last week share the title", sv.share.includes("share Survivor"), sv.share);
+  check("no Survivor after the Nov 28 week", sv.open14 === false && sv.open13 === true, JSON.stringify(sv));
+  check("a lone picker is not resurrected", sv.lone === 0, JSON.stringify(sv));
+  await m.reload(); await m.waitForSelector("#app:not([hidden])");
   await m.evaluate(() => (location.hash = "#survivor")); await m.waitForTimeout(300);
   check("survivor board fills in", (await m.textContent("#v-survivor")).includes("MIA"));
   await m.evaluate(() => (location.hash = "#rules")); await m.waitForTimeout(300);

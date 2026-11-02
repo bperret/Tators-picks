@@ -545,6 +545,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Each week, also pick one team from the slate against the spread. If it covers, you stay alive. If it does not, you are out.</li>
         <li>You cannot pick the same team twice. A void game keeps you alive. A missed survivor pick puts you out.</li>
         <li>Survivor picks lock and reveal with your regular picks. The last picker alive wins.</li>
+        <li>If every remaining picker goes out in the same week, they are all resurrected and play one more week. The teams they used stay used. In Survivor's last week, they share the title instead.</li>
         <li>Survivor ends after the Saturday, November 28 week. There is no Survivor pick in Conference Champion week. Everyone still alive after that week shares the title.</li>
         <li>The Survivor tab shows every picker's pick each week, who is still alive, and which teams you have left.</li>
       </ul></details>
@@ -900,17 +901,26 @@ function survWeekTime(wid){const w=state.weeks[wid];const d=w&&(w.origDeadline||
 function survivorOpen(wid){const s=survivorStart();if(!s||wid<s)return false;const e=state.config.survivorEnd;const t=survWeekTime(wid);return !(e&&t>=Date.parse(e))}
 function survivorFinalWeek(wid){const e=state.config&&state.config.survivorEnd;const t=survWeekTime(wid);return !!(e&&t+7*864e5>=Date.parse(e))}
 function survivorWeeks(){return Object.keys(state.weeks).sort().filter(w=>survivorOpen(w)&&state.reveals[w]&&["locked","final"].includes(state.weeks[w].status))}
+/* If every remaining picker goes out in the same week, they all play one more week. Not in the last week, when they share. A lone picker is never revived. */
+function survResult(pid,wid){const w=state.weeks[wid];const p=(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;const g=sp&&w.games.find(x=>x.id===sp.g);if(!g)return "miss";const r=(w.results||{})[g.id];if(r&&r.void)return "void";const c=coverSide(g,r);return !c?"pending":c===sp.s?"win":"loss"}
+function survivorRevived(){const rev={};const alive=new Set(allPlayerIds(false).filter(p=>!removed().includes(p)));
+  for(const wid of survivorWeeks()){if(alive.size<2)break;const res=[...alive].map(p=>[p,survResult(p,wid)]);if(res.some(x=>x[1]==="pending"))break;
+    const gone=res.filter(x=>x[1]==="loss"||x[1]==="miss").map(x=>x[0]);
+    if(gone.length===alive.size&&!survivorFinalWeek(wid)){rev[wid]=true;continue}
+    gone.forEach(p=>alive.delete(p))}
+  return rev}
 function survivorBoard(){
   const start=survivorStart();if(!start)return null;
   const weeks=survivorWeeks();
   const ids=allPlayerIds(true).filter(p=>!removed().includes(p));
+  const rev=survivorRevived();
   return ids.map(pid=>{const row={pid,alive:true,pending:false,out:null,used:[],picks:[]};
     for(const wid of weeks){const w=state.weeks[wid];const p=pid===BOT?botPicks(w):(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;
-      if(!sp){row.alive=false;row.out={week:w.week,team:"no pick"};break}
-      const g=w.games.find(x=>x.id===sp.g);if(!g){row.alive=false;row.out={week:w.week,team:"no pick"};break}
+      if(!sp){if(rev[wid])continue;row.alive=false;row.out={week:w.week,team:"no pick"};break}
+      const g=w.games.find(x=>x.id===sp.g);if(!g){if(rev[wid])continue;row.alive=false;row.out={week:w.week,team:"no pick"};break}
       const team=sp.s==="home"?g.home:g.away;row.used.push(team);row.picks.push({wid,week:w.week,team,line:sp.s==="home"?g.homeLine:-g.homeLine});
       const r=(w.results||{})[g.id];if(r&&r.void)continue;const c=coverSide(g,r);if(!c){row.pending=true;continue}
-      if(c!==sp.s){row.alive=false;row.out={week:w.week,team};break}}
+      if(c!==sp.s){if(rev[wid])continue;row.alive=false;row.out={week:w.week,team};break}}
     return row});
 }
 function survivorUsed(pid){const start=survivorStart();const used=[];if(!start)return used;for(const wid of Object.keys(state.reveals).sort()){if(wid<start||wid===currentWeekId())continue;const p=(state.reveals[wid].players||{})[pid];const w=state.weeks[wid];if(p&&p.surv&&w){const g=w.games.find(x=>x.id===p.surv.g);if(g)used.push(canon(p.surv.s==="home"?g.home:g.away))}}return used}
@@ -1228,8 +1238,9 @@ function recapFacts(wid){
   const bp=botPicks(w);if(bp&&Object.keys(bp.sel||{}).length){const s=scoreWeek(w,bp);const beat=rows.filter(r=>r.pts<s.pts).length;add("\u{1F916} Robo-Sharp",`${s.w}-${s.l} ATS, ${s.pts} point${pl(s.pts)}`,`Better than ${beat} of ${rows.length} pickers. It feels nothing either way.`,"")}
 
   /* Survivor */
-  const sb=survivorBoard();if(sb){const hum=sb.filter(r=>r.pid!==BOT);const gone=hum.filter(r=>r.out&&r.out.week===w.week);const alive=hum.filter(r=>r.alive).length;
-    if(gone.length)add("Survivor",`${gone.length} out in Week ${w.week}`,`${names(gone.map(r=>r.pid))} ${gone.length===1?"is":"are"} gone. ${alive} still alive.`,"bad");
+  const sb=survivorOpen(wid)?survivorBoard():null;if(sb){const hum=sb.filter(r=>r.pid!==BOT);const gone=hum.filter(r=>r.out&&r.out.week===w.week);const alive=hum.filter(r=>r.alive).length;
+    if(survivorRevived()[wid])add("Resurrection",`Everyone went out in Week ${w.week}`,`So all ${alive} are back for one more week. The ref checked the rulebook twice.`,"odd");
+    else if(gone.length)add("Survivor",`${gone.length} out in Week ${w.week}`,`${names(gone.map(r=>r.pid))} ${gone.length===1?"is":"are"} gone. ${alive} still alive.`,"bad");
     else if(alive&&w.status==="final"&&survivorOpen(wid))add("Survivor",`Nobody out in Week ${w.week}`,`${alive} still alive.`,"good")}
 
   /* Season movers */
@@ -1254,7 +1265,7 @@ function renderRecap(){
   h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
   el.innerHTML=h;
 }
-window.tpRecap={state,recapFacts,renderRecap,currentWeekId,showReveal,seenKey}; /* for the browser test */
+window.tpRecap={state,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- referee report ---------- */
@@ -1322,20 +1333,21 @@ function survivorGrid(){
   const start=survivorStart();if(!start)return null;
   const weeks=survivorWeeks();
   const ids=allPlayerIds(true).filter(p=>!removed().includes(p));
+  const rev=survivorRevived();
   const rows=ids.map(pid=>{const row={pid,alive:true,outWeek:null,cells:{},wins:0,used:[]};
     for(const wid of weeks){const w=state.weeks[wid];if(!row.alive){row.cells[wid]={st:"gone"};continue}
       const p=pid===BOT?botPicks(w):(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;const g=sp&&w.games.find(x=>x.id===sp.g);
-      if(!g){row.cells[wid]={st:"miss"};row.alive=false;row.outWeek=w.week;continue}
+      if(!g){row.cells[wid]={st:"miss",rev:!!rev[wid]};if(!rev[wid]){row.alive=false;row.outWeek=w.week}continue}
       const team=sp.s==="home"?g.home:g.away;const line=sp.s==="home"?g.homeLine:-g.homeLine;row.used.push(team);
       const r=(w.results||{})[g.id];let st="pending";
       if(r&&r.void)st="void";else{const c=coverSide(g,r);if(c)st=c===sp.s?"win":"loss"}
       let mg=null;if(r&&!r.void&&(r.final||r.away||r.home)){const m=(r.home-r.away)+g.homeLine;mg=Math.round((sp.s==="home"?m:-m)*10)/10}
-      row.cells[wid]={st,team,line,g,side:sp.s,mg};
-      if(st==="win")row.wins++;if(st==="loss"){row.alive=false;row.outWeek=w.week}}
+      row.cells[wid]={st,team,line,g,side:sp.s,mg,rev:st==="loss"&&!!rev[wid]};
+      if(st==="win")row.wins++;if(st==="loss"&&!rev[wid]){row.alive=false;row.outWeek=w.week}}
     return row});
   const lastOut=Math.max(0,...rows.filter(r=>!r.alive).map(r=>r.outWeek));
   rows.sort((a,b)=>(b.alive-a.alive)||((b.outWeek||0)-(a.outWeek||0))||b.wins-a.wins||nm(a.pid).localeCompare(nm(b.pid)));
-  return {weeks,rows,lastOut}}
+  return {weeks,rows,lastOut,rev}}
 function renderSurvivor(){
   const el=$("#v-survivor");const G=survivorGrid();
   if(!G){el.innerHTML='<div class="panel empty">Survivor has not started yet.</div>';return}
@@ -1347,16 +1359,17 @@ function renderSurvivor(){
   else if(alive.length>1&&over)h+=`<p class="svwin">\u{1F3C6} ${alive.map(r=>esc(nm(r.pid))).join(" and ")} share Survivor. All ${alive.length} made it through Week ${lastW.week}.</p>`;
   else if(!alive.length&&weeks.length){const lw=Math.max(...rows.map(r=>r.outWeek||0));const co=rows.filter(r=>r.outWeek===lw);
     h+=settled?`<p class="svwin">🏆 ${co.length>1?co.map(r=>esc(nm(r.pid))).join(" and ")+" share Survivor. They went out together in week "+lw+".":esc(nm(co[0].pid))+" wins Survivor, the last one out in week "+lw+"."}</p>`:`<p class="svwin">Everyone is out so far. Week ${lw} is not final yet.</p>`}
+  {const lr=weeks.filter(k=>G.rev[k]).pop();if(lr&&lr===weeks[weeks.length-1])h+=`<p class="svwin">Everyone left went out in Week ${state.weeks[lr].week}, so all ${alive.length} are back for one more week.</p>`}
   h+="</div>";
   /* alive count by week */
-  if(weeks.length){const counts=weeks.map(wid=>rows.filter(r=>{const c=r.cells[wid];return c&&c.st!=="gone"&&c.st!=="miss"&&c.st!=="loss"}).length);const start=rows.length;
+  if(weeks.length){const counts=weeks.map(wid=>rows.filter(r=>{const c=r.cells[wid];return c&&(c.rev||(c.st!=="gone"&&c.st!=="miss"&&c.st!=="loss"))}).length);const start=rows.length;
     h+=`<div class="panel"><h2>Still standing after each week</h2><div class="svbars">${[start,...counts].map((n,i)=>`<div class="svbar"><span class="svn">${n}</span><span class="svb" style="height:${start?Math.max(4,n/start*80):4}px"></span><span class="note">${i===0?"Start":"W"+state.weeks[weeks[i-1]].week}</span></div>`).join("")}</div></div>`}
   /* grid */
   const wks=weeks.slice().reverse();
   const head=(curOpen&&survivorOpen(cw)?`<th class="num">W${state.weeks[cw]?state.weeks[cw].week:""}</th>`:"")+wks.map(wid=>`<th class="num">W${state.weeks[wid].week}</th>`).join("");
-  const cell=(c)=>{if(!c)return '<td></td>';if(c.st==="gone")return '<td class="svc gone" aria-label="out"></td>';if(c.st==="miss")return '<td class="svc loss"><span class="svt">No pick</span></td>';
+  const cell=(c)=>{if(!c)return '<td></td>';if(c.st==="gone")return '<td class="svc gone" aria-label="out"></td>';if(c.st==="miss")return `<td class="svc loss"><span class="svt">No pick</span>${c.rev?'<span class="svl">Resurrected</span>':""}</td>`;
     const L=teamLook(c.team,c.g,c.side);const lab={win:"Covered",loss:"Lost",void:"Void",pending:"Pending"}[c.st];
-    return `<td class="svc ${c.st}" title="${esc(c.team)} ${fmtLine(c.line)}: ${lab}${c.mg!=null?" by "+Math.abs(c.mg):""}"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">${fmtLine(c.line)}${c.mg!=null&&c.st!=="void"?" \u00b7 "+(c.mg>0?"covered by "+c.mg:c.mg<0?"missed by "+Math.abs(c.mg):"push"):""}</span></td>`};
+    return `<td class="svc ${c.st}" title="${esc(c.team)} ${fmtLine(c.line)}: ${lab}${c.mg!=null?" by "+Math.abs(c.mg):""}"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">${fmtLine(c.line)}${c.mg!=null&&c.st!=="void"?" \u00b7 "+(c.mg>0?"covered by "+c.mg:c.mg<0?"missed by "+Math.abs(c.mg):"push"):""}${c.rev?" \u00b7 resurrected":""}</span></td>`};
   const myCur=state.myPicks&&state.myPicks.weeks&&state.myPicks.weeks[cw]&&state.myPicks.weeks[cw].surv;
   const curCell=pid=>{if(!(curOpen&&survivorOpen(cw)))return "";const r=rows.find(x=>x.pid===pid);if(r&&!r.alive)return '<td class="svc gone"></td>';
     if(pid===state.uid){if(!myCur)return '<td class="svc next"><span class="svt">Not picked</span></td>';const w=state.weeks[cw];const g=w&&w.games.find(x=>x.id===myCur.g);if(!g)return '<td class="svc next"></td>';const team=myCur.s==="home"?g.home:g.away;const L=teamLook(team,g,myCur.s);return `<td class="svc next"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">Your pick</span></td>`}

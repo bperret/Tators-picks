@@ -118,6 +118,9 @@ setFetcher(async (url) => {
 });
 
 try {
+  const endCfg = { survivorEnd: "2026-11-29T06:00:00Z" };
+  check("server: Survivor stays open for the Nov 28 week", !survivorClosed({ deadline: "2026-11-28T16:15:00Z" }, endCfg));
+  check("server: Survivor is closed for Conference Champion week", survivorClosed({ deadline: "2026-12-04T23:00:00Z" }, endCfg));
   check("half point: home -7 becomes -7.5", halfPoint(-7, true) === -7.5);
   check("half point: home +3 becomes +3.5", halfPoint(3, false) === 3.5);
   check("half point: pick'em gives the dog the half", halfPoint(0, true) === -0.5 && halfPoint(0, false) === 0.5);
