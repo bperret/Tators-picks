@@ -77,6 +77,20 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
    - Robo-Sharp gets no historical tracking on the site. Keep its records on the back end for reference only.
    - To settle: the full stat list and whether current season wins count from Week 9.
 
+### Timing open (Benton has not set a target)
+8. Ghost pickers: an unpaid tier so someone can try the league with no skin in the game and no effect on anyone else.
+   - Paid members play every contest and can win payouts. A profile is paid or unpaid; the commissioner toggles it.
+   - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
+   - Paid pickers cannot see ghosts. Ghosts cannot see each other.
+   - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
+   - To settle: new users creating their own profile conflicts with today's rule that the commissioner makes every PIN; whether a ghost's history carries over on going paid; whether ghosts play Survivor, Bowl, and CFP in shadow.
+9. Picker history: go back to any week and see your picks, which won or lost, how many you got right, where you ranked, and how far off you were. Survivor picks too, with which worked.
+   - Personal insights from that history: teams that hurt you most, teams that consistently win for you, general performance, and useful negative stats. Benton says historical selections matter most.
+   - No new data pull; weeks and reveals hold it. Fits with Career stats (item 7) on the same page. Today's Pick history shows saves, not results.
+10. Clearer covering labels: pickers read "Covered" or "Covering" as good news when it can mean their bet is losing.
+   - Cause: the badge on a game card sits on whichever team is covering, even when that team is not your pick (`class="cv"` in the game card). The chip under the score is already from your side.
+   - Fix idea: green when it is your pick, red when it is the other side, and wording from your side such as "Beating your pick". Pickers with no pick keep the neutral label.
+
 ### Later (no date)
 6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
    - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
