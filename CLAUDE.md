@@ -50,6 +50,11 @@ Changes to make before the 2027 season. Do not build these during 2026. Add new 
    - Pick one team to win outright, not against the spread. No repeats, same as now.
    - Everybody gets 2 skulls. A loss is one skull. The second skull puts you out.
    - To settle at build time: whether a missed pick costs one skull or puts you out, what happens when several pickers are alive after the last week, Robo-Sharp's Survivor rule (it picks by spread edge today), and whether the NFL version also gets 2 skulls (its plan says straight up, with no skulls).
+2. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
+   - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
+   - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
+   - Compare like with like: `homeLine` has the half-point rule applied and the saved closing line is raw, so run the closing line through the same rule or a whole-number lock shows a false half-point move.
+   - To settle at build time: late pickers can see the market moved and take the stale side, so the stat also rewards timing. `pick_history` has pick times if the stat should adjust for that.
 
 ## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
