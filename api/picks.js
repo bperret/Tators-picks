@@ -1,7 +1,7 @@
 // Saving a pick sheet. The server clock enforces the lock: any save at or after the deadline is refused.
 import { q, one } from "../lib/db.js";
 import { readBody, send, fail, currentPlayer } from "../lib/http.js";
-import { getConfig, effectiveStatus, survivorUsed, saveNote } from "../lib/league.js";
+import { getConfig, effectiveStatus, survivorUsed, survivorClosed, saveNote } from "../lib/league.js";
 
 const canon = (s) => String(s || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
 
@@ -37,6 +37,7 @@ export default async function handler(req, res) {
     const config = await getConfig();
     if (b.surv) {
       if (!config.survivorStart || b.weekId < config.survivorStart) return fail(res, 400, "Survivor has not started.");
+      if (survivorClosed(w, config)) return fail(res, 400, "Survivor is over for this season.");
       const g = games.find((x) => x.id === b.surv.g);
       if (!g || (b.surv.s !== "home" && b.surv.s !== "away")) return fail(res, 400, "That survivor pick is not on this slate.");
       const team = b.surv.s === "home" ? g.home : g.away;

@@ -4,7 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
 import { setFetcher, SITE, CORE, FITT, halfPoint } from "../lib/espn.js";
 import { tick, runJob, autoView, chooseGames } from "../lib/auto.js";
-import { getConfig, getWeek, putWeek, teamGamesView } from "../lib/league.js";
+import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 import { redditPage, pastedTable } from "./reddit-fixture.mjs";
 import { parseRedditText } from "../lib/polls.js";

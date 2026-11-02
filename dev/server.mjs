@@ -10,6 +10,7 @@ import { setTestDb } from "../lib/db.js";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 process.env.SESSION_SECRET ||= "local-dev-secret-local-dev-secret-0000";
 process.env.SETUP_CODE ||= "LOCALCODE";
+process.env.SURVIVOR_END ||= "2099-01-01T06:00:00Z"; // The test slate uses real dates, so Survivor must stay open in tests.
 
 export async function startServer(port = 3000) {
   const pg = new PGlite();
