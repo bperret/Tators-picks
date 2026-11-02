@@ -158,6 +158,8 @@ details.manual .inner{margin-top:12px}
 .chain i.on{background:var(--flag)}
 .model b{font-weight:700}
 .side .cv.live{background:var(--flag);color:var(--flag-ink)}
+.side .cv.good{background:#1c7a45;color:#fff}
+.side .cv.bad{background:#b3261e;color:#fff}
 .sig{width:18px;height:18px;vertical-align:-4px;margin-right:3px;fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .sig path{fill:none}
 .res .w,.res .l{display:inline-flex;align-items:center}
@@ -977,7 +979,11 @@ function renderPicks(){
     const r=rs[g.id];const isVoid=r&&r.void;const c=coverSide(g,r);
     const live=r&&!r.final&&!r.void&&(r.away||r.home)?(margin(g,r)>0?"home":"away"):null;
     const awayLn=fmtLine(-g.homeLine),homeLn=fmtLine(g.homeLine);
-    const sideBtn=(s,team,rk,ln)=>{const L=teamLook(team,g,s);return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-g="${esc(g.id)}" data-s="${s}" aria-pressed="${d.sel&&d.sel[g.id]===s}" aria-label="${esc(team)} ${ln}" ${editable&&!isVoid?"":"disabled"}>${c===s?'<span class="cv">Covered</span>':(live===s?'<span class="cv live">Covering</span>':"")}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="ln">${ln}${rk&&rk<99?'<span class="rk">#'+rk+'</span>':""}</span></button>`};
+    /* The badge reads from the picker's side: green on your pick, red on the team beating it. */
+    const coverTag=s=>{if(c!==s&&live!==s)return "";const done=c===s;const mp=d.sel&&d.sel[g.id];
+      if(!mp)return `<span class="cv${done?"":" live"}">${done?"Covered":"Covering"}</span>`;
+      const mine=mp===s;return `<span class="cv ${mine?"good":"bad"}">${mine?(done?"You covered":"You\u2019re covering"):(done?"Beat you":"Beating you")}</span>`};
+    const sideBtn=(s,team,rk,ln)=>{const L=teamLook(team,g,s);return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-g="${esc(g.id)}" data-s="${s}" aria-pressed="${d.sel&&d.sel[g.id]===s}" aria-label="${esc(team)} ${ln}" ${editable&&!isVoid?"":"disabled"}>${coverTag(s)}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="ln">${ln}${rk&&rk<99?'<span class="rk">#'+rk+'</span>':""}</span></button>`};
     const conflictHere=survConflict(w,d)===g.id;
     h+=`<div class="game ${g.slot<=5?"mq":"tl"}${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}">${tg&&tg.id===g.id?'<button type="button" class="tbband" data-jump="tb"><span>🎯 Tiebreaker game</span><span>Total \u2193</span></button>':""}<div class="gmeta"><span class="slot">Game ${g.slot}${g.swap?" · swapped in":""}</span><span class="when">${isVoid?"VOID":esc(teamLook(g.away,g,"away").abbr)+(g.neutral?" vs ":" at ")+esc(teamLook(g.home,g,"home").abbr)+" · "+kick(g.kickoff)}${g.neutral&&!isVoid?" · Neutral site":""}</span></div>
       <div class="sides">${sideBtn("away",g.away,g.awayRank,awayLn)}${sideBtn("home",g.home,g.homeRank,homeLn)}<button class="flagbtn" data-lock="${esc(g.id)}" aria-pressed="${d.lock===g.id}" aria-label="Kick your field goal on this game: 3 points if it covers" ${editable&&!isVoid?"":"disabled"}>${flag}<span>FG</span><span class="fl3">3 pts</span></button></div>`;

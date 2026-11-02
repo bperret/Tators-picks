@@ -202,6 +202,9 @@ try {
   }
   await c.click('[data-act="scores"]'); await c.waitForTimeout(400);
   await c.click('[data-act="final"]'); await c.waitForTimeout(400);
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
+  const tags = await m.$$eval("#v-picks .side .cv", (e) => e.map((x) => x.textContent + "|" + x.className));
+  check("cover badges read from your side", tags.length === 5 && tags.every((t) => t === "You covered|cv good" || t === "Beat you|cv bad"), tags.join());
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#standings")); await m.waitForTimeout(300);
   const st = await m.textContent("#v-standings");
   check("standings show the week", st.includes("Week 10") && st.includes("Mike T."));
