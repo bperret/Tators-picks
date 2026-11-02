@@ -160,6 +160,15 @@ details.manual .inner{margin-top:12px}
 .side .cv.live{background:var(--flag);color:var(--flag-ink)}
 .side .cv.good{background:#1c7a45;color:#fff}
 .side .cv.bad{background:#b3261e;color:#fff}
+.rules table.paytab{width:100%;background:transparent;color:var(--ink)}
+.rules .paytab td,.rules .paytab th{padding:5px 6px;color:var(--ink);background:transparent;border-bottom:1px solid var(--line);white-space:normal}
+.rules .paytab th{color:var(--muted)}
+.payform{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}
+.payform label{display:flex;flex-direction:column;gap:3px;font-size:.88rem;font-weight:600}
+.payform input,.payform select{width:100%;box-sizing:border-box}
+.paychips{gap:6px}
+.paypot{font-weight:700;margin:6px 0}
+.paytotal{background:var(--board);color:var(--board-ink);border-radius:8px;padding:10px 12px;font-family:var(--cond);font-weight:700;font-size:1.15rem;margin:8px 0;text-align:center}
 .recapban{display:block;text-align:center;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
 .rchero h2{margin:0}
 .rchero .note{color:#e8edf2}
@@ -523,7 +532,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <ul>
         <li>A postponed or cancelled game is void and scores for nobody. A field goal on a void game earns nothing.</li>
         <li>If slot 1 is void, slot 2 becomes the tiebreaker game.</li>
-        <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. The weekly title is for bragging rights only.</li>
+        <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. See Payouts for what a weekly win pays.</li>
         <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses.</li>
         <li>Bowl games are a separate contest.</li>
       </ul></details>
@@ -549,6 +558,37 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Survivor ends after the Saturday, November 28 week. There is no Survivor pick in Conference Champion week. Everyone still alive after that week shares the title.</li>
         <li>The Survivor tab shows every picker's pick each week, who is still alive, and which teams you have left.</li>
       </ul></details>
+      <details id="payouts"><summary class="rh">Payouts</summary>
+      <p class="note">The buy-in is not set yet. Every prize is a share of the pot, so the plan works at any buy-in and any league size. Pot = buy-in x paid pickers.</p>
+      <div class="tablewrap"><table class="paytab"><thead><tr><th>Prize</th><th class="num">Share</th><th class="num">Dollars</th></tr></thead><tbody id="payRows"></tbody></table></div>
+      <ul>
+        <li>Weekly wins pay 1% each, 14% over 14 weeks. Survivor's 15% is split evenly across its runs, 5% a run with 3 runs.</li>
+        <li>Ties split the combined prizes for the tied places. If two pickers tie for 1st, they split 1st and 2nd.</li>
+        <li>Everyone who wins a Survivor run together splits that run's prize.</li>
+        <li>Robo-Sharp cannot win money. Its prize goes to the next best picker.</li>
+        <li>Buy-ins are due before Week 1.</li>
+      </ul>
+      <h3 class="rh">What would I win?</h3>
+      <p class="note">Change these to try any scenario. Nothing here is saved. Dollars round to the nearest dollar.</p>
+      <div class="payform">
+        <label>Buy-in $<input type="number" id="payBuy" min="0" max="10000" value="100" inputmode="numeric"></label>
+        <label>Paid pickers <input type="number" id="payN" min="1" max="200" value="20" inputmode="numeric"></label>
+        <label>Upkeep % <input type="number" id="payUp" min="0" max="50" value="0" inputmode="numeric"></label>
+      </div>
+      <div class="bar paychips" aria-label="Quick buy-in"><button type="button" class="btn sm" data-paybuy="25">$25</button><button type="button" class="btn sm" data-paybuy="50">$50</button><button type="button" class="btn sm" data-paybuy="100">$100</button></div>
+      <p class="note">Upkeep is not decided. At 0%, the whole pot pays out.</p>
+      <p id="payPot" class="paypot"></p>
+      <div class="payform">
+        <label>Season finish <select id="paySeason"><option value="0">No prize</option><option value="20">1st</option><option value="10">2nd</option><option value="5">3rd</option></select></label>
+        <label>Weekly wins <input type="number" id="payWeeks" min="0" max="14" value="0" inputmode="numeric"></label>
+        <label>Conference Champion week <select id="payConf"><option value="0">No</option><option value="6">Won it</option></select></label>
+        <label>Survivor runs won <input type="number" id="payRuns" min="0" max="3" value="0" inputmode="numeric"></label>
+        <label>Winners in each run <input type="number" id="paySplit" min="1" max="200" value="1" inputmode="numeric"></label>
+        <label>Bowl challenge <select id="payBowl"><option value="0">No prize</option><option value="10">1st</option><option value="5">2nd</option></select></label>
+        <label>CFP bracket <select id="payCfp"><option value="0">No prize</option><option value="10">1st</option><option value="5">2nd</option></select></label>
+      </div>
+      <p id="payTotal" class="paytotal" role="status"></p>
+      </details>
       <details><summary class="rh">Money and membership</summary>
       <ul>
         <li>Buy ins and payouts happen outside this page.</li>
@@ -1267,6 +1307,22 @@ function renderRecap(){
 }
 window.tpRecap={state,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
+
+/* ---------- payouts ---------- */
+/* Shares of the pot in percent. They total 100 at 14 weeks and 3 Survivor runs. Money stays off the site; this only does the math. */
+const PAY=[["Season standings","1st",20],["Season standings","2nd",10],["Season standings","3rd",5],["Weekly winner","Each week (14)",1],["Conference Champion week","Winner",6],["Survivor","Each run (3)",5],["Bowl challenge","1st",10],["Bowl challenge","2nd",5],["CFP bracket","1st",10],["CFP bracket","2nd",5]];
+function payNum(id,lo,hi){const v=Math.floor(Number($("#"+id).value));return isNaN(v)?lo:Math.min(hi,Math.max(lo,v))}
+function payMoney(n){return "$"+Math.round(n).toLocaleString("en-US")}
+function payUpdate(){if(!$("#payRows"))return;
+  const buy=payNum("payBuy",0,10000),n=payNum("payN",1,200),up=payNum("payUp",0,50);const gross=buy*n;const pot=gross*(1-up/100);const of=p=>pot*p/100;
+  $("#payRows").innerHTML=PAY.map(([c,pr,sh])=>`<tr><td>${esc(c)} \u00b7 ${esc(pr)}</td><td class="num">${sh}%</td><td class="num">${payMoney(of(sh))}</td></tr>`).join("");
+  $("#payPot").textContent=`Pot: ${payMoney(pot)} from ${n} picker${n===1?"":"s"} at ${payMoney(buy)}${up?`, after ${payMoney(gross-pot)} for upkeep`:""}.`;
+  const sum=+$("#paySeason").value+payNum("payWeeks",0,14)+ +$("#payConf").value+payNum("payRuns",0,3)*5/payNum("paySplit",1,200)+ +$("#payBowl").value+ +$("#payCfp").value;
+  const won=of(sum);const net=won-buy;$("#payTotal").textContent=`You would win ${payMoney(won)}. After your buy-in, that is ${net<0?"-":"+"}${payMoney(Math.abs(net))}.`}
+document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});
+document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-paybuy]");if(b){$("#payBuy").value=b.dataset.paybuy;payUpdate()}});
+payUpdate();
 
 /* ---------- referee report ---------- */
 function refReport(wid){
