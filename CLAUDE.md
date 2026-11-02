@@ -44,29 +44,35 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Teams tab for NFL: standings (by division), Power (FPI and scoring), ATS. No polls, SP+, or r/CFB.
 - Build behind a toggle only the commissioner sees until NFL tests pass. College tests must pass at every push.
 
-## Next season tracker
-Changes to make before the 2027 season. Do not build these during 2026. Add new items here as Benton names them.
-1. Survivor: straight up, two skulls.
+## Idea tracker
+The landing spot for every idea not yet ready to build, for any timing: this season, this postseason, next season, or later. Add new ideas here as Benton names them. Build nothing here until he says it is ready. Timing heading = his target. The NFL version has its own section above.
+
+### This season and postseason (target, not started)
+1. Conference Champion week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
+   - Lock before the first Friday kickoff (about 6 p.m. CT), one lock for the week. The normal slate rule and the Saturday 10:15 a.m. lock do not apply.
+   - Survivor ends the week before, so no Survivor pick this week. The Saturday Nov 28 week is its last.
+   - To settle: who wins Survivor if several pickers are still alive after its last week (today's rule is last picker alive), and how the week builds if ESPN's week number or season type differs.
+2. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
+   - One lock before Dec 18. Own bracket screen, scoring, and standings, separate from the regular challenge. Tiebreaker: title game total.
+   - To settle: points per round.
+3. Bowl challenge: separate from the regular challenge, with its own standings. All non-CFP bowls except the Celebration Bowl: 35 bowls, Dec 15 to Jan 2 (ESPN's list has the Arizona Bowl with no date; recheck).
+   - One lock for the whole contest, before the first bowl (Dec 15).
+   - Idea, not final: each picker chooses which 10 bowls to pick.
+   - To settle: ATS or straight up, field goal or not, and a tiebreaker that works when pickers hold different games. The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
+
+### Next season (2027)
+4. Survivor: straight up, two skulls.
    - Pick one team to win outright, not against the spread. No repeats, same as now.
    - Everybody gets 2 skulls. A loss is one skull. The second skull puts you out.
-   - To settle at build time: whether a missed pick costs one skull or puts you out, what happens when several pickers are alive after the last week, Robo-Sharp's Survivor rule (it picks by spread edge today), and whether the NFL version also gets 2 skulls (its plan says straight up, with no skulls).
-2. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
+   - To settle: whether a missed pick costs one skull or puts you out, what happens when several pickers are alive after the last week, Robo-Sharp's Survivor rule (it picks by spread edge today), and whether the NFL version also gets 2 skulls (its plan says straight up, with no skulls).
+
+### Later (no date)
+5. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
    - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
    - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
    - Compare like with like: `homeLine` has the half-point rule applied and the saved closing line is raw, so run the closing line through the same rule or a whole-number lock shows a false half-point move.
    - Late picking counts, on purpose. Part of the point is to show who does their research and picks late. No timing adjustment, no sample size or injury caveats on the page.
    - Track Robo-Sharp on this stat too, shown with the pickers, with no rank like in standings.
-
-## Postseason ideas (not built; timing open)
-Benton is considering these. He has not said this season or next. 2026-27 dates are from the published schedules; recheck them before building.
-3. Conference Champion special week: the final week of the regular challenge. 2026: 10 games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
-   - The slate rule (10 Saturday games, ranked teams) and the Saturday 10:15 a.m. lock do not fit. Likely every title game, locked before the first Friday kickoff.
-   - To settle: Survivor that week (no-repeat pool is small), and which weeks build by hand if ESPN's week number differs.
-4. Bowl challenge: all non-CFP bowls, separate from the regular season. 2026-27: 36 bowls, Dec 12 to Jan 2, plus the Arizona Bowl (date not set in ESPN's list).
-   - Needs its own standings. Slate job skips postseason today (`seasonType !== 2`).
-   - Bowls fall on many weekdays, so one Saturday lock does not work. To settle: one lock before Dec 12 or a lock per game, ATS or straight up, and whether to count the Celebration Bowl (it is FCS).
-5. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
-   - Needs a bracket screen, its own scoring, and its own standings. To settle: round values, one lock before Dec 18, and tiebreaker (title game total fits).
 
 ## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
