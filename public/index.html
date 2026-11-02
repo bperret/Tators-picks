@@ -709,7 +709,7 @@ document.addEventListener("submit",async e=>{
       const rr=await api("/api/admin",{action:"importRedditPoll",text:raw});if(!rr.ok){toast(rr.error);return}
       $("#rankJson").value="";toast(`r/CFB poll updated: ${rr.count} teams.${rr.unknown&&rr.unknown.length?" Check these names: "+rr.unknown.join(", ")+".":""}`);await refresh();renderCommish();return}
     const r=await api("/api/admin",{action:"importRankings",data,snapshotWeek:currentWeekId()});if(!r.ok){toast(r.error);return}
-    $("#rankJson").value="";toast("Rankings updated");await refresh();renderCommish();
+    $("#rankJson").value="";toast(r.merged?"Ratings updated: "+r.merged.map(k=>({sp:"SP+",vsin:"VSiN",fpi:"FPI"}[k]||k)).join(", ")+". Polls kept.":"Rankings updated");await refresh();renderCommish();
   }
   }finally{if(btn)btn.disabled=false}
 });
@@ -756,7 +756,7 @@ function loginsPanel(){
     <p class="note">Adding a picker creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Removing a picker hides them from standings and blocks new picks.</p></details>`}
 function importPanel(){
   return `${secTag("backups",false,"manual")}${secHead("Manual backups","paste a slate or rankings by hand")}<form id="slateForm" class="inner" novalidate><h2>Load a slate</h2><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
-  <form id="rankForm" class="inner" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings. Paste rankings JSON for the Teams tab. For the r/CFB poll, select its table on poll.redditcfb.com, copy, and paste it here. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form></details>`}
+  <form id="rankForm" class="inner" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings. Paste rankings JSON for the Teams tab. JSON with only a "power" part updates just those ratings and keeps the polls. For the r/CFB poll, select its table on poll.redditcfb.com, copy, and paste it here. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form></details>`}
 
 /* ---------- saving picks ---------- */
 async function savePicks(force){

@@ -64,6 +64,15 @@ try {
   check("slate loads as draft", (await c.textContent("#v-commish")).includes("This week · Week 10") && (await c.textContent("#v-commish h2 .pill")) === "Draft");
   await c.click('[data-act="open"]'); await c.waitForTimeout(400);
   check("picks open", (await c.textContent("#statusBadge")).toLowerCase().includes("picks open"));
+  {
+    const post = (body) => c.evaluate((b) => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then((r) => r.json()), body);
+    const get = () => c.evaluate(() => fetch("/api/state").then((r) => r.json()).then((s) => s.rankings));
+    const before = await get();
+    const r = await post({ action: "importRankings", data: { power: { sp: { asOf: "Nov 1, 2026", teams: [{ rank: 1, team: "Georgia", rating: 28.1 }] } } }, snapshotWeek: "2026-w10" });
+    const after = await get();
+    check("ratings-only paste merges and keeps the polls", r.ok && r.merged.join() === "sp" && after.power.sp.asOf === "Nov 1, 2026" && JSON.stringify(after.ap) === JSON.stringify(before.ap) && JSON.stringify(after.power.vsin) === JSON.stringify(before.power.vsin), JSON.stringify(r));
+    await post({ action: "importRankings", data: { power: { sp: before.power.sp } } });
+  }
   check("commish sections fold", (await c.locator('#v-commish details[data-sec]').count()) >= 5);
   await c.click('[data-csec="0"]'); await c.waitForTimeout(100);
   check("collapse all shuts every section", (await c.locator('#v-commish details[data-sec][open]').count()) === 0);

@@ -176,6 +176,20 @@ export default async function handler(req, res) {
       }
       case "importRankings": {
         if (!b.data || typeof b.data !== "object") return fail(res, 400, "Rankings must be JSON.");
+        // Ratings only (for example {"power":{"sp":{...},"vsin":{...}}}): merge into what is saved,
+        // keep the polls and the other systems, and leave the weekly snapshot alone.
+        const keys = Object.keys(b.data);
+        if (keys.length && keys.every((k) => k === "power") && b.data.power && typeof b.data.power === "object") {
+          const sys = Object.keys(b.data.power).filter((k) => b.data.power[k] && Array.isArray(b.data.power[k].teams) && b.data.power[k].teams.length);
+          if (!sys.length) return fail(res, 400, "No ratings found. Each system needs a teams list.");
+          const R = (await getKv("rankings", null)) || {};
+          R.power = { ...(R.power || {}) };
+          for (const k of sys) R.power[k] = b.data.power[k];
+          await setKv("rankings", R);
+          const nameOf = { sp: "SP+", vsin: "VSiN", fpi: "FPI" };
+          await addLog(BY, "Updated ratings", sys.map((k) => `${nameOf[k] || k} as of ${b.data.power[k].asOf || "today"} (${b.data.power[k].teams.length} teams)`).join("; "));
+          return send(res, 200, { ok: true, merged: sys });
+        }
         await setKv("rankings", b.data);
         if (b.snapshotWeek) await q("insert into snapshots (week_id, data) values ($1, $2::jsonb) on conflict (week_id) do update set data = excluded.data", [b.snapshotWeek, JSON.stringify(b.data)]);
         await addLog(BY, "Updated rankings", b.snapshotWeek ? `Saved a snapshot for ${b.snapshotWeek}` : "");
