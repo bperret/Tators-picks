@@ -205,10 +205,59 @@ try {
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   const tags = await m.$$eval("#v-picks .side .cv", (e) => e.map((x) => x.textContent + "|" + x.className));
   check("result reveal shows the games that went final", (await m.locator("#reveal .rvlist li").count()) === 5, await m.locator("#reveal").textContent().catch(() => "none"));
+  await m.waitForTimeout(900); await m.screenshot({ path: "dev/test-reveal.png" });
   await m.click("[data-rvclose]");
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   check("result reveal fires once on this device", (await m.locator("#reveal").count()) === 0);
+  await m.screenshot({ path: "dev/test-badges.png" });
   check("cover badges read from your side", tags.length === 5 && tags.every((t) => t === "You covered|cv good" || t === "Beat you|cv bad"), tags.join());
+  check("recap banner shows on Picks after a final week", (await m.locator(".recapban").count()) === 1);
+  await m.click(".recapban"); await m.waitForTimeout(300);
+  const rc = await m.textContent("#v-recap");
+  check("recap shows the week and its winner", rc.includes("Week 10 recap") && rc.includes("Won the week"), rc.slice(0, 200));
+  check("recap has fun facts", (await m.locator(".rccard").count()) >= 4, String(await m.locator(".rccard").count()));
+  check("recap never shows undefined or NaN", !/undefined|NaN/.test(rc), rc);
+  const rw = await m.evaluate(() => document.documentElement.scrollWidth);
+  check("recap has no sideways scroll on a phone", rw <= 390, String(rw));
+  await m.screenshot({ path: "dev/test-recap.png", fullPage: true });
+  const single = await m.evaluate(() => {
+    const { state, showReveal, currentWeekId } = window.tpRecap; const w = state.weeks[currentWeekId()]; const g = w.games[0]; const out = {};
+    const run = (won, fg) => { showReveal(w, {}, [{ g, won, fg, by: 3.5, txt: "UGA -10.5" }]); const e = document.querySelector("#reveal"); return e.className + "|" + e.querySelector("h2").textContent; };
+    out.win = run(true, false); out.loss = run(false, false); out.fg = run(true, true); document.querySelector("#reveal").remove(); return out;
+  });
+  check("single game reveal wording", single.win === "win|You covered!" && single.loss === "loss|Bummer, you didn\u2019t cover." && single.fg === "win|Field goal is good!", JSON.stringify(single));
+  await m.evaluate(() => localStorage.removeItem(window.tpRecap.seenKey()));
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
+  check("first visit after a week closes stays quiet", (await m.locator("#reveal").count()) === 0);
+  // A full league: 14 pickers over two weeks, drawn on the page with made-up picks.
+  const full = await m.evaluate(() => {
+    const { state, recapFacts, renderRecap, currentWeekId } = window.tpRecap;
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const base = state.weeks[currentWeekId()]; const wid2 = base.id + "b";
+    state.weeks[wid2] = { ...base, id: wid2, week: base.week + 1 };
+    const ids = Array.from({ length: 14 }, (_, i) => "p" + i);
+    const nameList = ["Connor West", "Ryan Mills", "Zach Wells", "Tim Reed", "Sam Ford", "Luke Hale", "Drew Pope", "Matt Cole", "Ben Hart", "Cody Lane", "Jake Moss", "Nate Webb", "Evan Ross", "Pete Dunn"];
+    ids.forEach((id, i) => (state.names[id] = nameList[i]));
+    for (const wid of [base.id, wid2]) {
+      const players = {}; const end = Date.parse(base.deadline);
+      ids.forEach((id, i) => { const sel = {}; for (const g of base.games) sel[g.id] = rnd() < 0.55 ? "home" : "away";
+        players[id] = { sel, lock: base.games[i % 5].id, tb: 30 + Math.floor(rnd() * 60), history: [{ at: new Date(end - (i + 1) * 3 * 3600e3).toISOString(), note: "saved" }] }; });
+      state.reveals[wid] = { players, excluded: [], lockedAt: base.deadline };
+    }
+    const scoreBig = { g1: [3, 58], g2: [31, 28], g3: [17, 21], g4: [28, 24], g5: [10, 45] };
+    state.weeks[wid2].results = Object.fromEntries(Object.entries(scoreBig).map(([k, [a, h]]) => [k, { away: a, home: h, final: true, void: false }]));
+    const facts = recapFacts(wid2); const text = JSON.stringify(facts);
+    const bad = facts.filter((f) => f.tone === "bad" && ["Intentional grounding", "Loss of downs"].includes(f.tag)).map((f) => f.title.split(" ")[0]);
+    state.recapWeek = wid2; location.hash = "#recap"; renderRecap();
+    return { n: facts.length, tags: facts.map((f) => f.tag), text, bad, width: document.documentElement.scrollWidth };
+  });
+  check("recap works for a full league", full.n >= 10 && !/undefined|NaN/.test(full.text), JSON.stringify(full.tags));
+  check("a negative award never repeats a picker", new Set(full.bad).size === full.bad.length, full.bad.join());
+  check("full recap has no sideways scroll", full.width <= 390, String(full.width));
+  await m.waitForTimeout(100); await m.screenshot({ path: "dev/test-recap-full.png", fullPage: true });
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
+  await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(200);
+  check("recap banner clears once read", (await m.locator(".recapban").count()) === 0);
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#standings")); await m.waitForTimeout(300);
   const st = await m.textContent("#v-standings");
   check("standings show the week", st.includes("Week 10") && st.includes("Mike T."));

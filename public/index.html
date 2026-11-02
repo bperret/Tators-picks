@@ -160,6 +160,17 @@ details.manual .inner{margin-top:12px}
 .side .cv.live{background:var(--flag);color:var(--flag-ink)}
 .side .cv.good{background:#1c7a45;color:#fff}
 .side .cv.bad{background:#b3261e;color:#fff}
+.recapban{display:block;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
+.rchero h2{margin:0}
+.rchero .note{color:#e8edf2}
+.rchero .rcwin{font-family:var(--display);font-size:1.5rem;line-height:1.2;margin:6px 0 2px}
+.rcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.rccard{background:var(--panel,var(--card,#fff));border:1px solid var(--line,#d8d3c4);border-left:5px solid #c9a227;border-radius:8px;padding:10px 12px;min-width:0}
+.rccard.good{border-left-color:#1c7a45}.rccard.bad{border-left-color:#b3261e}.rccard.odd{border-left-color:#2a8c8c}
+.rctag{font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rctitle{font-weight:700;margin:2px 0}
+.rccard p{margin:0}
+.rcpick{margin:0 0 10px}
 #reveal{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding:16px}
 #reveal .rvflash{position:absolute;inset:0;opacity:0;animation:rvflash .9s ease-out}
 #reveal.win .rvflash{background:#1c7a45}#reveal.loss .rvflash{background:#b3261e}#reveal.mix .rvflash{background:#c9a227}
@@ -460,6 +471,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   <nav class="tabs" aria-label="Sections">
     <a href="#picks" data-v="picks">Picks</a>
     <a href="#standings" data-v="standings">Standings</a>
+    <a href="#recap" data-v="recap">Recap</a>
     <a href="#survivor" data-v="survivor">Survivor</a>
     <a href="#players" data-v="players">Pickers</a>
     <a href="#rankings" data-v="rankings">Teams</a>
@@ -472,6 +484,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   <section class="view" id="v-standings" hidden></section>
   <section class="view" id="v-rankings" hidden></section>
   <section class="view" id="v-players" hidden></section>
+  <section class="view" id="v-recap" hidden></section>
   <section class="view" id="v-survivor" hidden></section>
   <section class="view" id="v-rules" hidden>
     <div class="board howto">
@@ -859,7 +872,7 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["picks","standings","rankings","players","survivor","rules","profile","commish"];
+const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","commish"];
 function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if(v==="commish"&&!state.isOwner)v="picks";state.view=v;
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render()}
@@ -948,7 +961,8 @@ function render(){
   }else if(state.db){const lf=lastShownWeek();
     if(state.upcoming){$("#weekLine").textContent=`Week ${state.upcoming.week} slate drops soon.${lf?" Week "+lf.week+" is final.":""}`;setB("Slate coming","plain")}
     else{$("#weekLine").textContent=lf?`Week ${lf.week} is final. The next slate drops Tuesday.`:"The first slate drops Tuesday.";setB("Off week","plain")}}
-  if(state.view==="picks")renderPicks();
+  if(state.view==="picks"){renderPicks();const ban=recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban)}
+  if(state.view==="recap")renderRecap();
   if(state.view==="standings")renderStandings();
   if(state.view==="rankings")renderRankings();
   if(state.view==="players")renderPlayers();
@@ -1136,6 +1150,106 @@ function showReveal(w,mine,items){
   clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},one?6000:10000);
 }
 document.addEventListener("click",e=>{if(e.target.closest("[data-rvclose]")){const r=$("#reveal");if(r)r.remove()}});
+
+/* ---------- weekly recap ---------- */
+/* A Sunday read built only from saved picks and results. Clean jokes, referee voice.
+   A negative award never lands on the same picker twice in one week. Add new facts to recapFacts. */
+function recapWeeks(){return Object.keys(state.weeks).filter(k=>state.weeks[k].status==="final"&&state.reveals[k]).sort()}
+function recapBanner(){const ws=recapWeeks();if(!ws.length)return "";const wid=ws[ws.length-1];let seen=null;try{seen=localStorage.getItem("tp-recap-seen-"+state.uid)}catch(e){}
+  return seen===wid?"":`<a class="recapban" href="#recap">\u{1F4E3} The Week ${state.weeks[wid].week} recap is in. See who drew a flag.</a>`}
+function rankAfter(wids){const t={};for(const wid of wids){const ps=weekPlayers(wid);for(const [pid,p] of Object.entries(ps)){const x=t[pid]=t[pid]||{pid,pts:0};x.pts+=scoreWeek(state.weeks[wid],p).pts}}
+  const rows=Object.values(t).sort((a,b)=>b.pts-a.pts);const rk={};rows.forEach(r=>{rk[r.pid]=rows.filter(x=>x.pts>r.pts).length+1});return rk}
+function recapFacts(wid){
+  const w=state.weeks[wid];const ps=weekPlayers(wid);const ids=Object.keys(ps);const rs=w.results||{};const out=[];
+  const graded=w.games.filter(g=>coverSide(g,rs[g.id]));if(!ids.length||!graded.length)return out;
+  const add=(tag,title,body,tone)=>out.push({tag,title,body,tone:tone||""});
+  const names=a=>{const n=a.map(first);return n.length<2?n[0]:n.slice(0,-1).join(", ")+" and "+n[n.length-1]};
+  const hit=new Set();const fresh=a=>a.filter(p=>!hit.has(p));
+  const pl=n=>n===1?"":"s";
+  const teamOf=(g,s)=>s==="home"?g.home:g.away;const lineOf=(g,s)=>fmtLine(s==="home"?g.homeLine:-g.homeLine);
+  const rows=ids.map(pid=>({pid,...scoreWeek(w,ps[pid])})).sort((a,b)=>b.pts-a.pts);
+  const games=graded.map(g=>{const c=coverSide(g,rs[g.id]);const sp=split(g,ps);const r=rs[g.id];const m=margin(g,r);return {g,c,l:c==="home"?"away":"home",sp,by:Math.abs(m),r,tot:r.home+r.away}});
+
+  /* Last place */
+  if(rows.length>2){const low=rows[rows.length-1].pts;const lo=rows.filter(r=>r.pts===low).map(r=>r.pid);
+    if(lo.length<=3&&low<rows[0].pts){add("Intentional grounding",`${names(lo)}: ${low} point${pl(low)}`,`Last in the league this week. Film study is mandatory.`,"bad");lo.forEach(p=>hit.add(p))}}
+
+  /* Best call */
+  let best=null;for(const x of games){const n=x.sp[x.c].length;if(n&&(!best||n<best.n))best={...x,n}}
+  if(best&&best.n<ids.length){const lone=best.n===1;add(lone?"Lone wolf":"Best call",`${names(best.sp[best.c])} on ${teamOf(best.g,best.c)} ${lineOf(best.g,best.c)}`,lone?`Alone on that side, and right. Nobody else saw it coming.`:`Only ${best.n} of ${ids.length} made that call. It covered by ${best.by}.`,"good")}
+
+  /* Crowd burned */
+  let herd=null;for(const x of games){const n=x.sp[x.l].length;const t=n+x.sp[x.c].length;if(t>=3&&n/t>=.6&&(!herd||n/t>herd.n/herd.t))herd={...x,n,t}}
+  if(herd)add("Crowd control",`${herd.n} of ${herd.t} took ${teamOf(herd.g,herd.l)} ${lineOf(herd.g,herd.l)}`,`It missed by ${herd.by}. The stands emptied early.`,"bad");
+
+  /* Closest and widest covers */
+  const near=[...games].sort((a,b)=>a.by-b.by)[0],far=[...games].sort((a,b)=>b.by-a.by)[0];
+  if(near&&near.by<=3.5)add("Measure the chains",`${teamOf(near.g,near.c)} covered by ${near.by}`,`${teamLook(near.g.away,near.g,"away").abbr} ${near.r.away}, ${teamLook(near.g.home,near.g,"home").abbr} ${near.r.home}. ${near.sp[near.l].length} picker${pl(near.sp[near.l].length)} lost by inches.`,"odd");
+  if(far&&far!==near&&far.by>=14&&!(best&&best.g===far.g))add("Mercy rule",`${teamOf(far.g,far.c)} covered by ${far.by}`,`${far.sp[far.c].length?names(far.sp[far.c])+" never had to sweat.":"Nobody took them."}`,"");
+
+  /* Field goals */
+  const fgs=ids.map(pid=>{const g=w.games.find(x=>x.id===ps[pid].lock);const c=g&&coverSide(g,rs[g.id]);return c?{pid,g,good:(ps[pid].sel||{})[g.id]===c,by:Math.abs(margin(g,rs[g.id]))}:null}).filter(Boolean);
+  if(fgs.length){const good=fgs.filter(f=>f.good).length;const miss=fgs.filter(f=>!f.good&&!hit.has(f.pid)).sort((a,b)=>b.by-a.by)[0];
+    add("Special teams",`${good} of ${fgs.length} field goals good`,miss?`Widest miss: ${first(miss.pid)}, wide right by ${miss.by}.`:"Nobody shanked one worth mentioning.","");if(miss)hit.add(miss.pid)}
+
+  /* Same playbook and against the grain */
+  if(ids.length>=3){let twin=null;for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){let same=0,both=0;for(const g of w.games){const a=(ps[ids[i]].sel||{})[g.id],b=(ps[ids[j]].sel||{})[g.id];if(a&&b){both++;if(a===b)same++}}
+      if(both&&(!twin||same/both>twin.same/twin.both))twin={a:ids[i],b:ids[j],same,both}}
+    if(twin&&twin.same/twin.both>=.7)add("Same playbook",`${first(twin.a)} and ${first(twin.b)}`,`Matched on ${twin.same} of ${twin.both} picks. The booth is reviewing for copying.`,"odd");
+    const grain=ids.map(pid=>{let n=0,cw=0;for(const x of games){const s=(ps[pid].sel||{})[x.g.id];if(!s)continue;if(x.sp[s].length<x.sp[s==="home"?"away":"home"].length){n++;if(s===x.c)cw++}}return {pid,n,cw}}).sort((a,b)=>b.n-a.n)[0];
+    if(grain&&grain.n>=2)add("Against the grain",first(grain.pid),`Took the minority side ${grain.n} times and went ${grain.cw}-${grain.n-grain.cw}.`,"odd")}
+
+  /* First and last to the line */
+  const saves=ids.map(pid=>{const h=ps[pid].history||[];const at=h.length?Date.parse(h[h.length-1].at):NaN;return {pid,at}}).filter(x=>!isNaN(x.at)).sort((a,b)=>a.at-b.at);
+  if(saves.length>=2){const span=ms=>{const m=Math.round(ms/60000);return m<60?`${m} minute${pl(m)}`:m<2880?`${Math.round(m/60)} hour${pl(Math.round(m/60))}`:`${Math.round(m/1440)} days`};const end=Date.parse(w.origDeadline||w.deadline);const a=saves[0],z=saves[saves.length-1];
+    if(z.at>a.at&&z.at<=end)add("Two minute drill",`${first(z.pid)} beat the buzzer`,`Last sheet saved ${span(end-z.at)} before the lock. ${first(a.pid)} was done ${span(end-a.at)} early and just sat there.`,"odd")}
+
+  /* Tiebreaker guesses */
+  const tg=tbGame(w);const tr=tg&&rs[tg.id];
+  if(tr&&tr.final&&!tr.void){const total=tr.home+tr.away;const gs=ids.filter(p=>typeof ps[p].tb==="number").map(p=>({p,tb:ps[p].tb,miss:Math.abs(ps[p].tb-total)})).sort((a,b)=>a.miss-b.miss);
+    if(gs.length>=2){const close=gs[0];const wild=fresh(gs.map(x=>x.p)).length?[...gs].reverse().find(x=>!hit.has(x.p)):null;
+      add("Crystal ball",`${first(close.p)} guessed ${close.tb}`,`The real total was ${total}.${wild&&wild!==close&&wild.miss>=10?` ${first(wild.p)} guessed ${wild.tb}, which is a different sport.`:""}`,"good");if(wild&&wild!==close&&wild.miss>=10)hit.add(wild.p)}}
+
+  /* Favorites and upsets */
+  {let fw=0,fl=0,fp=0,tp=0;for(const x of games){const fav=x.g.homeLine<0?"home":"away";if(x.c===fav)fw++;else fl++;fp+=x.sp[fav].length;tp+=x.sp.home.length+x.sp.away.length}
+   if(tp)add("Chalk talk",`Favorites went ${fw}-${fl} ATS`,`The league took favorites on ${Math.round(fp/tp*100)}% of picks.`,"")}
+  const ups=games.filter(x=>{const fav=x.g.homeLine<0?"home":"away";const line=Math.abs(x.g.homeLine);const won=x.r.home>x.r.away?"home":x.r.away>x.r.home?"away":null;return won&&won!==fav&&line>=3}).sort((a,b)=>Math.abs(b.g.homeLine)-Math.abs(a.g.homeLine))[0];
+  if(ups){const won=ups.r.home>ups.r.away?"home":"away";const n=ups.sp[won].length;add("Upset alert",`${teamOf(ups.g,won)} won outright as a ${Math.abs(ups.g.homeLine)} point dog`,n?`${n} picker${pl(n)} had them: ${names(ups.sp[won])}.`:"Nobody in the league had them.","good")}
+  const track=[...games].sort((a,b)=>b.tot-a.tot)[0];
+  if(track&&track.tot>=60)add("Track meet",`${track.tot} points in ${teamLook(track.g.away,track.g,"away").abbr} at ${teamLook(track.g.home,track.g,"home").abbr}`,"Defense was optional.","");
+
+  /* Robo-Sharp */
+  const bp=botPicks(w);if(bp&&Object.keys(bp.sel||{}).length){const s=scoreWeek(w,bp);const beat=rows.filter(r=>r.pts<s.pts).length;add("\u{1F916} Robo-Sharp",`${s.w}-${s.l} ATS, ${s.pts} point${pl(s.pts)}`,`Better than ${beat} of ${rows.length} pickers. It feels nothing either way.`,"")}
+
+  /* Survivor */
+  const sb=survivorBoard();if(sb){const hum=sb.filter(r=>r.pid!==BOT);const gone=hum.filter(r=>r.out&&r.out.week===w.week);const alive=hum.filter(r=>r.alive).length;
+    if(gone.length)add("Survivor",`${gone.length} out in Week ${w.week}`,`${names(gone.map(r=>r.pid))} ${gone.length===1?"is":"are"} gone. ${alive} still alive.`,"bad");
+    else if(alive&&w.status==="final"&&wid>=survivorStart())add("Survivor",`Nobody out in Week ${w.week}`,`${alive} still alive.`,"good")}
+
+  /* Season movers */
+  const prior=recapWeeks().filter(k=>k<wid);
+  if(prior.length){const before=rankAfter(prior),now=rankAfter([...prior,wid]);const mv=ids.filter(p=>before[p]&&now[p]).map(p=>({p,d:before[p]-now[p],to:now[p],from:before[p]}));
+    const up=[...mv].sort((a,b)=>b.d-a.d)[0];const dn=[...mv].sort((a,b)=>a.d-b.d).find(x=>x.d<0&&!hit.has(x.p));
+    if(up&&up.d>0)add("Moving the chains",`${first(up.p)} jumped ${up.d} spot${pl(up.d)}`,`From ${ordinal(up.from)} to ${ordinal(up.to)} in the season standings.`,"good");
+    if(dn&&dn.d<=-2)add("Loss of downs",`${first(dn.p)} fell ${-dn.d} spots`,`From ${ordinal(dn.from)} to ${ordinal(dn.to)}. It happens.`,"bad")}
+  return out;
+}
+function renderRecap(){
+  const el=$("#v-recap");const ws=recapWeeks();
+  if(!ws.length){el.innerHTML='<div class="panel empty"><h2>No recap yet</h2><p>The first recap posts when a week goes final.</p></div>';return}
+  let wid=state.recapWeek&&ws.includes(state.recapWeek)?state.recapWeek:ws[ws.length-1];
+  const w=state.weeks[wid];const ps=weekPlayers(wid);const win=weekWinners(wid);const rows=Object.keys(ps).map(pid=>({pid,...scoreWeek(w,ps[pid])}));const top=rows.filter(r=>win.includes(r.pid))[0];
+  if(wid===ws[ws.length-1])try{localStorage.setItem("tp-recap-seen-"+state.uid,wid)}catch(e){}
+  const facts=recapFacts(wid);
+  let h=`<div class="board rchero"><h2>Week ${w.week} recap</h2>`;
+  if(win.length&&top)h+=`<p class="rcwin">\u{1F3C6} ${win.map(nm).map(esc).join(" and ")}</p><p class="note">${win.length>1?"Shared the week":"Won the week"} with ${top.pts} point${top.pts===1?"":"s"}, ${top.w}-${top.l} ATS.</p>`;
+  h+="</div>";
+  if(ws.length>1)h+=`<p class="rcpick"><label class="note">Week <select id="recapWeek">${[...ws].reverse().map(k=>`<option value="${esc(k)}"${k===wid?" selected":""}>Week ${state.weeks[k].week}</option>`).join("")}</select></label></p>`;
+  h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
+  el.innerHTML=h;
+}
+window.tpRecap={state,recapFacts,renderRecap,currentWeekId,showReveal,seenKey}; /* for the browser test */
+document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- referee report ---------- */
 function refReport(wid){
