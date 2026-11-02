@@ -15,6 +15,9 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.16 | Nov 2, 5:02 p.m. | Recap | Recap tab with fun facts from each final week, plus a banner on Picks | M | 167 | `dcf35b7` |
+| 1.15 | Nov 2, 4:59 p.m. | Picks | Result reveal: a card and flash the first time you see a game go final | M | 64 | `c92f86c` |
+| 1.14 | Nov 2, 4:57 p.m. | Picks | Cover badges read from your side, green for your pick and red for the team beating it | S | 11 | `75376a7` |
 | 1.13.1 | Nov 2, 9:09 a.m. | Automation | Slate build reads the week and season from the games when ESPN leaves them off | S | 24 | `633029f` |
 | 1.13 | Nov 2, 8:58 a.m. | Automation | Update ratings button pulls SP+ from ESPN and VSiN from its weekly article, with checks before saving | M | 250 | `b0b4304` |
 | 1.12.2 | Nov 2, 8:40 a.m. | Commish | Ratings-only paste merges SP+ or VSiN without touching polls or snapshots | S | 28 | `3b643a6` |
