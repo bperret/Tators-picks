@@ -60,7 +60,8 @@ function event([id, a, h, date, line, homeFav]) {
       status: { clock: s.state === "in" ? (s.clock ?? 252) : 0, displayClock: s.state === "in" ? (s.dclock || "4:12") : "0:00", period: s.state === "in" ? (s.period || 3) : s.state === "post" ? 4 : 0,
         type: { name: s.name, state: s.state, completed: s.completed, shortDetail: s.state === "post" ? "Final" : s.state === "in" ? "4:12 - 3rd" : "Sat" } } }] };
 }
-const board = () => ({ season: { year: 2026, type: 2 }, week: { number: 11 }, events: slateGames.map(event) });
+// ESPN's date lookup can leave the week and season off the top (seen Nov 2). Each game still has them.
+const board = () => ({ events: slateGames.map((g) => ({ ...event(g), season: { year: 2026, type: 2 } })) });
 // Earlier weeks for the game log backfill: [eventId, awayId, homeId, kickoff, home line, away score, home score, total]
 const pastGames = {
   9: [[901, 17, 3, "2026-10-31T14:30:00-05:00", -6.5, 20, 30, 50.5], [902, 15, 10, "2026-10-31T18:30:00-05:00", 3, 28, 24, null],
@@ -87,7 +88,8 @@ setFetcher(async (url) => {
     const wk = (url.match(/[&?]week=(\d+)/) || [])[1];
     if (wk && +wk === failWeek) throw new Error("ESPN answered 503 for /scoreboard.");
     if (wk && +wk !== 11) return { season: { year: 2026, type: 2 }, week: { number: +wk }, events: (pastGames[wk] || []).map(pastEvent) };
-    return board();
+    // Only the date lookup leaves the week off.
+    return /dates=\d{8}/.test(url) ? board() : { ...board(), season: { year: 2026, type: 2 }, week: { number: 11 } };
   }
   if (url.startsWith(SITE + "/rankings")) return polls;
   if (url.startsWith("https://poll.redditcfb.com/")) { if (redditHtml == null) throw new Error("poll.redditcfb.com answered 503."); return redditHtml; }
@@ -130,7 +132,7 @@ try {
   check("Tuesday run builds the slate", out.ran && out.ran.slate && out.ran.slate.ok, JSON.stringify(out.ran && out.ran.slate));
   const cfg = await getConfig();
   const w = await getWeek(cfg.currentWeek);
-  check("week id and draft status", w && w.id === "2026-w11" && w.status === "draft", w && w.id);
+  check("week id and draft status, with the week read from the games", w && w.id === "2026-w11" && w.week === 11 && w.status === "draft", w && w.id);
   check("deadline is Saturday 10:15 a.m. CST", w.deadline === "2026-11-07T16:15:00.000Z", w.deadline);
   const order = w.games.map((g) => g.espnId).join(",");
   check("5 top games then 5 tightest", order === "101,102,103,104,105,107,109,108,110,111", order);
