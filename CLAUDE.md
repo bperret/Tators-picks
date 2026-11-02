@@ -62,13 +62,20 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
    - To settle: ATS or straight up, field goal or not, and a tiebreaker that works when pickers hold different games. The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
 
 ### Next season (2027)
-4. Survivor: straight up, two skulls.
-   - Pick one team to win outright, not against the spread. No repeats, same as now.
-   - Everybody gets 2 skulls. A loss is one skull. The second skull puts you out.
-   - Tiebreaker if several are alive at the end: first, no skulls used. Second is open. Benton's idea is the highest ranked team a picker has not used. Another option is toughest path, the smallest favorites picked.
-   - Idea: re-open Survivor after a winner, so a season can have multiple winners. Straight up with 2 skulls may run long, so runs may need a fixed end point.
-   - To settle: whether a missed pick costs one skull or puts you out, what resets on a re-open (skulls, used teams), Robo-Sharp's Survivor rule (it picks by spread edge today), and whether the NFL version also gets 2 skulls (its plan says straight up, with no skulls).
-5. Payout framework: a one-time buy-in covering every contest, brainstorm only. Money stays off the site; this would only be posted rules. Benton's test case: $100 from 20 pickers.
+4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
+   - Pick one team to win outright, not against the spread. One loss and you are out of that run.
+   - The season has fixed runs, for example weeks 1 to 5, 6 to 10, and 11 to the last week before Conference Champion week. Everybody starts each run alive, and used teams reset.
+   - No tiebreaker. Everyone still alive at the end of a run wins it. Pickers who split a win are each called Co-Champion and each gets the win on their stats page.
+   - Conflict warning goes away, since a straight up pick can win even if your ATS pick on that game loses.
+   - To settle: exact run weeks, what happens if nobody is left (today's rule is that pickers who go out in the same last week share), and Robo-Sharp's Survivor rule (it picks by spread edge today; the NFL plan's biggest projected FPI win fits). NFL version: same runs or not.
+5. Payout framework: the Stay Engaged plan. $100 one-time buy-in from 20 pickers is the test case, so a $2,000 pot.
+   - Season standings $700 ($400 / $200 / $100). Weekly winner $20 a week, $280 over 14 weeks. Conference Champion week $120. Survivor $300, split evenly across the runs, so $100 a run with 3 runs. Bowl challenge $300 ($200 / $100). CFP bracket $300 ($200 / $100).
+   - House rules: Robo-Sharp cannot win, so its prize goes to the next best picker. Ties split the combined prizes for the tied places. Buy-ins are due before Week 1. No commissioner cut.
+   - Money stays off the site, so these are only posted rules. League rules above still say the weekly winner is bragging rights only; change that when this goes in.
+   - To settle: whether the amounts scale with a different picker count or buy-in, and the first season it applies.
+7. Career stats: track wins across seasons on each picker's stats page: Survivor wins, weekly wins, Bowl wins, CFP wins, and Co-Champion credits.
+   - Robo-Sharp gets no historical tracking on the site. Keep its records on the back end for reference only.
+   - To settle: the full stat list and whether current season wins count from Week 9.
 
 ### Later (no date)
 6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
