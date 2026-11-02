@@ -47,6 +47,8 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 ## Idea tracker
 The landing spot for every idea not yet ready to build, for any timing: this season, this postseason, next season, or later. Add new ideas here as Benton names them. Build nothing here until he says it is ready. Timing heading = his target. The NFL version has its own section above.
 
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 5, 6 (a line on what the stat means), 7, 8, 12.
+
 ### This season and postseason (target, not started)
 1. Conference Champion week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
    - Lock before the first Friday kickoff (about 6 p.m. CT), one lock for the week. The normal slate rule and the Saturday 10:15 a.m. lock do not apply.
@@ -69,11 +71,14 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
    - If every remaining picker goes out in the same week, they are all resurrected and play one more week. If that was the last week of the run or season, they share the title as Co-Champions instead.
    - Conflict warning goes away, since a straight up pick can win even if your ATS pick on that game loses.
    - To settle: exact run weeks, whether resurrection also applies to the 2026 Survivor (the Rules page says they share), and Robo-Sharp's Survivor rule (it picks by spread edge today; the NFL plan's biggest projected FPI win fits). NFL version: same runs or not.
-5. Payout framework: the Stay Engaged plan. $100 one-time buy-in from 20 pickers is the test case, so a $2,000 pot.
-   - Season standings $700 ($400 / $200 / $100). Weekly winner $20 a week, $280 over 14 weeks. Conference Champion week $120. Survivor $300, split evenly across the runs, so $100 a run with 3 runs. Bowl challenge $300 ($200 / $100). CFP bracket $300 ($200 / $100).
-   - House rules: Robo-Sharp cannot win, so its prize goes to the next best picker. Ties split the combined prizes for the tied places. Buy-ins are due before Week 1. No commissioner cut.
+5. Payout framework: the Stay Engaged plan, stated as shares of the pot so it works at any buy-in or picker count.
+   - Pot = buy-in x paid pickers. The buy-in is not decided ($100, $50, or $25).
+   - Shares: Season standings 35% (20 / 10 / 5). Weekly winner 1% a week, 14% over 14 weeks. Conference Champion week 6%. Survivor 15% (5% a run with 3 runs). Bowl challenge 15% (10 / 5). CFP bracket 15% (10 / 5). Total 100%. At 20 pickers, 5% of the pot equals 1x the buy-in.
+   - New Rules section: payout structure. It shows the shares and the dollar amounts worked out from a commissioner setting for the buy-in and the paid picker count.
+   - House rules: Robo-Sharp cannot win, so its prize goes to the next best picker. Ties split the combined prizes for the tied places. Buy-ins are due before Week 1.
+   - Upkeep fee: Benton is considering 5% of each buy-in for infrastructure. Not decided. It may cost the Texas 47.02(b) defense, which requires that no person receive an economic benefit beyond personal winnings. Get legal advice first. Any money collected may also conflict with Vercel Hobby's non-commercial limit; check before doing it.
    - Money stays off the site, so these are only posted rules. League rules above still say the weekly winner is bragging rights only; change that when this goes in.
-   - To settle: whether the amounts scale with a different picker count or buy-in, and the first season it applies.
+   - To settle: first season it applies, and how to round dollar amounts.
 7. Career stats: track wins across seasons on each picker's stats page: Survivor wins, weekly wins, Bowl wins, CFP wins, and Co-Champion credits.
    - Robo-Sharp gets no historical tracking on the site. Keep its records on the back end for reference only.
    - To settle: the full stat list and whether current season wins count from Week 9.
@@ -94,6 +99,10 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
    - Fix idea: green when it is your pick, red when it is the other side, and wording from your side such as "Beating your pick". Pickers with no pick keep the neutral label.
 
 11. Weekly recap: a fun Sunday page like the Gambling Baptist recap, with zany factoids from the week, ready before new picks open. It grows as history grows. Builds on the referee report and the same picks and results data.
+
+12. Result reveal: the first time a picker sees a game go final, a short animation says "You covered" or "Bummer, you didn't cover."
+   - Saved per device in localStorage, like Commish folds, so it fires once on each device. If several games went final since the last visit, combine them, such as "2 covered, 1 missed." Respect reduced motion.
+   - Scores update twice an hour, so the reveal lands on the next page load after a run, not at the final whistle.
 
 ### Later (no date)
 6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
