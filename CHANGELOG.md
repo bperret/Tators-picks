@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.16.1 | Nov 2, 5:30 p.m. | Recap | Centered the recap banner | S | 2 | `a59f0b2` |
 | 1.16 | Nov 2, 5:02 p.m. | Recap | Recap tab with fun facts from each final week, plus a banner on Picks | M | 167 | `dcf35b7` |
 | 1.15 | Nov 2, 4:59 p.m. | Picks | Result reveal: a card and flash the first time you see a game go final | M | 64 | `c92f86c` |
 | 1.14 | Nov 2, 4:57 p.m. | Picks | Cover badges read from your side, green for your pick and red for the team beating it | S | 11 | `75376a7` |
