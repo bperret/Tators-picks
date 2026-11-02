@@ -6,6 +6,7 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Plain, short sentences. No em dashes. Lead with the answer. Never end a reply with a question.
 - Batch changes. Skip screenshots for wording or logic changes. Run `SETUP_CODE=LOCALCODE npm test` before every push (auto-test plus Playwright, all must pass).
 - Commit to main and push; Vercel deploys on push.
+- This is a hobby league that will never be commercial. No legal or terms of service comments or searches about it.
 
 ## Architecture
 - `public/index.html`: the whole page (HTML, CSS, JS in one file). Source of truth.
@@ -34,26 +35,16 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Money is off the site. Bowls are a separate contest.
 - No test weeks (decided Oct 31). Week 9 counts as the first week; every revealed week counts toward the season. Weeks keep their real numbers (next is Week 10). The old `scored` flag is ignored and new weeks save `scored: true`.
 
-## NFL version (planned, not built; decided Oct 31)
-- A toggle at the top flips the whole site between Tator's College Picks and Tator's NFL Picks. Same tabs and navigation. One login (phone, PIN, profile look shared); everything else is fully separate per sport: weeks, picks, standings, Survivor, Teams, Pickers, log, snapshots, config, automation status. No combined views.
-- Slate: every game kicking off after the lock (Sunday and Monday games). Thursday, Friday, and Saturday games are left out. Lock: Sunday 6:00 a.m. CT, one lock per week like college.
-- Order: backwards, latest kickoff first (MNF at top, Sunday early games at the bottom).
-- Tiebreaker: total points in the last game of the week (latest kickoff, normally MNF). Two Monday games: the later kickoff. No Monday game (Week 18): the latest Sunday game. If that game is void, the next latest. Blank = 0.
-- Lines: same half-point rule as college. 1 point per correct pick, one 3 point field goal.
-- Survivor: straight up (SU), one team a week, no repeats. With SU, a Survivor pick against your own ATS pick is not a sure loss, so the conflict warning does not apply. Robo-Sharp's Survivor pick: biggest projected FPI win among unused teams.
-- Teams tab for NFL: standings (by division), Power (FPI and scoring), ATS. No polls, SP+, or r/CFB.
-- Build behind a toggle only the commissioner sees until NFL tests pass. College tests must pass at every push.
-
 ## Idea tracker
-The landing spot for every idea not yet ready to build, for any timing: this season, this postseason, next season, or later. Add new ideas here as Benton names them. Build nothing here until he says it is ready. Timing heading = his target. The NFL version has its own section above.
+The landing spot for every idea not yet ready to build, for any timing: this season, this postseason, next season, or later. Add new ideas here as Benton names them. Build nothing here until he says it is ready. Timing heading = his target.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 5, 6 (a line on what the stat means), 7, 8, 12.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 5, 6 (a line on what the stat means), 7, 8.
 
 ### This season and postseason (target, not started)
 1. Conference Champion week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
    - Lock before the first Friday kickoff (about 6 p.m. CT), one lock for the week. The normal slate rule and the Saturday 10:15 a.m. lock do not apply.
    - Survivor ends the week before, so no Survivor pick this week. The Saturday Nov 28 week is its last.
-   - If several pickers are still alive after Survivor's last week in 2026, they share the title.
+   - If every remaining Survivor picker goes out in the same week, they are all resurrected and play one more week. If several are alive after the Nov 28 week, or all go out that week, they share the title.
    - To settle: how the week builds if ESPN's week number or season type differs.
 2. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
    - One lock before Dec 18. Own bracket screen, scoring, and standings, separate from the regular challenge. Tiebreaker: title game total.
@@ -62,6 +53,33 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - One lock for the whole contest, before the first bowl (Dec 15).
    - Idea, not final: each picker chooses which 10 bowls to pick.
    - To settle: ATS or straight up, field goal or not, and a tiebreaker that works when pickers hold different games. The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
+5. Payout section on the Rules page: the Stay Engaged plan, stated as shares of the pot, with a scenario builder.
+   - Pot = buy-in x paid pickers. The buy-in is not decided ($100, $50, or $25).
+   - Shares: Season standings 35% (20 / 10 / 5). Weekly winner 1% a week, 14% over 14 weeks. Conference Champion week 6%. Survivor 15% (5% a run with 3 runs). Bowl challenge 15% (10 / 5). CFP bracket 15% (10 / 5). Total 100%. At 20 pickers, 5% of the pot equals 1x the buy-in.
+   - Scenario builder: anyone can enter a buy-in and a picker count to see every prize in dollars, then mark what they win (for example 2 weekly wins and 2nd in the Bowl challenge) to see their total. Page only; nothing is saved.
+   - House rules: Robo-Sharp cannot win, so its prize goes to the next best picker. Ties split the combined prizes for the tied places. Buy-ins are due before Week 1.
+   - Upkeep share: Benton is considering 5% of each buy-in. Not decided. If he keeps it, the pot shrinks by that share before the split, and the scenario builder shows it.
+   - Money stays off the site, so this is only posted rules. League rules above still say the weekly winner is bragging rights only; change that when this goes in.
+   - To settle: how to round dollar amounts.
+6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
+   - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
+   - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
+   - Compare like with like: `homeLine` has the half-point rule applied and the saved closing line is raw, so run the closing line through the same rule or a whole-number lock shows a false half-point move.
+   - Late picking counts, on purpose. Part of the point is to show who does their research and picks late. No timing adjustment, no sample size or injury caveats on the page.
+   - Track Robo-Sharp on this stat too, shown with the pickers, with no rank like in standings.
+7. Career stats: track wins across seasons on each picker's stats page: Survivor wins, weekly wins, Bowl wins, CFP wins, and Co-Champion credits.
+   - Robo-Sharp gets no historical tracking on the site. Keep its records on the back end for reference only.
+   - To settle: the full stat list and whether current season wins count from Week 9.
+9. Picker history: go back to any week and see your picks, which won or lost, how many you got right, where you ranked, and how far off you were. Survivor picks too, with which worked.
+   - Personal insights from that history: teams that hurt you most, teams that consistently win for you, general performance, and useful negative stats. Benton says historical selections matter most.
+   - No new data pull; weeks and reveals hold it. Fits with Career stats (item 7) on the same page. Today's Pick history shows saves, not results.
+10. Clearer covering labels: pickers read "Covered" or "Covering" as good news when it can mean their bet is losing.
+   - Cause: the badge on a game card sits on whichever team is covering, even when that team is not your pick (`class="cv"` in the game card). The chip under the score is already from your side.
+   - Fix idea: green when it is your pick, red when it is the other side, and wording from your side such as "Beating your pick". Pickers with no pick keep the neutral label.
+11. Weekly recap: a fun Sunday page like the Gambling Baptist recap, with zany factoids from the week, ready before new picks open. It grows as history grows. Builds on the referee report and the same picks and results data.
+12. Result reveal: the first time a picker sees a game go final, a short animation says "You covered" or "Bummer, you didn't cover."
+   - Saved per device in localStorage, like Commish folds, so it fires once on each device. If several games went final since the last visit, combine them, such as "2 covered, 1 missed." Respect reduced motion.
+   - Scores update twice an hour, so the reveal lands on the next page load after a run, not at the final whistle.
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
@@ -70,20 +88,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - No tiebreaker. Everyone still alive at the end of a run wins it. Pickers who split a win are each called Co-Champion and each gets the win on their stats page.
    - If every remaining picker goes out in the same week, they are all resurrected and play one more week. If that was the last week of the run or season, they share the title as Co-Champions instead.
    - Conflict warning goes away, since a straight up pick can win even if your ATS pick on that game loses.
-   - To settle: exact run weeks, whether resurrection also applies to the 2026 Survivor (the Rules page says they share), and Robo-Sharp's Survivor rule (it picks by spread edge today; the NFL plan's biggest projected FPI win fits). NFL version: same runs or not.
-5. Payout framework: the Stay Engaged plan, stated as shares of the pot so it works at any buy-in or picker count.
-   - Pot = buy-in x paid pickers. The buy-in is not decided ($100, $50, or $25).
-   - Shares: Season standings 35% (20 / 10 / 5). Weekly winner 1% a week, 14% over 14 weeks. Conference Champion week 6%. Survivor 15% (5% a run with 3 runs). Bowl challenge 15% (10 / 5). CFP bracket 15% (10 / 5). Total 100%. At 20 pickers, 5% of the pot equals 1x the buy-in.
-   - New Rules section: payout structure. It shows the shares and the dollar amounts worked out from a commissioner setting for the buy-in and the paid picker count.
-   - House rules: Robo-Sharp cannot win, so its prize goes to the next best picker. Ties split the combined prizes for the tied places. Buy-ins are due before Week 1.
-   - Upkeep fee: Benton is considering 5% of each buy-in for infrastructure. Not decided. It may cost the Texas 47.02(b) defense, which requires that no person receive an economic benefit beyond personal winnings. Get legal advice first. Any money collected may also conflict with Vercel Hobby's non-commercial limit; check before doing it.
-   - Money stays off the site, so these are only posted rules. League rules above still say the weekly winner is bragging rights only; change that when this goes in.
-   - To settle: first season it applies, and how to round dollar amounts.
-7. Career stats: track wins across seasons on each picker's stats page: Survivor wins, weekly wins, Bowl wins, CFP wins, and Co-Champion credits.
-   - Robo-Sharp gets no historical tracking on the site. Keep its records on the back end for reference only.
-   - To settle: the full stat list and whether current season wins count from Week 9.
-
-### Timing open (Benton has not set a target)
+   - To settle: exact run weeks and Robo-Sharp's Survivor rule (it picks by spread edge today; the NFL plan's biggest projected FPI win fits).
 8. Ghost pickers: an unpaid tier so someone can try the league with no skin in the game and no effect on anyone else.
    - Paid members play every contest and can win payouts. The commissioner creates every ghost and gives the PIN, the same as any picker, and can flip the profile to paid. No open signups.
    - Ghosts play shadow versions of Survivor, the Bowl challenge, and the CFP bracket.
@@ -91,26 +96,19 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
    - Paid pickers cannot see ghosts. Ghosts cannot see each other.
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
-9. Picker history: go back to any week and see your picks, which won or lost, how many you got right, where you ranked, and how far off you were. Survivor picks too, with which worked.
-   - Personal insights from that history: teams that hurt you most, teams that consistently win for you, general performance, and useful negative stats. Benton says historical selections matter most.
-   - No new data pull; weeks and reveals hold it. Fits with Career stats (item 7) on the same page. Today's Pick history shows saves, not results.
-10. Clearer covering labels: pickers read "Covered" or "Covering" as good news when it can mean their bet is losing.
-   - Cause: the badge on a game card sits on whichever team is covering, even when that team is not your pick (`class="cv"` in the game card). The chip under the score is already from your side.
-   - Fix idea: green when it is your pick, red when it is the other side, and wording from your side such as "Beating your pick". Pickers with no pick keep the neutral label.
 
-11. Weekly recap: a fun Sunday page like the Gambling Baptist recap, with zany factoids from the week, ready before new picks open. It grows as history grows. Builds on the referee report and the same picks and results data.
+### Back burner
+Benton will probably never do this.
 
-12. Result reveal: the first time a picker sees a game go final, a short animation says "You covered" or "Bummer, you didn't cover."
-   - Saved per device in localStorage, like Commish folds, so it fires once on each device. If several games went final since the last visit, combine them, such as "2 covered, 1 missed." Respect reduced motion.
-   - Scores update twice an hour, so the reveal lands on the next page load after a run, not at the final whistle.
-
-### Later (no date)
-6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
-   - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
-   - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
-   - Compare like with like: `homeLine` has the half-point rule applied and the saved closing line is raw, so run the closing line through the same rule or a whole-number lock shows a false half-point move.
-   - Late picking counts, on purpose. Part of the point is to show who does their research and picks late. No timing adjustment, no sample size or injury caveats on the page.
-   - Track Robo-Sharp on this stat too, shown with the pickers, with no rank like in standings.
+NFL version (not built; decided Oct 31):
+- A toggle at the top flips the whole site between Tator's College Picks and Tator's NFL Picks. Same tabs and navigation. One login (phone, PIN, profile look shared); everything else is fully separate per sport: weeks, picks, standings, Survivor, Teams, Pickers, log, snapshots, config, automation status. No combined views.
+- Slate: every game kicking off after the lock (Sunday and Monday games). Thursday, Friday, and Saturday games are left out. Lock: Sunday 6:00 a.m. CT, one lock per week like college.
+- Order: backwards, latest kickoff first (MNF at top, Sunday early games at the bottom).
+- Tiebreaker: total points in the last game of the week (latest kickoff, normally MNF). Two Monday games: the later kickoff. No Monday game (Week 18): the latest Sunday game. If that game is void, the next latest. Blank = 0.
+- Lines: same half-point rule as college. 1 point per correct pick, one 3 point field goal.
+- Survivor: straight up (SU), one team a week, no repeats. With SU, a Survivor pick against your own ATS pick is not a sure loss, so the conflict warning does not apply. Robo-Sharp's Survivor pick: biggest projected FPI win among unused teams.
+- Teams tab for NFL: standings (by division), Power (FPI and scoring), ATS. No polls, SP+, or r/CFB.
+- Build behind a toggle only the commissioner sees until NFL tests pass. College tests must pass at every push.
 
 ## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
