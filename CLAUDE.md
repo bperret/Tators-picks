@@ -44,9 +44,15 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Teams tab for NFL: standings (by division), Power (FPI and scoring), ATS. No polls, SP+, or r/CFB.
 - Build behind a toggle only the commissioner sees until NFL tests pass. College tests must pass at every push.
 
+## Next season tracker
+Changes to make before the 2027 season. Do not build these during 2026. Add new items here as Benton names them.
+1. Survivor: straight up, two skulls.
+   - Pick one team to win outright, not against the spread. No repeats, same as now.
+   - Everybody gets 2 skulls. A loss is one skull. The second skull puts you out.
+   - To settle at build time: whether a missed pick costs one skull or puts you out, what happens when several pickers are alive after the last week, Robo-Sharp's Survivor rule (it picks by spread edge today), and whether the NFL version also gets 2 skulls (its plan says straight up, with no skulls).
+
 ## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
-- Later: switch college Survivor from ATS to straight up (SU), the same as the planned NFL Survivor. Do not change it mid-run for a Survivor already in progress; apply it at a new Survivor start or next season.
 - ESPN rankings and FPI feed shapes were not verified live; watch for flags on the first runs.
 - The r/CFB parser was built from the page's table text, not its raw HTML. Watch for a Refresh rankings flag on the first run. Fallback: copy the poll table from the site and paste it in Update rankings.
 - Team stats: ESPN's scoreboard drops lines from finished games. The lines job filled weeks 1 to 9 from ESPN's core per-game odds feed, verified live Oct 29. New games get lines saved before kickoff by the hourly ATS run.
