@@ -57,6 +57,17 @@ Changes to make before the 2027 season. Do not build these during 2026. Add new 
    - Late picking counts, on purpose. Part of the point is to show who does their research and picks late. No timing adjustment, no sample size or injury caveats on the page.
    - Track Robo-Sharp on this stat too, shown with the pickers, with no rank like in standings.
 
+## Postseason ideas (not built; timing open)
+Benton is considering these. He has not said this season or next. 2026-27 dates are from the published schedules; recheck them before building.
+3. Conference Champion special week: the final week of the regular challenge. 2026: 10 games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
+   - The slate rule (10 Saturday games, ranked teams) and the Saturday 10:15 a.m. lock do not fit. Likely every title game, locked before the first Friday kickoff.
+   - To settle: Survivor that week (no-repeat pool is small), and which weeks build by hand if ESPN's week number differs.
+4. Bowl challenge: all non-CFP bowls, separate from the regular season. 2026-27: 36 bowls, Dec 12 to Jan 2, plus the Arizona Bowl (date not set in ESPN's list).
+   - Needs its own standings. Slate job skips postseason today (`seasonType !== 2`).
+   - Bowls fall on many weekdays, so one Saturday lock does not work. To settle: one lock before Dec 12 or a lock per game, ATS or straight up, and whether to count the Celebration Bowl (it is FCS).
+5. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
+   - Needs a bracket screen, its own scoring, and its own standings. To settle: round values, one lock before Dec 18, and tiebreaker (title game total fits).
+
 ## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
 - ESPN rankings and FPI feed shapes were not verified live; watch for flags on the first runs.
