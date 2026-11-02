@@ -40,7 +40,7 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
 
 Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and commit. When a tracker item ships, remove it from the tracker and add its row in the same push. Add a row for any other app change too. A row can name its commit only after the commit exists, so add it as a second commit before pushing.
 
-Conflict rule: if a request conflicts with a tracker item, say so in one line and build what Benton asked for. His latest request wins. Update or remove the tracker item in the same push.
+Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
 Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 5, 6 (a line on what the stat means), 7, 8.
 
