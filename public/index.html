@@ -160,6 +160,25 @@ details.manual .inner{margin-top:12px}
 .side .cv.live{background:var(--flag);color:var(--flag-ink)}
 .side .cv.good{background:#1c7a45;color:#fff}
 .side .cv.bad{background:#b3261e;color:#fff}
+#reveal{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding:16px}
+#reveal .rvflash{position:absolute;inset:0;opacity:0;animation:rvflash .9s ease-out}
+#reveal.win .rvflash{background:#1c7a45}#reveal.loss .rvflash{background:#b3261e}#reveal.mix .rvflash{background:#c9a227}
+@keyframes rvflash{0%{opacity:0}25%{opacity:.5}100%{opacity:0}}
+.rvcard{position:relative;pointer-events:auto;width:min(420px,100%);border-radius:12px;padding:14px 16px;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.45);border:3px solid rgba(255,255,255,.75);animation:rvin .55s cubic-bezier(.2,1.5,.4,1)}
+#reveal.win .rvcard{background:#14602f}#reveal.loss .rvcard{background:#8f1d17}#reveal.mix .rvcard{background:#1b2a3a}
+@keyframes rvin{from{transform:translateY(120%) scale(.9)}to{transform:none}}
+.rvcard .rvhead{display:flex;align-items:center;gap:10px}
+.rvcard .sig{width:34px;height:34px;flex:none;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+.rvcard .sig circle{fill:#fff;stroke:none}
+.rvcard h2{font-family:var(--display);font-weight:400;font-size:1.45rem;line-height:1.15;margin:0;color:#fff}
+.rvcard p{margin:6px 0 0}
+.rvlist{margin:8px 0 0;padding:0;list-style:none;font-size:.92rem}
+.rvlist li{padding:2px 0}
+.rvcard button{margin-top:10px;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.6);border-radius:6px;padding:6px 12px;font-weight:700;cursor:pointer}
+.gflash-w{animation:gflashw 1.6s ease-out}.gflash-l{animation:gflashl 1.6s ease-out}
+@keyframes gflashw{0%,40%{box-shadow:0 0 0 4px #1c7a45}100%{box-shadow:none}}
+@keyframes gflashl{0%,40%{box-shadow:0 0 0 4px #b3261e}100%{box-shadow:none}}
+@media (prefers-reduced-motion:reduce){#reveal .rvflash,.rvcard,.gflash-w,.gflash-l{animation:none}}
 .sig{width:18px;height:18px;vertical-align:-4px;margin-right:3px;fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .sig path{fill:none}
 .res .w,.res .l{display:inline-flex;align-items:center}
@@ -657,6 +676,7 @@ async function refresh(quiet){
   if($("#app").hidden){$("#auth").hidden=true;$("#app").hidden=false;route();window.scrollTo(0,0)}
   else{const ae=document.activeElement;if(!(ae&&ae.closest&&ae.closest("form,select,input")))render()}
   if(!POLL)POLL=setInterval(()=>{if(!document.hidden&&!state.dirty)refresh(true)},60000);
+  revealFinals();
   return true;
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ME&&!state.dirty)refresh(true)});
@@ -1076,6 +1096,46 @@ function missingItems(w,wid,d){const rs=w.results||{};const m=[];
   if(survivorStart()&&wid>=survivorStart()&&!d.surv)m.push("You have no survivor pick. A missed survivor pick puts you out.");
   if(survConflict(w,d))m.push("Your survivor pick is the other side of one of your game picks. One of them is sure to lose.");
   return m}
+
+/* ---------- result reveal ---------- */
+/* The first time this device sees a game go final, a card says how your pick did.
+   Seen games are saved per login on this device. Several finals at once share one card. */
+const REVEAL_MEM={};
+function seenKey(){return "tp-seen-finals-"+state.uid}
+function readSeen(){try{return JSON.parse(localStorage.getItem(seenKey())||"null")}catch(e){return null}}
+function writeSeen(o){REVEAL_MEM[state.uid]=o;try{localStorage.setItem(seenKey(),JSON.stringify(o))}catch(e){}}
+function revealFinals(){
+  if(!state.uid)return;
+  const w=curWeek()&&state.reveals[currentWeekId()]?curWeek():lastShownWeek();
+  const stored=readSeen()||REVEAL_MEM[state.uid]||null;const seen=stored||{};
+  if(!w){if(!stored)writeSeen({});return}
+  const rs=w.results||{};const done=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void));
+  const had=new Set(seen[w.id]||[]);const fresh=done.filter(g=>!had.has(g.id));
+  writeSeen({...seen,[w.id]:done.map(g=>g.id)});
+  /* A first visit after a week closed stays quiet. */
+  if(!fresh.length||(!stored&&w.status==="final"))return;
+  const mine=weekPlayers(w.id)[state.uid];if(!mine)return;
+  const items=[];
+  for(const g of fresh){const c=coverSide(g,rs[g.id]);const pick=(mine.sel||{})[g.id];if(!c||!pick)continue;
+    const won=pick===c;const by=Math.abs(margin(g,rs[g.id]));const team=pick==="home"?g.home:g.away;
+    items.push({g,won,by,fg:mine.lock===g.id,txt:`${teamLook(team,g,pick).abbr} ${fmtLine(pick==="home"?g.homeLine:-g.homeLine)}`})}
+  if(items.length)showReveal(w,mine,items);
+}
+function showReveal(w,mine,items){
+  const nW=items.filter(x=>x.won).length,nL=items.length-nW;const one=items.length===1?items[0]:null;
+  const tone=nW&&nL?"mix":nW?"win":"loss";
+  const title=one?(one.won?(one.fg?"Field goal is good!":"You covered!"):(one.fg?"Field goal no good. Bummer.":"Bummer, you didn\u2019t cover.")):tone==="win"?`${nW} for ${nW}. You covered them all!`:tone==="loss"?`Bummer. 0 for ${nL}.`:`${nW} covered, ${nL} missed`;
+  const s=scoreWeek(w,mine);
+  const body=one?`${esc(one.txt)} ${one.won?"covered":"missed"} by ${one.by}.`:"";
+  const list=one?"":`<ul class="rvlist">${items.map(x=>`<li>${x.won?"\u2705":"\u274C"} ${esc(x.txt)} ${x.won?"covered":"missed"} by ${x.by}${x.fg?" (field goal)":""}</li>`).join("")}</ul>`;
+  let el=$("#reveal");if(el)el.remove();
+  el=document.createElement("div");el.id="reveal";el.className=tone;el.setAttribute("role","status");
+  el.innerHTML=`<div class="rvflash"></div><div class="rvcard"><div class="rvhead">${tone==="loss"?SIG.inc:SIG.td}<h2>${esc(title)}</h2></div>${body?`<p>${body}</p>`:""}${list}<p class="rvsum">Week ${w.week}: ${s.pts} point${s.pts===1?"":"s"}, ${s.w}-${s.l} so far.</p><button type="button" data-rvclose>Got it</button></div>`;
+  document.body.appendChild(el);
+  for(const x of items){const c=document.getElementById("g-"+x.g.id);if(c)c.classList.add(x.won?"gflash-w":"gflash-l")}
+  clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},one?6000:10000);
+}
+document.addEventListener("click",e=>{if(e.target.closest("[data-rvclose]")){const r=$("#reveal");if(r)r.remove()}});
 
 /* ---------- referee report ---------- */
 function refReport(wid){

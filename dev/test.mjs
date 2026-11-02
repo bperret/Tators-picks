@@ -204,6 +204,10 @@ try {
   await c.click('[data-act="final"]'); await c.waitForTimeout(400);
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   const tags = await m.$$eval("#v-picks .side .cv", (e) => e.map((x) => x.textContent + "|" + x.className));
+  check("result reveal shows the games that went final", (await m.locator("#reveal .rvlist li").count()) === 5, await m.locator("#reveal").textContent().catch(() => "none"));
+  await m.click("[data-rvclose]");
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
+  check("result reveal fires once on this device", (await m.locator("#reveal").count()) === 0);
   check("cover badges read from your side", tags.length === 5 && tags.every((t) => t === "You covered|cv good" || t === "Beat you|cv bad"), tags.join());
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#standings")); await m.waitForTimeout(300);
   const st = await m.textContent("#v-standings");
