@@ -66,8 +66,9 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
    - Pick one team to win outright, not against the spread. One loss and you are out of that run.
    - The season has fixed runs, for example weeks 1 to 5, 6 to 10, and 11 to the last week before Conference Champion week. Everybody starts each run alive, and used teams reset.
    - No tiebreaker. Everyone still alive at the end of a run wins it. Pickers who split a win are each called Co-Champion and each gets the win on their stats page.
+   - If every remaining picker goes out in the same week, they are all resurrected and play one more week. If that was the last week of the run or season, they share the title as Co-Champions instead.
    - Conflict warning goes away, since a straight up pick can win even if your ATS pick on that game loses.
-   - To settle: exact run weeks, what happens if nobody is left (today's rule is that pickers who go out in the same last week share), and Robo-Sharp's Survivor rule (it picks by spread edge today; the NFL plan's biggest projected FPI win fits). NFL version: same runs or not.
+   - To settle: exact run weeks, whether resurrection also applies to the 2026 Survivor (the Rules page says they share), and Robo-Sharp's Survivor rule (it picks by spread edge today; the NFL plan's biggest projected FPI win fits). NFL version: same runs or not.
 5. Payout framework: the Stay Engaged plan. $100 one-time buy-in from 20 pickers is the test case, so a $2,000 pot.
    - Season standings $700 ($400 / $200 / $100). Weekly winner $20 a week, $280 over 14 weeks. Conference Champion week $120. Survivor $300, split evenly across the runs, so $100 a run with 3 runs. Bowl challenge $300 ($200 / $100). CFP bracket $300 ($200 / $100).
    - House rules: Robo-Sharp cannot win, so its prize goes to the next best picker. Ties split the combined prizes for the tied places. Buy-ins are due before Week 1. No commissioner cut.
@@ -79,17 +80,20 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
 
 ### Timing open (Benton has not set a target)
 8. Ghost pickers: an unpaid tier so someone can try the league with no skin in the game and no effect on anyone else.
-   - Paid members play every contest and can win payouts. A profile is paid or unpaid; the commissioner toggles it.
+   - Paid members play every contest and can win payouts. The commissioner creates every ghost and gives the PIN, the same as any picker, and can flip the profile to paid. No open signups.
+   - Ghosts play shadow versions of Survivor, the Bowl challenge, and the CFP bracket.
+   - A ghost's history does not carry over on going paid; they start a new paid profile. Switching back and forth loses paid history. Pickers must keep paying each year to keep their history, or they restart.
    - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
    - Paid pickers cannot see ghosts. Ghosts cannot see each other.
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
-   - To settle: new users creating their own profile conflicts with today's rule that the commissioner makes every PIN; whether a ghost's history carries over on going paid; whether ghosts play Survivor, Bowl, and CFP in shadow.
 9. Picker history: go back to any week and see your picks, which won or lost, how many you got right, where you ranked, and how far off you were. Survivor picks too, with which worked.
    - Personal insights from that history: teams that hurt you most, teams that consistently win for you, general performance, and useful negative stats. Benton says historical selections matter most.
    - No new data pull; weeks and reveals hold it. Fits with Career stats (item 7) on the same page. Today's Pick history shows saves, not results.
 10. Clearer covering labels: pickers read "Covered" or "Covering" as good news when it can mean their bet is losing.
    - Cause: the badge on a game card sits on whichever team is covering, even when that team is not your pick (`class="cv"` in the game card). The chip under the score is already from your side.
    - Fix idea: green when it is your pick, red when it is the other side, and wording from your side such as "Beating your pick". Pickers with no pick keep the neutral label.
+
+11. Weekly recap: a fun Sunday page like the Gambling Baptist recap, with zany factoids from the week, ready before new picks open. It grows as history grows. Builds on the referee report and the same picks and results data.
 
 ### Later (no date)
 6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
