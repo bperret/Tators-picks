@@ -51,7 +51,8 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
 1. Conference Champion week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
    - Lock before the first Friday kickoff (about 6 p.m. CT), one lock for the week. The normal slate rule and the Saturday 10:15 a.m. lock do not apply.
    - Survivor ends the week before, so no Survivor pick this week. The Saturday Nov 28 week is its last.
-   - To settle: who wins Survivor if several pickers are still alive after its last week (today's rule is last picker alive), and how the week builds if ESPN's week number or season type differs.
+   - If several pickers are still alive after Survivor's last week in 2026, they share the title.
+   - To settle: how the week builds if ESPN's week number or season type differs.
 2. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
    - One lock before Dec 18. Own bracket screen, scoring, and standings, separate from the regular challenge. Tiebreaker: title game total.
    - To settle: points per round.
@@ -64,10 +65,13 @@ The landing spot for every idea not yet ready to build, for any timing: this sea
 4. Survivor: straight up, two skulls.
    - Pick one team to win outright, not against the spread. No repeats, same as now.
    - Everybody gets 2 skulls. A loss is one skull. The second skull puts you out.
-   - To settle: whether a missed pick costs one skull or puts you out, what happens when several pickers are alive after the last week, Robo-Sharp's Survivor rule (it picks by spread edge today), and whether the NFL version also gets 2 skulls (its plan says straight up, with no skulls).
+   - Tiebreaker if several are alive at the end: first, no skulls used. Second is open. Benton's idea is the highest ranked team a picker has not used. Another option is toughest path, the smallest favorites picked.
+   - Idea: re-open Survivor after a winner, so a season can have multiple winners. Straight up with 2 skulls may run long, so runs may need a fixed end point.
+   - To settle: whether a missed pick costs one skull or puts you out, what resets on a re-open (skulls, used teams), Robo-Sharp's Survivor rule (it picks by spread edge today), and whether the NFL version also gets 2 skulls (its plan says straight up, with no skulls).
+5. Payout framework: a one-time buy-in covering every contest, brainstorm only. Money stays off the site; this would only be posted rules. Benton's test case: $100 from 20 pickers.
 
 ### Later (no date)
-5. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
+6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
    - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
    - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
    - Compare like with like: `homeLine` has the half-point rule applied and the saved closing line is raw, so run the closing line through the same rule or a whole-number lock shows a false half-point move.
