@@ -15,6 +15,9 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.19 | Nov 2, 5:40 p.m. | Rules | Payouts section on the Rules page with pot shares and a what would I win calculator | M | 81 | `8e6a480` |
+| 1.18 | Nov 2, 5:38 p.m. | Survivor | Resurrection: if everyone left goes out in one week, all play one more week | M | 76 | `6a9ca5f` |
+| 1.17 | Nov 2, 5:36 p.m. | Survivor | Survivor ends after the Saturday Nov 28 week; everyone still alive shares the title | S | 45 | `b7ab293` |
 | 1.16.1 | Nov 2, 5:30 p.m. | Recap | Centered the recap banner | S | 2 | `a59f0b2` |
 | 1.16 | Nov 2, 5:02 p.m. | Recap | Recap tab with fun facts from each final week, plus a banner on Picks | M | 167 | `dcf35b7` |
 | 1.15 | Nov 2, 4:59 p.m. | Picks | Result reveal: a card and flash the first time you see a game go final | M | 64 | `c92f86c` |

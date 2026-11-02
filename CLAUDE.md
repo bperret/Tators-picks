@@ -24,6 +24,8 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Cover badges on game cards read from your side: green "You covered" or "You're covering" on your pick, red "Beat you" or "Beating you" on the other team. No pick keeps the neutral label.
 - Result reveal: `revealFinals()` runs after each refresh (the page polls every 60 seconds). A card and flash show games that went final since this device last looked, saved per login in localStorage `tp-seen-finals-<uid>`. Several finals share one card. A first visit on a device after a week closed stays quiet.
 - Weekly recap: Recap tab, built in the page by `recapFacts(wid)` from saved picks and results, for final weeks only, with a week picker. A banner on Picks shows until the latest recap is read (`tp-recap-seen-<uid>`). Clean jokes, referee voice. A negative award never lands on the same picker twice in a week. To grow it, add facts to `recapFacts`.
+- Survivor end: `config.survivorEnd` (default in `DEFAULT_CONFIG`, 2026-11-29 midnight CT; `SURVIVOR_END` overrides it, and `dev/server.mjs` sets a far date because tests use real dates). The page uses `survivorOpen`, the server uses `survivorClosed`. Saved config keeps its value, so a new season must update the saved config. `survivorRevived()` works out resurrection weeks for both the board and the grid.
+- Payouts: `#payouts` in Rules, `PAY` holds the shares, `payUpdate()` does the math. Page only; nothing is saved.
 - Commish sections fold (details with `data-sec`), saved per device in localStorage `tp-commish-open`, plus Expand all and Collapse all. Defaults: This week and Swap games open; Automation opens when it has flags; League members opens when a new PIN is showing.
 - SP+ and VSiN: the "ratings" job (`lib/ratings.js`), button only (Update ratings in Automation, never in `dueJobs`). SP+ reads the ratings table on ESPN's "2026 college football SP+ rankings for all 138 FBS teams" story (`SP_URL`, skips the résumé table, maps ESPN short names). VSiN finds Adam Burke's "Week N ... Power Ratings and Projections for Every Game" article from the VSiN college page, then the usual address; N is the coming week (current week + 1 once it locks). Checks: 130+ known schools, page under 10 days old, average change from saved under 5 points; else a flag and nothing saved. Each source saves on its own. Unchanged numbers report "has not changed". Paste fallback: a power-only JSON in Manual backups merges the same way. Both sources post Sunday or Monday; CFB Update lagged, so it is not used.
 - Commissioner can lock early and unlock with a new deadline; both log publicly. `origDeadline` keeps the week tied to its Saturday.
@@ -31,11 +33,11 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 ## League rules (decided)
 - 10 Saturday games kicking off 11 a.m. CT or later: 5 top AP games (ranked v ranked first), then 5 tightest lines among other ranked-team games. Half-point lines; on a whole number the underdog gets the half.
 - 1 point per correct pick, one 3 point field goal (FG; stored as `lock` in pick data; goalpost icon `GP`, no emoji exists), tiebreaker = total points in game 1 (game 2 if game 1 is void; blank = 0). Void games score for nobody.
-- Weekly winner: points, then tiebreaker, else shared. Bragging rights only. Season: points, field goals made, smallest total tiebreaker misses.
-- Survivor: one team ATS a week, no repeats, a miss means out.
+- Weekly winner: points, then tiebreaker, else shared. Season: points, field goals made, smallest total tiebreaker misses.
+- Survivor: one team ATS a week, no repeats, a miss means out. It ends after the Saturday Nov 28 week; anyone still alive shares the title. If every remaining picker goes out in the same week, all play one more week (used teams stay used); in the last week they share instead. A lone picker is never resurrected.
 - Robo-Sharp (🤖, black and silver): model side in every game, field goal on biggest edge, betting total as tiebreaker, biggest unused edge in Survivor. Shows in standings with no rank and never wins a week, trophy, Survivor, or the season; the best picker wins instead.
 - People are "pickers". Tabs: Picks, Standings, Recap, Survivor, Pickers, Teams, Rules, Profile, Commish. The public log never shows the commissioner's private nickname for a picker.
-- Money is off the site. Bowls are a separate contest.
+- Money is off the site; the Rules page only posts the plan. Payouts are shares of the pot (Stay Engaged): season 20 / 10 / 5, weekly 1% each, Conference Champion week 6%, Survivor 5% a run, Bowl 10 / 5, CFP 10 / 5. The buy-in is not set. Bowls are a separate contest.
 - No test weeks (decided Oct 31). Week 9 counts as the first week; every revealed week counts toward the season. Weeks keep their real numbers (next is Week 10). The old `scored` flag is ignored and new weeks save `scored: true`.
 
 ## Idea tracker
@@ -45,13 +47,12 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 5, 6 (a line on what the stat means), 7, 8.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 6 (a line on what the stat means), 7, 8. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
    - Lock before the first Friday kickoff (about 6 p.m. CT), one lock for the week. The normal slate rule and the Saturday 10:15 a.m. lock do not apply.
-   - Survivor ends the week before, so no Survivor pick this week. The Saturday Nov 28 week is its last.
-   - If every remaining Survivor picker goes out in the same week, they are all resurrected and play one more week. If several are alive after the Nov 28 week, or all go out that week, they share the title.
+   - No Survivor pick this week. Survivor already ends after the Nov 28 week.
    - To settle: how the week builds if ESPN's week number or season type differs.
 2. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
    - One lock before Dec 18. Own bracket screen, scoring, and standings, separate from the regular challenge. Tiebreaker: title game total.
@@ -60,14 +61,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - One lock for the whole contest, before the first bowl (Dec 15).
    - Idea, not final: each picker chooses which 10 bowls to pick.
    - To settle: ATS or straight up, field goal or not, and a tiebreaker that works when pickers hold different games. The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
-5. Payout section on the Rules page: the Stay Engaged plan, stated as shares of the pot, with a scenario builder.
-   - Pot = buy-in x paid pickers. The buy-in is not decided ($100, $50, or $25).
-   - Shares: Season standings 35% (20 / 10 / 5). Weekly winner 1% a week, 14% over 14 weeks. Conference Champion week 6%. Survivor 15% (5% a run with 3 runs). Bowl challenge 15% (10 / 5). CFP bracket 15% (10 / 5). Total 100%. At 20 pickers, 5% of the pot equals 1x the buy-in.
-   - Scenario builder: anyone can enter a buy-in and a picker count to see every prize in dollars, then mark what they win (for example 2 weekly wins and 2nd in the Bowl challenge) to see their total. Page only; nothing is saved.
-   - House rules: Robo-Sharp cannot win, so its prize goes to the next best picker. Ties split the combined prizes for the tied places. Buy-ins are due before Week 1.
-   - Upkeep share: Benton is considering 5% of each buy-in. Not decided. If he keeps it, the pot shrinks by that share before the split, and the scenario builder shows it.
-   - Money stays off the site, so this is only posted rules. League rules above still say the weekly winner is bragging rights only; change that when this goes in.
-   - To settle: how to round dollar amounts.
+5. Upkeep share: Benton is considering 5% of each buy-in. Not decided. The Payouts calculator has an upkeep box, set to 0. Buy-in amount is also not set.
 6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
    - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
    - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
