@@ -54,7 +54,8 @@ Changes to make before the 2027 season. Do not build these during 2026. Add new 
    - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
    - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
    - Compare like with like: `homeLine` has the half-point rule applied and the saved closing line is raw, so run the closing line through the same rule or a whole-number lock shows a false half-point move.
-   - To settle at build time: late pickers can see the market moved and take the stale side, so the stat also rewards timing. `pick_history` has pick times if the stat should adjust for that.
+   - Late picking counts, on purpose. Part of the point is to show who does their research and picks late. No timing adjustment, no sample size or injury caveats on the page.
+   - Track Robo-Sharp on this stat too, shown with the pickers, with no rank like in standings.
 
 ## Open items
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
