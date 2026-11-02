@@ -8,6 +8,8 @@ import { getConfig, getWeek, putWeek, teamGamesView } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 import { redditPage, pastedTable } from "./reddit-fixture.mjs";
 import { parseRedditText } from "../lib/polls.js";
+import { espnSpPage, vsinPage, vsinHub } from "./ratings-fixture.mjs";
+import { SP_URL, VSIN_HUB, teamOf } from "../lib/ratings.js";
 
 const pg = new PGlite();
 setTestDb(async (t, p) => (await pg.query(t, p)).rows);
@@ -67,6 +69,7 @@ const pastGames = {
 };
 let failWeek = null;
 let redditHtml = redditPage(9);
+let spPage = espnSpPage(), vsPage = vsinPage(), vsHub = vsinHub(12), vsWeekUrl = null;
 function pastEvent([id, a, h, date, line, as, hs, total]) {
   const comp = (tid, ha) => ({ homeAway: ha, team: teams[tid], curatedRank: { current: rankOf(tid) }, score: String(ha === "home" ? hs : as) });
   const odds = line == null ? [] : [{ spread: line, overUnder: total ?? undefined, homeTeamOdds: { favorite: line < 0 } }];
@@ -89,6 +92,9 @@ setFetcher(async (url) => {
   if (url.startsWith(SITE + "/rankings")) return polls;
   if (url.startsWith("https://poll.redditcfb.com/")) { if (redditHtml == null) throw new Error("poll.redditcfb.com answered 503."); return redditHtml; }
   if (url.startsWith(FITT)) return fitt;
+  if (url === SP_URL) { if (spPage == null) throw new Error("www.espn.com answered 503."); return spPage.html; }
+  if (url === VSIN_HUB) return vsHub;
+  if (url.startsWith("https://vsin.com/college-football/week-")) { if (vsWeekUrl && url.includes(vsWeekUrl)) return vsPage.html; throw new Error("vsin.com answered 404."); }
   // ESPN's per-game odds feed, for games logged without a line.
   const od = url.match(/events\/(\d+)\/competitions\/\d+\/odds(?:\/(\d+))?$/);
   if (od) {
@@ -276,6 +282,34 @@ try {
   out = await runJob("gamelog", { force: true, now: CT("2026-11-08T10:40:00-06:00") });
   a4 = await getKv("auto", {});
   check("Fill game log button refills and clears the flag", out.ran.gamelog.ok && !a4.flags.some((f) => f.job === "gamelog"), out.ran.gamelog.msg);
+
+  // ---- SP+ and VSiN: button only ----
+  out = await tick({ now: CT("2026-11-08T11:10:00-06:00") });
+  check("ratings never run on the schedule", !out.ran.ratings);
+  check("ESPN short names read as schools", teamOf("N. Dakota St (7-2)") === "North Dakota State" && teamOf("Ohio St. (6-2)") === "Ohio State" && teamOf("Oklahoma St.") === "Oklahoma State" && teamOf("Sac State (2-7)") === "Sacramento State" && teamOf("Hawai'i") === "Hawai'i" && teamOf("Miami (Ohio)") === "Miami (OH)" && teamOf("Miami (8-0)") === "Miami");
+  // Week 11 is final, so VSiN's article for Week 12 is the one to read. The hub links Week 12.
+  vsWeekUrl = "week-12-";
+  const r0 = await getKv("rankings", {});
+  out = await runJob("ratings", { now: CT("2026-11-08T11:20:00-06:00") });
+  let rr = await getKv("rankings", {});
+  const ga = (k) => rr.power[k].teams.find((t) => t.team === "Georgia");
+  check("Update ratings saves SP+ and VSiN", out.ran.ratings.ok && rr.power.sp.teams.length === 138 && rr.power.vsin.teams.length === 138 && rr.power.sp.asOf === "Nov 8, 2026" && rr.power.vsin.source.includes("Week 12"), out.ran.ratings.msg);
+  check("SP+ comes from the ratings table, not the résumé table", ga("sp").rating === spPage.list.find((t) => t.team === "Georgia").rating, JSON.stringify(ga("sp")));
+  check("VSiN names like Mississippi and Louisiana-Monroe match", !!rr.power.vsin.teams.find((t) => t.team === "Ole Miss") && !!rr.power.vsin.teams.find((t) => t.team === "UL Monroe"));
+  check("ratings keep the polls and FPI", JSON.stringify(rr.ap) === JSON.stringify(r0.ap) && JSON.stringify(rr.power.fpi) === JSON.stringify(r0.power.fpi));
+  out = await runJob("ratings", { now: CT("2026-11-08T11:30:00-06:00") });
+  check("a second tap with no new numbers says so", out.ran.ratings.ok && /SP\+ has not changed/.test(out.ran.ratings.msg) && /VSiN has not changed/.test(out.ran.ratings.msg), out.ran.ratings.msg);
+  // Hub link gone: falls back to the usual address. Old article: refused.
+  vsHub = "<html></html>"; vsWeekUrl = "week-11-"; vsPage = vsinPage({ shift: 2, date: "2026-10-20T12:00:00Z" });
+  spPage = espnSpPage({ shift: 9 });
+  out = await runJob("ratings", { now: CT("2026-11-08T11:40:00-06:00") });
+  let a7 = await getKv("auto", {});
+  check("a big jump or an old article flags and saves nothing", !out.ran.ratings.ok && /moved an average/.test(out.ran.ratings.msg) && /VSiN ratings article/.test(out.ran.ratings.msg) && a7.flags.some((f) => f.key === "ratings:failed" && f.msg.includes("Manual backups")) && JSON.stringify((await getKv("rankings", {})).power) === JSON.stringify(rr.power), out.ran.ratings.msg);
+  spPage = espnSpPage({ broken: true }); vsPage = vsinPage({ shift: 2, date: "2026-11-08T12:00:00Z" });
+  out = await runJob("ratings", { now: CT("2026-11-08T11:50:00-06:00") });
+  rr = await getKv("rankings", {});
+  check("one source failing still saves the other", !out.ran.ratings.ok && /Updated VSiN/.test(out.ran.ratings.msg) && /SP\+: /.test(out.ran.ratings.msg) && rr.power.vsin.source.includes("Week 11"), out.ran.ratings.msg);
+  spPage = espnSpPage();
 
   // ---- pause ----
   await setKv("config", { ...(await getConfig()), autoPaused: true });
