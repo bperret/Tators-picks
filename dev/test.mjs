@@ -464,6 +464,88 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("players never receive sheet status", !mstate.sheetStatus);
   const adminTry = await m.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "addPlayer", phone: "2145559999" }) }).then((r) => r.status));
   check("players cannot use commissioner actions", adminTry === 403);
+  // ---- rival, what you need, your week, Iron Man, chip, line moved: a made-up league drawn on the page ----
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
+  const race = await m.evaluate(() => {
+    const { state, rivalOf, raceFacts, yourWeek, ironOf, ironSeasons, realStats, survNeeded, renderPicks, missingItems, renderRecap } = window.tpRecap;
+    const me = state.uid; const base = Object.values(state.weeks)[0];
+    const games = [1, 2, 3, 4].map((n, i) => ({ id: "x" + n, slot: n, away: "Florida", awayRank: 99, home: "Georgia", homeRank: 99, homeLine: -3.5, kickoff: new Date(Date.now() - 86400e3 + i * 1000).toISOString(), neutral: false }));
+    const past = new Date(Date.now() - 864e5).toISOString(), soon = new Date(Date.now() + 864e5).toISOString();
+    const homeWin = { away: 10, home: 20, final: true, void: false }, awayWin = { away: 20, home: 10, final: true, void: false };
+    const all = (s) => Object.fromEntries(games.map((g) => [g.id, s]));
+    for (const k of Object.keys(state.weeks)) { delete state.weeks[k]; delete state.reveals[k]; }
+    state.names.a = "Ann Lee"; state.names.b = "Bob Ray"; state.names.c = "Cal Poe";
+    const wk = (id, week, status, deadline, results) => { state.weeks[id] = { id, season: 2026, week, status, deadline, games, results, scored: true }; };
+    wk("2026-w20", 20, "final", past, all(homeWin));
+    state.reveals["2026-w20"] = { excluded: [], players: {
+      a: { sel: all("home"), lock: "x1", tb: 30, surv: { g: "x1", s: "home", team: "Georgia" } }, b: { sel: all("home"), tb: 30 }, [me]: { sel: { ...all("home"), x4: "away" }, tb: 30, surv: { g: "x1", s: "away", team: "Florida" } }, c: { sel: { x1: "away" }, tb: 30 } } };
+    state.config = { ...state.config, season: 2026, currentWeek: "2026-w21", survivorStart: "2026-w20", survivorEnd: "2099-01-01T00:00:00Z" };
+    wk("2026-w21", 21, "locked", past, { x1: homeWin, x2: awayWin });
+    state.reveals["2026-w21"] = { excluded: [], players: { a: { sel: all("home"), lock: "x1", tb: 30 }, b: { sel: all("home"), tb: 30 }, [me]: { sel: all("away"), lock: "x3", tb: 30 }, c: { sel: all("home"), tb: 30 } } };
+    const out = {};
+    out.leaderRival = rivalOf("a", "2026-w21"); out.myRival = rivalOf(me, "2026-w21"); out.bRival = rivalOf("b", "2026-w21");
+    out.locked = raceFacts("2026-w21");
+    out.noRivalFirstWeek = rivalOf(me, "2026-w20");
+    state.weeks["2026-w21"].results = { ...all(homeWin), x3: awayWin };
+    state.weeks["2026-w21"].status = "final";
+    out.yw = (({ w, l, pts, place, was, now, rival, best, worst }) => ({ w, l, pts, place, was, now, rival, best: best && best.g.id, worst: worst && worst.g.id }))(yourWeek("2026-w21"));
+    state.recapWeek = "2026-w21"; renderRecap(); out.recap = document.querySelector("#v-recap .yw").textContent;
+    const D = realStats();
+    out.ironMe = ironOf(D, me, 2026); out.ironC = ironOf(D, "c", 2026);
+    state.weeks["2026-w20"].results.x2 = { void: true, away: 0, home: 0, final: false };
+    state.reveals["2026-w20"].players.c.sel = { x1: "away", x3: "home", x4: "home" };
+    state.reveals["2026-w21"].players.c.sel = all("home");
+    out.ironVoid = ironOf(realStats(), "c", 2026);
+    state.weeks["2026-w21"].confChamp = true;
+    out.ironSeason = ironSeasons(realStats(), "c");
+    state.reveals["2026-w21"].players.late = { sel: all("home"), tb: 1 }; state.names.late = "Lou Vee";
+    const lateD = realStats(); out.ironLate = ironOf(lateD, "late", 2026); out.ironLateSeason = ironSeasons(lateD, "late");
+    // Survivor chip: my pick lost in the first week, so I am out.
+    wk("2026-w22", 22, "open", soon, {});
+    state.weeks["2026-w22"].games = games.map((g, i) => (i === 0 ? { ...g, pvLine: -2.5 } : g));
+    state.config.currentWeek = "2026-w22";
+    out.outNeeded = survNeeded("2026-w22"); out.msgs = missingItems(state.weeks["2026-w22"], "2026-w22", { sel: {}, lock: null, tb: null });
+    renderPicks();
+    out.chips = document.querySelector("#v-picks .cks").textContent; out.picks = document.querySelector("#v-picks").textContent;
+    return out;
+  });
+  check("the leader's rival is the picker right behind", race.leaderRival === "b", JSON.stringify(race));
+  check("your rival is the picker just above you", race.myRival === "b" && race.bRival === "a", JSON.stringify([race.myRival, race.bRival]));
+  check("no rival before there are standings", race.noRivalFirstWeek === null);
+  check("What you need reads the live week", /back of the lead with 2 games left\./.test(race.locked.need) && /^Your rival .*: \d+\. You: \d+\.$/.test(race.locked.rival), JSON.stringify(race.locked));
+  check("Your week has record, best pick, worst beat, and rank move", race.yw.w === 1 && race.yw.l === 3 && race.yw.best === "x3" && race.yw.was != null && race.yw.now != null && !!race.yw.worst, JSON.stringify(race.yw));
+  check("Your week shows at the top of the Recap", /Your week/.test(race.recap) && /Best pick/.test(race.recap) && /Worst beat/.test(race.recap) && /Season rank/.test(race.recap), race.recap);
+  check("Iron Man holds with every pick in", race.ironMe && race.ironMe.weeks === 2 && race.ironMe.full, JSON.stringify(race.ironMe));
+  check("a missed game ends Iron Man", race.ironC === null);
+  check("a void game does not count against Iron Man", !!race.ironVoid, JSON.stringify(race.ironVoid));
+  check("a full season counts once Conference Champion Week is final", race.ironSeason === 1, String(race.ironSeason));
+  check("a late joiner holds the status but not the full season", race.ironLate && !race.ironLate.full && race.ironLateSeason === 0, JSON.stringify(race.ironLate));
+  check("a picker who is out gets no Survivor chip or warning", race.outNeeded === false && !/Surv/.test(race.chips) && !race.msgs.some((x) => /survivor/i.test(x)), race.chips + " | " + race.msgs.join(" "));
+  check("a moved line shows its tag while picks are open", /Line moved: UGA -3\.5, was -2\.5 in the preview\./.test(race.picks.replace(/−/g, "-")), race.picks.slice(0, 400));
+
+  // ---- engagement and the page visit switch ----
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
+  await m.evaluate(() => (location.hash = "#rules")); await m.waitForTimeout(150);
+  await m.evaluate(() => window.tpEng.flush()); await m.waitForTimeout(300);
+  const mPlain = await m.evaluate(() => fetch("/api/state").then((r) => r.json()));
+  check("pickers never receive engagement data", !mPlain.engage);
+  const poison = await m.evaluate(() => fetch("/api/state", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ pages: { admin: 5, rules: 1 }, recaps: ["bad id"] }) }).then((r) => r.status));
+  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.waitForTimeout(300);
+  const cSt = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
+  const mid = mPlain.me.id;
+  check("the commissioner sees last seen and tabs", cSt.engage && cSt.engage[mid] && !!cSt.engage[mid].last && cSt.engage[mid].pages.rules >= 2, JSON.stringify(cSt.engage));
+  check("unknown tabs and bad week ids are dropped", poison === 200 && !cSt.engage[mid].pages.admin && !Object.keys(cSt.engage[mid].recaps).some((k) => k === "bad id"));
+  await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(250);
+  await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
+  check("the Engagement section lists pickers", /Engagement/.test(await c.textContent("#v-commish")) && /Last seen/.test(await c.textContent("#v-commish")));
+  check("the page visit switch starts off", !(await c.isChecked("#liveChk")) && cSt.auto.live.on === false && cSt.auto.live.gap === 10 && cSt.auto.live.cap === 80);
+  const badGap = await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "autoSettings", live: { gap: 1 } }) }).then((r) => r.status));
+  check("a gap under 5 minutes is refused", badGap === 400);
+  await c.check("#liveChk"); await c.waitForTimeout(400);
+  const onSt = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
+  check("the switch saves", onSt.auto.live.on === true && onSt.config.liveRun.on === true);
+  await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "autoSettings", live: { on: false } }) }));
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   await m.screenshot({ path: "dev/test-standings.png", fullPage: false });
 } catch (e) {
   check("test run", false, e.message);

@@ -24,19 +24,19 @@ College football pick em against the spread for one league. Ten games a week, a 
 
 ## Weekly automation
 
-GitHub Actions (`.github/workflows/automation.yml`) calls `/api/cron` twice an hour. Vercel's daily cron calls it once a day as a backup. The site decides what is due:
+GitHub Actions (`.github/workflows/automation.yml`) calls `/api/cron` on a schedule set for twice an hour, though runs can come hours apart. Vercel's daily cron calls it once a day as a backup. The site decides what is due:
 
 | When (Central) | Job | Manual fallback in the Commissioner tab |
 |---|---|---|
 | Tue 1 p.m. to Fri | Build the coming Saturday's slate from ESPN as a draft | Build from ESPN, or Load a slate |
 | Wed 6 p.m. | Open picks, unless turned off or moved back to draft | Open picks |
-| After the lock | Pull scores hourly, mark the week final when every game is final or void | Pull scores now, Scores, Mark week final |
+| After the lock | Pull scores on each run, mark the week final when every game is final or void | Pull scores now, Scores, Mark week final |
 | Every 6 hours | AP, CFP, and FPI from ESPN; the r/CFB poll from poll.redditcfb.com | Refresh rankings, Update rankings (accepts the r/CFB table copied from the site) |
-| Every hour | Save lines before kickoff, add finished games to team ATS records | Update ATS |
+| Every run | Save lines before kickoff, add finished games to team ATS records | Update ATS |
 | First run, then Sunday 9 a.m. | Fill the team game log for weeks 1 to now, then recheck the last two weeks | Fill game log |
-| Every hour until done | Add lines and totals to logged games that lack them, from ESPN's per-game odds feed (100 games a run). Stops itself if the feed has no old lines. | Fill lines |
+| Every run until done | Add lines and totals to logged games that lack them, from ESPN's per-game odds feed (100 games a run). Stops itself if the feed has no old lines. | Fill lines |
 
-Any failed job becomes a flag in the Automation panel with the manual fallback. The panel also flags a missing `CRON_SECRET` and a schedule that has not run for three hours. GitHub turns off scheduled workflows in a public repo after 60 days with no repo activity; the stale flag catches that.
+Any failed job becomes a flag in the Automation panel with the manual fallback. The panel also flags a missing `CRON_SECRET` and a schedule that has not run for 12 hours. GitHub turns off scheduled workflows in a public repo after 60 days with no repo activity; the stale flag catches that.
 
 Rules the automation keeps:
 
@@ -44,7 +44,7 @@ Rules the automation keeps:
 * A postponed or canceled game waits for the commissioner to void it.
 * Moving a week back to draft stops the automatic open for that week. Reopening scoring stops the automatic final.
 * Robo-Sharp's line is ESPN FPI's projected margin for each game. SP+ and VSiN stay as last loaded.
-* The team game log keeps every finished FBS game: scores, the line saved before kickoff, and the total. The hourly ATS run adds games as they finish. The Teams tab reads it from `/api/state?part=teams`, so the main state stays small. A hand-entered slate score shows in place of ESPN's.
+* The team game log keeps every finished FBS game: scores, the line saved before kickoff, and the total. The ATS job adds games as they finish. The Teams tab reads it from `/api/state?part=teams`, so the main state stays small. A hand-entered slate score shows in place of ESPN's.
 
 ESPN's feeds are unofficial and can change without notice.
 

@@ -50,6 +50,10 @@ nav.tabs a[aria-current="page"]{color:var(--ink);border-image:repeating-linear-g
 nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
 .view{display:flex;flex-direction:column;gap:12px}
 .note{font-size:.88rem;color:var(--muted)}
+.race{padding:10px 12px}.race p{margin:2px 0;font-size:.95rem}
+.lnmv{margin:4px 0 0}
+.ywnote{margin:8px 0 0}
+.stats .sub{display:block;font-size:.78rem;color:var(--muted)}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
 .panel h2{font-family:var(--cond);font-weight:700;font-size:1.35rem;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
 .empty{padding:28px 14px;text-align:center;color:var(--muted)}
@@ -581,6 +585,9 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Career wins count from Week 9 of 2026. A win shared with another picker also counts as a Co-Champion credit.</li>
         <li>Beat the close compares the line when picks opened to the last line saved before kickoff. If the line moved toward your side, you beat the close, even if your pick lost. Late picks count. Games where the line never moved do not count.</li>
         <li>Robo-Sharp appears in Beat the close with no rank. It has no career record.</li>
+        <li>Your weekly rival is the picker just above you in the season standings as the week starts. The leader's rival is the picker right behind. Rivals are for fun and count for nothing.</li>
+        <li>Iron Man (\u{1F9BE}): you picked every game before the lock, every week from your first week on. The tiebreaker and Survivor do not count. Conference Champion Week counts. Bowls and the CFP bracket do not. A void game does not count against you. One missed game or week ends it for the season.</li>
+        <li>A full season Iron Man starts in the season's first week and runs through Conference Champion Week. It stays on your Pickers page. If you start later, you can hold the status but not the full season.</li>
       </ul></details>
       <details id="payouts"><summary class="rh">Payouts</summary>
       <p class="paynote"><b>2026 is a free test season. Nobody pays in and nothing pays out.</b> Payouts start in 2027. This plan is hypothetical, so try the scenarios below and give the commissioner your feedback.</p>
@@ -660,6 +667,8 @@ function scoreWeek(w,p){
 
 /* ---------- data ---------- */
 function currentWeekId(){return state.config&&state.config.currentWeek}
+function liveOn(){return !!(state.config&&state.config.liveRun&&state.config.liveRun.on)}
+function liveGap(){return (state.config&&state.config.liveRun&&state.config.liveRun.gap)||10}
 function curWeek(){return state.weeks[currentWeekId()]||null}
 function removed(){return (state.config&&state.config.removed)||[]}
 async function resolveNames(ids){
@@ -744,7 +753,7 @@ function applyState(S){
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Player");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,
-    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
+    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
   $("#commishTab").hidden=!state.isOwner;
   syncDraft();
 }
@@ -881,14 +890,14 @@ async function commishAct(act,ds){
   let r={ok:true},msg="";
   if(act==="run"){const b=document.querySelector(`[data-act="run"][data-job="${ds.job}"]${ds.force?'[data-force]':''}`);if(b){b.disabled=true;b.textContent="Working…"}
     r=await api("/api/admin",{action:"runJob",job:ds.job,force:!!ds.force});
-    if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.ok?"Done. ":"Failed. ")+(o.msg||"");if(["gamelog","lines","ats","scores"].includes(ds.job))state.teamGames=null}else if(b){b.disabled=false}}
+    if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.busy?"":o.idle?"Nothing to do. ":o.ok?"Done. ":"Failed. ")+(o.msg||"");if(["gamelog","lines","ats","scores"].includes(ds.job))state.teamGames=null}else if(b){b.disabled=false}}
   if(act==="lock"){if(!(state.lockArm&&NOW()-state.lockArm<8000)){state.lockArm=NOW();renderCommish();setTimeout(()=>{if(state.lockArm&&NOW()-state.lockArm>=8000){state.lockArm=null;renderCommish()}},8200);return}
     state.lockArm=null;r=await api("/api/admin",{action:"lockNow",weekId:wid});msg="Picks locked. Everyone's picks now show."}
   if(act==="unlock"){const v=$("#unlockAt").value;const t=v?new Date(v).getTime():NaN;if(!Number.isFinite(t)){toast("Choose a new deadline first.");return}
     r=await api("/api/admin",{action:"unlock",weekId:wid,until:new Date(t).toISOString()});msg="Picks unlocked until "+kick(new Date(t).toISOString())}
   if(act==="dismiss"){r=await api("/api/admin",{action:"dismissFlag",key:ds.key});msg="Flag dismissed"}
   if(act==="pause"){r=await api("/api/admin",{action:"autoSettings",autoPaused:!(state.auto&&state.auto.paused)});msg=state.auto&&state.auto.paused?"Automation resumed":"Automation paused"}
-  if(act==="open"){r=await api("/api/admin",{action:"runJob",job:"open",force:true});if(r.ok){const o=(r.ran||{}).open||{};msg=(o.ok?"":"Failed. ")+(o.msg||"")}}
+  if(act==="open"){r=await api("/api/admin",{action:"runJob",job:"open",force:true});if(r.ok){const o=(r.ran||{}).open||{};msg=(o.ok||o.busy?"":"Failed. ")+(o.msg||"")}}
   if(act==="todraft"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"draft"});msg="Moved back to draft"}
   if(act==="final"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"final"});msg="Week marked final"}
   if(act==="unfinal"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"locked"});msg="Scoring reopened"}
@@ -942,7 +951,16 @@ function syncDraft(){
 
 /* ---------- routing ---------- */
 const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","commish"];
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if(v==="commish"&&!state.isOwner)v="picks";state.view=v;
+/* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
+const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
+function engNote(v){if(!ME||v==="commish"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
+function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
+  try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)engFlush(true)});
+window.addEventListener("pagehide",()=>engFlush(true));
+window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if(v==="commish"&&!state.isOwner)v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render()}
 window.addEventListener("hashchange",route);
@@ -1090,6 +1108,7 @@ function renderPicks(){
   else if(rev&&players[state.uid]){const P=weekPlayers(wid);const rows=Object.entries(P).map(([pid,p])=>({pid,...scoreWeek(w,p)})).sort((a,b)=>b.pts-a.pts);const me=rows.find(r=>r.pid===state.uid);const place=rows.filter(r=>r.pts>me.pts).length+1;const ties=rows.filter(r=>r.pts===me.pts).length>1;
     const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;
     h+=`<div class="countdown strip"><span>You <b>${me.pts}</b> pts</span><span>${me.w}-${me.l}</span><span>${nf}/${w.games.length} final</span><span>${ties?"T-":""}${ordinal(place)}</span></div>`}
+  h+=racePanel(wid);
   if(w.status==="open"&&!pastDeadline(w)){const ids=(state.sheetsIn||[]).filter(p=>!removed().includes(p));const all=Object.keys(PLAYERS).filter(p=>!removed().includes(p)&&PLAYERS[p].setupDone);
     h+=`<p class="note sheets">Sheets in: ${ids.length} of ${all.length||ids.length}${ids.length?" · "+ids.map(p=>esc(first(p))).join(", "):""}. Picks stay hidden until the lock.</p>`}
   if(w.status==="draft")h+='<div class="note">Draft view. Only you see this until you open picks in the Commissioner tab.</div>';
@@ -1102,7 +1121,7 @@ function renderPicks(){
   const flag=GP;
   h+=`<p class="note legend"><span><i class="lg mq"></i> 1 to 5: top AP matchups</span><span><i class="lg tl"></i> 6 to 10: tightest lines</span>${locked?"<span>In kickoff order</span>":""}</p>`;
   if(locked){const ats=w.games.map(g=>rs[g.id]&&rs[g.id].at).filter(Boolean).sort();const up=w.scoresAt||ats[ats.length-1];
-    if(up&&w.games.some(g=>rs[g.id]&&!rs[g.id].final&&!rs[g.id].void))h+=`<p class="note updated">Scores updated ${esc(new Date(up).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}))} CT. They refresh about twice an hour.</p>`}
+    if(up&&w.games.some(g=>rs[g.id]&&!rs[g.id].final&&!rs[g.id].void))h+=`<p class="note updated">Scores updated ${esc(new Date(up).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}))} CT. ${liveOn()?`They refresh about every ${liveGap()} minutes while games are live and someone has the site open.`:"They refresh when the schedule runs, which can be hours apart."}</p>`}
   for(const g of gs){
     const r=rs[g.id];const isVoid=r&&r.void;const c=coverSide(g,r);
     const live=r&&!r.final&&!r.void&&(r.away||r.home)?(margin(g,r)>0?"home":"away"):null;
@@ -1115,6 +1134,7 @@ function renderPicks(){
     const conflictHere=survConflict(w,d)===g.id;
     h+=`<div class="game ${g.slot<=5?"mq":"tl"}${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}">${tg&&tg.id===g.id?'<button type="button" class="tbband" data-jump="tb"><span>🎯 Tiebreaker game</span><span>Total \u2193</span></button>':""}<div class="gmeta"><span class="slot">Game ${g.slot}${g.swap?" · swapped in":""}</span><span class="when">${isVoid?"VOID":esc(teamLook(g.away,g,"away").abbr)+(g.neutral?" vs ":" at ")+esc(teamLook(g.home,g,"home").abbr)+" · "+kick(g.kickoff)}${g.neutral&&!isVoid?" · Neutral site":""}</span></div>
       <div class="sides">${sideBtn("away",g.away,g.awayRank,awayLn)}${sideBtn("home",g.home,g.homeRank,homeLn)}<button class="flagbtn" data-lock="${esc(g.id)}" aria-pressed="${d.lock===g.id}" aria-label="Kick your field goal on this game: 3 points if it covers" ${editable&&!isVoid?"":"disabled"}>${flag}<span>FG</span><span class="fl3">3 pts</span></button></div>`;
+    if(!locked&&typeof g.pvLine==="number"){const fav=g.homeLine<0?"home":"away";const sign=fav==="home"?1:-1;h+=`<p class="note lnmv">Line moved: ${esc(teamLook(fav==="home"?g.home:g.away,g,fav).abbr)} ${fmtLine(sign*g.homeLine)}, was ${fmtLine(sign*g.pvLine)} in the preview.</p>`}
     if(r&&!isVoid&&(r.final||r.away||r.home)){
       const key=g.id+":"+r.away+"-"+r.home;const changed=state.seenScores[g.id]&&state.seenScores[g.id]!==key;state.seenScores[g.id]=key;
       const myPick=d.sel&&d.sel[g.id];
@@ -1164,7 +1184,7 @@ function renderPicks(){
     // Short chip labels keep the sticky bar to one row; the full wording is in the title and for screen readers.
     const ck=(ok,t,full)=>`<span class="ck ${ok?"ok":"no"}" title="${esc(full)}" aria-label="${esc(full)}">${ok?"\u2713":"!"} ${t}</span>`;
     const warnH=state.warn&&state.warn.length?`<div class="warn" role="alert"><h2>Your sheet is not complete</h2><ul>${state.warn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div class="bar"><button class="btn" id="warnBack">Keep picking</button><button class="btn primary" id="warnSave">Save anyway</button></div></div>`:"";
-    h+=`<div class="savebar">${warnH}<div class="chain" aria-hidden="true">${gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>`<i class="${d.sel[g.id]?"on":""}"></i>`).join("")}</div><span class="cks">${ck(n>=nvoid,n+" of "+nvoid,n>=nvoid?"First down: all "+nvoid+" games picked":n+" of "+nvoid+" games picked, "+(nvoid-n)+" to go")}${ck(!!d.lock,"FG",d.lock?"Field goal kicked":"No field goal yet")}${ck(d.tb!=null,"TB",d.tb!=null?"Tiebreaker entered":"No tiebreaker yet")}${survivorStart()&&wid>=survivorStart()?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Surv clash":"Survivor",survConflict(w,d)?"Survivor pick is the other side of one of your game picks":d.surv?"Survivor picked":"No survivor pick yet"):""}</span><button class="btn primary" id="saveBtn" ${state.dirty?"":"disabled"}>${state.dirty?"Save picks":"Saved"}</button></div>`}
+    h+=`<div class="savebar">${warnH}<div class="chain" aria-hidden="true">${gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>`<i class="${d.sel[g.id]?"on":""}"></i>`).join("")}</div><span class="cks">${ck(n>=nvoid,n+" of "+nvoid,n>=nvoid?"First down: all "+nvoid+" games picked":n+" of "+nvoid+" games picked, "+(nvoid-n)+" to go")}${ck(!!d.lock,"FG",d.lock?"Field goal kicked":"No field goal yet")}${ck(d.tb!=null,"TB",d.tb!=null?"Tiebreaker entered":"No tiebreaker yet")}${survNeeded(wid)?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Surv clash":"Survivor",survConflict(w,d)?"Survivor pick is the other side of one of your game picks":d.surv?"Survivor picked":"No survivor pick yet"):""}</span><button class="btn primary" id="saveBtn" ${state.dirty?"":"disabled"}>${state.dirty?"Save picks":"Saved"}</button></div>`}
   else if(w.status==="open"&&pastDeadline(w))h+='<div class="note">Picks are locked. Everyone\'s picks show here in a moment.</div>';
   el.innerHTML=h;
 }
@@ -1191,18 +1211,20 @@ document.addEventListener("click",async e=>{
 });
 document.addEventListener("input",e=>{if(e.target.id==="tbInput"&&state.draft){const v=e.target.value;state.draft.tb=v===""?null:Math.max(0,Math.round(Number(v)));state.dirty=true;const b=$("#saveBtn");if(b){b.disabled=false;b.textContent="Save picks"}}});
 document.addEventListener("change",async e=>{
+  if(e.target.id==="liveChk"||e.target.id==="liveGap"||e.target.id==="liveCap"){const live=e.target.id==="liveChk"?{on:e.target.checked}:e.target.id==="liveGap"?{gap:+e.target.value}:{cap:+e.target.value};const r=await api("/api/admin",{action:"autoSettings",live});toast(r.ok?"Saved":r.error);await refresh(true);render();return}
   if(e.target.id==="autoOpenChk"){const r=await api("/api/admin",{action:"autoSettings",autoOpen:e.target.checked});toast(r.ok?(e.target.checked?"Picks will open by themselves":"Picks open only when you tap Open picks"):r.error);await refresh(true);renderCommish()}
   if(e.target.id==="cwkSel"){state.cwk=e.target.value;renderCommish()}});
 document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="confSel"){state.atsConf=e.target.value;renderRankings()}if(e.target.id==="statConf"){state.statConf=e.target.value;renderRankings()}if(e.target.id==="statSlate"){state.statSlate=e.target.checked;renderRankings()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
 
+/* Survivor asks for a pick only while it is open and you are still in it. */
+function survNeeded(wid){if(!survivorOpen(wid))return false;const me=(survivorBoard()||[]).find(r=>r.pid===state.uid);return !me||me.alive||!!me.pending}
 function survConflict(w,d){if(!d||!d.surv||!d.sel)return null;const p=d.sel[d.surv.g];return p&&p!==d.surv.s?d.surv.g:null}
 function missingItems(w,wid,d){const rs=w.results||{};const m=[];
   const open=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void));const left=open.filter(g=>!d.sel[g.id]).length;
   if(left)m.push(left+" game"+(left===1?" has":"s have")+" no pick. A missed pick scores 0.");
   if(!d.lock)m.push("You have not kicked your field goal. A correct field goal pick scores 3 points instead of 1.");
   if(d.tb==null)m.push("You have no tiebreaker guess. A blank guess counts as 0.");
-  const svMe=survivorOpen(wid)?(survivorBoard()||[]).find(r=>r.pid===state.uid):null;
-  if(survivorOpen(wid)&&!d.surv&&(!svMe||svMe.alive||svMe.pending))m.push("You have no survivor pick. A missed survivor pick puts you out.");
+  if(survNeeded(wid)&&!d.surv)m.push("You have no survivor pick. A missed survivor pick puts you out.");
   if(survConflict(w,d))m.push("Your survivor pick is the other side of one of your game picks. One of them is sure to lose.");
   return m}
 
@@ -1346,16 +1368,17 @@ function renderRecap(){
   if(!ws.length){el.innerHTML='<div class="panel empty"><h2>No recap yet</h2><p>The first recap posts when a week goes final.</p></div>';return}
   let wid=state.recapWeek&&ws.includes(state.recapWeek)?state.recapWeek:ws[ws.length-1];
   const w=state.weeks[wid];const ps=weekPlayers(wid);const win=weekWinners(wid);const rows=Object.keys(ps).map(pid=>({pid,...scoreWeek(w,ps[pid])}));const top=rows.filter(r=>win.includes(r.pid))[0];
-  if(wid===ws[ws.length-1])try{localStorage.setItem("tp-recap-seen-"+state.uid,wid)}catch(e){}
+  if(wid===ws[ws.length-1]){try{localStorage.setItem("tp-recap-seen-"+state.uid,wid)}catch(e){}engRecap(wid)}
   const facts=recapFacts(wid);
   let h=`<div class="board rchero"><h2>Week ${w.week} recap</h2>`;
   if(win.length&&top)h+=`<p class="rcwin">\u{1F3C6} ${win.map(nm).map(esc).join(" and ")}</p><p class="note">${w.confChamp?(win.length>1?"Shared Conference Champion Week":"Won Conference Champion Week"):(win.length>1?"Shared the week":"Won the week")} with ${top.pts} point${top.pts===1?"":"s"}, ${top.w}-${top.l} ATS.</p>`;
   h+="</div>";
   if(ws.length>1)h+=`<p class="rcpick"><label class="note">Week <select id="recapWeek">${[...ws].reverse().map(k=>`<option value="${esc(k)}"${k===wid?" selected":""}>Week ${state.weeks[k].week}</option>`).join("")}</select></label></p>`;
+  h+=yourWeekPanel(wid);
   h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
   el.innerHTML=h;
 }
-window.tpRecap={state,render,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor}; /* for the browser test */
+window.tpRecap={state,render,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */
@@ -1373,6 +1396,51 @@ document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("#pa
 document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-paybuy]");if(b){$("#payBuy").value=b.dataset.paybuy;payUpdate()}});
 payUpdate();
+
+/* ---------- rival, what you need, your week ---------- */
+function priorWeeks(wid){const w=state.weeks[wid];return countedWeeks().filter(k=>k<wid&&state.weeks[k].season===w.season)}
+function seasonThrough(wids){const t={};for(const wid of wids){const w=state.weeks[wid];for(const [pid,p] of Object.entries(weekPlayers(wid))){const s=scoreWeek(w,p);const x=t[pid]=t[pid]||{pid,pts:0,lw:0,tb:0};x.pts+=s.pts;x.lw+=s.lw;x.tb+=s.tbMiss||0}}
+  return Object.values(t).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb||a.pid.localeCompare(b.pid))}
+/* The picker just above you in the standings as the week starts, so it holds all week. The leader gets the picker right behind. */
+function rivalOf(pid,wid){if(!state.weeks[wid])return null;const rows=seasonThrough(priorWeeks(wid));if(!rows.length)return null;const i=rows.findIndex(r=>r.pid===pid);const x=i<0?rows[rows.length-1]:i===0?rows[1]:rows[i-1];return x&&x.pid!==pid?x.pid:null}
+function h2hRec(a,b,wids){let W=0,L=0,T=0;for(const wid of wids){const P=weekPlayers(wid,true);if(!P[a]||!P[b])continue;const w=state.weeks[wid];const x=scoreWeek(w,P[a]).pts,y=scoreWeek(w,P[b]).pts;if(x>y)W++;else if(x<y)L++;else T++}return {W,L,T}}
+function raceFacts(wid){const w=state.weeks[wid],me=state.uid,rs=w.results||{};const out={need:"",rival:""};const riv=rivalOf(me,wid);const prior=priorWeeks(wid);const pl=(n,t)=>n+" "+t+(n===1?"":"s");
+  if(!(pastDeadline(w)||w.status==="final")){if(riv){const rows=seasonThrough(prior);const a=rows.find(r=>r.pid===me),b=rows.find(r=>r.pid===riv);const gap=(b?b.pts:0)-(a?a.pts:0);const rec=h2hRec(me,riv,prior);
+      out.rival=`Your rival this week: ${first(riv)}, ${gap>0?pl(gap,"point")+" ahead of you":gap<0?pl(-gap,"point")+" behind you":"level with you"} this season.${rec.W+rec.L+rec.T?` You are ${rec.W}-${rec.L}${rec.T?"-"+rec.T:""} head to head.`:""}`}
+    return out}
+  const ps=weekPlayers(wid);const mine=ps[me];if(!mine)return out;const S=scoreWeek(w,mine);
+  const left=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void)&&!coverSide(g,rs[g.id]));
+  if(w.status!=="final"&&left.length){const pts=Object.entries(ps).map(([pid,p])=>({pid,pts:scoreWeek(w,p).pts}));const top=Math.max(...pts.map(x=>x.pts));const back=top-S.pts;const tail=`with ${pl(left.length,"game")} left`;
+    if(back>0){const room=left.filter(g=>(mine.sel||{})[g.id]).length+(left.some(g=>g.id===mine.lock)?2:0);out.need=`${back} back of the lead ${tail}.${S.pts+room<top?" The week is out of reach.":""}`}
+    else{const others=pts.filter(x=>x.pid!==me).map(x=>x.pts);const nx=others.length?Math.max(...others):0;out.need=nx===S.pts?`Tied for the lead ${tail}.`:`You lead the week by ${S.pts-nx} ${tail}.`}}
+  if(riv){const rp=ps[riv];if(!rp)out.rival=`Your rival ${first(riv)} has no sheet this week.`;else{const R=scoreWeek(w,rp).pts;
+      out.rival=w.status!=="final"?`Your rival ${first(riv)}: ${R}. You: ${S.pts}.`:S.pts>R?`You beat your rival ${first(riv)}, ${S.pts} to ${R}.`:S.pts<R?`Your rival ${first(riv)} beat you, ${R} to ${S.pts}.`:`You and your rival ${first(riv)} tied at ${R}.`}}
+  return out}
+function racePanel(wid){const w=state.weeks[wid];if(!state.uid||!w||w.status==="draft"||removed().includes(state.uid))return "";const F=raceFacts(wid);if(!F.need&&!F.rival)return "";
+  return `<div class="panel race">${F.need?`<p><b>What you need:</b> ${esc(F.need)}</p>`:""}${F.rival?`<p>${esc(F.rival)}</p>`:""}</div>`}
+function yourWeek(wid){const w=state.weeks[wid],me=state.uid,ps=weekPlayers(wid),mine=ps[me];if(!mine)return null;const rs=w.results||{};
+  const rows=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));const S=rows.find(r=>r.pid===me);
+  const graded=w.games.map(g=>{const c=coverSide(g,rs[g.id]);const pick=(mine.sel||{})[g.id];if(!c||!pick)return null;return {g,pick,won:pick===c,by:Math.abs(margin(g,rs[g.id])),with:split(g,ps)[pick].length,fg:mine.lock===g.id}}).filter(Boolean);
+  /* Best pick: the correct call the fewest pickers made. Worst beat: the closest miss. A field goal wins ties. */
+  const best=graded.filter(x=>x.won).sort((a,b)=>a.with-b.with||b.fg-a.fg||a.by-b.by)[0]||null;
+  const worst=graded.filter(x=>!x.won).sort((a,b)=>a.by-b.by||b.fg-a.fg)[0]||null;
+  const rk=list=>{const t=seasonThrough(list);const i=t.findIndex(r=>r.pid===me);if(i<0)return null;const x=t[i];return t.findIndex(r=>r.pts===x.pts&&r.lw===x.lw&&r.tb===x.tb)+1};
+  const prior=priorWeeks(wid);
+  return {pts:S.pts,w:S.w,l:S.l,place:rows.filter(r=>r.pts>S.pts).length+1,tied:rows.filter(r=>r.pts===S.pts).length>1,best,worst,was:rk(prior),now:rk([...prior,wid]),rival:raceFacts(wid).rival,of:rows.length}}
+function yourWeekPanel(wid){const Y=yourWeek(wid);if(!Y)return "";
+  const pk=x=>{const L=teamLook(x.pick==="home"?x.g.home:x.g.away,x.g,x.pick);return `${L.abbr} ${fmtLine(x.pick==="home"?x.g.homeLine:-x.g.homeLine)}`};
+  const tile=(t,v,n)=>`<div><span class="note">${t}</span><b>${esc(v)}</b>${n?`<span class="sub">${esc(n)}</span>`:""}</div>`;
+  const move=Y.now==null?"":Y.was==null?`New at ${ordinal(Y.now)}`:Y.now<Y.was?`Up ${Y.was-Y.now} to ${ordinal(Y.now)}`:Y.now>Y.was?`Down ${Y.now-Y.was} to ${ordinal(Y.now)}`:`Held ${ordinal(Y.now)}`;
+  return `<div class="panel yw"><h2>Your week</h2><div class="stats">${tile("Record",Y.w+"-"+Y.l,Y.pts+" point"+(Y.pts===1?"":"s")+", "+(Y.tied?"T-":"")+ordinal(Y.place)+" of "+Y.of)}${tile("Best pick",Y.best?pk(Y.best):"None",Y.best?(Y.best.with===1?"You alone":Y.best.with+" of "+Y.of+" took it")+(Y.best.fg?", field goal":""):"")}${tile("Worst beat",Y.worst?pk(Y.worst):"None",Y.worst?"Missed by "+Y.worst.by+(Y.worst.fg?", field goal":""):"")}${tile("Season rank",move||"None")}</div>${Y.rival?`<p class="note ywnote">${esc(Y.rival)}</p>`:""}</div>`}
+
+/* ---------- Iron Man ---------- */
+/* Every non-void game picked before the lock, every week from your first sheet on. Tiebreaker and Survivor do not count. */
+function ironOf(D,pid,season){const ks=D.wids.filter(k=>D.week(k).season===season);const i=ks.findIndex(k=>D.players(k)[pid]);if(i<0)return null;
+  for(const k of ks.slice(i)){const w=D.week(k),p=D.players(k)[pid],rs=w.results||{};if(!p||w.games.some(g=>!(rs[g.id]&&rs[g.id].void)&&!(p.sel||{})[g.id]))return null}
+  return {weeks:ks.length-i,full:i===0}}
+/* A full season: no miss from the season's first week through its end. */
+function ironSeasons(D,pid){return statSeasons(D).filter(s=>{const r=ironOf(D,pid,s);return r&&r.full&&(D.done(s)||D.wids.some(k=>{const w=D.week(k);return w.season===s&&w.confChamp&&w.status==="final"}))}).length}
+function ironTag(pid){if(pid===BOT)return "";return ironOf(realStats(),pid,state.config&&state.config.season)?' <span title="Iron Man: every pick in, every week" aria-label="Iron Man">\u{1F9BE}</span>':""}
 
 /* ---------- standings ---------- */
 function seasonRows(includeTest,withBot){
@@ -1401,7 +1469,8 @@ function renderStandings(){
   const max=Math.max(1,...active.map(r=>r.pts));
   h+=`<div class="board"><h2>Season ${state.config?state.config.season:""}</h2>`;
   if(!active.length||!countedWeeks(false).length)h+='<p class="note">No scored weeks yet.</p>';
-  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then field goals made, then smallest total tiebreaker miss. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.</p>`;
+  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${ironTag(r.pid)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then field goals made, then smallest total tiebreaker miss. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.</p>`;
+  if(active.some(r=>ironTag(r.pid)))h+='<p class="note">\u{1F9BE} Iron Man: every pick in, every week.</p>';
   {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of Robo-Sharp.</p>`}}
   h+="</div>";
   h+=titlesPanel()+beatBotPanel()+closePanel(realStats());
@@ -1668,8 +1737,8 @@ function renderPlayers(){
   {const ph=[];for(const wid of Object.keys(state.reveals).sort().reverse()){const p=(state.reveals[wid].players||{})[sel];if(p&&p.history)ph.push([wid,p.history])}
    if(sel!==BOT)h+=`<div class="panel"><h2>Pick history</h2>${ph.length?ph.map(([wid,hs])=>`<h3 class="rh">Week ${state.weeks[wid]?state.weeks[wid].week:""}</h3>${hs.map(x=>`<div class="logi"><span class="note">${esc(when(x.at))}</span><span>${esc(x.note)}</span></div>`).join("")}`).join(""):'<p class="note">History shows after each lock.</p>'}</div>`}
   /* head to head */
-  const h2h=ids.filter(o=>o!==sel).map(o=>{let W=0,L=0,T=0;for(const wid of weeks){const P=weekPlayers(wid,true);if(!P[sel]||!P[o])continue;const w=state.weeks[wid];const a=scoreWeek(w,P[sel]).pts,b=scoreWeek(w,P[o]).pts;if(a>b)W++;else if(a<b)L++;else T++}return {o,W,L,T}}).filter(x=>x.W+x.L+x.T);
-  h+=`<div class="panel"><h2>Head to head</h2>${h2h.length?`<p class="note">${esc(nm(sel))}'s weekly record against each picker (W-L-T).</p><div class="h2h">${h2h.map(x=>`<span>${esc(nm(x.o))}</span><b>${x.W}-${x.L}${x.T?"-"+x.T:""}</b>`).join("")}</div>`:'<p class="note">Head to head records start after a week with at least two pickers.</p>'}</div>`;
+  const h2h=ids.filter(o=>o!==sel).map(o=>({o,...h2hRec(sel,o,weeks)})).filter(x=>x.W+x.L+x.T);const rivalNow=sel!==BOT&&currentWeekId()&&state.weeks[currentWeekId()]?rivalOf(sel,currentWeekId()):null;
+  h+=`<div class="panel"><h2>Head to head</h2>${h2h.length?`<p class="note">${esc(nm(sel))}'s weekly record against each picker (W-L-T).</p><div class="h2h">${h2h.map(x=>`<span>${esc(nm(x.o))}${x.o===rivalNow?' <span class="pill">Rival</span>':""}</span><b>${x.W}-${x.L}${x.T?"-"+x.T:""}</b>`).join("")}</div>`:'<p class="note">Head to head records start after a week with at least two pickers.</p>'}</div>`;
   el.innerHTML=top+h+trendH;
 }
 /* ---------- picker stats ---------- */
@@ -1689,7 +1758,7 @@ function careerPanel(D,pid){const c={season:0,week:0,conf:0,surv:0,bowl:0,cfp:0,
   for(const k of D.wids)count(statWinners(D,k),D.week(k).confChamp?"conf":"week");
   for(const s of statSeasons(D)){if(D.done(s))count(seasonChamp(D,s),"season");count(D.survivor(s),"surv");count(D.bowl(s),"bowl");count(D.cfp(s),"cfp")}
   const tile=(t,n)=>`<div><span class="note">${t}</span><b>${n}</b></div>`;
-  return `<div class="panel"><h2>Career wins</h2><div class="stats">${tile("Season titles",c.season)}${tile("Weekly wins",c.week)}${tile("Conf Champ wins",c.conf)}${tile("Survivor wins",c.surv)}${tile("Bowl wins",c.bowl)}${tile("CFP wins",c.cfp)}${tile("Co-Champion",c.co)}</div><p class="note">Co-Champion counts the wins above that were shared with another picker. Conference Champion Week wins are counted apart from weekly wins. Conf Champ, Bowl, and CFP wins start when those contests do.</p></div>`}
+  return `<div class="panel"><h2>Career wins</h2><div class="stats">${tile("Season titles",c.season)}${tile("Weekly wins",c.week)}${tile("Conf Champ wins",c.conf)}${tile("Survivor wins",c.surv)}${tile("Bowl wins",c.bowl)}${tile("CFP wins",c.cfp)}${tile("Co-Champion",c.co)}${tile("Iron Man seasons",ironSeasons(D,pid))}</div>${(()=>{const ss=statSeasons(D);const r=ss.length?ironOf(D,pid,ss[ss.length-1]):null;return r?`<p class="note">\u{1F9BE} Iron Man: every pick in for ${r.weeks} week${r.weeks===1?"":"s"} straight.</p>`:""})()}<p class="note">Co-Champion counts the wins above that were shared with another picker. Conference Champion Week wins are counted apart from weekly wins. Conf Champ, Bowl, and CFP wins start when those contests do.</p></div>`}
 function statPicks(D,pid){const out=[];for(const k of D.wids){const w=D.week(k);const p=D.players(k)[pid];if(!p)continue;const rs=w.results||{};
     for(const g of [...w.games].sort((a,b)=>a.slot-b.slot)){const c=coverSide(g,rs[g.id]);const pick=(p.sel||{})[g.id];if(!c||!pick)continue;const r=rs[g.id];out.push({k,w,g,pick,won:pick===c,by:Math.abs(margin(g,r)),fg:p.lock===g.id})}}
   return out}
@@ -1780,24 +1849,37 @@ function toLocalInput(ms){const d=new Date(ms);const z=n=>String(n).padStart(2,"
 function unlockForm(w){const orig=w.origDeadline&&Date.parse(w.origDeadline)>NOW()+60e3?Date.parse(w.origDeadline):NOW()+30*60e3;
   return `<div class="autobar"><label for="unlockAt" class="note">New deadline</label><input type="datetime-local" id="unlockAt" value="${toLocalInput(orig)}"><button class="btn" data-act="unlock">Unlock picks</button></div>
   <p class="note">Unlocking hides everyone's picks again and lets players change them until the new deadline. Players already saw the picks while the week was locked. Games that already kicked off can still be picked, so set the deadline before the first kickoff you care about.${w.origDeadline?" The original deadline was "+kick(w.origDeadline)+".":""}</p>`}
+/* Commissioner only. Pages report tabs in small batches, never on a poll. Sheet times come from saved picks. */
+const ENG_NAMES={picks:"Picks",standings:"Standings",recap:"Recap",survivor:"Survivor",players:"Pickers",rankings:"Teams",rules:"Rules",profile:"Profile"};
+function engagePanel(){const E=state.engage;if(!E||!state.logins)return "";const cw=currentWeekId();const week=state.weeks[cw];const lastRecap=recapWeeks().slice(-1)[0];const short=iso=>new Date(iso).toLocaleString("en-US",{timeZone:TZ,weekday:"short",month:"numeric",day:"numeric",hour:"numeric",minute:"2-digit"});
+  const rows=state.logins.filter(p=>!p.removed&&p.setupDone).map(p=>({p,e:E[p.id]||{}})).sort((a,b)=>(b.e.last||"").localeCompare(a.e.last||""));
+  const total={};for(const {e} of rows)for(const [k,n] of Object.entries(e.pages||{}))total[k]=(total[k]||0)+n;
+  const count=e=>Object.values(e.pages||{}).reduce((a,b)=>a+b,0);
+  const body=rows.map(({p,e})=>{const sh=((state.sheetStatus||{})[cw]||{})[p.id];return `<tr><td>${esc(p.name||p.invited||"Picker")}</td><td>${e.last?esc(short(e.last)):"Not yet"}</td><td>${sh?esc(short(sh.at)):"No sheet"}</td><td>${lastRecap&&(e.recaps||{})[lastRecap]?"Read":"No"}</td><td class="num">${e.days||0}</td><td class="num">${count(e)}</td></tr>`}).join("");
+  const pages=Object.keys(ENG_NAMES).filter(k=>total[k]).map(k=>`${ENG_NAMES[k]} ${total[k]}`).join(" · ");
+  return `${secTag("engage",false)}${secHead("Engagement","who is checking in")}<p class="note">Counts start Nov 3, 2026. Only you see this. Last seen and tab counts can lag by a few minutes.</p><div class="tablewrap"><table><thead><tr><th>Picker</th><th>Last seen</th><th>${week?"Week "+week.week+" sheet":"Sheet"}</th><th>${lastRecap?"Week "+state.weeks[lastRecap].week+" Recap":"Recap"}</th><th class="num">Days</th><th class="num">Tabs</th></tr></thead><tbody>${body}</tbody></table></div><p class="note">By tab: ${pages||"nothing yet"}.</p></details>`}
 function autoPanel(){
   const A=state.auto;if(!A)return "";
-  const fl=A.flags||[],runs=A.runs||{},L=A.labels||{};
-  const flagsH=fl.length?fl.map(f=>`<div class="aflag"><span class="pill ${f.level==="error"?"bad":"wait"}">${f.level==="error"?"Failed":"Check"}</span><span>${esc(f.msg)}</span>${f.fixed?"<span></span>":`<button class="btn sm" data-act="dismiss" data-key="${esc(f.key)}">Dismiss</button>`}</div>`).join(""):'<p class="note">No flags. Every automated step worked on its last run.</p>';
+  const fl=A.flags||[],runs=A.runs||{},L=A.labels||{},Lv=A.live||{on:false,gap:10,cap:80,today:0};
+  const failedRun=Object.values(runs).some(r=>!r.ok);const calm=!fl.length&&!failedRun&&!A.paused;
+  const flagsH=fl.length?fl.map(f=>`<div class="aflag"><span class="pill ${f.level==="error"?"bad":"wait"}">${f.level==="error"?"Failed":"Check"}</span><span>${esc(f.msg)}</span>${f.fixed?"<span></span>":`<button class="btn sm" data-act="dismiss" data-key="${esc(f.key)}">Dismiss</button>`}</div>`).join(""):`<p class="note">${A.paused?"No flags. Automation is paused.":failedRun?"No open flags, but a job below failed on its last run.":"No flags. No job failed on its last run."}</p>`;
   const jobs=[["preview","Build preview"],["slate","Build from ESPN"],["refresh","Refresh lines"],["open","Open picks"],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"],["gamelog","Fill game log"],["lines","Fill lines"],["ratings","Update ratings"]];
-  const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span><button class="btn sm" data-act="run" data-job="${j}"${j==="open"?' data-force="1"':""}>${btn}</button></div>`}).join("");
-  return `${secTag("auto",false,"auto"+(fl.some(f=>f.level==="error")?" alert":""),fl.length>0)}<summary><h2 style="display:inline">Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:' <span class="pill">All good</span>'}</h2></summary>
-    <p class="note">${A.paused?"Paused. Nothing runs on the schedule until you resume it. The buttons below still work.":`Runs twice an hour.${A.lastTick?" Last run "+esc(when(A.lastTick))+".":""}`}</p>
+  const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.idle?"Nothing to do":r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span><button class="btn sm" data-act="run" data-job="${j}"${j==="open"?' data-force="1"':""}>${btn}</button></div>`}).join("");
+  return `${secTag("auto",false,"auto"+(fl.some(f=>f.level==="error")?" alert":""),fl.length>0)}<summary><h2 style="display:inline">Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:calm?' <span class="pill">All good</span>':A.paused?' <span class="pill wait">Paused</span>':' <span class="pill bad">Check jobs</span>'}</h2></summary>
+    <p class="note">${A.paused?"Paused. Nothing runs on the schedule until you resume it. The buttons below still work.":`The GitHub schedule is set for twice an hour, but its runs can come hours apart.${A.lastTick?" Last run "+esc(when(A.lastTick))+".":""}`}</p>
     ${flagsH}
     <h3 class="rh">Jobs</h3><div class="lglist">${rows}</div>
     <div class="autobar"><label class="note"><input type="checkbox" id="autoOpenChk" ${A.autoOpen?"checked":""}> Open picks by themselves Wednesday 6 p.m. CT</label></div>
+    <div class="autobar"><label class="note"><input type="checkbox" id="liveChk" ${Lv.on?"checked":""}> Let page visits run overdue scores and the Wednesday open</label></div>
+    <div class="autobar"><label class="note">Every <input type="number" id="liveGap" min="5" max="60" value="${Lv.gap}" style="width:4.5em"> minutes</label><label class="note">Daily cap <input type="number" id="liveCap" min="1" max="160" value="${Lv.cap}" style="width:4.5em"></label></div>
+    <p class="note">Today: ${Lv.today} of ${Lv.cap} page visit runs.${Lv.at?" Last one "+esc(when(Lv.at))+".":""} A 403 or 429 from ESPN turns this off with a flag.</p>
     <div class="autobar"><button class="btn sm" data-act="pause">${A.paused?"Resume automation":"Pause automation"}</button></div>
-    <p class="note">Each week: Monday 9 a.m. posts a preview for pickers, and its lines update every 6 hours. Tuesday 1 p.m. builds a draft from ESPN, and pickers see those 10 games with no picks allowed. Wednesday 6 p.m. refreshes the lines and opens picks if you have not. Open picks always refreshes the lines first. Refresh lines works any time before picks open: it updates the draft, or the preview if there is no draft yet. Once picks open, lines are final. After the lock, scores update twice an hour, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Every button here does the same job by hand. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.</p></details>`}
+    <p class="note">Each week, on the first run at or after each time below. The schedule can run hours late. Monday 9 a.m. posts a preview for pickers, and its lines update every 6 hours. Tuesday 1 p.m. builds a draft from ESPN, and pickers see those 10 games with no picks allowed. Wednesday 6 p.m. refreshes the lines and opens picks, unless you already opened them, the box above is off, the week is on hold, or it has under 10 games. Open picks always refreshes the lines first. Refresh lines works any time before picks open: it updates the draft, or the preview if there is no draft yet. Once picks open, lines are final. After the lock, scores update on each run, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Every button here does the same job by hand. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.</p></details>`}
 function renderCommish(){
   const el=$("#v-commish"),wid=commishWeekId(),w=state.weeks[wid]||null;
   if(!state.isOwner){el.innerHTML="";return}
   let h="";
-  if(!w){el.innerHTML=autoPanel()+loginsPanel()+'<div class="panel empty">No week loaded yet. Tap Build from ESPN above, or paste a slate below.</div>'+importPanel();return}
+  if(!w){el.innerHTML=autoPanel()+loginsPanel()+engagePanel()+'<div class="panel empty">No week loaded yet. Tap Build from ESPN above, or paste a slate below.</div>'+importPanel();return}
   h+=weekPicker(wid);
   const nSub=(state.sheetCount||{})[wid]||0;
   const nAct=(state.logins||[]).filter(a=>!a.removed&&a.setupDone).length;
@@ -1815,13 +1897,13 @@ function renderCommish(){
   }
   if(w.status!=="draft"){
     const rs=w.results||{};
-    h+=`${secTag("scores",false)}${secHead("Scores",(()=>{const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;return nf+" of "+w.games.length+" final"})())}<p class="note">Each game: away score, home score, status. ESPN scores fill in twice an hour. To enter a score yourself, set the game to In progress, Final, or Void and save. Set it back to ESPN to hand it back.</p><div class="grid2 scoreg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)}</span><input type="number" id="ra-${esc(g.id)}" placeholder="${esc(teamLook(g.away).abbr)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" placeholder="${esc(teamLook(g.home).abbr)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status">${(()=>{const man=r.src==="manual"||(r.void&&r.src!=="auto");const cur=!man?"auto":r.void?"void":r.final?"final":"";return [["auto","ESPN"+(r.src==="auto"&&r.status?" · "+r.status:"")],["","In progress"],["final","Final"],["void","Void"]].map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`).join("")})()}</select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button><button class="btn" data-act="run" data-job="scores">Pull scores now</button></div></details>`;
+    h+=`${secTag("scores",false)}${secHead("Scores",(()=>{const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;return nf+" of "+w.games.length+" final"})())}<p class="note">Each game: away score, home score, status. ESPN scores fill in on each run${liveOn()?`, and about every ${liveGap()} minutes while games are live and someone has the site open`:""}. To enter a score yourself, set the game to In progress, Final, or Void and save. Set it back to ESPN to hand it back.</p><div class="grid2 scoreg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)}</span><input type="number" id="ra-${esc(g.id)}" placeholder="${esc(teamLook(g.away).abbr)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" placeholder="${esc(teamLook(g.home).abbr)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status">${(()=>{const man=r.src==="manual"||(r.void&&r.src!=="auto");const cur=!man?"auto":r.void?"void":r.final?"final":"";return [["auto","ESPN"+(r.src==="auto"&&r.status?" · "+r.status:"")],["","In progress"],["final","Final"],["void","Void"]].map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`).join("")})()}</select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button><button class="btn" data-act="run" data-job="scores">Pull scores now</button></div></details>`;
   }
   h+="<!--AUTO-->";
   const ovs=(state.config&&state.config.teamOverrides)||{};
   h+=`${secTag("letters",false)}${secHead("School letters and emoji")}<p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters (up to 5)" aria-label="Letters, up to 5" style="width:130px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}</details>`;
   h+=`${secTag("name",false)}${secHead("League name")}<div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div></details>`;
-  el.innerHTML=h.replace("<!--AUTO-->",autoPanel()+loginsPanel())+importPanel();
+  el.innerHTML=h.replace("<!--AUTO-->",autoPanel()+loginsPanel()+engagePanel())+importPanel();
 }
 
 

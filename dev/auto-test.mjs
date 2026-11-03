@@ -3,7 +3,7 @@
 import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
 import { setFetcher, SITE, CORE, FITT, halfPoint } from "../lib/espn.js";
-import { tick, runJob, autoView, chooseGames, dueJobs } from "../lib/auto.js";
+import { tick, runJob, autoView, chooseGames, dueJobs, liveDue } from "../lib/auto.js";
 import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, closingLines, buildState } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 import { redditPage, pastedTable } from "./reddit-fixture.mjs";
@@ -51,6 +51,7 @@ const slateGames = [
 ];
 let live = {}; // eventId -> {state, completed, name, away, home}
 let failScoreboard = false;
+let blockStatus = null;
 function event([id, a, h, date, line, homeFav]) {
   const s = live[id] || { state: "pre", completed: false, name: "STATUS_SCHEDULED", away: 0, home: 0 };
   const comp = (tid, ha) => ({ homeAway: ha, team: teams[tid], curatedRank: { current: rankOf(tid) }, score: String(ha === "home" ? s.home : s.away) });
@@ -84,6 +85,7 @@ const fitt = { teams: Object.values(teams).map((t, i) => ({ team: { id: t.id, ni
 
 setFetcher(async (url) => {
   if (url.startsWith(SITE + "/scoreboard")) {
+    if (blockStatus) throw Object.assign(new Error(`ESPN answered ${blockStatus} for /scoreboard.`), { status: blockStatus });
     if (failScoreboard) throw new Error("ESPN answered 503 for /scoreboard.");
     const wk = (url.match(/[&?]week=(\d+)/) || [])[1];
     if (wk && +wk === failWeek) throw new Error("ESPN answered 503 for /scoreboard.");
@@ -200,7 +202,7 @@ try {
   const cmState = await buildState({ ...picker, is_commish: true });
   check("the commissioner sees the same preview and keeps the draft", cmState.preview && cmState.preview.set && !!cmState.weeks["2026-w11"]);
   out = await runJob("preview", { now: CT("2026-11-03T15:00:00-06:00") });
-  check("Build preview on a draft says pickers already see it", /already a draft/.test(out.ran.preview.msg), JSON.stringify(out.ran.preview));
+  check("Build preview on a draft says pickers already see it", out.ran.preview.idle && /already a draft/.test(out.ran.preview.msg), JSON.stringify(out.ran.preview));
   slateGames[0][4] = "-9";
   out = await runJob("refresh", { now: CT("2026-11-03T16:00:00-06:00") });
   let rw = await getWeek("2026-w11");
@@ -211,15 +213,26 @@ try {
   slateGames[0][4] = "-7";
 
   // ---- Wednesday: opens at 6 p.m. ----
+  const pvMoved = await getKv("preview", null);
+  pvMoved.games.find((g) => g.id === "e101").homeLine = -6.5;
+  await setKv("preview", pvMoved);
   out = await tick({ now: CT("2026-11-04T17:10:00-06:00") });
   check("not open before 6 p.m. Wednesday", (await getWeek("2026-w11")).status === "draft");
   out = await tick({ now: CT("2026-11-04T18:10:00-06:00") });
   check("opens at 6 p.m. Wednesday", (await getWeek("2026-w11")).status === "open", JSON.stringify(out.ran.open));
   check("opening refreshes the lines", (await getWeek("2026-w11")).games.find((g) => g.espnId === "101").homeLine === -7.5 && /1 line moved/.test(out.ran.open.msg), JSON.stringify(out.ran.open));
+  {
+    const op = await getWeek("2026-w11");
+    check("a line that moved since the preview keeps the preview's line", op.games.find((g) => g.id === "e101").pvLine === -6.5);
+    check("a line that did not move has no tag", op.games.filter((g) => g.pvLine != null).length === 1, JSON.stringify(op.games.map((g) => g.pvLine)));
+    check("the job message says what happened, in the past tense", /^Opened Week 11 picks\. Checked 10 games\./.test(out.ran.open.msg), out.ran.open.msg);
+    const aO = await getKv("auto", {});
+    check("the refresh row says it ran inside Open picks", /^Ran as part of Open picks for Week 11/.test(aO.runs.refresh.msg), aO.runs.refresh.msg);
+  }
   slateGames[0][4] = "-10";
   out = await runJob("refresh", { now: CT("2026-11-04T18:30:00-06:00") });
   rw = await getWeek("2026-w11");
-  check("lines cannot move once picks open", /are final/.test(out.ran.refresh.msg) && rw.games.find((g) => g.espnId === "101").homeLine === -7.5, JSON.stringify(out.ran.refresh));
+  check("lines cannot move once picks open", out.ran.refresh.idle && /were final/.test(out.ran.refresh.msg) && rw.games.find((g) => g.espnId === "101").homeLine === -7.5, JSON.stringify(out.ran.refresh));
   slateGames[0][4] = "-7";
   // If ESPN fails at the open, picks still open on the saved lines and a flag says so.
   await putWeek({ ...rw, status: "draft" }); failScoreboard = true;
@@ -305,6 +318,7 @@ try {
   let a6 = await getKv("auto", {});
   check("changed r/CFB page flags with the paste fallback", !out.ran.rankings.ok && a6.flags.some((f) => f.key === "rankings:failed" && f.msg.includes("r/CFB poll") && f.msg.includes("poll.redditcfb.com")), out.ran.rankings.msg);
   check("other rankings still saved when r/CFB fails", (await getKv("rankings", {})).reddit.asOf === "Week 9");
+  check("a partial rankings failure says what else happened", /No change: |Updated /.test(out.ran.rankings.msg) && /r\/CFB poll: /.test(out.ran.rankings.msg), out.ran.rankings.msg);
   const pasted = parseRedditText(pastedTable);
   check("pasted r/CFB table reads the same as the page", pasted.teams.length === 25 && pasted.teams[21].team === "Hawai'i" && pasted.teams[0].fpv === 229 && pasted.asOf === "Week 9");
   let threw = false; try { parseRedditText("not a poll"); } catch { threw = true; }
@@ -320,10 +334,20 @@ try {
   check("empty odds feed stops the lines job with a flag", !out.ran.lines.ok && a5.flags.some((f) => f.key === "lines:failed" && f.msg.includes("points only")), out.ran.lines.msg);
   out = await tick({ now: CT("2026-11-08T04:10:00-06:00") });
   check("stopped lines job does not run on the schedule", !out.ran.lines);
+  tg = await getKv("teamGames", {});
+  tg.games["903"] = { id: "903", wk: 9, d: "2026-10-31T16:00:00Z", a: "Kentucky", h: "Tennessee", as: 24, hs: 20, n: false, l: null, t: null };
+  await setKv("teamGames", tg);
+  out = await runJob("lines", { now: CT("2026-11-08T04:20:00-06:00") });
+  check("a tap on a stopped lines job tries again and reports what it found", out.ran.lines.ok && /Added 1 line/.test(out.ran.lines.msg) && !(await getKv("teamGames", {})).linesStopped, out.ran.lines.msg);
+  tg = await getKv("teamGames", {});
+  for (const k of Object.keys(tg.games)) if (k.startsWith("77")) delete tg.games[k];
+  await setKv("teamGames", tg);
 
   // ---- the schedule stops: a stale flag shows ----
   v = await autoView(CT("2026-11-08T08:00:00-06:00"), await getConfig());
-  check("missed schedule shows a flag", v.flags.some((f) => f.key === "stale"));
+  check("a normal gap of a few hours raises no flag", !v.flags.some((f) => f.key === "stale"));
+  v = await autoView(CT("2026-11-08T18:00:00-06:00"), await getConfig());
+  check("missed schedule shows a flag", v.flags.some((f) => f.key === "stale" && f.level === "warn"));
 
   // ---- game log rechecks the last two weeks on Sunday; a failed week becomes a flag ----
   failWeek = 10;
@@ -365,6 +389,51 @@ try {
   rr = await getKv("rankings", {});
   check("one source failing still saves the other", !out.ran.ratings.ok && /Updated VSiN/.test(out.ran.ratings.msg) && /SP\+: /.test(out.ran.ratings.msg) && rr.power.vsin.source.includes("Week 11"), out.ran.ratings.msg);
   spPage = espnSpPage();
+
+  // ---- jobs with nothing to do say so ----
+  out = await runJob("open", { now: CT("2026-11-08T12:00:00-06:00") });
+  check("a job with nothing to do is not called Worked", out.ran.open.ok && out.ran.open.idle && /Week 11 was final/.test(out.ran.open.msg), JSON.stringify(out.ran.open));
+  check("the idle run is saved for the panel", (await getKv("auto", {})).runs.open.idle === true);
+  out = await runJob("scores", { now: CT("2026-11-08T12:00:00-06:00") });
+  check("scores with no locked week say what the week was", out.ran.scores.idle && /Week 11 was final/.test(out.ran.scores.msg), JSON.stringify(out.ran.scores));
+
+  // ---- page visits run overdue work ----
+  const cfg0 = await getConfig();
+  await putWeek({ id: "2026-w12", season: 2026, week: 12, deadline: "2026-11-14T16:15:00Z", status: "open", scored: true, results: {}, games: [{ id: "e999", espnId: "999", slot: 1, away: "Rice", home: "Navy", homeLine: -21.5, kickoff: "2026-11-14T17:00:00Z" }] });
+  await setKv("config", { ...cfg0, currentWeek: "2026-w12" });
+  const visit = (t) => buildState(picker, { poll: true, now: CT(t) });
+  const lr = async () => (await getKv("liveRun", null)) || { count: 0 };
+  await visit("2026-11-14T11:30:00-06:00");
+  check("page visits run nothing while the switch is off", (await lr()).count === 0);
+  await setKv("config", { ...(await getConfig()), liveRun: { on: true, gap: 10, cap: 3 } });
+  await visit("2026-11-14T10:30:00-06:00");
+  check("page visits run nothing before a game kicks off", (await lr()).count === 0);
+  await visit("2026-11-14T11:30:00-06:00");
+  check("a page visit runs overdue scores once a game is on", (await lr()).count === 1 && (await getKv("auto", {})).runs.scores.at);
+  await visit("2026-11-14T11:35:00-06:00");
+  check("a second visit inside the gap runs nothing", (await lr()).count === 1);
+  await visit("2026-11-14T11:45:00-06:00");
+  check("the next gap runs again", (await lr()).count === 2);
+  blockStatus = 429;
+  const blockedState = await visit("2026-11-14T11:56:00-06:00");
+  blockStatus = null;
+  let aL = await getKv("auto", {});
+  check("a 429 turns the switch off with a flag, and the page still loads", (await getConfig()).liveRun.on === false && aL.flags.some((f) => f.key === "live:failed" && f.msg.includes("429")) && !!blockedState.weeks, aL.flags.map((f) => f.key).join(","));
+  await visit("2026-11-14T12:10:00-06:00");
+  check("no more runs after the block", (await lr()).count === 3);
+  await setKv("config", { ...(await getConfig()), liveRun: { on: true, gap: 10, cap: 3 } });
+  await visit("2026-11-14T12:30:00-06:00");
+  check("the daily cap holds", (await lr()).count === 3);
+  await visit("2026-11-15T01:00:00-06:00");
+  v = await autoView(CT("2026-11-15T01:00:00-06:00"), await getConfig());
+  check("a postponed game stops calling ESPN after 12 hours", (await lr()).count === 3 && v.live.today === 0, JSON.stringify(v.live));
+  const dr = { id: "2026-w13", status: "draft", deadline: "2026-11-21T16:15:00Z", games: [] };
+  check("a page visit can run a late open", liveDue([dr], { currentWeek: dr.id }, CT("2026-11-18T18:30:00-06:00")).includes("open"));
+  check("not before Wednesday 6 p.m., with the box off, or on a held week", !liveDue([dr], { currentWeek: dr.id }, CT("2026-11-18T17:30:00-06:00")).length && !liveDue([dr], { currentWeek: dr.id, autoOpen: false }, CT("2026-11-18T18:30:00-06:00")).length && !liveDue([{ ...dr, holdOpen: true }], { currentWeek: dr.id }, CT("2026-11-18T18:30:00-06:00")).length);
+  await q("delete from weeks where id = $1", ["2026-w12"]);
+  await q("delete from kv where key = $1", ["liveRun"]);
+  await setKv("config", cfg0);
+  aL = await getKv("auto", {}); await setKv("auto", { ...aL, flags: aL.flags.filter((f) => f.job !== "live" && f.job !== "scores") });
 
   // ---- pause ----
   await setKv("config", { ...(await getConfig()), autoPaused: true });

@@ -15,6 +15,14 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.27.7 | Nov 3, TIME | Commish | Engagement view: last seen, sheet time, Recap reads, days, and tabs, commissioner only | M | Shared, LINES | `COMMIT` |
+| 1.27.6 | Nov 3, TIME | Stats | Iron Man status, full season accomplishment, and Rules text | M | Shared, LINES | `COMMIT` |
+| 1.27.5 | Nov 3, TIME | Recap | Your week: record, best pick, worst beat, and rank move at the top of the Recap | M | Shared, LINES | `COMMIT` |
+| 1.27.4 | Nov 3, TIME | Picks | Weekly rival on Picks, the Recap, and Head to head, plus the live What you need line | M | Shared, LINES | `COMMIT` |
+| 1.27.3 | Nov 3, TIME | Automation | Page visits can run overdue scores and the Wednesday open, behind a switch that starts off, with a gap, a daily cap, and a stop on 403 or 429 | M | Shared, LINES | `COMMIT` |
+| 1.27.2 | Nov 3, TIME | Picks | Line moved tags while picks are open | S | Shared, LINES | `COMMIT` |
+| 1.27.1 | Nov 3, TIME | Commish | Job messages: past tense with the week named, Nothing to do for idle runs, partial rankings results, Fill lines retry, true schedule wording, and a 12 hour stale flag | M | Shared, LINES | `COMMIT` |
+| 1.27 | Nov 3, TIME | Picks | No Survivor chip for pickers who are out | S | Shared, LINES | `COMMIT` |
 | 1.26.3 | Nov 2, 8:39 p.m. | Survivor | Late pickers who miss the first week show as out, with no resurrection; no missing-pick warning once out | S | 37 | `923072b` |
 | 1.26.2 | Nov 2, 8:04 p.m. | Standings | Removed the Referee Report; the Recap replaces it | S | 26 | `9652562` |
 | 1.26.1 | Nov 2, 8:00 p.m. | Picks | Commissioner sees the picker preview above his draft; clearer Build preview message | S | 16 | `86548b8` |

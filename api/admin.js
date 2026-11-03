@@ -4,7 +4,7 @@ import { q, one, addLog, setKv, getKv } from "../lib/db.js";
 import { parseRedditText } from "../lib/polls.js";
 import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../lib/http.js";
 import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings } from "../lib/league.js";
-import { runJob, dismissFlag, JOB_NAMES } from "../lib/auto.js";
+import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES } from "../lib/auto.js";
 
 const BY = "Commissioner";
 
@@ -161,6 +161,24 @@ export default async function handler(req, res) {
         const parts = [];
         if (typeof b.autoOpen === "boolean" && b.autoOpen !== cfg.autoOpen) { cfg.autoOpen = b.autoOpen; parts.push(b.autoOpen ? "Picks open by themselves Wednesday 6 p.m." : "Picks open only when the commissioner taps Open picks"); }
         if (typeof b.autoPaused === "boolean" && b.autoPaused !== cfg.autoPaused) { cfg.autoPaused = b.autoPaused; parts.push(b.autoPaused ? "Paused automation" : "Resumed automation"); }
+        if (b.live && typeof b.live === "object") {
+          const was = liveCfg(cfg), next = { ...was };
+          if (typeof b.live.on === "boolean") next.on = b.live.on;
+          if (b.live.gap !== undefined) {
+            const g = Number(b.live.gap);
+            if (!Number.isInteger(g) || g < LIVE_LIMITS.gapMin || g > LIVE_LIMITS.gapMax) return fail(res, 400, `The gap must be ${LIVE_LIMITS.gapMin} to ${LIVE_LIMITS.gapMax} minutes.`);
+            next.gap = g;
+          }
+          if (b.live.cap !== undefined) {
+            const c = Number(b.live.cap);
+            if (!Number.isInteger(c) || c < 1 || c > LIVE_LIMITS.capMax) return fail(res, 400, `The daily cap must be 1 to ${LIVE_LIMITS.capMax}.`);
+            next.cap = c;
+          }
+          if (next.on !== was.on) parts.push(next.on ? "Page visits can run overdue scores and the open" : "Page visits no longer run jobs");
+          if (next.gap !== was.gap || next.cap !== was.cap) parts.push(`Page visit runs: every ${next.gap} minutes, ${next.cap} a day at most`);
+          cfg.liveRun = next;
+          if (next.on && !was.on) await clearLiveFlags();
+        }
         if (!parts.length) return send(res, 200, { ok: true });
         await setKv("config", cfg);
         await addLog(BY, "Changed automation", parts.join(". "));

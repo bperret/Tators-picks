@@ -1,4 +1,4 @@
-// Scheduled automation. GitHub Actions calls this every hour, and Vercel's daily cron
+// Scheduled automation. GitHub Actions calls this on its schedule, and Vercel's daily cron
 // calls it as a backup. Both send "Authorization: Bearer <CRON_SECRET>".
 import crypto from "node:crypto";
 import { send, fail } from "../lib/http.js";

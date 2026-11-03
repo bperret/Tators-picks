@@ -13,14 +13,14 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - `api/`: `state`, `auth`, `picks`, `admin`, `cron` (5 functions). `lib/`: `db`, `http`, `league`, `auto`, `espn`, `teams`, `polls`.
 - The server clock enforces the lock (423 after the deadline). Reveals are built server side only after the deadline. Drafts go to the commissioner only.
 - Login: cell number plus 6 digit PIN the commissioner makes. 10 wrong tries pause 15 minutes. No texts sent.
-- Automation: GitHub Actions twice an hour at :19 and :49 (`.github/workflows/automation.yml`, secrets SITE_URL and CRON_SECRET) plus a daily Vercel cron call `/api/cron`. Jobs: preview (Mon 9 a.m. CT to the slate, repulled every 6 hours), slate (Tue 1 p.m. CT from ESPN), refresh (button only, also runs inside open), open (Wed 6 p.m. CT), scores and auto final, rankings (AP, CFP, FPI from ESPN; r/CFB poll from poll.redditcfb.com HTML, `lib/polls.js`), ATS, gamelog (fills weeks 1 to now once, then rechecks the last two weeks Sunday 9 a.m.), lines (fills missing lines and totals from ESPN core per-game odds, 100 games a run, stops if a batch finds none). Failures become flags in the Commish Automation panel. Every job has a manual button. Hand-entered scores are never overwritten.
+- Automation: GitHub Actions set for twice an hour at :19 and :49, but runs often come hours apart (`.github/workflows/automation.yml`, secrets SITE_URL and CRON_SECRET) plus a daily Vercel cron call `/api/cron`. Jobs: preview (Mon 9 a.m. CT to the slate, repulled every 6 hours), slate (Tue 1 p.m. CT from ESPN), refresh (button only, also runs inside open), open (Wed 6 p.m. CT), scores and auto final, rankings (AP, CFP, FPI from ESPN; r/CFB poll from poll.redditcfb.com HTML, `lib/polls.js`), ATS, gamelog (fills weeks 1 to now once, then rechecks the last two weeks Sunday 9 a.m.), lines (fills missing lines and totals from ESPN core per-game odds, 100 games a run, stops if a batch finds none). Failures become flags in the Commish Automation panel. Every job has a manual button. Hand-entered scores are never overwritten.
 - Teams has three views. Polls: AP, CFP, r/CFB merged, sortable by any poll (CFP default once out). Power: Ratings (SP+, VSiN, FPI) or Scoring (PPG, PA, margin, SOS from opponents' current SP+; FCS left out). ATS: record, cover margin, O/U; uses the game log record when 5% or fewer of logged games lack a line, else the Covers season record. Tap any team for one shared team card with splits and its game log. Conference and slate filters carry across views. Game log comes from kv `teamGames` through `/api/state?part=teams`.
 - Dark mode: follows the device by default. Profile has Auto, Light, Dark, saved per device in localStorage `tp-theme` and applied by an inline script in `<head>` before the page draws (`data-theme` on `<html>`).
 - No team logos: they are trademarked marks. Teams show as color chips with abbreviations.
 - Commish League members shows each picker's sheet for the week in view: complete, missing parts (picks count, field goal, tiebreaker, survivor if still alive), or not in. The server sends the commissioner game ids and yes or no only (`sheetStatus`), never sides.
 - Do not edit `.github/workflows/automation.yml` from a Claude session. GitHub never fired the schedule while the "claude" account was its last editor; it started after Benton edited the cron line himself (Oct 29). Any change to that file goes to Benton to make on github.com.
 - Picks page after the lock: games sort by kickoff; at the same kickoff the better game goes first (AP ranks added, unranked = 26, then best single rank, then slot). The Robo-Sharp model line hides once picks show; Robo-Sharp (🤖 Robo) appears in the pick columns under each game instead, not in the split bar counts.
-- Live games: the scores job saves `period`, `clock`, `dclock`, `at` per game and `scoresAt` on the week, and saves clock-only changes without a log entry. The picks page shows "Q3 · 8:42" (Halftime, OT, End of Q2, Final) and "Scores updated" time. Your live pick gets a tier chip with cover odds: normal curve, sd = 13.5 x sqrt(minutes left / 60). Safe 90%+, Leaning 70%+, Toss up 40%+, In danger 15%+, Red alert below. Refresh rate stays as is (free ESPN, twice an hour).
+- Live games: the scores job saves `period`, `clock`, `dclock`, `at` per game and `scoresAt` on the week, and saves clock-only changes without a log entry. The picks page shows "Q3 · 8:42" (Halftime, OT, End of Q2, Final) and "Scores updated" time. Your live pick gets a tier chip with cover odds: normal curve, sd = 13.5 x sqrt(minutes left / 60). Safe 90%+, Leaning 70%+, Toss up 40%+, In danger 15%+, Red alert below. Scores refresh on each scheduled run, plus page visit runs when that switch is on.
 - Cover badges on game cards read from your side: green "You covered" or "You're covering" on your pick, red "Beat you" or "Beating you" on the other team. No pick keeps the neutral label.
 - Result reveal: `revealFinals()` runs after each refresh (the page polls every 60 seconds). A card and flash show games that went final since this device last looked, saved per login in localStorage `tp-seen-finals-<uid>`. Several finals share one card. A first visit on a device after a week closed stays quiet.
 - Weekly recap: Recap tab, built in the page by `recapFacts(wid)` from saved picks and results, for final weeks only, with a week picker. A banner on Picks shows until the latest recap is read (`tp-recap-seen-<uid>`). Clean jokes, referee voice. A negative award never lands on the same picker twice in a week. To grow it, add facts to `recapFacts`.
@@ -33,6 +33,13 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Preview slate: the `preview` job saves kv `preview` (the slate rule's games and current lines) and no week, so it takes no picks and touches no standings. `buildState` sends `state.preview` to every login: the kv record until a week exists, then the draft's games with no model lines, so swaps and rebuilds show on their own. The commissioner sees the same panel above his draft view. `previewPanel()` sits on top of Picks. ESPN's line coverage on Monday is not verified live; a short preview raises a flag.
 - Lines: `refreshDraft` updates a draft's lines, totals, and pool from ESPN with the half-point rule and logs moved lines. It keeps Robo-Sharp's FPI lines. `openJob` runs it first, both on schedule and from either Open picks button, so lines are final when picks open. If ESPN fails, picks still open on saved lines with a flag. The `refresh` job updates the draft, or the preview if no draft exists, and refuses once picks are open. It does not run on a schedule.
 - Picks are live alert: `revealLive()` runs after each refresh. Once per week per device (`tp-seen-live-<uid>`), skipped when the picker's sheet is in. It reaches only pickers who open the site.
+- Job messages: a job returns a past tense message that names the week, so it stays true when read days later. A run that did nothing returns `idle(msg)`, saved as `runs[job].idle`, and the panel says "Nothing to do" instead of "Worked". A run blocked by the lock returns `busy`. "All good" shows only with no flags, no failed last run, and no pause. The stale schedule flag fires after 12 hours and is a warning.
+- Page visit runs (`liveRun`, `liveDue` in `lib/auto.js`): `buildState(me, { poll: true })` runs overdue scores or the Wednesday open from a logged in page's state request. The switch `config.liveRun` (`on`, `gap`, `cap`) starts off and is set in Automation. Gap 5 to 60 minutes, default 10. Cap up to 160 a day, default 80. kv `liveRun` holds the day, count, and last attempt, saved behind the database lock before any ESPN call. Scores count only for 12 hours after a game's kickoff, so a postponed game cannot keep calling ESPN. Any 403 or 429 (`espn.takeBlocked`) turns the switch off with a flag. No retries. A quiet poll reads no extra rows, and a poll in a live window reads one small kv row.
+- Line moved tags: `openJob` compares each game's final line to kv `preview` and saves `pvLine` on games that moved, against the last preview pull. Picks shows the tag until the lock.
+- Rival: `rivalOf(pid, wid)` is the picker just above you in the standings from weeks before that week, so it holds all week. The leader's rival is the picker right behind. Page only. `raceFacts(wid)` builds the What you need and rival lines; `racePanel` shows them on Picks. Head to head marks the rival with a pill.
+- Your week: `yourWeek(wid)` and `yourWeekPanel` sit at the top of the Recap. Best pick is the correct pick the fewest pickers made. Worst beat is the closest miss. A field goal wins ties.
+- Iron Man: `ironOf(D, pid, season)` needs a pick on every non-void game, every week from the picker's first sheet on. `ironSeasons` counts full seasons, from the season's first week through a final Conference Champion Week. 🦾 shows on Standings and Pickers. Career tile: Iron Man seasons.
+- Engagement: Commissioner only (`state.engage`, `engagePanel`). The page POSTs tab opens and Recap reads to `/api/state` at most every 2 minutes, or as it hides (`engNote`, `engRecap`, `engFlush`). Polls send nothing. One row per picker in table `engage`. Sheet times come from `sheetStatus`.
 - Commissioner can lock early and unlock with a new deadline; both log publicly. `origDeadline` keeps the week tied to its Saturday.
 
 ## League rules (decided)
@@ -54,7 +61,7 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 18. Add Bowl and CFP rules to the Payouts section if their prizes change.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
@@ -83,29 +90,6 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Everyone starts the run alive, including pickers already out. A picker who joins after the run's first week and misses it is out of that run.
    - Build it all together: the second run, the conference lock, and the Rules text, in one build. The first run keeps the no-repeat team rule through Nov 7. The server must enforce the lock, as it does used teams today, and Robo-Sharp's Survivor pick must follow it.
    - Build note: the app handles one run today (`survivorStart`, `survivorEnd`, `survLate`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
-22. Survivor chip on the save bar. A picker who is out of Survivor should not see the Survivor chip light up as a warning.
-   - The missing pick warning on save already skips pickers who are out (`missingItems`, 1.26.3). The chip in the `.cks` row does not. It checks only `survivorStart()`, not whether the picker is alive.
-   - Build note: use the same test as `missingItems`: survivor open, and alive or pending. That test also drops the chip after Survivor ends, such as in Conference Champion Week. Keep it in step with item 10.
-23. Commish job messages. Audit done Nov 3 from the code, not the live panel. Nothing changed yet.
-   - Rule for the fix: a message states what happened, in the past tense, with the week named, so it stays true when read days later. A run that did nothing says "Nothing to do" with the reason, not "Worked" or "Done."
-   - False messages:
-     - Fill old lines: once `linesStopped` is set, the button run throws "gave no line" even if that run found lines. The button does not send force, so the stop never resets.
-     - Refresh rankings: a partial failure shows only the error, though AP or r/CFB saved. It should say what saved, as Update ratings does.
-     - Refresh rankings: FPI always counts as updated, so "No new polls" cannot show and each run reads as an update.
-     - The stale schedule flag fires after 3 hours, but the real median gap is 6 hours (item 11), so it raises a false "Failed".
-     - "Runs twice an hour", "fill in twice an hour", and "hourly" are not true. Fix with item 11, or say "scheduled, timing varies" sooner.
-     - The weekly note says Wednesday 6 p.m. opens picks. It leaves out that the unchecked box, a held week, or under 10 games stop it, and the open can run hours late.
-   - Stale or vague messages:
-     - Open: "Week N picks are open" stays after the lock. "No draft waiting to open" fits an open week, a locked week, and no slate yet alike.
-     - Preview: "already a draft, so pickers see its games" stays after picks open. A repull does not say if lines moved.
-     - Refresh lines: "No line moved" hides games with no ESPN line and moved totals, and names no week. Show moved and checked counts. With no draft it reports the preview job's message, so it does not say what it refreshed. On a locked or final week it should say lines are final.
-     - Refresh lines inside Open: the Refresh row does not say it ran as part of Open. Old refresh flags stay, because Open clears only its own. Clear them first.
-     - Slate: "already loaded" does not give the week's status or point to Rebuild. A rebuild says "built" and does not warn that swaps are gone.
-     - Pull scores: "No locked week to score" could name the current week and status. Add games changed and live.
-     - Update ATS: "0 finished games added. 0 lines saved" runs each tick. It should read as nothing new.
-     - Another run in progress shows "Failed." It is a retry, not a failure.
-     - "All good" and "Every automated step worked" can show after a failed job's flag is dismissed, or while paused.
-   - Small build, all in `lib/auto.js` and `autoPanel()`. No Rules page change.
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
@@ -129,26 +113,6 @@ Rules page rule: every change that affects how the league plays, scores, or pays
 ### Engagement review (Nov 2): Benton's calls
 Design rule: this league is for people who care enough to check it without prompting. Benton sends no mass messages and follows up one person at a time by text if he wants. There is no group chat to count on. Nothing here may depend on outside prompting. Pickers who lose interest are allowed to drop off.
 Keep the weekly rhythm, Picks, Recap, Survivor, weekly titles, and Robo-Sharp as they are. Fixed times are the habit: Mon preview, Wed 6 p.m. live, Sat 10:15 a.m. lock, Sunday recap.
-
-Approved for this season, not started:
-13. Weekly rival. Each picker gets the picker just above them in the season standings, shown on Picks, during games, and in the Recap. Page only, from saved picks. Rival record feeds Head to head. To settle: who the top picker's rival is.
-14. What you need. A live Saturday line, such as "1 back of the lead with 3 games left", plus your rival's score.
-15. Your week at the top of the Recap: your record, best pick, worst beat, and rank move.
-16. Line moved tags: on the Wednesday slate, show each line's move since the preview. Only if it stays small, with no real upkeep.
-17. Engagement view for the commissioner, in Commish or its own tab: engagement by person and by page, including last seen, sheet time, and Recap reads. Only if it stays small, with no real upkeep. Commissioner only.
-18. Iron Man. A status for a picker who makes all 10 picks before the lock every regular season week. Tiebreaker and Survivor do not count. Conference Champion Week counts. Bowl and CFP do not. A full season Iron Man is a historical accomplishment on the stats pages. No penalty status for pickers who are not Iron Men. To settle: how it treats a late joiner and a void game. A change needs the Rules page in the same build.
-
-Hold, risk review first:
-11. Reliable scores and timing. Benton likes it but nothing gets built until the risks are checked. GitHub ran 6 times on Sat Oct 31, about every 3 hours, with a median gap of 6 hours across Oct 29 to Nov 2, not twice an hour. Idea: when a logged in page polls and a job is overdue, the site runs it (scores while games are live, open at Wed 6 p.m., preview Monday). No new service. The page says "about twice an hour", which must match what is true.
-   - Risk review done Nov 2: safe to build with the guardrails below. Waiting on Benton's go, after he checks the Vercel and Neon usage pages.
-   - Scope: scores and the Wednesday open only. Rankings, ATS, lines, slate, and preview stay on the schedule.
-   - Trigger: a logged in page poll, only while a locked week has a game kicked off and not final, or when a draft is past its open time.
-   - Guardrails: at least 10 minutes between attempts, saved before the ESPN call behind the existing database lock, so traffic cannot multiply calls. A daily cap of 80 attempts. A Commish on and off switch that starts off, with today's count shown. Any 403 or 429 turns it off and raises a flag until Benton resets it. No retries.
-   - Decided Nov 2: start at every 10 minutes. The gap is a Commish setting, so it can change with no code push. Try 10 for a Saturday. If the count looks right and nothing flags, consider 5, with a daily cap of 160.
-   - Math: at most 75 ESPN scoreboard calls on a 12.5 hour Saturday. ESPN publishes no limit, so that cap is a judgment call, not a safe number from ESPN.
-   - Bigger risk than item 11: the 60 second page poll sends the full state. If either usage page shows over 30% used, build a light version check first, so the full state loads only when something changed.
-   - Vercel checked Nov 3, 5 days after launch, one Saturday in: Fast Data Transfer 46.1 MB of 100 GB, Fast Origin Transfer 28 MB of 10 GB, Function Invocations 2K of 1M, Active CPU 3 minutes of 4 hours. All are far under 30%. The old estimate of 0.5 to 9.4 GB was too high and 10 GB is the origin limit. Neon transfer is still unmeasured against 5 GB.
-   - Fix the page wording in the same build: scores about every 10 minutes while games are live.
 
 Separate task, to investigate:
 21. Backup options in case of failure. Benton wants this looked at on its own. Cover what happens if Vercel pauses the site, Neon suspends or loses data, or ESPN blocks the app, and what backups or fallback hosting would get the league running again. Investigate only, nothing built yet.
@@ -174,7 +138,9 @@ NFL version (not built; decided Oct 31):
 - Build behind a toggle only the commissioner sees until NFL tests pass. College tests must pass at every push.
 
 ## Open items
+- Neon transfer is still unmeasured against 5 GB. If it shows over 30% used, build a light version check, so the full state loads only when something changed. Vercel was far under on Nov 3.
+- Page visit runs start off. After turning them on, watch one Saturday. If the count looks right and nothing flags, consider a 5 minute gap and a daily cap of 160. ESPN publishes no limit, so the cap is a judgment call.
 - Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
 - ESPN rankings and FPI feed shapes were not verified live; watch for flags on the first runs.
 - The r/CFB parser was built from the page's table text, not its raw HTML. Watch for a Refresh rankings flag on the first run. Fallback: copy the poll table from the site and paste it in Update rankings.
-- Team stats: ESPN's scoreboard drops lines from finished games. The lines job filled weeks 1 to 9 from ESPN's core per-game odds feed, verified live Oct 29. New games get lines saved before kickoff by the hourly ATS run.
+- Team stats: ESPN's scoreboard drops lines from finished games. The lines job filled weeks 1 to 9 from ESPN's core per-game odds feed, verified live Oct 29. New games get lines saved before kickoff by the ATS job on each run.
