@@ -296,6 +296,37 @@ try {
   check("no Survivor after the Nov 28 week", sv.open14 === false && sv.open13 === true, JSON.stringify(sv));
   check("a lone picker is not resurrected", sv.lone === 0, JSON.stringify(sv));
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
+  // Picker stats on real data
+  await m.evaluate(() => (location.hash = "#players")); await m.waitForTimeout(300);
+  const ps = await m.textContent("#v-players");
+  check("Pickers shows career wins, tendencies, and past picks", ps.includes("Career wins") && ps.includes("Your tendencies") && ps.includes("Past picks"));
+  check("past picks show the week, record, and rank", /Week 10.*\d pts/.test(ps) && ps.includes("Covered by") && ps.includes("Missed by"), ps.slice(0, 300));
+  check("past picks list every game", (await m.locator("#v-players .wkh[open] .pp").count()) === 5);
+  check("players cannot open the sample preview", (await m.locator('[data-sample="1"]').count()) === 0);
+  // Commissioner's sample preview
+  await c.evaluate(() => (location.hash = "#players")); await c.waitForTimeout(300);
+  await c.click('[data-sample="1"]'); await c.waitForTimeout(200);
+  const sm = await c.textContent("#v-players");
+  check("sample preview fills every panel", sm.includes("Sample data") && sm.includes("Hurt you most") && sm.includes("Beat the close") && sm.includes("Past picks") && !sm.includes("No team has burned"), sm.slice(0, 300));
+  check("sample has no undefined or NaN", !/undefined|NaN|null/.test(sm));
+  const smr = await c.evaluate(() => { const D = window.tpStats.sampleStats(); const rows = [...document.querySelectorAll("#v-players table.plain tbody tr")].map((t) => t.textContent); return { rob: rows.filter((t) => t.includes("Robo-Sharp")), rank: [...document.querySelectorAll("#v-players table.plain tbody tr")].find((t) => t.textContent.includes("Robo-Sharp"))?.cells[0].textContent, tiles: [...document.querySelectorAll("#v-players .stats")][0].textContent, n: D.wids.length }; });
+  check("Robo-Sharp is in Beat the close with no rank", smr.rob.length === 1 && smr.rank === "", JSON.stringify(smr));
+  await c.selectOption("#sampleSel", "sample3"); await c.waitForTimeout(100);
+  check("career counts season, Bowl, and CFP wins", /Bowl wins1/.test(await c.textContent("#v-players .stats")), await c.textContent("#v-players .stats"));
+  await c.selectOption("#sampleSel", "sample0"); await c.waitForTimeout(100);
+  check("a shared win is a Co-Champion credit", /Co-Champion[1-9]/.test(await c.textContent("#v-players .stats")), await c.textContent("#v-players .stats"));
+  const cw = await c.evaluate(() => document.documentElement.scrollWidth);
+  check("stats have no sideways scroll on a phone", cw <= 390, String(cw));
+  await c.screenshot({ path: "dev/test-stats.png", fullPage: true });
+  await c.click('[data-sample="0"]'); await c.waitForTimeout(200);
+  check("sample preview turns off", !(await c.textContent("#v-players")).includes("Sample data"));
+  const bc = await m.evaluate(() => {
+    const { closeOf } = window.tpStats;
+    const g = { id: "a", homeLine: -6.5 }, g2 = { id: "b", homeLine: 3.5 }, g3 = { id: "c", homeLine: -2.5 }; const w = { games: [g, g2, g3], results: {} };
+    const D = { wids: ["k"], week: () => w, closing: { a: -9.5, b: 2.5, c: -2.5 }, players: () => ({ p: { sel: { a: "home", b: "away", c: "home" } } }) };
+    return closeOf(D, "p");
+  });
+  check("Beat the close math: moved games only, signed gains", bc.n === 2 && bc.beat === 1 && bc.flat === 1 && bc.avg === 1, JSON.stringify(bc));
   // Payouts on the Rules page
   await m.evaluate(() => { location.hash = "#rules"; document.querySelector("#payouts").open = true; }); await m.waitForTimeout(200);
   const payTxt = async () => [await m.textContent("#payPot"), await m.textContent("#payTotal"), await m.textContent("#payRows")];
