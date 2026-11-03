@@ -86,6 +86,26 @@ Rules page rule: every change that affects how the league plays, scores, or pays
 22. Survivor chip on the save bar. A picker who is out of Survivor should not see the Survivor chip light up as a warning.
    - The missing pick warning on save already skips pickers who are out (`missingItems`, 1.26.3). The chip in the `.cks` row does not. It checks only `survivorStart()`, not whether the picker is alive.
    - Build note: use the same test as `missingItems`: survivor open, and alive or pending. That test also drops the chip after Survivor ends, such as in Conference Champion Week. Keep it in step with item 10.
+23. Commish job messages. Audit done Nov 3 from the code, not the live panel. Nothing changed yet.
+   - Rule for the fix: a message states what happened, in the past tense, with the week named, so it stays true when read days later. A run that did nothing says "Nothing to do" with the reason, not "Worked" or "Done."
+   - False messages:
+     - Fill old lines: once `linesStopped` is set, the button run throws "gave no line" even if that run found lines. The button does not send force, so the stop never resets.
+     - Refresh rankings: a partial failure shows only the error, though AP or r/CFB saved. It should say what saved, as Update ratings does.
+     - Refresh rankings: FPI always counts as updated, so "No new polls" cannot show and each run reads as an update.
+     - The stale schedule flag fires after 3 hours, but the real median gap is 6 hours (item 11), so it raises a false "Failed".
+     - "Runs twice an hour", "fill in twice an hour", and "hourly" are not true. Fix with item 11, or say "scheduled, timing varies" sooner.
+     - The weekly note says Wednesday 6 p.m. opens picks. It leaves out that the unchecked box, a held week, or under 10 games stop it, and the open can run hours late.
+   - Stale or vague messages:
+     - Open: "Week N picks are open" stays after the lock. "No draft waiting to open" fits an open week, a locked week, and no slate yet alike.
+     - Preview: "already a draft, so pickers see its games" stays after picks open. A repull does not say if lines moved.
+     - Refresh lines: "No line moved" hides games with no ESPN line and moved totals, and names no week. Show moved and checked counts. With no draft it reports the preview job's message, so it does not say what it refreshed. On a locked or final week it should say lines are final.
+     - Refresh lines inside Open: the Refresh row does not say it ran as part of Open. Old refresh flags stay, because Open clears only its own. Clear them first.
+     - Slate: "already loaded" does not give the week's status or point to Rebuild. A rebuild says "built" and does not warn that swaps are gone.
+     - Pull scores: "No locked week to score" could name the current week and status. Add games changed and live.
+     - Update ATS: "0 finished games added. 0 lines saved" runs each tick. It should read as nothing new.
+     - Another run in progress shows "Failed." It is a retry, not a failure.
+     - "All good" and "Every automated step worked" can show after a failed job's flag is dismissed, or while paused.
+   - Small build, all in `lib/auto.js` and `autoPanel()`. No Rules page change.
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
@@ -126,7 +146,8 @@ Hold, risk review first:
    - Guardrails: at least 10 minutes between attempts, saved before the ESPN call behind the existing database lock, so traffic cannot multiply calls. A daily cap of 80 attempts. A Commish on and off switch that starts off, with today's count shown. Any 403 or 429 turns it off and raises a flag until Benton resets it. No retries.
    - Decided Nov 2: start at every 10 minutes. The gap is a Commish setting, so it can change with no code push. Try 10 for a Saturday. If the count looks right and nothing flags, consider 5, with a daily cap of 160.
    - Math: at most 75 ESPN scoreboard calls on a 12.5 hour Saturday. ESPN publishes no limit, so that cap is a judgment call, not a safe number from ESPN.
-   - Bigger risk than item 11: the 60 second page poll sends the full state. Estimated Vercel transfer is 0.5 to 9.4 GB a month against 10 GB, and Neon transfer is unmeasured against 5 GB. If either page shows over 30% used, build a light version check first, so the full state loads only when something changed.
+   - Bigger risk than item 11: the 60 second page poll sends the full state. If either usage page shows over 30% used, build a light version check first, so the full state loads only when something changed.
+   - Vercel checked Nov 3, 5 days after launch, one Saturday in: Fast Data Transfer 46.1 MB of 100 GB, Fast Origin Transfer 28 MB of 10 GB, Function Invocations 2K of 1M, Active CPU 3 minutes of 4 hours. All are far under 30%. The old estimate of 0.5 to 9.4 GB was too high and 10 GB is the origin limit. Neon transfer is still unmeasured against 5 GB.
    - Fix the page wording in the same build: scores about every 10 minutes while games are live.
 
 Separate task, to investigate:
