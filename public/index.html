@@ -541,6 +541,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>If slot 1 is void, slot 2 becomes the tiebreaker game.</li>
         <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. The weekly title has no prize in 2026. See Payouts for the plan starting in 2027.</li>
         <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses.</li>
+        <li>Conference Champion Week is the final week of the regular season. Its points count in the season standings like any other week. Its winner earns a Conference Champion win, tracked apart from weekly wins.</li>
         <li>Bowl games are a separate contest.</li>
       </ul></details>
       <details><summary class="rh">Logins</summary>
@@ -562,12 +563,13 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>You cannot pick the same team twice. A void game keeps you alive. A missed survivor pick puts you out.</li>
         <li>Survivor picks lock and reveal with your regular picks. The last picker alive wins.</li>
         <li>If every remaining picker goes out in the same week, they are all resurrected and play one more week. The teams they used stay used. In Survivor's last week, they share the title instead.</li>
-        <li>Survivor ends after the Saturday, November 28 week. There is no Survivor pick in Conference Champion week. Everyone still alive after that week shares the title.</li>
+        <li>Survivor ends after the Saturday, November 28 week. There is no Survivor pick in Conference Champion Week. Everyone still alive after that week shares the title.</li>
         <li>The Survivor tab shows every picker's pick each week, who is still alive, and which teams you have left.</li>
       </ul></details>
       <details><summary class="rh">Stats</summary>
       <ul>
         <li>The Pickers tab shows each picker's past picks by week, career wins, and tendencies. Picks show only after each lock.</li>
+        <li>Conference Champion Week wins are their own career stat and do not count as weekly wins.</li>
         <li>Career wins count from Week 9 of 2026. A win shared with another picker also counts as a Co-Champion credit.</li>
         <li>Beat the close compares the line when the slate posted to the last line saved before kickoff. If the line moved toward your side, you beat the close, even if your pick lost. Late picks count. Games where the line never moved do not count.</li>
         <li>Robo-Sharp appears in Beat the close with no rank. It has no career record.</li>
@@ -577,6 +579,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <p class="note">The 2027 buy-in is not set. Every prize is a share of the pot, so the plan works at any buy-in and any league size. Pot = buy-in x paid pickers.</p>
       <div class="tablewrap"><table class="paytab"><thead><tr><th>Prize</th><th class="num">Share</th><th class="num">Dollars</th></tr></thead><tbody id="payRows"></tbody></table></div>
       <ul>
+        <li>Conference Champion Week is the last regular season week, and its points count toward the season prizes. Its winner gets 6% instead of the 1% weekly prize. It is not one of the 14 weekly prizes.</li>
         <li>Weekly wins pay 1% each, 14% over 14 weeks. Survivor's 15% is split evenly across its runs, 5% a run with 3 runs.</li>
         <li>Ties split the combined prizes for the tied places. If two pickers tie for 1st, they split 1st and 2nd.</li>
         <li>Everyone who wins a Survivor run together splits that run's prize.</li>
@@ -596,7 +599,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <div class="payform">
         <label>Season finish <select id="paySeason"><option value="0">No prize</option><option value="20">1st</option><option value="10">2nd</option><option value="5">3rd</option></select></label>
         <label>Weekly wins <input type="number" id="payWeeks" min="0" max="14" value="0" inputmode="numeric"></label>
-        <label>Conference Champion week <select id="payConf"><option value="0">No</option><option value="6">Won it</option></select></label>
+        <label>Conference Champion Week <select id="payConf"><option value="0">No</option><option value="6">Won it</option></select></label>
         <label>Survivor runs won <input type="number" id="payRuns" min="0" max="3" value="0" inputmode="numeric"></label>
         <label>Winners in each run <input type="number" id="paySplit" min="1" max="200" value="1" inputmode="numeric"></label>
         <label>Bowl challenge <select id="payBowl"><option value="0">No prize</option><option value="10">1st</option><option value="5">2nd</option></select></label>
@@ -1313,7 +1316,7 @@ function renderRecap(){
   if(wid===ws[ws.length-1])try{localStorage.setItem("tp-recap-seen-"+state.uid,wid)}catch(e){}
   const facts=recapFacts(wid);
   let h=`<div class="board rchero"><h2>Week ${w.week} recap</h2>`;
-  if(win.length&&top)h+=`<p class="rcwin">\u{1F3C6} ${win.map(nm).map(esc).join(" and ")}</p><p class="note">${win.length>1?"Shared the week":"Won the week"} with ${top.pts} point${top.pts===1?"":"s"}, ${top.w}-${top.l} ATS.</p>`;
+  if(win.length&&top)h+=`<p class="rcwin">\u{1F3C6} ${win.map(nm).map(esc).join(" and ")}</p><p class="note">${w.confChamp?(win.length>1?"Shared Conference Champion Week":"Won Conference Champion Week"):(win.length>1?"Shared the week":"Won the week")} with ${top.pts} point${top.pts===1?"":"s"}, ${top.w}-${top.l} ATS.</p>`;
   h+="</div>";
   if(ws.length>1)h+=`<p class="rcpick"><label class="note">Week <select id="recapWeek">${[...ws].reverse().map(k=>`<option value="${esc(k)}"${k===wid?" selected":""}>Week ${state.weeks[k].week}</option>`).join("")}</select></label></p>`;
   h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
@@ -1324,7 +1327,7 @@ document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recap
 
 /* ---------- payouts ---------- */
 /* Shares of the pot in percent. They total 100 at 14 weeks and 3 Survivor runs. Money stays off the site; this only does the math. */
-const PAY=[["Season standings","1st",20],["Season standings","2nd",10],["Season standings","3rd",5],["Weekly winner","Each week (14)",1],["Conference Champion week","Winner",6],["Survivor","Each run (3)",5],["Bowl challenge","1st",10],["Bowl challenge","2nd",5],["CFP bracket","1st",10],["CFP bracket","2nd",5]];
+const PAY=[["Season standings","1st",20],["Season standings","2nd",10],["Season standings","3rd",5],["Weekly winner","Each week (14)",1],["Conference Champion Week","Winner",6],["Survivor","Each run (3)",5],["Bowl challenge","1st",10],["Bowl challenge","2nd",5],["CFP bracket","1st",10],["CFP bracket","2nd",5]];
 function payNum(id,lo,hi){const v=Math.floor(Number($("#"+id).value));return isNaN(v)?lo:Math.min(hi,Math.max(lo,v))}
 function payMoney(n){return "$"+Math.round(n).toLocaleString("en-US")}
 function payUpdate(){if(!$("#payRows"))return;
@@ -1382,7 +1385,7 @@ function renderStandings(){
     wk.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));
     const allFinal=w.status==="final";const win=weekWinners(wid);
     const nGames=(w.games||[]).filter(g=>!(w.results&&w.results[g.id]&&w.results[g.id].void)).length;
-    h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">${allFinal?"Final.":"Provisional: "+(wk[0]?wk[0].graded:0)+" of "+nGames+" games graded."}${win.length?(win.length>1?" Shared weekly title: ":" Weekly winner: ")+win.map(nm).map(esc).join(", ").replace(/\.?$/,"."):""}</p>
+    h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">${allFinal?"Final.":"Provisional: "+(wk[0]?wk[0].graded:0)+" of "+nGames+" games graded."}${win.length?(w.confChamp?(win.length>1?" Shared Conference Champion Week: ":" Conference Champion Week winner: "):win.length>1?" Shared weekly title: ":" Weekly winner: ")+win.map(nm).map(esc).join(", ").replace(/\.?$/,"."):""}</p>
     <div class="tablewrap"><table><thead><tr><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${wk.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${win.includes(r.pid)?" 🏆":""}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw?"Hit":r.ll?"Miss":"–"}</td><td class="num">${r.pid===BOT&&!(botPicks(w)||{}).tb?"–":r.tbMiss??"–"}</td></tr>`).join("")}</tbody></table></div><p class="note">ATS = correct picks against the spread. TB = how far off the tiebreaker guess was. Lower is better.</p></div>`;
   }else if(w){h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">Weekly standings appear after picks lock at ${kick(w.deadline)}.</p></div>`}
   const max=Math.max(1,...active.map(r=>r.pts));
@@ -1671,11 +1674,12 @@ function statWinners(D,wid){const w=D.week(wid);if(!w||w.status!=="final")return
 function statSeasons(D){return [...new Set(D.wids.map(k=>D.week(k).season))]}
 function seasonChamp(D,season){const t={};for(const k of D.wids){const w=D.week(k);if(w.season!==season)continue;for(const [pid,p] of Object.entries(D.players(k))){const s=scoreWeek(w,p);const x=t[pid]=t[pid]||{pid,pts:0,lw:0,tb:0};x.pts+=s.pts;x.lw+=s.lw;x.tb+=s.tbMiss||0}}
   const r=Object.values(t).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb);return r.length?r.filter(x=>x.pts===r[0].pts&&x.lw===r[0].lw&&x.tb===r[0].tb).map(x=>x.pid):[]}
-function careerPanel(D,pid){const c={season:0,week:0,surv:0,bowl:0,cfp:0,co:0};const count=(list,key)=>{if(list.includes(pid)){c[key]++;if(list.length>1)c.co++}};
-  for(const k of D.wids)count(statWinners(D,k),"week");
+function careerPanel(D,pid){const c={season:0,week:0,conf:0,surv:0,bowl:0,cfp:0,co:0};const count=(list,key)=>{if(list.includes(pid)){c[key]++;if(list.length>1)c.co++}};
+  /* Conference Champion Week scores like any week for the season, but its win is its own stat, not a weekly win. */
+  for(const k of D.wids)count(statWinners(D,k),D.week(k).confChamp?"conf":"week");
   for(const s of statSeasons(D)){if(D.done(s))count(seasonChamp(D,s),"season");count(D.survivor(s),"surv");count(D.bowl(s),"bowl");count(D.cfp(s),"cfp")}
   const tile=(t,n)=>`<div><span class="note">${t}</span><b>${n}</b></div>`;
-  return `<div class="panel"><h2>Career wins</h2><div class="stats">${tile("Season titles",c.season)}${tile("Weekly wins",c.week)}${tile("Survivor wins",c.surv)}${tile("Bowl wins",c.bowl)}${tile("CFP wins",c.cfp)}${tile("Co-Champion",c.co)}</div><p class="note">Co-Champion counts the wins above that were shared with another picker. Bowl and CFP wins start when those contests do.</p></div>`}
+  return `<div class="panel"><h2>Career wins</h2><div class="stats">${tile("Season titles",c.season)}${tile("Weekly wins",c.week)}${tile("Conf Champ wins",c.conf)}${tile("Survivor wins",c.surv)}${tile("Bowl wins",c.bowl)}${tile("CFP wins",c.cfp)}${tile("Co-Champion",c.co)}</div><p class="note">Co-Champion counts the wins above that were shared with another picker. Conference Champion Week wins are counted apart from weekly wins. Conf Champ, Bowl, and CFP wins start when those contests do.</p></div>`}
 function statPicks(D,pid){const out=[];for(const k of D.wids){const w=D.week(k);const p=D.players(k)[pid];if(!p)continue;const rs=w.results||{};
     for(const g of [...w.games].sort((a,b)=>a.slot-b.slot)){const c=coverSide(g,rs[g.id]);const pick=(p.sel||{})[g.id];if(!c||!pick)continue;const r=rs[g.id];out.push({k,w,g,pick,won:pick===c,by:Math.abs(margin(g,r)),fg:p.lock===g.id})}}
   return out}
@@ -1728,8 +1732,8 @@ function pastPanel(D,pid,surv){const ks=[...D.wids].filter(k=>D.players(k)[pid])
 window.tpStats={closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
 
 function titlesPanel(){const weeks=countedWeeks(state.incTest).filter(w=>state.weeks[w].status==="final");if(!weeks.length)return "";
-  const shelf=weeks.slice().reverse().map(wid=>{const win=weekWinners(wid);return win.length?`<span class="tro">🏆 W${state.weeks[wid].week} · ${win.map(p=>esc(first(p))).join(" & ")}</span>`:""}).join("");
-  const n={};for(const wid of weeks)for(const p of weekWinners(wid))n[p]=(n[p]||0)+1;const lead=Object.entries(n).sort((a,b)=>b[1]-a[1]);
+  const shelf=weeks.slice().reverse().map(wid=>{const win=weekWinners(wid);return win.length?`<span class="tro">🏆 ${state.weeks[wid].confChamp?"Conf Champ":"W"+state.weeks[wid].week} · ${win.map(p=>esc(first(p))).join(" & ")}</span>`:""}).join("");
+  const n={};for(const wid of weeks.filter(k=>!state.weeks[k].confChamp))for(const p of weekWinners(wid))n[p]=(n[p]||0)+1;const lead=Object.entries(n).sort((a,b)=>b[1]-a[1]);
   return `<div class="panel"><h2>Weekly titles</h2><div class="trophies">${shelf}</div>${lead.length?`<p class="note">Most titles: ${lead.slice(0,3).map(([p,k])=>esc(nm(p))+" "+k).join(", ")}.</p>`:""}</div>`}
 function beatBotPanel(){const weeks=countedWeeks(state.incTest);const ids=allPlayerIds(false).filter(p=>!removed().includes(p));
   const ms=ids.map(p=>({p,...modelStats(p,weeks)})).filter(x=>x.agree[0]+x.agree[1]+x.fade[0]+x.fade[1]);if(!ms.length)return "";

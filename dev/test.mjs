@@ -324,12 +324,16 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     draw("sample0"); const text = el.textContent; const co = stat();
     const row = [...el.querySelectorAll("table.plain tbody tr")].find((t) => t.textContent.includes("Robo-Sharp"));
     const out = { text, co, rob: row ? row.cells[0].textContent : "none", width: document.documentElement.scrollWidth };
-    draw("sample3"); out.bowl = stat(); return out;
+    draw("sample3"); out.bowl = stat();
+    const k = D.wids[D.wids.length - 1]; const win = window.tpStats.statWinners(D, k)[0]; draw(win); out.before = stat();
+    D.week(k).confChamp = true; draw(win); out.after = stat(); return out;
   });
   check("stats panels fill with a full season", full2.text.includes("Hurt them most") && full2.text.includes("Beat the close") && full2.text.includes("Past picks") && !full2.text.includes("No team has burned"), full2.text.slice(0, 300));
   check("stats have no undefined or NaN", !/undefined|NaN|null/.test(full2.text));
   check("Robo-Sharp is in Beat the close with no rank", full2.rob === "", full2.rob);
   check("career counts season, Bowl, and CFP wins", /Bowl wins1/.test(full2.bowl), full2.bowl);
+  { const num = (t, l) => +(t.match(new RegExp(l + "(\\d+)")) || [])[1];
+    check("Conference Champion Week wins count apart from weekly wins", num(full2.after, "Weekly wins") === num(full2.before, "Weekly wins") - 1 && num(full2.after, "Conf Champ wins") === num(full2.before, "Conf Champ wins") + 1, full2.before + " | " + full2.after); }
   check("a shared win is a Co-Champion credit", /Co-Champion[1-9]/.test(full2.co), full2.co);
   check("stats have no sideways scroll on a phone", full2.width <= 390, String(full2.width));
   check("the sample preview is gone", (await m.locator("[data-sample]").count()) === 0);
