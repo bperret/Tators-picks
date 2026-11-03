@@ -1206,11 +1206,11 @@ function revealFinals(){
     items.push({g,won,by,fg:mine.lock===g.id,txt:`${teamLook(team,g,pick).abbr} ${fmtLine(pick==="home"?g.homeLine:-g.homeLine)}`})}
   if(items.length)showReveal(w,mine,items);
 }
-function showReveal(w,mine,items){
+function showReveal(w,mine,items,sum){
   const nW=items.filter(x=>x.won).length,nL=items.length-nW;const one=items.length===1?items[0]:null;
   const tone=nW&&nL?"mix":nW?"win":"loss";
   const title=one?(one.won?(one.fg?"Field goal is good!":"You covered!"):(one.fg?"Field goal no good. Bummer.":"Bummer, you didn\u2019t cover.")):tone==="win"?`${nW} for ${nW}. You covered them all!`:tone==="loss"?`Bummer. 0 for ${nL}.`:`${nW} covered, ${nL} missed`;
-  const s=scoreWeek(w,mine);
+  const s=sum||scoreWeek(w,mine);
   const body=one?`${esc(one.txt)} ${one.won?"covered":"missed"} by ${one.by}.`:"";
   const list=one?"":`<ul class="rvlist">${items.map(x=>`<li>${x.won?"\u2705":"\u274C"} ${esc(x.txt)} ${x.won?"covered":"missed"} by ${x.by}${x.fg?" (field goal)":""}</li>`).join("")}</ul>`;
   let el=$("#reveal");if(el)el.remove();
@@ -1221,6 +1221,10 @@ function showReveal(w,mine,items){
   clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},one?6000:10000);
 }
 document.addEventListener("click",e=>{if(e.target.closest("[data-rvclose]")){const r=$("#reveal");if(r)r.remove()}});
+/* Commish preview. Made-up results that touch nothing saved. */
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rvprev]");if(!b)return;const g={id:"preview"};const it=(txt,won,by,fg)=>({g,txt,won,by,fg:!!fg});
+  const sets={win:[it("UGA -10.5",true,3.5)],loss:[it("UGA -10.5",false,3.5)],fg:[it("LSU +3.5",true,7.5,true)],fgmiss:[it("LSU +3.5",false,7.5,true)],mix:[it("UGA -10.5",true,3.5),it("LSU +3.5",false,0.5,true),it("MIA -7.5",true,14.5)]};
+  showReveal({week:(curWeek()||{}).week||10},null,sets[b.dataset.rvprev],{pts:6,w:5,l:3})});
 
 /* ---------- weekly recap ---------- */
 /* A Sunday read built only from saved picks and results. Clean jokes, referee voice.
@@ -1627,12 +1631,11 @@ function renderRankings(){
 /* ---------- players ---------- */
 function renderPlayers(){
   const el=$("#v-players");
-  if(state.statSample&&state.isOwner){renderSampleStats(el);return}
   const ids=allPlayerIds(true);const humans=ids.filter(p=>p!==BOT);
   if(!humans.length){el.innerHTML='<div class="panel empty">Picker stats appear after the first week locks.</div>';return}
   const weeks=countedWeeks(state.incTest);
   const sel=state.profile&&ids.includes(state.profile)?state.profile:(ids.includes(state.uid)?state.uid:ids[0]);
-  let h=`<div class="bar"><label for="profileSel" class="note">Show stats for</label><select id="profileSel">${ids.map(p=>`<option value="${esc(p)}" ${p===sel?"selected":""}>${esc(nm(p))}</option>`).join("")}</select>${state.isOwner?'<button type="button" class="btn sm" data-sample="1">Preview sample data</button>':""}</div>`;
+  let h=`<div class="bar"><label for="profileSel" class="note">Show stats for</label><select id="profileSel">${ids.map(p=>`<option value="${esc(p)}" ${p===sel?"selected":""}>${esc(nm(p))}</option>`).join("")}</select></div>`;
   const top=h;h="";
   const trendH=`<div class="panel"><h2>Rank by week</h2>${trendChart(weeks,ids,sel)}</div>`;
   /* profile */
@@ -1663,7 +1666,7 @@ function renderPlayers(){
 }
 /* ---------- picker stats ---------- */
 /* Past picks, career wins, personal insights, and Beat the close. Every panel reads a data object D,
-   so the commissioner's sample preview and the real site share the same code. Robo-Sharp gets no history here. */
+   so each panel can be tested with any data. Robo-Sharp gets no history here. */
 function realStats(){const cfg=state.config||{};return {wids:countedWeeks(),week:k=>state.weeks[k],players:k=>weekPlayers(k),closing:state.closing||{},
   done:s=>s<cfg.season,survivor:s=>s===cfg.season?survivorChampions():[],bowl:()=>[],cfp:()=>[]}}
 function survivorChampions(){const G=survivorGrid();if(!G||!G.weeks.length)return [];const last=state.weeks[G.weeks[G.weeks.length-1]];if(last.status!=="final"||!survivorFinalWeek(last.id))return [];
@@ -1703,7 +1706,7 @@ function insightPanel(D,pid){const P=statPicks(D,pid);if(!P.length)return '<div 
   const crowd=P.map(x=>{const sp=split(x.g,D.players(x.k));const mine=sp[x.pick].length,other=sp[x.pick==="home"?"away":"home"].length;return {...x,side:mine>other?"with":mine<other?"against":"even"}});
   const cr=s=>{const a=crowd.filter(x=>x.side===s);return fmt([a.filter(x=>x.won).length,a.filter(x=>!x.won).length])};
   const close=closeOf(D,pid);const tile=(t,n,s)=>`<div><span class="note">${t}</span><b>${n}</b>${s?`<span class="note">${s}</span>`:""}</div>`;
-  const me=pid===state.uid||String(pid).startsWith("sample");
+  const me=pid===state.uid;
   let h=`<div class="panel"><h2>${me?"Your tendencies":esc(first(pid))+"'s tendencies"}</h2>`;
   h+=`<h3 class="rh">Hurt ${me?"you":"them"} most</h3>${hurt.length?`<div class="teamrec">${list(hurt)}</div>`:'<p class="note">No team has burned you twice yet.</p>'}`;
   h+=`<h3 class="rh">Won for ${me?"you":"them"} most</h3>${help.length?`<div class="teamrec">${list(help)}</div>`:'<p class="note">No team has come through twice yet.</p>'}`;
@@ -1727,24 +1730,7 @@ function pastPanel(D,pid,surv){const ks=[...D.wids].filter(k=>D.players(k)[pid])
     let sv="";if(p.surv){const g=w.games.find(x=>x.id===p.surv.g);if(g){const team=p.surv.s==="home"?g.home:g.away;const c=coverSide(g,rs[g.id]);sv=`Survivor: ${esc(teamLook(team,g,p.surv.s).abbr)}, ${rs[g.id]&&rs[g.id].void?"void":c?(c===p.surv.s?"survived":"out"):"not final"}.`}}
     return `<details class="wkh"${i===0?" open":""}><summary><b>Week ${w.week}${statSeasons(D).length>1?" \u00b7 "+esc(w.season):""}</b><span class="note">${s.pts} pts \u00b7 ${s.w}-${s.l} \u00b7 ${tied?"T-":""}${ordinal(rank)} of ${all.length}</span></summary><ul class="pplist">${rows}</ul>${tb||sv?`<p class="note">${tb} ${sv}</p>`:""}</details>`}).join("");
   return `<div class="panel"><h2>Past picks</h2>${body}</div>`}
-/* Sample data for the commissioner's preview. Made up, built on the page, never saved. */
-const SAMPLE_NAMES=["Connor West","Ryan Mills","Zach Wells","Tim Reed","Sam Ford","Luke Hale","Drew Pope","Matt Cole","Ben Hart","Cody Lane"];
-function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
-  const T=["Georgia","Alabama","LSU","Ohio State","Texas","Miami","Oregon","Notre Dame","Ole Miss","Tennessee","Utah","BYU","Indiana","Florida","USC","Michigan","Clemson","Oklahoma","Kentucky","Texas Tech"];
-  const ids=SAMPLE_NAMES.map((n,i)=>{const id="sample"+i;state.names[id]=n;return id});const weeks={},reveals={},closing={};
-  const plan=[[2025,12],[2025,13],[2026,6],[2026,7],[2026,8],[2026,9]];
-  plan.forEach(([season,week],wi)=>{const k=season+"-w"+String(week).padStart(2,"0");const pool=[...T].sort(()=>rnd()-.5);const games=[];const results={};
-    for(let i=0;i<10;i++){const id=k+"g"+i;const homeLine=-(Math.floor(rnd()*20)+.5)*(rnd()<.7?1:-1);const g={id,slot:i+1,away:pool[i*2],home:pool[i*2+1],homeLine,modelLine:homeLine+(rnd()-.5)*8,kickoff:new Date(2026,9,3+wi).toISOString(),neutral:false};games.push(g);
-      const mv=[0,0,.5,-.5,1,-1,1.5,-1.5,3,-3][Math.floor(rnd()*10)];closing[id]=homeLine+mv;const tot=30+Math.floor(rnd()*50);const diff=Math.round(-homeLine+(rnd()-.5)*30);const home=Math.max(0,Math.round((tot+diff)/2));results[id]={away:Math.max(0,tot-home),home,final:true,void:false}}
-    weeks[k]={id:k,season,week,status:"final",deadline:new Date(2026,9,3+wi).toISOString(),games,results};
-    const players={};ids.forEach((id,i)=>{const sel={};for(const g of games)sel[g.id]=rnd()<.5?"home":"away";const a=games[(i+wi)%10];players[id]={sel,lock:a.id,tb:35+Math.floor(rnd()*50),surv:season===2026?{g:a.id,s:sel[a.id]}:null}});reveals[k]={players}});
-  const wids=Object.keys(weeks).sort();
-  return sampleStats.D={ids,wids,week:k=>weeks[k],players:k=>reveals[k].players,closing,done:s=>s<2026,survivor:s=>s===2025?[ids[1]]:[ids[2],ids[5]],bowl:s=>s===2025?[ids[3]]:[],cfp:s=>s===2025?[ids[0],ids[4]]:[]}}
-function renderSampleStats(el){const D=sampleStats();const sel=D.ids.includes(state.sampleSel)?state.sampleSel:D.ids[0];
-  el.innerHTML=`<p class="paynote"><b>Sample data.</b> Made-up pickers and games. Only you can see this, and nothing is saved.</p><div class="bar"><label for="sampleSel" class="note">Show stats for</label><select id="sampleSel">${D.ids.map(p=>`<option value="${esc(p)}" ${p===sel?"selected":""}>${esc(nm(p))}</option>`).join("")}</select><button type="button" class="btn sm" data-sample="0">Back to real data</button></div>${careerPanel(D,sel)}${insightPanel(D,sel)}${closePanel(D)}${pastPanel(D,sel)}`}
-document.addEventListener("click",e=>{const b=e.target.closest("[data-sample]");if(b){state.statSample=b.dataset.sample==="1";render()}});
-document.addEventListener("change",e=>{if(e.target.id==="sampleSel"){state.sampleSel=e.target.value;render()}});
-window.tpStats={sampleStats,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
+window.tpStats={closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
 
 function titlesPanel(){const weeks=countedWeeks(state.incTest).filter(w=>state.weeks[w].status==="final");if(!weeks.length)return "";
   const shelf=weeks.slice().reverse().map(wid=>{const win=weekWinners(wid);return win.length?`<span class="tro">🏆 W${state.weeks[wid].week} · ${win.map(p=>esc(first(p))).join(" & ")}</span>`:""}).join("");
@@ -1824,6 +1810,7 @@ function renderCommish(){
   }
   h+="<!--AUTO-->";
   const ovs=(state.config&&state.config.teamOverrides)||{};
+  h+=`${secTag("reveal",false)}${secHead("Preview result animations","only you see these")}<div class="bar"><button class="btn sm" data-rvprev="win">You covered</button><button class="btn sm" data-rvprev="loss">Bummer</button><button class="btn sm" data-rvprev="fg">Field goal good</button><button class="btn sm" data-rvprev="fgmiss">Field goal no good</button><button class="btn sm" data-rvprev="mix">Several games</button></div></details>`;
   h+=`${secTag("letters",false)}${secHead("School letters and emoji")}<p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters (up to 5)" aria-label="Letters, up to 5" style="width:130px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}</details>`;
   h+=`${secTag("name",false)}${secHead("League name")}<div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div></details>`;
   el.innerHTML=h.replace("<!--AUTO-->",autoPanel()+loginsPanel())+importPanel();

@@ -302,24 +302,44 @@ try {
   check("Pickers shows career wins, tendencies, and past picks", ps.includes("Career wins") && ps.includes("Your tendencies") && ps.includes("Past picks"));
   check("past picks show the week, record, and rank", /Week 10.*\d pts/.test(ps) && ps.includes("Covered by") && ps.includes("Missed by"), ps.slice(0, 300));
   check("past picks list every game", (await m.locator("#v-players .wkh[open] .pp").count()) === 5);
-  check("players cannot open the sample preview", (await m.locator('[data-sample="1"]').count()) === 0);
-  // Commissioner's sample preview
-  await c.evaluate(() => (location.hash = "#players")); await c.waitForTimeout(300);
-  await c.click('[data-sample="1"]'); await c.waitForTimeout(200);
-  const sm = await c.textContent("#v-players");
-  check("sample preview fills every panel", sm.includes("Sample data") && sm.includes("Hurt you most") && sm.includes("Beat the close") && sm.includes("Past picks") && !sm.includes("No team has burned"), sm.slice(0, 300));
-  check("sample has no undefined or NaN", !/undefined|NaN|null/.test(sm));
-  const smr = await c.evaluate(() => { const D = window.tpStats.sampleStats(); const rows = [...document.querySelectorAll("#v-players table.plain tbody tr")].map((t) => t.textContent); return { rob: rows.filter((t) => t.includes("Robo-Sharp")), rank: [...document.querySelectorAll("#v-players table.plain tbody tr")].find((t) => t.textContent.includes("Robo-Sharp"))?.cells[0].textContent, tiles: [...document.querySelectorAll("#v-players .stats")][0].textContent, n: D.wids.length }; });
-  check("Robo-Sharp is in Beat the close with no rank", smr.rob.length === 1 && smr.rank === "", JSON.stringify(smr));
-  await c.selectOption("#sampleSel", "sample3"); await c.waitForTimeout(100);
-  check("career counts season, Bowl, and CFP wins", /Bowl wins1/.test(await c.textContent("#v-players .stats")), await c.textContent("#v-players .stats"));
-  await c.selectOption("#sampleSel", "sample0"); await c.waitForTimeout(100);
-  check("a shared win is a Co-Champion credit", /Co-Champion[1-9]/.test(await c.textContent("#v-players .stats")), await c.textContent("#v-players .stats"));
-  const cw = await c.evaluate(() => document.documentElement.scrollWidth);
-  check("stats have no sideways scroll on a phone", cw <= 390, String(cw));
-  await c.screenshot({ path: "dev/test-stats.png", fullPage: true });
-  await c.click('[data-sample="0"]'); await c.waitForTimeout(200);
-  check("sample preview turns off", !(await c.textContent("#v-players")).includes("Sample data"));
+  // A dummy two season league, drawn into the page by the test only.
+  const full2 = await c.evaluate(() => {
+    const { state } = window.tpRecap; const { careerPanel, insightPanel, closePanel, pastPanel } = window.tpStats;
+    const sampleStats = (() => { const SAMPLE_NAMES=["Connor West","Ryan Mills","Zach Wells","Tim Reed","Sam Ford","Luke Hale","Drew Pope","Matt Cole","Ben Hart","Cody Lane"];
+function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const T=["Georgia","Alabama","LSU","Ohio State","Texas","Miami","Oregon","Notre Dame","Ole Miss","Tennessee","Utah","BYU","Indiana","Florida","USC","Michigan","Clemson","Oklahoma","Kentucky","Texas Tech"];
+  const ids=SAMPLE_NAMES.map((n,i)=>{const id="sample"+i;state.names[id]=n;return id});const weeks={},reveals={},closing={};
+  const plan=[[2025,12],[2025,13],[2026,6],[2026,7],[2026,8],[2026,9]];
+  plan.forEach(([season,week],wi)=>{const k=season+"-w"+String(week).padStart(2,"0");const pool=[...T].sort(()=>rnd()-.5);const games=[];const results={};
+    for(let i=0;i<10;i++){const id=k+"g"+i;const homeLine=-(Math.floor(rnd()*20)+.5)*(rnd()<.7?1:-1);const g={id,slot:i+1,away:pool[i*2],home:pool[i*2+1],homeLine,modelLine:homeLine+(rnd()-.5)*8,kickoff:new Date(2026,9,3+wi).toISOString(),neutral:false};games.push(g);
+      const mv=[0,0,.5,-.5,1,-1,1.5,-1.5,3,-3][Math.floor(rnd()*10)];closing[id]=homeLine+mv;const tot=30+Math.floor(rnd()*50);const diff=Math.round(-homeLine+(rnd()-.5)*30);const home=Math.max(0,Math.round((tot+diff)/2));results[id]={away:Math.max(0,tot-home),home,final:true,void:false}}
+    weeks[k]={id:k,season,week,status:"final",deadline:new Date(2026,9,3+wi).toISOString(),games,results};
+    const players={};ids.forEach((id,i)=>{const sel={};for(const g of games)sel[g.id]=rnd()<.5?"home":"away";const a=games[(i+wi)%10];players[id]={sel,lock:a.id,tb:35+Math.floor(rnd()*50),surv:season===2026?{g:a.id,s:sel[a.id]}:null}});reveals[k]={players}});
+  const wids=Object.keys(weeks).sort();
+  return sampleStats.D={ids,wids,week:k=>weeks[k],players:k=>reveals[k].players,closing,done:s=>s<2026,survivor:s=>s===2025?[ids[1]]:[ids[2],ids[5]],bowl:s=>s===2025?[ids[3]]:[],cfp:s=>s===2025?[ids[0],ids[4]]:[]}}
+ return sampleStats; })();
+    const D = sampleStats(); const el = document.querySelector("#v-players");
+    const draw = (p) => (el.innerHTML = careerPanel(D, p) + insightPanel(D, p) + closePanel(D) + pastPanel(D, p));
+    const stat = () => el.querySelector(".stats").textContent;
+    draw("sample0"); const text = el.textContent; const co = stat();
+    const row = [...el.querySelectorAll("table.plain tbody tr")].find((t) => t.textContent.includes("Robo-Sharp"));
+    const out = { text, co, rob: row ? row.cells[0].textContent : "none", width: document.documentElement.scrollWidth };
+    draw("sample3"); out.bowl = stat(); return out;
+  });
+  check("stats panels fill with a full season", full2.text.includes("Hurt them most") && full2.text.includes("Beat the close") && full2.text.includes("Past picks") && !full2.text.includes("No team has burned"), full2.text.slice(0, 300));
+  check("stats have no undefined or NaN", !/undefined|NaN|null/.test(full2.text));
+  check("Robo-Sharp is in Beat the close with no rank", full2.rob === "", full2.rob);
+  check("career counts season, Bowl, and CFP wins", /Bowl wins1/.test(full2.bowl), full2.bowl);
+  check("a shared win is a Co-Champion credit", /Co-Champion[1-9]/.test(full2.co), full2.co);
+  check("stats have no sideways scroll on a phone", full2.width <= 390, String(full2.width));
+  check("the sample preview is gone", (await m.locator("[data-sample]").count()) === 0);
+  // Commish animation preview
+  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+  await c.click('[data-csec="1"]'); await c.waitForTimeout(100);
+  const prev = {};
+  for (const k of ["win", "loss", "fg", "fgmiss", "mix"]) { await c.click(`[data-rvprev="${k}"]`); await c.waitForTimeout(80); prev[k] = await c.$eval("#reveal", (e) => e.className + "|" + e.querySelector("h2").textContent); }
+  await c.click("[data-rvclose]");
+  check("Commish previews every result animation", prev.win === "win|You covered!" && prev.loss.startsWith("loss|Bummer") && prev.fg === "win|Field goal is good!" && prev.fgmiss.startsWith("loss|Field goal no good") && prev.mix === "mix|2 covered, 1 missed", JSON.stringify(prev));
   const bc = await m.evaluate(() => {
     const { closeOf } = window.tpStats;
     const g = { id: "a", homeLine: -6.5 }, g2 = { id: "b", homeLine: 3.5 }, g3 = { id: "c", homeLine: -2.5 }; const w = { games: [g, g2, g3], results: {} };
