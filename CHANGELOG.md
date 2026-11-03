@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.26.3 | Nov 2, 8:39 p.m. | Survivor | Late pickers who miss the first week show as out, with no resurrection; no missing-pick warning once out | S | 37 | `923072b` |
 | 1.26.2 | Nov 2, 8:04 p.m. | Standings | Removed the Referee Report; the Recap replaces it | S | 26 | `9652562` |
 | 1.26.1 | Nov 2, 8:00 p.m. | Picks | Commissioner sees the picker preview above his draft; clearer Build preview message | S | 16 | `86548b8` |
 | 1.26 | Nov 2, 7:51 p.m. | Picks | Picks are live alert: flash and card once a week, skipped if your sheet is in | S | Shared, 289 | `d83b582` |
