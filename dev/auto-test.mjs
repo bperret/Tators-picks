@@ -4,7 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
 import { setFetcher, SITE, CORE, FITT, halfPoint } from "../lib/espn.js";
 import { tick, runJob, autoView, chooseGames } from "../lib/auto.js";
-import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed } from "../lib/league.js";
+import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, closingLines } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 import { redditPage, pastedTable } from "./reddit-fixture.mjs";
 import { parseRedditText } from "../lib/polls.js";
@@ -121,6 +121,9 @@ try {
   const endCfg = { survivorEnd: "2026-11-29T06:00:00Z" };
   check("server: Survivor stays open for the Nov 28 week", !survivorClosed({ deadline: "2026-11-28T16:15:00Z" }, endCfg));
   check("server: Survivor is closed for Conference Champion week", survivorClosed({ deadline: "2026-12-04T23:00:00Z" }, endCfg));
+  const cl = closingLines([{ games: [{ id: "e1", kickoff: "2026-11-07T18:00:00Z" }, { id: "e2", kickoff: "2026-11-07T18:00:00Z" }, { id: "e3", kickoff: "2026-11-07T23:00:00Z" }, { id: "g4", kickoff: "2026-11-07T18:00:00Z" }, { id: "e5", kickoff: "2026-11-07T18:00:00Z" }] }],
+    { lines: { 1: -7, 2: 3.5, 3: -1.5, 4: -2.5 } }, { games: { 5: { l: -10.5 } } }, Date.parse("2026-11-07T20:00:00Z"));
+  check("closing lines use the half point rule, the game log, and only started games", cl.e1 === -7.5 && cl.e2 === 3.5 && cl.e3 === undefined && cl.g4 === undefined && cl.e5 === -10.5, JSON.stringify(cl));
   check("half point: home -7 becomes -7.5", halfPoint(-7, true) === -7.5);
   check("half point: home +3 becomes +3.5", halfPoint(3, false) === 3.5);
   check("half point: pick'em gives the dog the half", halfPoint(0, true) === -0.5 && halfPoint(0, false) === 0.5);
