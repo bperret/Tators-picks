@@ -293,6 +293,13 @@ try {
     // Both lose in the last week: they share, nobody is revived.
     load({ "2026-w11": w["2026-w11"], "2026-w12": w["2026-w12"], "2026-w13": w["2026-w13"] }, { "2026-w11": r(home("a"), home("b"), away("a")), "2026-w12": r(away("a"), away("b"), null), "2026-w13": r(away("a"), away("b"), null) });
     out.lastRev = Object.keys(survivorRevived()); out.lastAlive = survivorBoard().filter((x) => x.pid !== "bot" && x.alive).length;
+    // A late joiner misses the first week: out, and everyone's resurrection does not bring them back.
+    state.roster = ["x", "y", "late"];
+    load({ "2026-w11": w["2026-w11"] }, { "2026-w11": { players: { x: pick(away("a")), y: pick(away("b")) } } });
+    const lb = survivorBoard().filter((x) => x.pid !== "bot");
+    out.lateRev = Object.keys(survivorRevived()).join(); out.lateAlive = lb.filter((x) => x.alive).map((x) => x.pid).sort().join(); out.lateOut = lb.find((x) => x.pid === "late").out?.week;
+    out.lateGrid = survivorGrid().rows.find((x) => x.pid === "late").alive;
+    state.roster = ["x", "y", "z"];
     // Two pickers still alive after the last week share the title. Week 14 has no Survivor.
     load({ "2026-w13": w["2026-w13"], "2026-w14": w["2026-w14"] }, { "2026-w13": r(home("a"), home("b"), away("a")) });
     state.config.survivorStart = "2026-w13"; location.hash = "#survivor"; renderSurvivor();
@@ -307,6 +314,7 @@ try {
   check("pickers alive after the last week share the title", sv.share.includes("share Survivor"), sv.share);
   check("no Survivor after the Nov 28 week", sv.open14 === false && sv.open13 === true, JSON.stringify(sv));
   check("a lone picker is not resurrected", sv.lone === 0, JSON.stringify(sv));
+  check("a late joiner is out and stays out through a resurrection", sv.lateRev === "2026-w11" && sv.lateAlive === "x,y" && sv.lateOut === 11 && sv.lateGrid === false, JSON.stringify(sv));
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
   // Preview panel, drawn on the page with a made-up preview.
   await m.evaluate(() => { const { state, render } = window.tpRecap; state.preview = { week: 11, set: false, autoOpen: true, linesAt: new Date().toISOString(), games: Object.values(state.weeks)[0].games.slice(0, 5).map((g, i) => ({ ...g, slot: i + 1, awayRank: 3, homeRank: 99 })) }; location.hash = "#picks"; render(); });

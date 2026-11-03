@@ -40,7 +40,7 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - 1 point per correct pick, one 3 point field goal (FG; stored as `lock` in pick data; goalpost icon `GP`, no emoji exists), tiebreaker = total points in game 1 (game 2 if game 1 is void; blank = 0). Void games score for nobody.
 - Conference Champion Week is the final regular season week. Its points count in the season standings and season prizes like any week. Its winner gets a Conf Champ win, a separate career stat that is not a weekly win, and 6% instead of the 1% weekly prize. It is not one of the 14 weekly prizes. A week is flagged with `confChamp: true`.
 - Weekly winner: points, then tiebreaker, else shared. Season: points, field goals made, smallest total tiebreaker misses.
-- Survivor: one team ATS a week, no repeats, a miss means out. It ends after the Saturday Nov 28 week; anyone still alive shares the title. If every remaining picker goes out in the same week, all play one more week (used teams stay used); in the last week they share instead. A lone picker is never resurrected.
+- Survivor: one team ATS a week, no repeats, a miss means out. It ends after the Saturday Nov 28 week; anyone still alive shares the title. If every remaining picker goes out in the same week, all play one more week (used teams stay used); in the last week they share instead. A lone picker is never resurrected. A picker with no sheet in a Survivor's first week is out of it, and resurrection does not bring them back (`survLate`).
 - Robo-Sharp (🤖, black and silver): model side in every game, field goal on biggest edge, betting total as tiebreaker, biggest unused edge in Survivor. Shows in standings with no rank and never wins a week, trophy, Survivor, or the season; the best picker wins instead.
 - People are "pickers". Tabs: Picks, Standings, Recap, Survivor, Pickers, Teams, Rules, Profile, Commish. The public log never shows the commissioner's private nickname for a picker.
 - 2026 is a free test season: no buy-ins, no payouts. Weeks, standings, and titles still count. Payouts start in 2027, and the Rules page shows them as hypothetical so pickers can try scenarios and give feedback.
@@ -73,10 +73,11 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Lines are set once, sometime after Dec 6. Timing not decided. A void game scores for nobody and cannot be replaced after the lock.
    - Robo-Sharp plays unranked and cannot win. It takes its 10 biggest edges. Unlike a regular week, its picks and model lines stay hidden until the lock.
    - The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
-10. Second Survivor run this season. Benton says it will probably happen, because so many pickers are going out each week. Not decided, and not ready to build.
-   - It would give late joiners and eliminated pickers a way back in. Weeks before a run starts would not count as misses.
-   - To settle: when it starts, whether the first run ends then or runs alongside it through Nov 28, whether used teams reset, and whether the run is ATS or straight up.
-   - Build note: the app handles one run today (`survivorStart`, `survivorEnd`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
+10. Second Survivor run this season. Decided, waiting on Benton's go to build. It must be live before the Nov 14 week opens, Wednesday Nov 11.
+   - It starts the Nov 14 week and runs through Nov 28, 3 weeks. The first run ends with the Nov 7 week, and anyone alive then shares it.
+   - Used teams reset. ATS for all of 2026; straight up starts in 2027 (item 4).
+   - Everyone starts the run alive, including pickers already out. A picker who joins after the run's first week and misses it is out of that run.
+   - Build note: the app handles one run today (`survivorStart`, `survivorEnd`, `survLate`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
