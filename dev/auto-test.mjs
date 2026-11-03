@@ -142,6 +142,19 @@ try {
   check("preview window ends at the Tuesday slate", !(await dueAt("2026-11-03T13:10:00-06:00")).includes("preview"));
   const pvOut = await runJob("preview", { now: CT("2026-11-02T09:19:00-06:00") });
   check("preview builds", pvOut.ran.preview.ok && /10 games/.test(pvOut.ran.preview.msg), JSON.stringify(pvOut.ran.preview));
+  {
+    const firstLine = (await getKv("preview", null)).first.e101;
+    slateGames[0][4] = "-8";
+    const again = await runJob("preview", { now: CT("2026-11-02T15:00:00-06:00") });
+    const pv2 = await getKv("preview", null);
+    check("a repull moves the preview but keeps the first line", pv2.games.find((g) => g.id === "e101").homeLine === -8.5 && pv2.first.e101 === firstLine && firstLine === -7.5 && /1 line moved/.test(again.ran.preview.msg), JSON.stringify(again.ran.preview));
+    slateGames[0][4] = "-7";
+    delete pv2.first; await setKv("preview", pv2);
+    await runJob("preview", { now: CT("2026-11-02T15:05:00-06:00") });
+    const pv3 = await getKv("preview", null);
+    check("a preview saved before this change starts from its saved lines", pv3.first.e101 === -8.5);
+    pv3.first.e101 = -7.5; await setKv("preview", pv3);
+  }
   const pvSaved = await getKv("preview", null);
   check("preview uses the slate rule and half points", pvSaved.games.map((g) => g.id.slice(1)).join(",") === "101,102,103,104,105,107,109,108,110,111" && pvSaved.games[0].homeLine === -7.5 && pvSaved.id === "2026-w11", JSON.stringify(pvSaved.games[0]));
   check("preview saves no week", !(await getWeek("2026-w11")));
@@ -214,7 +227,7 @@ try {
 
   // ---- Wednesday: opens at 6 p.m. ----
   const pvMoved = await getKv("preview", null);
-  pvMoved.games.find((g) => g.id === "e101").homeLine = -6.5;
+  pvMoved.first.e101 = -6.5;
   await setKv("preview", pvMoved);
   out = await tick({ now: CT("2026-11-04T17:10:00-06:00") });
   check("not open before 6 p.m. Wednesday", (await getWeek("2026-w11")).status === "draft");
