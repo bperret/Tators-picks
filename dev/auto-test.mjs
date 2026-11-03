@@ -197,7 +197,10 @@ try {
   pvState = await buildState(picker);
   check("the preview reads the draft once it exists", pvState.preview && pvState.preview.set && pvState.preview.games.length === 10 && !pvState.weeks["2026-w11"], JSON.stringify(pvState.preview).slice(0, 200));
   check("the preview hides model lines", !JSON.stringify(pvState.preview).includes("modelLine"));
-  check("the commissioner gets the draft, not the preview", !(await buildState({ ...picker, is_commish: true })).preview);
+  const cmState = await buildState({ ...picker, is_commish: true });
+  check("the commissioner sees the same preview and keeps the draft", cmState.preview && cmState.preview.set && !!cmState.weeks["2026-w11"]);
+  out = await runJob("preview", { now: CT("2026-11-03T15:00:00-06:00") });
+  check("Build preview on a draft says pickers already see it", /already a draft/.test(out.ran.preview.msg), JSON.stringify(out.ran.preview));
   slateGames[0][4] = "-9";
   out = await runJob("refresh", { now: CT("2026-11-03T16:00:00-06:00") });
   let rw = await getWeek("2026-w11");
