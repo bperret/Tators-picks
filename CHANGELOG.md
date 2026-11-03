@@ -15,6 +15,9 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.26 | Nov 2, 7:51 p.m. | Picks | Picks are live alert: flash and card once a week, skipped if your sheet is in | S | Shared, 289 | `d83b582` |
+| 1.25 | Nov 2, 7:51 p.m. | Picks | Preview slate: likely games and current lines with no picks allowed, Monday through the open | M | Shared, 289 | `d83b582` |
+| 1.24 | Nov 2, 7:51 p.m. | Automation | Refresh lines button; lines refresh when picks open and are final after that; Build preview and Open picks buttons in Automation | M | Shared, 289 | `d83b582` |
 | 1.23 | Nov 2, 7:23 p.m. | Rules | Conference Champion Week: separate career stat and clearer Rules; points still count for the season | S | 24 | `d18f67d` |
 | 1.22.1 | Nov 2, 7:13 p.m. | Commish | Removed the temporary Preview result animations section | S | 21 | `bb306a2` |
 | 1.22 | Nov 2, 7:10 p.m. | Commish | Removed the sample data preview; added Preview result animations | S | 35 | `f4e2a28` |
