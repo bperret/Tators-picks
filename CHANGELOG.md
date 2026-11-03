@@ -15,7 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
-| 1.22.1 | Nov 2, 7:13 p.m. | Commish | Removed the temporary Preview result animations section | S | 12 | `bb306a2` |
+| 1.22.1 | Nov 2, 7:13 p.m. | Commish | Removed the temporary Preview result animations section | S | 21 | `bb306a2` |
 | 1.22 | Nov 2, 7:10 p.m. | Commish | Removed the sample data preview; added Preview result animations | S | 35 | `f4e2a28` |
 | 1.21 | Nov 2, 6:55 p.m. | Pickers | Sample data preview for the commissioner | S | Shared, 135 | `aab0c2b` |
 | 1.20 | Nov 2, 6:55 p.m. | Pickers | Personal insights: teams that hurt or helped, splits, streaks, bad beats | M | Shared, 135 | `aab0c2b` |

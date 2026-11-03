@@ -58,12 +58,16 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - No Survivor pick this week. Survivor already ends after the Nov 28 week.
    - To settle: how the week builds if ESPN's week number or season type differs.
 2. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
-   - One lock before Dec 18. Own bracket screen, scoring, and standings, separate from the regular challenge. Tiebreaker: title game total.
+   - One bracket, fully filled out, with one lock before Dec 18. Own bracket screen, scoring, and standings, separate from the regular challenge. Tiebreaker: title game total.
+   - The top four seeds have byes, so they earn no first round points. Nobody re-picks: a pick on a team that is already out scores 0.
    - Scoring doubles each round, so the title game counts the most: first round 1, quarterfinals 2, semifinals 4, title game 8. Perfect bracket = 28.
 3. Bowl challenge: separate from the regular challenge, with its own standings. All non-CFP bowls except the Celebration Bowl: 35 bowls, Dec 15 to Jan 2 (ESPN's list has the Arizona Bowl with no date; recheck).
-   - One lock for the whole contest, before the first bowl (Dec 15).
-   - Idea, not final: each picker chooses which 10 bowls to pick.
-   - To settle: ATS or straight up, field goal or not, and a tiebreaker that works when pickers hold different games. The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
+   - Each picker chooses 10 bowls and picks them against the spread. One 3 point field goal. A blank pick scores 0.
+   - One lock for the whole contest, Tuesday Dec 15 before the first kickoff.
+   - Tiebreaker: everyone guesses the total points in one fixed bowl, picked or not: the bowl with the highest ranked AP teams. Use AP ranks added, unranked = 26, then the best single rank, the same as the kickoff order rule.
+   - Lines are set once, sometime after Dec 6. Timing not decided. A void game scores for nobody and cannot be replaced after the lock.
+   - Robo-Sharp plays unranked and cannot win. It takes its 10 biggest edges. Unlike a regular week, its picks and model lines stay hidden until the lock.
+   - The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
