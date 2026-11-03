@@ -81,6 +81,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
+   - Idea (Nov 2): conference lock. Picking a team burns its whole conference for that run. If no legal game is left, you can pick any game. Not decided. Under ATS it adds planning but does not change how fast pickers go out. Under straight up a rough model at 20 pickers still leaves about 9 alive after 5 weeks. To settle: whether a free pick can reuse a team, and how independents like Notre Dame count.
    - Under review (Nov 2): Benton is thinking of keeping ATS in 2027, since 5 week runs need quick eliminations. Not decided. A rough model at 20 pickers: ATS gives a solo winner about 70% of runs; straight up leaves 9 to 11 alive after 5 weeks.
    - Pick one team to win outright, not against the spread. One loss and you are out of that run.
    - The season has fixed runs, for example weeks 1 to 5, 6 to 10, and 11 to the last week before Conference Champion Week. Everybody starts each run alive, and used teams reset.
