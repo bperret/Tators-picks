@@ -333,13 +333,6 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("a shared win is a Co-Champion credit", /Co-Champion[1-9]/.test(full2.co), full2.co);
   check("stats have no sideways scroll on a phone", full2.width <= 390, String(full2.width));
   check("the sample preview is gone", (await m.locator("[data-sample]").count()) === 0);
-  // Commish animation preview
-  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
-  await c.click('[data-csec="1"]'); await c.waitForTimeout(100);
-  const prev = {};
-  for (const k of ["win", "loss", "fg", "fgmiss", "mix"]) { await c.click(`[data-rvprev="${k}"]`); await c.waitForTimeout(80); prev[k] = await c.$eval("#reveal", (e) => e.className + "|" + e.querySelector("h2").textContent); }
-  await c.click("[data-rvclose]");
-  check("Commish previews every result animation", prev.win === "win|You covered!" && prev.loss.startsWith("loss|Bummer") && prev.fg === "win|Field goal is good!" && prev.fgmiss.startsWith("loss|Field goal no good") && prev.mix === "mix|2 covered, 1 missed", JSON.stringify(prev));
   const bc = await m.evaluate(() => {
     const { closeOf } = window.tpStats;
     const g = { id: "a", homeLine: -6.5 }, g2 = { id: "b", homeLine: 3.5 }, g3 = { id: "c", homeLine: -2.5 }; const w = { games: [g, g2, g3], results: {} };

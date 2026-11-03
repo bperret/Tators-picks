@@ -1206,11 +1206,11 @@ function revealFinals(){
     items.push({g,won,by,fg:mine.lock===g.id,txt:`${teamLook(team,g,pick).abbr} ${fmtLine(pick==="home"?g.homeLine:-g.homeLine)}`})}
   if(items.length)showReveal(w,mine,items);
 }
-function showReveal(w,mine,items,sum){
+function showReveal(w,mine,items){
   const nW=items.filter(x=>x.won).length,nL=items.length-nW;const one=items.length===1?items[0]:null;
   const tone=nW&&nL?"mix":nW?"win":"loss";
   const title=one?(one.won?(one.fg?"Field goal is good!":"You covered!"):(one.fg?"Field goal no good. Bummer.":"Bummer, you didn\u2019t cover.")):tone==="win"?`${nW} for ${nW}. You covered them all!`:tone==="loss"?`Bummer. 0 for ${nL}.`:`${nW} covered, ${nL} missed`;
-  const s=sum||scoreWeek(w,mine);
+  const s=scoreWeek(w,mine);
   const body=one?`${esc(one.txt)} ${one.won?"covered":"missed"} by ${one.by}.`:"";
   const list=one?"":`<ul class="rvlist">${items.map(x=>`<li>${x.won?"\u2705":"\u274C"} ${esc(x.txt)} ${x.won?"covered":"missed"} by ${x.by}${x.fg?" (field goal)":""}</li>`).join("")}</ul>`;
   let el=$("#reveal");if(el)el.remove();
@@ -1221,11 +1221,6 @@ function showReveal(w,mine,items,sum){
   clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},one?6000:10000);
 }
 document.addEventListener("click",e=>{if(e.target.closest("[data-rvclose]")){const r=$("#reveal");if(r)r.remove()}});
-/* Commish preview. Made-up results that touch nothing saved. */
-document.addEventListener("click",e=>{const b=e.target.closest("[data-rvprev]");if(!b)return;const g={id:"preview"};const it=(txt,won,by,fg)=>({g,txt,won,by,fg:!!fg});
-  const sets={win:[it("UGA -10.5",true,3.5)],loss:[it("UGA -10.5",false,3.5)],fg:[it("LSU +3.5",true,7.5,true)],fgmiss:[it("LSU +3.5",false,7.5,true)],mix:[it("UGA -10.5",true,3.5),it("LSU +3.5",false,0.5,true),it("MIA -7.5",true,14.5)]};
-  showReveal({week:(curWeek()||{}).week||10},null,sets[b.dataset.rvprev],{pts:6,w:5,l:3})});
-
 /* ---------- weekly recap ---------- */
 /* A Sunday read built only from saved picks and results. Clean jokes, referee voice.
    A negative award never lands on the same picker twice in one week. Add new facts to recapFacts. */
@@ -1810,7 +1805,6 @@ function renderCommish(){
   }
   h+="<!--AUTO-->";
   const ovs=(state.config&&state.config.teamOverrides)||{};
-  h+=`${secTag("reveal",false)}${secHead("Preview result animations","only you see these")}<div class="bar"><button class="btn sm" data-rvprev="win">You covered</button><button class="btn sm" data-rvprev="loss">Bummer</button><button class="btn sm" data-rvprev="fg">Field goal good</button><button class="btn sm" data-rvprev="fgmiss">Field goal no good</button><button class="btn sm" data-rvprev="mix">Several games</button></div></details>`;
   h+=`${secTag("letters",false)}${secHead("School letters and emoji")}<p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters (up to 5)" aria-label="Letters, up to 5" style="width:130px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}</details>`;
   h+=`${secTag("name",false)}${secHead("League name")}<div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div></details>`;
   el.innerHTML=h.replace("<!--AUTO-->",autoPanel()+loginsPanel())+importPanel();
