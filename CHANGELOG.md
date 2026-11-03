@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.27.8 | Nov 3, 12:33 p.m. | Picks | Line moved tags compare to the first preview line, not the last | S | 9 | `ffa7494` |
 | 1.27.7 | Nov 3, 12:18 p.m. | Commish | Engagement view: last seen, sheet time, Recap reads, days, and tabs, commissioner only | M | Shared, 431 | `3e6c438` |
 | 1.27.6 | Nov 3, 12:18 p.m. | Stats | Iron Man status, full season accomplishment, and Rules text | M | Shared, 431 | `3e6c438` |
 | 1.27.5 | Nov 3, 12:18 p.m. | Recap | Your week: record, best pick, worst beat, and rank move at the top of the Recap | M | Shared, 431 | `3e6c438` |
