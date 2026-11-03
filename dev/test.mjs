@@ -64,6 +64,8 @@ try {
   check("slate loads as draft", (await c.textContent("#v-commish")).includes("This week · Week 10") && (await c.textContent("#v-commish h2 .pill")) === "Draft");
   await c.click('[data-act="open"]'); await c.waitForTimeout(400);
   check("picks open", (await c.textContent("#statusBadge")).toLowerCase().includes("picks open"));
+  check("the Picks are live alert shows when picks open", (await c.textContent("#reveal.live")).includes("Picks are live!"));
+  await c.evaluate(() => document.querySelector("#reveal").remove());
   {
     const post = (body) => c.evaluate((b) => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then((r) => r.json()), body);
     const get = () => c.evaluate(() => fetch("/api/state").then((r) => r.json()).then((s) => s.rankings));
@@ -106,6 +108,16 @@ try {
   await m.click("#setupForm button[type=submit]");
   await m.waitForSelector("#app:not([hidden])");
   check("player finishes first login", !(await m.isVisible("#commishTab")));
+  await m.waitForSelector("#reveal.live");
+  check("a new picker sees the Picks are live alert", (await m.textContent("#reveal.live")).includes("lines are final"));
+  await m.waitForTimeout(1000); await m.screenshot({ path: "dev/test-live.png" });
+  await m.click("[data-rvgo]"); await m.waitForTimeout(100);
+  check("Make my picks closes the alert and goes to Picks", !(await m.isVisible("#reveal")) && (await m.evaluate(() => location.hash)) === "#picks");
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
+  check("the alert shows once a week", !(await m.isVisible("#reveal")));
+  await m.evaluate(() => { const { state, revealLive } = window.tpRecap; localStorage.removeItem("tp-seen-live-" + state.uid); state.sheetsIn = [state.uid]; revealLive(); });
+  check("the alert skips a picker whose sheet is in", !(await m.isVisible("#reveal")));
+  await m.evaluate(() => { const { state } = window.tpRecap; localStorage.removeItem("tp-seen-live-" + state.uid); state.sheetsIn = []; });
 
   // ---- picks with warnings, then complete ----
   const sides = m.locator(".side:not([disabled])");
@@ -296,6 +308,19 @@ try {
   check("no Survivor after the Nov 28 week", sv.open14 === false && sv.open13 === true, JSON.stringify(sv));
   check("a lone picker is not resurrected", sv.lone === 0, JSON.stringify(sv));
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
+  // Preview panel, drawn on the page with a made-up preview.
+  await m.evaluate(() => { const { state, render } = window.tpRecap; state.preview = { week: 11, set: false, autoOpen: true, linesAt: new Date().toISOString(), games: Object.values(state.weeks)[0].games.slice(0, 5).map((g, i) => ({ ...g, slot: i + 1, awayRank: 3, homeRank: 99 })) }; location.hash = "#picks"; render(); });
+  await m.waitForTimeout(200);
+  const pvt = await m.textContent("#pvbox");
+  check("the preview says picks are not open and lists the games", pvt.includes("You cannot pick yet") && pvt.includes("Tuesday or Wednesday") && (await m.locator("#pvbox .pvg").count()) === 5, pvt.slice(0, 200));
+  check("the preview has no pick buttons", (await m.locator("#pvbox button").count()) === 0);
+  await m.evaluate(() => { const { state, render } = window.tpRecap; state.preview.set = true; render(); });
+  check("a set slate says the games are set", (await m.textContent("#pvbox")).includes("The 10 games are set"));
+  await m.setViewportSize({ width: 390, height: 800 }); await m.waitForTimeout(100);
+  check("the preview has no sideways scroll on a phone", (await m.evaluate(() => document.documentElement.scrollWidth)) <= 390);
+  await m.locator("#pvbox").screenshot({ path: "dev/test-preview.png" });
+  await m.evaluate(() => { const { state, render } = window.tpRecap; state.preview = null; render(); });
+
   // Picker stats on real data
   await m.evaluate(() => (location.hash = "#players")); await m.waitForTimeout(300);
   const ps = await m.textContent("#v-players");

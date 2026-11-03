@@ -176,6 +176,13 @@ details.manual .inner{margin-top:12px}
 .pp{display:flex;gap:8px;padding:3px 0;align-items:baseline}
 .ppi{font-weight:700;width:1em;flex:none;text-align:center}
 .pp.win .ppi{color:var(--win)}.pp.loss .ppi{color:var(--loss)}.pp.none .ppi{color:var(--muted)}
+.pv summary{cursor:pointer}
+.pvlist{list-style:none;margin:8px 0;padding:0}
+.pvg{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 0;border-top:1px solid var(--line)}
+.pvn{width:1.4em;font-weight:700;color:var(--muted);text-align:right}
+.pvs{display:inline-flex;align-items:center;gap:5px}
+.pvc{background:var(--tc);color:var(--ti);border-radius:4px;padding:1px 6px;font-size:.78rem;font-weight:700}
+.pvk{flex-basis:100%;padding-left:calc(1.4em + 8px)}
 .recapban{display:block;text-align:center;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
 .rchero h2{margin:0}
 .rchero .note{color:#e8edf2}
@@ -192,6 +199,8 @@ details.manual .inner{margin-top:12px}
 #reveal.win .rvflash{background:#1c7a45}#reveal.loss .rvflash{background:#b3261e}#reveal.mix .rvflash{background:#c9a227}
 @keyframes rvflash{0%{opacity:0}25%{opacity:.5}100%{opacity:0}}
 .rvcard{position:relative;pointer-events:auto;width:min(420px,100%);border-radius:12px;padding:14px 16px;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.45);border:3px solid rgba(255,255,255,.75);animation:rvin .55s cubic-bezier(.2,1.5,.4,1)}
+#reveal.live .rvflash{background:#c9a227;animation-iteration-count:3}
+#reveal.live .rvcard{background:#14602f;border-color:#f2c94c}
 #reveal.win .rvcard{background:#14602f}#reveal.loss .rvcard{background:#8f1d17}#reveal.mix .rvcard{background:#1b2a3a}
 @keyframes rvin{from{transform:translateY(120%) scale(.9)}to{transform:none}}
 .rvcard .rvhead{display:flex;align-items:center;gap:10px}
@@ -523,7 +532,8 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       </ul></details>
       <details><summary class="rh">The lines</summary>
       <ul>
-        <li>Lines come from DraftKings, as ESPN shows them when the slate posts. They do not move after that.</li>
+        <li>A preview of the likely games and current lines posts early in the week. Nobody can pick from it, and its games and lines can change.</li>
+        <li>The 10 games are set Tuesday. Lines come from DraftKings, as ESPN shows them when picks open, Wednesday at 6 p.m. CT. They are final then and do not move after that.</li>
         <li>Every line is a half point, so no game can push. When the posted line is a whole number, the underdog gets the extra half point.</li>
       </ul></details>
       <details><summary class="rh">Your picks</summary>
@@ -571,7 +581,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>The Pickers tab shows each picker's past picks by week, career wins, and tendencies. Picks show only after each lock.</li>
         <li>Conference Champion Week wins are their own career stat and do not count as weekly wins.</li>
         <li>Career wins count from Week 9 of 2026. A win shared with another picker also counts as a Co-Champion credit.</li>
-        <li>Beat the close compares the line when the slate posted to the last line saved before kickoff. If the line moved toward your side, you beat the close, even if your pick lost. Late picks count. Games where the line never moved do not count.</li>
+        <li>Beat the close compares the line when picks opened to the last line saved before kickoff. If the line moved toward your side, you beat the close, even if your pick lost. Late picks count. Games where the line never moved do not count.</li>
         <li>Robo-Sharp appears in Beat the close with no rank. It has no career record.</li>
       </ul></details>
       <details id="payouts"><summary class="rh">Payouts</summary>
@@ -736,7 +746,7 @@ function applyState(S){
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Player");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,
-    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},auto:S.auto||null,upcoming:S.upcoming||null,sheetsIn:S.sheetsIn||[]});
+    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
   $("#commishTab").hidden=!state.isOwner;
   syncDraft();
 }
@@ -750,6 +760,7 @@ async function refresh(quiet){
   else{const ae=document.activeElement;if(!(ae&&ae.closest&&ae.closest("form,select,input")))render()}
   if(!POLL)POLL=setInterval(()=>{if(!document.hidden&&!state.dirty)refresh(true)},60000);
   revealFinals();
+  revealLive();
   return true;
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ME&&!state.dirty)refresh(true)});
@@ -879,7 +890,7 @@ async function commishAct(act,ds){
     r=await api("/api/admin",{action:"unlock",weekId:wid,until:new Date(t).toISOString()});msg="Picks unlocked until "+kick(new Date(t).toISOString())}
   if(act==="dismiss"){r=await api("/api/admin",{action:"dismissFlag",key:ds.key});msg="Flag dismissed"}
   if(act==="pause"){r=await api("/api/admin",{action:"autoSettings",autoPaused:!(state.auto&&state.auto.paused)});msg=state.auto&&state.auto.paused?"Automation resumed":"Automation paused"}
-  if(act==="open"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"open"});msg="Picks are open"}
+  if(act==="open"){r=await api("/api/admin",{action:"runJob",job:"open",force:true});if(r.ok){const o=(r.ran||{}).open||{};msg=(o.ok?"":"Failed. ")+(o.msg||"")}}
   if(act==="todraft"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"draft"});msg="Moved back to draft"}
   if(act==="final"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"final"});msg="Week marked final"}
   if(act==="unfinal"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"locked"});msg="Scoring reopened"}
@@ -1033,9 +1044,10 @@ function render(){
     const labels={draft:"Slate draft",open:"Picks open",locked:"Picks locked",final:"Final"};
     setB((labels[w.status]||w.status),{open:"open",final:"final",draft:"plain"}[w.status]);
   }else if(state.db){const lf=lastShownWeek();
-    if(state.upcoming){$("#weekLine").textContent=`Week ${state.upcoming.week} slate drops soon.${lf?" Week "+lf.week+" is final.":""}`;setB("Slate coming","plain")}
+    if(state.preview){$("#weekLine").textContent=`Week ${state.preview.week} preview · Picks are not open yet`;setB("Preview","plain")}
+    else if(state.upcoming){$("#weekLine").textContent=`Week ${state.upcoming.week} slate drops soon.${lf?" Week "+lf.week+" is final.":""}`;setB("Slate coming","plain")}
     else{$("#weekLine").textContent=lf?`Week ${lf.week} is final. The next slate drops Tuesday.`:"The first slate drops Tuesday.";setB("Off week","plain")}}
-  if(state.view==="picks"){renderPicks();const ban=recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban)}
+  if(state.view==="picks"){renderPicks();if(state.preview)$("#v-picks").insertAdjacentHTML("afterbegin",previewPanel());const ban=recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban)}
   if(state.view==="recap")renderRecap();
   if(state.view==="standings")renderStandings();
   if(state.view==="rankings")renderRankings();
@@ -1053,10 +1065,18 @@ function pastDeadline(w){return w&&NOW()>=new Date(w.deadline).getTime()}
 function countdownText(w){const ms=new Date(w.deadline).getTime()-NOW();if(ms<=0)return "Picks are locked";const m=Math.floor(ms/60000),d=Math.floor(m/1440),h=Math.floor((m%1440)/60),mm=m%60;return "Picks lock in "+(d?d+"d ":"")+(d||h?h+"h ":"")+mm+"m"}
 function tickCountdown(){const el=$("#countdown"),w=curWeek();if(el&&w){el.textContent=countdownText(w);if(pastDeadline(w)&&w.status==="open"&&state.view==="picks"&&!tickCountdown.busy){tickCountdown.busy=true;refresh(true).finally(()=>tickCountdown.busy=false)}}}
 
+/* Before picks open. Nothing here can be picked. The games come from the preview job, or from the draft once it exists. */
+function previewPanel(){const P=state.preview;if(!P)return "";
+  const team=(g,s)=>{const L=teamLook(g[s],g,s);const rk=g[s+"Rank"];const ln=fmtLine(s==="home"?g.homeLine:-g.homeLine);return `<span class="pvs"><span class="pvc" style="--tc:${L.c1};--ti:${L.ink}">${esc(L.abbr)}</span>${rk<99?`<span class="note">#${rk}</span>`:""}<b>${esc(ln)}</b></span>`};
+  const rows=[...P.games].sort((a,b)=>a.slot-b.slot).map(g=>`<li class="pvg"><span class="pvn">${g.slot}</span>${team(g,"away")}<span class="note">${g.neutral?"vs":"at"}</span>${team(g,"home")}<span class="note pvk">${esc(kick(g.kickoff))}</span></li>`).join("");
+  const say=P.set?`The 10 games are set, but these lines can still move. Final lines post when picks open${P.autoOpen?" Wednesday at 6 p.m. CT":""}.`:"These are the likely games and current lines. We are waiting on final lines, which post Tuesday or Wednesday. The games can change until then.";
+  return `<details class="panel pv" id="pvbox" ${state.pvClosed?"":"open"}><summary><h2 style="display:inline">Week ${P.week} preview</h2> <span class="pill wait">Picks not open</span></summary><p><b>You cannot pick yet.</b> ${say} A Picks are live alert shows here when you can.</p><ul class="pvlist">${rows}</ul>${P.linesAt?`<p class="note">Lines as of ${esc(kick(P.linesAt))}.</p>`:""}</details>`}
+document.addEventListener("toggle",e=>{if(e.target.id==="pvbox")state.pvClosed=!e.target.open},true);
 function renderPicks(){
   const el=$("#v-picks"),w=curWeek(),wid=currentWeekId();
   if(!state.db){el.innerHTML='<div class="panel empty">This league page needs you signed in to Claude, opened from the invite your commissioner sent.</div>';return}
   if(!w){const lf=lastShownWeek();const up=state.upcoming;
+    if(state.preview){el.innerHTML=lf?`<p class="note"><a href="#standings">See how Week ${lf.week} ended</a></p>`:"";return}
     el.innerHTML=`<div class="panel empty"><h2>${up?"Week "+up.week+" is almost here":"Off week"}</h2><p>${up?"This week's 10 games are being set."+(up.autoOpen?" Picks open "+kick(up.opens).replace(/ \d.*$/,"")+" at 6 p.m. CT.":" Picks open soon."):"The next 10 games post Tuesday, and picks open Wednesday at 6 p.m. CT."}</p>${lf?`<p><a href="#standings">See how Week ${lf.week} ended</a></p>`:""}</div>`;return}
   if(w.status==="draft"&&!state.isOwner){el.innerHTML='<div class="panel empty">The commissioner is finalizing this week\'s slate. Picks open soon.</div>';return}
   const out=removed().includes(state.uid);
@@ -1209,6 +1229,18 @@ function revealFinals(){
     items.push({g,won,by,fg:mine.lock===g.id,txt:`${teamLook(team,g,pick).abbr} ${fmtLine(pick==="home"?g.homeLine:-g.homeLine)}`})}
   if(items.length)showReveal(w,mine,items);
 }
+/* Picks are live: once per week per device, and not for a picker whose sheet is already in. */
+const LIVE_MEM={};
+function revealLive(){
+  const w=curWeek();if(!state.uid||!w||w.status!=="open"||pastDeadline(w)||removed().includes(state.uid)||state.canWrite===false||$("#reveal"))return;
+  const key="tp-seen-live-"+state.uid;let seen=LIVE_MEM[key]||null;try{seen=localStorage.getItem(key)||seen}catch(e){}
+  if(seen===w.id)return;LIVE_MEM[key]=w.id;try{localStorage.setItem(key,w.id)}catch(e){}
+  if((state.sheetsIn||[]).includes(state.uid))return;
+  const el=document.createElement("div");el.id="reveal";el.className="live";el.setAttribute("role","status");
+  el.innerHTML=`<div class="rvflash"></div><div class="rvcard"><div class="rvhead">${SIG.td}<h2>Picks are live!</h2></div><p>The Week ${w.week} lines are final. Get your picks in before the lock, ${esc(kick(w.deadline))}.</p><button type="button" data-rvclose data-rvgo>Make my picks</button></div>`;
+  document.body.appendChild(el);
+  clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},12000);
+}
 function showReveal(w,mine,items){
   const nW=items.filter(x=>x.won).length,nL=items.length-nW;const one=items.length===1?items[0]:null;
   const tone=nW&&nL?"mix":nW?"win":"loss";
@@ -1223,7 +1255,7 @@ function showReveal(w,mine,items){
   for(const x of items){const c=document.getElementById("g-"+x.g.id);if(c)c.classList.add(x.won?"gflash-w":"gflash-l")}
   clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},one?6000:10000);
 }
-document.addEventListener("click",e=>{if(e.target.closest("[data-rvclose]")){const r=$("#reveal");if(r)r.remove()}});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rvclose]");if(b){const r=$("#reveal");if(r)r.remove();if(b.hasAttribute("data-rvgo"))location.hash="#picks"}});
 /* ---------- weekly recap ---------- */
 /* A Sunday read built only from saved picks and results. Clean jokes, referee voice.
    A negative award never lands on the same picker twice in one week. Add new facts to recapFacts. */
@@ -1322,7 +1354,7 @@ function renderRecap(){
   h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
   el.innerHTML=h;
 }
-window.tpRecap={state,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor}; /* for the browser test */
+window.tpRecap={state,render,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */
@@ -1774,15 +1806,15 @@ function autoPanel(){
   const A=state.auto;if(!A)return "";
   const fl=A.flags||[],runs=A.runs||{},L=A.labels||{};
   const flagsH=fl.length?fl.map(f=>`<div class="aflag"><span class="pill ${f.level==="error"?"bad":"wait"}">${f.level==="error"?"Failed":"Check"}</span><span>${esc(f.msg)}</span>${f.fixed?"<span></span>":`<button class="btn sm" data-act="dismiss" data-key="${esc(f.key)}">Dismiss</button>`}</div>`).join(""):'<p class="note">No flags. Every automated step worked on its last run.</p>';
-  const jobs=[["slate","Build from ESPN"],["open",""],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"],["gamelog","Fill game log"],["lines","Fill lines"],["ratings","Update ratings"]];
-  const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span>${btn?`<button class="btn sm" data-act="run" data-job="${j}">${btn}</button>`:'<span class="note">Use Open picks in This week</span>'}</div>`}).join("");
+  const jobs=[["preview","Build preview"],["slate","Build from ESPN"],["refresh","Refresh lines"],["open","Open picks"],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"],["gamelog","Fill game log"],["lines","Fill lines"],["ratings","Update ratings"]];
+  const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span><button class="btn sm" data-act="run" data-job="${j}"${j==="open"?' data-force="1"':""}>${btn}</button></div>`}).join("");
   return `${secTag("auto",false,"auto"+(fl.some(f=>f.level==="error")?" alert":""),fl.length>0)}<summary><h2 style="display:inline">Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:' <span class="pill">All good</span>'}</h2></summary>
     <p class="note">${A.paused?"Paused. Nothing runs on the schedule until you resume it. The buttons below still work.":`Runs twice an hour.${A.lastTick?" Last run "+esc(when(A.lastTick))+".":""}`}</p>
     ${flagsH}
     <h3 class="rh">Jobs</h3><div class="lglist">${rows}</div>
     <div class="autobar"><label class="note"><input type="checkbox" id="autoOpenChk" ${A.autoOpen?"checked":""}> Open picks by themselves Wednesday 6 p.m. CT</label></div>
     <div class="autobar"><button class="btn sm" data-act="pause">${A.paused?"Resume automation":"Pause automation"}</button></div>
-    <p class="note">Each week: Tuesday 1 p.m. builds a draft from ESPN. Wednesday 6 p.m. opens picks if you have not. After the lock, scores update twice an hour, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Every button here does the same job by hand. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.</p></details>`}
+    <p class="note">Each week: Monday 9 a.m. posts a preview for pickers, and its lines update every 6 hours. Tuesday 1 p.m. builds a draft from ESPN, and pickers see those 10 games with no picks allowed. Wednesday 6 p.m. refreshes the lines and opens picks if you have not. Open picks always refreshes the lines first. Refresh lines works any time before picks open: it updates the draft, or the preview if there is no draft yet. Once picks open, lines are final. After the lock, scores update twice an hour, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Every button here does the same job by hand. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.</p></details>`}
 function renderCommish(){
   const el=$("#v-commish"),wid=commishWeekId(),w=state.weeks[wid]||null;
   if(!state.isOwner){el.innerHTML="";return}

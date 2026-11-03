@@ -3,8 +3,8 @@
 import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
 import { setFetcher, SITE, CORE, FITT, halfPoint } from "../lib/espn.js";
-import { tick, runJob, autoView, chooseGames } from "../lib/auto.js";
-import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, closingLines } from "../lib/league.js";
+import { tick, runJob, autoView, chooseGames, dueJobs } from "../lib/auto.js";
+import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, closingLines, buildState } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 import { redditPage, pastedTable } from "./reddit-fixture.mjs";
 import { parseRedditText } from "../lib/polls.js";
@@ -133,6 +133,23 @@ try {
   let v = await autoView(Date.now(), await getConfig());
   check("view flags a schedule that never ran", v.flags.some((f) => f.key === "never"));
 
+  // ---- Monday: the preview posts ----
+  const dueAt = async (iso) => dueJobs(CT(iso), await getConfig(), { runs: {} });
+  check("preview waits for Monday 9 a.m.", !(await dueAt("2026-11-02T08:50:00-06:00")).includes("preview"));
+  check("preview is due Monday morning", (await dueAt("2026-11-02T09:19:00-06:00")).includes("preview"));
+  check("preview window ends at the Tuesday slate", !(await dueAt("2026-11-03T13:10:00-06:00")).includes("preview"));
+  const pvOut = await runJob("preview", { now: CT("2026-11-02T09:19:00-06:00") });
+  check("preview builds", pvOut.ran.preview.ok && /10 games/.test(pvOut.ran.preview.msg), JSON.stringify(pvOut.ran.preview));
+  const pvSaved = await getKv("preview", null);
+  check("preview uses the slate rule and half points", pvSaved.games.map((g) => g.id.slice(1)).join(",") === "101,102,103,104,105,107,109,108,110,111" && pvSaved.games[0].homeLine === -7.5 && pvSaved.id === "2026-w11", JSON.stringify(pvSaved.games[0]));
+  check("preview saves no week", !(await getWeek("2026-w11")));
+  check("preview raises no slate flags", !(await getKv("auto", {})).flags.some((f) => f.job === "slate"));
+  await setKv("preview", { ...pvSaved, deadline: "2099-01-01T00:00:00.000Z" }); // state uses the real clock
+  const picker = { id: "p9", name: "Test", is_commish: false };
+  let pvState = await buildState(picker);
+  check("pickers get the preview before a slate exists", pvState.preview && !pvState.preview.set && pvState.preview.games.length === 10, JSON.stringify(pvState.preview).slice(0, 200));
+  await setKv("preview", pvSaved);
+
   // ---- Tuesday 1:30 p.m.: the slate builds ----
   let out = await tick({ now: CT("2026-11-03T13:30:00-06:00") });
   check("Tuesday run builds the slate", out.ran && out.ran.slate && out.ran.slate.ok, JSON.stringify(out.ran && out.ran.slate));
@@ -176,11 +193,38 @@ try {
   check("old line prefers DraftKings and its close line", tg.games["904"].l === -2.5 && tg.games["904"].t === 44.5, JSON.stringify(tg.games["904"]));
   check("scoreboard line kept when only the total was missing", tg.games["902"].l === 3);
 
+  // ---- preview follows the draft, and Refresh lines works before picks open ----
+  pvState = await buildState(picker);
+  check("the preview reads the draft once it exists", pvState.preview && pvState.preview.set && pvState.preview.games.length === 10 && !pvState.weeks["2026-w11"], JSON.stringify(pvState.preview).slice(0, 200));
+  check("the preview hides model lines", !JSON.stringify(pvState.preview).includes("modelLine"));
+  check("the commissioner gets the draft, not the preview", !(await buildState({ ...picker, is_commish: true })).preview);
+  slateGames[0][4] = "-9";
+  out = await runJob("refresh", { now: CT("2026-11-03T16:00:00-06:00") });
+  let rw = await getWeek("2026-w11");
+  check("Refresh lines moves the draft with the half point rule", rw.games.find((g) => g.espnId === "101").homeLine === -9.5 && /1 line moved/.test(out.ran.refresh.msg), JSON.stringify(out.ran.refresh));
+  check("Refresh lines updates the swap pool too", rw.pool.find((g) => g.espnId === "101").homeLine === -9.5);
+  check("Refresh lines keeps Robo-Sharp's line and the week a draft", rw.status === "draft" && typeof rw.games[0].modelLine === "number" && !!rw.linesAt);
+  check("Refresh lines is logged", (await q("select * from log order by id desc limit 5")).some((r) => JSON.stringify(r).includes("Refreshed lines")));
+  slateGames[0][4] = "-7";
+
   // ---- Wednesday: opens at 6 p.m. ----
   out = await tick({ now: CT("2026-11-04T17:10:00-06:00") });
   check("not open before 6 p.m. Wednesday", (await getWeek("2026-w11")).status === "draft");
   out = await tick({ now: CT("2026-11-04T18:10:00-06:00") });
   check("opens at 6 p.m. Wednesday", (await getWeek("2026-w11")).status === "open", JSON.stringify(out.ran.open));
+  check("opening refreshes the lines", (await getWeek("2026-w11")).games.find((g) => g.espnId === "101").homeLine === -7.5 && /1 line moved/.test(out.ran.open.msg), JSON.stringify(out.ran.open));
+  slateGames[0][4] = "-10";
+  out = await runJob("refresh", { now: CT("2026-11-04T18:30:00-06:00") });
+  rw = await getWeek("2026-w11");
+  check("lines cannot move once picks open", /are final/.test(out.ran.refresh.msg) && rw.games.find((g) => g.espnId === "101").homeLine === -7.5, JSON.stringify(out.ran.refresh));
+  slateGames[0][4] = "-7";
+  // If ESPN fails at the open, picks still open on the saved lines and a flag says so.
+  await putWeek({ ...rw, status: "draft" }); failScoreboard = true;
+  out = await runJob("open", { force: true, now: CT("2026-11-04T18:40:00-06:00") });
+  failScoreboard = false;
+  const aOpen = await getKv("auto", {});
+  check("a failed refresh still opens picks, with a flag", (await getWeek("2026-w11")).status === "open" && aOpen.flags.some((f) => f.job === "open" && f.msg.includes("did not refresh")), JSON.stringify(out.ran.open));
+  await setKv("auto", { ...aOpen, flags: aOpen.flags.filter((f) => f.job !== "open") });
 
   // ---- Saturday morning: lines saved for ATS ----
   await tick({ now: CT("2026-11-07T09:10:00-06:00") });
