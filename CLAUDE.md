@@ -83,6 +83,9 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Everyone starts the run alive, including pickers already out. A picker who joins after the run's first week and misses it is out of that run.
    - Build it all together: the second run, the conference lock, and the Rules text, in one build. The first run keeps the no-repeat team rule through Nov 7. The server must enforce the lock, as it does used teams today, and Robo-Sharp's Survivor pick must follow it.
    - Build note: the app handles one run today (`survivorStart`, `survivorEnd`, `survLate`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
+22. Survivor chip on the save bar. A picker who is out of Survivor should not see the Survivor chip light up as a warning.
+   - The missing pick warning on save already skips pickers who are out (`missingItems`, 1.26.3). The chip in the `.cks` row does not. It checks only `survivorStart()`, not whether the picker is alive.
+   - Build note: use the same test as `missingItems`: survivor open, and alive or pending. That test also drops the chip after Survivor ends, such as in Conference Champion Week. Keep it in step with item 10.
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
