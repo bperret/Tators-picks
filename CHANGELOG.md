@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.19.1 | Nov 2, 6:48 p.m. | Rules | Payouts marked hypothetical: 2026 is a free test season, payouts start in 2027 | S | 16 | `dee07e2` |
 | 1.19 | Nov 2, 5:40 p.m. | Rules | Payouts section on the Rules page with pot shares and a what would I win calculator | M | 81 | `8e6a480` |
 | 1.18 | Nov 2, 5:38 p.m. | Survivor | Resurrection: if everyone left goes out in one week, all play one more week | M | 76 | `6a9ca5f` |
 | 1.17 | Nov 2, 5:36 p.m. | Survivor | Survivor ends after the Saturday Nov 28 week; everyone still alive shares the title | S | 45 | `b7ab293` |
