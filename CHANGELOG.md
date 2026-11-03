@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.26.1 | Nov 2, 8:00 p.m. | Picks | Commissioner sees the picker preview above his draft; clearer Build preview message | S | 16 | `86548b8` |
 | 1.26 | Nov 2, 7:51 p.m. | Picks | Picks are live alert: flash and card once a week, skipped if your sheet is in | S | Shared, 289 | `d83b582` |
 | 1.25 | Nov 2, 7:51 p.m. | Picks | Preview slate: likely games and current lines with no picks allowed, Monday through the open | M | Shared, 289 | `d83b582` |
 | 1.24 | Nov 2, 7:51 p.m. | Automation | Refresh lines button; lines refresh when picks open and are final after that; Build preview and Open picks buttons in Automation | M | Shared, 289 | `d83b582` |
