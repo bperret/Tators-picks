@@ -15,6 +15,12 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.21 | Nov 2, 6:55 p.m. | Pickers | Sample data preview for the commissioner | S | Shared, 135 | `aab0c2b` |
+| 1.20 | Nov 2, 6:55 p.m. | Pickers | Personal insights: teams that hurt or helped, splits, streaks, bad beats | M | Shared, 135 | `aab0c2b` |
+| 1.20 | Nov 2, 6:55 p.m. | Pickers | Career wins with Co-Champion credits | S | Shared, 135 | `aab0c2b` |
+| 1.20 | Nov 2, 6:55 p.m. | Pickers | Past picks by week: results, margins, rank, tiebreaker, Survivor | M | Shared, 135 | `aab0c2b` |
+| 1.20 | Nov 2, 6:55 p.m. | Standings | Beat the close table, with Robo-Sharp unranked | S | Shared, 135 | `aab0c2b` |
+| 1.20 | Nov 2, 6:55 p.m. | League | Closing lines sent to the page for Beat the close | S | 29 | `7dc62ed` |
 | 1.19.1 | Nov 2, 6:48 p.m. | Rules | Payouts marked hypothetical: 2026 is a free test season, payouts start in 2027 | S | 16 | `dee07e2` |
 | 1.19 | Nov 2, 5:40 p.m. | Rules | Payouts section on the Rules page with pot shares and a what would I win calculator | M | 81 | `8e6a480` |
 | 1.18 | Nov 2, 5:38 p.m. | Survivor | Resurrection: if everyone left goes out in one week, all play one more week | M | 76 | `6a9ca5f` |

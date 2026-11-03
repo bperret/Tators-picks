@@ -26,6 +26,8 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Weekly recap: Recap tab, built in the page by `recapFacts(wid)` from saved picks and results, for final weeks only, with a week picker. A banner on Picks shows until the latest recap is read (`tp-recap-seen-<uid>`). Clean jokes, referee voice. A negative award never lands on the same picker twice in a week. To grow it, add facts to `recapFacts`.
 - Survivor end: `config.survivorEnd` (default in `DEFAULT_CONFIG`, 2026-11-29 midnight CT; `SURVIVOR_END` overrides it, and `dev/server.mjs` sets a far date because tests use real dates). The page uses `survivorOpen`, the server uses `survivorClosed`. Saved config keeps its value, so a new season must update the saved config. `survivorRevived()` works out resurrection weeks for both the board and the grid.
 - Payouts: `#payouts` in Rules, `PAY` holds the shares, `payUpdate()` does the math. Page only; nothing is saved.
+- Picker stats on the Pickers tab: career wins (`careerPanel`), tendencies (`insightPanel`), past picks by week (`pastPanel`). All read a data object D: `realStats()` on the site, `sampleStats()` for the commissioner's Preview sample data button, which is made up, page only, and never saved. Robo-Sharp gets none of these. Bowl and CFP wins read `bowl` and `cfp` in `realStats()`, empty until those contests exist.
+- Beat the close: `closingLines` in `lib/league.js` sends `state.closing` (saved last line before kickoff, half-point rule applied, started games only). `closeOf` compares it to `homeLine`. Moved games only; `closePanel` is on Standings and in the sample, with Robo-Sharp unranked. The game log is read only if a started game has no saved line, since the page polls every 60 seconds.
 - Commish sections fold (details with `data-sec`), saved per device in localStorage `tp-commish-open`, plus Expand all and Collapse all. Defaults: This week and Swap games open; Automation opens when it has flags; League members opens when a new PIN is showing.
 - SP+ and VSiN: the "ratings" job (`lib/ratings.js`), button only (Update ratings in Automation, never in `dueJobs`). SP+ reads the ratings table on ESPN's "2026 college football SP+ rankings for all 138 FBS teams" story (`SP_URL`, skips the résumé table, maps ESPN short names). VSiN finds Adam Burke's "Week N ... Power Ratings and Projections for Every Game" article from the VSiN college page, then the usual address; N is the coming week (current week + 1 once it locks). Checks: 130+ known schools, page under 10 days old, average change from saved under 5 points; else a flag and nothing saved. Each source saves on its own. Unchanged numbers report "has not changed". Paste fallback: a power-only JSON in Manual backups merges the same way. Both sources post Sunday or Monday; CFB Update lagged, so it is not used.
 - Commissioner can lock early and unlock with a new deadline; both log publicly. `origDeadline` keeps the week tied to its Saturday.
@@ -48,7 +50,7 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 6 (a line on what the stat means), 7, 8. Add Bowl and CFP rules to the Payouts section if their prizes change.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
@@ -62,18 +64,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - One lock for the whole contest, before the first bowl (Dec 15).
    - Idea, not final: each picker chooses which 10 bowls to pick.
    - To settle: ATS or straight up, field goal or not, and a tiebreaker that works when pickers hold different games. The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
-6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
-   - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
-   - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
-   - Compare like with like: `homeLine` has the half-point rule applied and the saved closing line is raw, so run the closing line through the same rule or a whole-number lock shows a false half-point move.
-   - Late picking counts, on purpose. Part of the point is to show who does their research and picks late. No timing adjustment, no sample size or injury caveats on the page.
-   - Track Robo-Sharp on this stat too, shown with the pickers, with no rank like in standings.
-7. Career stats: track wins across seasons on each picker's stats page: Survivor wins, weekly wins, Bowl wins, CFP wins, and Co-Champion credits.
-   - Robo-Sharp gets no historical tracking on the site. Keep its records on the back end for reference only.
-   - To settle: the full stat list and whether current season wins count from Week 9.
-9. Picker history: go back to any week and see your picks, which won or lost, how many you got right, where you ranked, and how far off you were. Survivor picks too, with which worked.
-   - Personal insights from that history: teams that hurt you most, teams that consistently win for you, general performance, and useful negative stats. Benton says historical selections matter most.
-   - No new data pull; weeks and reveals hold it. Fits with Career stats (item 7) on the same page. Today's Pick history shows saves, not results.
+
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
    - Pick one team to win outright, not against the spread. One loss and you are out of that run.
