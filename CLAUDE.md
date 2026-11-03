@@ -37,6 +37,7 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Survivor: one team ATS a week, no repeats, a miss means out. It ends after the Saturday Nov 28 week; anyone still alive shares the title. If every remaining picker goes out in the same week, all play one more week (used teams stay used); in the last week they share instead. A lone picker is never resurrected.
 - Robo-Sharp (🤖, black and silver): model side in every game, field goal on biggest edge, betting total as tiebreaker, biggest unused edge in Survivor. Shows in standings with no rank and never wins a week, trophy, Survivor, or the season; the best picker wins instead.
 - People are "pickers". Tabs: Picks, Standings, Recap, Survivor, Pickers, Teams, Rules, Profile, Commish. The public log never shows the commissioner's private nickname for a picker.
+- 2026 is a free test season: no buy-ins, no payouts. Weeks, standings, and titles still count. Payouts start in 2027, and the Rules page shows them as hypothetical so pickers can try scenarios and give feedback.
 - Money is off the site; the Rules page only posts the plan. Payouts are shares of the pot (Stay Engaged): season 20 / 10 / 5, weekly 1% each, Conference Champion week 6%, Survivor 5% a run, Bowl 10 / 5, CFP 10 / 5. The buy-in is not set. Bowls are a separate contest.
 - No test weeks (decided Oct 31). Week 9 counts as the first week; every revealed week counts toward the season. Weeks keep their real numbers (next is Week 10). The old `scored` flag is ignored and new weeks save `scored: true`.
 
@@ -61,7 +62,6 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - One lock for the whole contest, before the first bowl (Dec 15).
    - Idea, not final: each picker chooses which 10 bowls to pick.
    - To settle: ATS or straight up, field goal or not, and a tiebreaker that works when pickers hold different games. The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
-5. Upkeep share: Benton is considering 5% of each buy-in. Not decided. The Payouts calculator has an upkeep box, set to 0. Buy-in amount is also not set.
 6. Beat the close: compare each pick's locked line to the closing line, so a picker gets credit for a good number even when the pick loses.
    - Stat per picker: share of picks where the line moved toward their side after the slate posted, and average points gained. Games with no move count for neither side.
    - No new data pull. The ATS job saves each game's last line before kickoff (`atsAuto.lines`, then `teamGames` field `l`), and week games keep `homeLine`. The closing line is from the last run before kickoff, up to 30 minutes early.
@@ -89,6 +89,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
    - Paid pickers cannot see ghosts. Ghosts cannot see each other.
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
+5. Upkeep share: Benton is considering 5% of each buy-in. Not decided. The Payouts calculator has an upkeep box, set to 0. Buy-in amount is also not set.
 
 ### Back burner
 Benton will probably never do this.

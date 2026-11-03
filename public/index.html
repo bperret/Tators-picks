@@ -168,6 +168,7 @@ details.manual .inner{margin-top:12px}
 .payform input,.payform select{width:100%;box-sizing:border-box}
 .paychips{gap:6px}
 .paypot{font-weight:700;margin:6px 0}
+.paynote{background:var(--flag);color:var(--flag-ink);border-radius:8px;padding:8px 10px;margin:6px 0}
 .paytotal{background:var(--board);color:var(--board-ink);border-radius:8px;padding:10px 12px;font-family:var(--cond);font-weight:700;font-size:1.15rem;margin:8px 0;text-align:center}
 .recapban{display:block;text-align:center;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
 .rchero h2{margin:0}
@@ -532,7 +533,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <ul>
         <li>A postponed or cancelled game is void and scores for nobody. A field goal on a void game earns nothing.</li>
         <li>If slot 1 is void, slot 2 becomes the tiebreaker game.</li>
-        <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. See Payouts for what a weekly win pays.</li>
+        <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. The weekly title has no prize in 2026. See Payouts for the plan starting in 2027.</li>
         <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses.</li>
         <li>Bowl games are a separate contest.</li>
       </ul></details>
@@ -559,14 +560,15 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>The Survivor tab shows every picker's pick each week, who is still alive, and which teams you have left.</li>
       </ul></details>
       <details id="payouts"><summary class="rh">Payouts</summary>
-      <p class="note">The buy-in is not set yet. Every prize is a share of the pot, so the plan works at any buy-in and any league size. Pot = buy-in x paid pickers.</p>
+      <p class="paynote"><b>2026 is a free test season. Nobody pays in and nothing pays out.</b> Payouts start in 2027. This plan is hypothetical, so try the scenarios below and give the commissioner your feedback.</p>
+      <p class="note">The 2027 buy-in is not set. Every prize is a share of the pot, so the plan works at any buy-in and any league size. Pot = buy-in x paid pickers.</p>
       <div class="tablewrap"><table class="paytab"><thead><tr><th>Prize</th><th class="num">Share</th><th class="num">Dollars</th></tr></thead><tbody id="payRows"></tbody></table></div>
       <ul>
         <li>Weekly wins pay 1% each, 14% over 14 weeks. Survivor's 15% is split evenly across its runs, 5% a run with 3 runs.</li>
         <li>Ties split the combined prizes for the tied places. If two pickers tie for 1st, they split 1st and 2nd.</li>
         <li>Everyone who wins a Survivor run together splits that run's prize.</li>
         <li>Robo-Sharp cannot win money. Its prize goes to the next best picker.</li>
-        <li>Buy-ins are due before Week 1.</li>
+        <li>Starting in 2027, buy-ins are due before Week 1.</li>
       </ul>
       <h3 class="rh">What would I win?</h3>
       <p class="note">Change these to try any scenario. Nothing here is saved. Dollars round to the nearest dollar.</p>
@@ -591,8 +593,8 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       </details>
       <details><summary class="rh">Money and membership</summary>
       <ul>
-        <li>Buy ins and payouts happen outside this page.</li>
-        <li>The commissioner removes any picker who has not paid. A removed picker cannot pick and shows greyed out in the standings.</li>
+        <li>2026 is free. Starting in 2027, buy ins and payouts happen outside this page.</li>
+        <li>Starting in 2027, the commissioner removes any picker who has not paid. A removed picker cannot pick and shows greyed out in the standings.</li>
       </ul></details>
     </div>
     <div class="panel" id="logPanel"></div>

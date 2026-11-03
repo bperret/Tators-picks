@@ -300,6 +300,7 @@ try {
   await m.evaluate(() => { location.hash = "#rules"; document.querySelector("#payouts").open = true; }); await m.waitForTimeout(200);
   const payTxt = async () => [await m.textContent("#payPot"), await m.textContent("#payTotal"), await m.textContent("#payRows")];
   let pay = await payTxt();
+  check("Payouts say 2026 is free and hypothetical", (await m.textContent("#payouts .paynote")).includes("free test season"));
   const shares = await m.$$eval("#payRows tr td:nth-child(2)", (e) => e.map((x) => parseFloat(x.textContent)));
   check("payout shares add up to 100% at 14 weeks and 3 runs", shares.reduce((a, b) => a + b, 0) + 13 * 1 + 2 * 5 === 100, shares.join());
   check("pot starts at $2,000 and $400 for 1st", pay[0].includes("$2,000") && pay[2].includes("$400"), pay[0]);
