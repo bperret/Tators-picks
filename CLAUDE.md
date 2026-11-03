@@ -75,13 +75,18 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
 10. Second Survivor run this season. Decided, waiting on Benton's go to build. It must be live before the Nov 14 week opens, Wednesday Nov 11.
    - It starts the Nov 14 week and runs through Nov 28, 3 weeks. The first run ends with the Nov 7 week, and anyone alive then shares it.
-   - Used teams reset. ATS for all of 2026; straight up starts in 2027 (item 4).
+   - ATS for all of 2026; straight up starts in 2027 (item 4), though that is under review.
+   - Conference lock, a test for this run. Picking a team burns its conference for the run. Only the picked team's conference burns, so in a nonconference game the other team's conference stays available. Burned conferences start empty at the run's start.
+   - The no-repeat team rule goes away for this run, since a burned conference already blocks the team.
+   - Independents count as one group, so picking Notre Dame burns Independents.
+   - If no legal game is left on the slate, the picker can pick any game, including a team already used.
    - Everyone starts the run alive, including pickers already out. A picker who joins after the run's first week and misses it is out of that run.
+   - Build it all together: the second run, the conference lock, and the Rules text, in one build. The first run keeps the no-repeat team rule through Nov 7. The server must enforce the lock, as it does used teams today, and Robo-Sharp's Survivor pick must follow it.
    - Build note: the app handles one run today (`survivorStart`, `survivorEnd`, `survLate`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
-   - Idea (Nov 2): conference lock. Picking a team burns its whole conference for that run. If no legal game is left, you can pick any game. Not decided. Under ATS it adds planning but does not change how fast pickers go out. Under straight up a rough model at 20 pickers still leaves about 9 alive after 5 weeks. To settle: whether a free pick can reuse a team, and how independents like Notre Dame count.
+   - Conference lock is being tested in the 2026 second run (item 10). Decide after that run whether it stays for 2027.
    - Under review (Nov 2): Benton is thinking of keeping ATS in 2027, since 5 week runs need quick eliminations. Not decided. A rough model at 20 pickers: ATS gives a solo winner about 70% of runs; straight up leaves 9 to 11 alive after 5 weeks.
    - Pick one team to win outright, not against the spread. One loss and you are out of that run.
    - The season has fixed runs, for example weeks 1 to 5, 6 to 10, and 11 to the last week before Conference Champion Week. Everybody starts each run alive, and used teams reset.
