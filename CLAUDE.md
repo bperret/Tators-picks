@@ -121,9 +121,13 @@ Hold, risk review first:
    - Scope: scores and the Wednesday open only. Rankings, ATS, lines, slate, and preview stay on the schedule.
    - Trigger: a logged in page poll, only while a locked week has a game kicked off and not final, or when a draft is past its open time.
    - Guardrails: at least 10 minutes between attempts, saved before the ESPN call behind the existing database lock, so traffic cannot multiply calls. A daily cap of 80 attempts. A Commish on and off switch that starts off, with today's count shown. Any 403 or 429 turns it off and raises a flag until Benton resets it. No retries.
+   - Decided Nov 2: start at every 10 minutes. The gap is a Commish setting, so it can change with no code push. Try 10 for a Saturday. If the count looks right and nothing flags, consider 5, with a daily cap of 160.
    - Math: at most 75 ESPN scoreboard calls on a 12.5 hour Saturday. ESPN publishes no limit, so that cap is a judgment call, not a safe number from ESPN.
    - Bigger risk than item 11: the 60 second page poll sends the full state. Estimated Vercel transfer is 0.5 to 9.4 GB a month against 10 GB, and Neon transfer is unmeasured against 5 GB. If either page shows over 30% used, build a light version check first, so the full state loads only when something changed.
    - Fix the page wording in the same build: scores about every 10 minutes while games are live.
+
+Separate task, to investigate:
+21. Backup options in case of failure. Benton wants this looked at on its own. Cover what happens if Vercel pauses the site, Neon suspends or loses data, or ESPN blocks the app, and what backups or fallback hosting would get the league running again. Investigate only, nothing built yet.
 
 Ideas to shape later, not approved:
 19. Your season recap replaces the Recap for everyone, personal to each picker. The league-wide stats move to a new area, maybe called the Record Book. Benton's idea, wording "maybe". To settle: how it fits with the current Recap, and when in the season it runs.
