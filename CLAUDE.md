@@ -103,6 +103,19 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
 5. Upkeep share: Benton is considering 5% of each buy-in. Not decided. The Payouts calculator has an upkeep box, set to 0. Buy-in amount is also not set.
 
+### Engagement review (Nov 2): ideas, none approved
+Keep the weekly rhythm, Picks, Recap, Survivor, weekly titles, and Robo-Sharp as they are. Fixed times are the habit: Mon preview, Wed 6 p.m. live, Sat 10:15 a.m. lock, Sunday recap.
+11. Reliable scores and timing. GitHub ran 6 times on Sat Oct 31, about every 3 hours, with a median gap of 6 hours across Oct 29 to Nov 2, not twice an hour. Idea: when a logged in page polls and a job is overdue, the site runs it (scores while games are live, open at Wed 6 p.m., preview Monday). No new service. The page also says "about twice an hour", which must match what is true.
+12. Group text kit. Commish buttons copy a ready message for picks live, Friday night sheets missing, and the recap headline. The site still sends no texts.
+13. Weekly rival. Each picker gets the picker just above them in the season standings, shown on Picks, during games, and in the Recap. Page only, from saved picks. Rival record feeds Head to head.
+14. What you need. A live Saturday line, such as "1 back of the lead with 3 games left", plus your rival's score.
+15. Your week at the top of the Recap: your record, best pick, worst beat, and rank move.
+16. Line moved tags: on the Wednesday slate, show each line's move since the preview.
+17. Commissioner engagement view: last seen per picker, sheet time, Recap reads. Commissioner only.
+18. Ironman tile: positive stat for sheets in without a miss. No shaming for a missed week.
+19. For 2027, to review: add to home screen prompt, web push (not verified), accomplishments, and a 4 week fresh start contest if the season race goes stale.
+Do not add: daily check ins, points currency, in-app chat, more contests this season.
+
 ### Back burner
 Benton will probably never do this.
 
