@@ -227,9 +227,6 @@ details.manual .inner{margin-top:12px}
 .wolf{font-family:var(--cond);font-weight:700;letter-spacing:.04em;font-size:.95rem;color:var(--win)}
 @keyframes flip{0%{transform:rotateX(90deg);opacity:.2}100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion:no-preference){.score.flip{display:inline-block;animation:flip .5s ease-out}}
-.ref .refitem{display:flex;flex-direction:column;gap:2px;padding-block:8px;border-top:1px solid var(--line)}
-.ref .reft{display:flex;align-items:center;gap:6px;font-family:var(--cond);font-size:1.05rem;letter-spacing:.04em;text-transform:uppercase}
-.ref .reft .note{text-transform:none;letter-spacing:0;font-family:var(--body);font-size:.85rem}
 .gp{width:1em;height:1em;vertical-align:-.12em;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;margin-right:3px}
 .yd{height:6px;margin-top:4px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--board-line) 0 calc(10% - 1px),var(--board-dim) calc(10% - 1px) 10%);overflow:hidden;max-width:160px}
 .yd span{display:block;height:100%;background:linear-gradient(90deg,#1f5d34,#3b8f55)}
@@ -1373,28 +1370,6 @@ document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#p
 document.addEventListener("click",e=>{const b=e.target.closest("[data-paybuy]");if(b){$("#payBuy").value=b.dataset.paybuy;payUpdate()}});
 payUpdate();
 
-/* ---------- referee report ---------- */
-function refReport(wid){
-  const w=state.weeks[wid];const players=weekPlayers(wid);const ids=Object.keys(players);if(!w||!ids.length)return "";
-  const rs=w.results||{};const graded=w.games.filter(g=>coverSide(g,rs[g.id]));
-  if(!graded.length)return "";
-  const items=[];
-  let best=null;
-  for(const g of graded){const c=coverSide(g,rs[g.id]);const sp=split(g,players);const n=sp[c].length;if(n&&(!best||n<best.n))best={g,c,n,pids:sp[c]}}
-  if(best)items.push(["Touchdown","Best call",`${best.pids.map(nm).map(esc).join(", ")} took ${esc(best.c==="home"?best.g.home:best.g.away)} ${fmtLine(best.c==="home"?best.g.homeLine:-best.g.homeLine)}. Only ${best.n} of ${ids.length} did.`]);
-  const flags=ids.map(pid=>{const p=players[pid];const g=w.games.find(x=>x.id===p.lock);if(!g)return null;const c=coverSide(g,rs[g.id]);if(!c)return null;const m=margin(g,rs[g.id]);const by=Math.abs(m);return {pid,g,hit:(p.sel||{})[g.id]===c,by}}).filter(Boolean);
-  const hits=flags.filter(f=>f.hit),miss=flags.filter(f=>!f.hit).sort((a,b)=>b.by-a.by);
-  if(flags.length)items.push(["Special teams",`${hits.length} of ${flags.length} field goals good`,`${hits.length?"Good: "+hits.map(f=>esc(first(f.pid))).join(", ")+".":"No field goal is good yet."}${miss.length?" Widest miss: "+esc(first(miss[0].pid))+", wide right by "+miss[0].by+" against the spread.":""}`]);
-  const beats=[];for(const g of graded){const r=rs[g.id];const m=margin(g,r);if(Math.abs(m)===0.5){const c=coverSide(g,r);const sp=split(g,players);const loser=c==="home"?"away":"home";if(sp[loser].length)beats.push(`${sp[loser].map(first).map(esc).join(", ")} on ${esc(loser==="home"?g.home:g.away)}`)}}
-  if(beats.length)items.push(["Bad beat","Lost by half a point",beats.join("; ")+"."]);
-  const active=state.roster.filter(p=>!removed().includes(p));
-  const late=active.filter(p=>!players[p]).map(first);
-  const blanks=ids.filter(p=>Object.keys(players[p].sel||{}).length<w.games.length).map(first);
-  const delay=[...late.map(n=>n+" (no sheet)"),...blanks.map(n=>n+" (blank picks)")];
-  if(delay.length)items.push(["Delay of game","Missed picks",delay.map(esc).join(", ")+"."]);
-  return `<div class="panel ref"><h2>Referee report · Week ${w.week}</h2><p class="note">${w.status==="final"?"Final.":"Provisional, based on "+graded.length+" graded games."}</p>${items.map(([t,s,b])=>`<div class="refitem"><div class="reft">${t==="Touchdown"?SIG.td:t==="Delay of game"||t==="Bad beat"?SIG.inc:'<span class="minif"></span>'}<b>${t}</b><span class="note">${s}</span></div><div>${b}</div></div>`).join("")}</div>`;
-}
-
 /* ---------- standings ---------- */
 function seasonRows(includeTest,withBot){
   const weeks=countedWeeks(includeTest);
@@ -1412,7 +1387,6 @@ function renderStandings(){
   let w=curWeek(),wid=currentWeekId(),rev=state.reveals[wid];
   if(!rev){const lf=lastShownWeek();if(lf){if(w&&w.status!=="draft")h+=`<p class="note">Week ${w.week} standings appear after picks lock ${kick(w.deadline)}.</p>`;else if(state.upcoming||w)h+=`<p class="note">The next week's standings appear after its picks lock.</p>`;w=lf;wid=lf.id;rev=state.reveals[wid]}}
   if(w&&rev){
-    h+=refReport(wid);
     const wk=Object.entries(weekPlayers(wid,true)).map(([pid,p])=>({pid,...scoreWeek(w,p)}));
     wk.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));
     const allFinal=w.status==="final";const win=weekWinners(wid);
