@@ -51,7 +51,7 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8. Add Bowl and CFP rules to the Payouts section if their prizes change.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 9. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
@@ -70,6 +70,13 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Lines are set once, sometime after Dec 6. Timing not decided. A void game scores for nobody and cannot be replaced after the lock.
    - Robo-Sharp plays unranked and cannot win. It takes its 10 biggest edges. Unlike a regular week, its picks and model lines stay hidden until the lock.
    - The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
+9. Preview slate and "picks are live" alert. Timing not set by Benton.
+   - Early in the week, pickers see the likely games and current lines, with a note that picks are not open and final lines come Tuesday or Wednesday.
+   - When picks open, a flash and card like the Covered and Bummer reveal tell each picker that lines are final and picks are live.
+   - To settle: when lines become final. Today they freeze at the Tuesday 1 p.m. build and nothing updates them before the Wednesday 6 p.m. open.
+   - To settle: whether the preview runs Sunday or Monday. ESPN's line coverage that early is not verified, and the job needs AP poll timing checked.
+   - The 5 tightest line games can change between preview and slate, so the preview must say the games can change.
+   - Build note: drafts are commissioner only, so the preview should be its own saved record sent to every login, not a week. It takes no picks and touches no standings. The alert is seen per login in localStorage. It reaches only pickers who open the site, since the site sends no texts.
 
 ### Next season (2027)
 4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
