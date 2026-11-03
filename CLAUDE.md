@@ -54,7 +54,7 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10. Add Bowl and CFP rules to the Payouts section if their prizes change.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 18. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
@@ -103,17 +103,28 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
 5. Upkeep share: Benton is considering 5% of each buy-in. Not decided. The Payouts calculator has an upkeep box, set to 0. Buy-in amount is also not set.
 
-### Engagement review (Nov 2): ideas, none approved
+### Engagement review (Nov 2): Benton's calls
+Design rule: this league is for people who care enough to check it without prompting. Benton sends no mass messages and follows up one person at a time by text if he wants. There is no group chat to count on. Nothing here may depend on outside prompting. Pickers who lose interest are allowed to drop off.
 Keep the weekly rhythm, Picks, Recap, Survivor, weekly titles, and Robo-Sharp as they are. Fixed times are the habit: Mon preview, Wed 6 p.m. live, Sat 10:15 a.m. lock, Sunday recap.
-11. Reliable scores and timing. GitHub ran 6 times on Sat Oct 31, about every 3 hours, with a median gap of 6 hours across Oct 29 to Nov 2, not twice an hour. Idea: when a logged in page polls and a job is overdue, the site runs it (scores while games are live, open at Wed 6 p.m., preview Monday). No new service. The page also says "about twice an hour", which must match what is true.
-12. Group text kit. Commish buttons copy a ready message for picks live, Friday night sheets missing, and the recap headline. The site still sends no texts.
-13. Weekly rival. Each picker gets the picker just above them in the season standings, shown on Picks, during games, and in the Recap. Page only, from saved picks. Rival record feeds Head to head.
+
+Approved for this season, not started:
+13. Weekly rival. Each picker gets the picker just above them in the season standings, shown on Picks, during games, and in the Recap. Page only, from saved picks. Rival record feeds Head to head. To settle: who the top picker's rival is.
 14. What you need. A live Saturday line, such as "1 back of the lead with 3 games left", plus your rival's score.
 15. Your week at the top of the Recap: your record, best pick, worst beat, and rank move.
-16. Line moved tags: on the Wednesday slate, show each line's move since the preview.
-17. Commissioner engagement view: last seen per picker, sheet time, Recap reads. Commissioner only.
-18. Ironman tile: positive stat for sheets in without a miss. No shaming for a missed week.
-19. For 2027, to review: add to home screen prompt, web push (not verified), accomplishments, and a 4 week fresh start contest if the season race goes stale.
+16. Line moved tags: on the Wednesday slate, show each line's move since the preview. Only if it stays small, with no real upkeep.
+17. Engagement view for the commissioner, in Commish or its own tab: engagement by person and by page, including last seen, sheet time, and Recap reads. Only if it stays small, with no real upkeep. Commissioner only.
+18. Iron Man. A status for a picker who makes all 10 picks before the lock every regular season week. Tiebreaker and Survivor do not count. Conference Champion Week counts. Bowl and CFP do not. A full season Iron Man is a historical accomplishment on the stats pages. No penalty status for pickers who are not Iron Men. To settle: how it treats a late joiner and a void game. A change needs the Rules page in the same build.
+
+Hold, risk review first:
+11. Reliable scores and timing. Benton likes it but nothing gets built until the risks are checked. GitHub ran 6 times on Sat Oct 31, about every 3 hours, with a median gap of 6 hours across Oct 29 to Nov 2, not twice an hour. Idea: when a logged in page polls and a job is overdue, the site runs it (scores while games are live, open at Wed 6 p.m., preview Monday). No new service. The page says "about twice an hour", which must match what is true.
+   - Review before any build: Vercel plan limits and rules for this use (function calls, cron, Hobby terms), Neon limits, how many calls a Saturday would make to ESPN and the other sites, and the risk of being blocked as a bot.
+   - The design must have a hard cap Benton controls, a minimum gap between runs, a kill switch, and no way for traffic to multiply outside calls. Losing the app to a block is worse than slow scores.
+
+Ideas to shape later, not approved:
+19. Your season recap replaces the Recap for everyone, personal to each picker. The league-wide stats move to a new area, maybe called the Record Book. Benton's idea, wording "maybe". To settle: how it fits with the current Recap, and when in the season it runs.
+20. For 2027, to review: add to home screen prompt, web push (not verified), accomplishments, and a 4 week fresh start contest if the season race goes stale.
+
+Thrown out: 12 (group text kit). Benton will not send mass messages.
 Do not add: daily check ins, points currency, in-app chat, more contests this season.
 
 ### Back burner
