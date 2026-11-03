@@ -101,7 +101,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
    - Paid pickers cannot see ghosts. Ghosts cannot see each other.
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
-5. Upkeep share: Benton is considering 5% of each buy-in. Not decided. The Payouts calculator has an upkeep box, set to 0. Buy-in amount is also not set.
+5. Upkeep share: Benton is considering 5% of each buy-in. Not decided. Vercel lists "receiving payment to create, update, or host the site" as commercial use, which Hobby does not allow, so taking this share means moving to Pro, $20 a seat a month. Check with Vercel support before 2027 buy-ins either way. The Payouts calculator has an upkeep box, set to 0. Buy-in amount is also not set.
 
 ### Engagement review (Nov 2): Benton's calls
 Design rule: this league is for people who care enough to check it without prompting. Benton sends no mass messages and follows up one person at a time by text if he wants. There is no group chat to count on. Nothing here may depend on outside prompting. Pickers who lose interest are allowed to drop off.
@@ -117,8 +117,13 @@ Approved for this season, not started:
 
 Hold, risk review first:
 11. Reliable scores and timing. Benton likes it but nothing gets built until the risks are checked. GitHub ran 6 times on Sat Oct 31, about every 3 hours, with a median gap of 6 hours across Oct 29 to Nov 2, not twice an hour. Idea: when a logged in page polls and a job is overdue, the site runs it (scores while games are live, open at Wed 6 p.m., preview Monday). No new service. The page says "about twice an hour", which must match what is true.
-   - Review before any build: Vercel plan limits and rules for this use (function calls, cron, Hobby terms), Neon limits, how many calls a Saturday would make to ESPN and the other sites, and the risk of being blocked as a bot.
-   - The design must have a hard cap Benton controls, a minimum gap between runs, a kill switch, and no way for traffic to multiply outside calls. Losing the app to a block is worse than slow scores.
+   - Risk review done Nov 2: safe to build with the guardrails below. Waiting on Benton's go, after he checks the Vercel and Neon usage pages.
+   - Scope: scores and the Wednesday open only. Rankings, ATS, lines, slate, and preview stay on the schedule.
+   - Trigger: a logged in page poll, only while a locked week has a game kicked off and not final, or when a draft is past its open time.
+   - Guardrails: at least 10 minutes between attempts, saved before the ESPN call behind the existing database lock, so traffic cannot multiply calls. A daily cap of 80 attempts. A Commish on and off switch that starts off, with today's count shown. Any 403 or 429 turns it off and raises a flag until Benton resets it. No retries.
+   - Math: at most 75 ESPN scoreboard calls on a 12.5 hour Saturday. ESPN publishes no limit, so that cap is a judgment call, not a safe number from ESPN.
+   - Bigger risk than item 11: the 60 second page poll sends the full state. Estimated Vercel transfer is 0.5 to 9.4 GB a month against 10 GB, and Neon transfer is unmeasured against 5 GB. If either page shows over 30% used, build a light version check first, so the full state loads only when something changed.
+   - Fix the page wording in the same build: scores about every 10 minutes while games are live.
 
 Ideas to shape later, not approved:
 19. Your season recap replaces the Recap for everyone, personal to each picker. The league-wide stats move to a new area, maybe called the Record Book. Benton's idea, wording "maybe". To settle: how it fits with the current Recap, and when in the season it runs.
