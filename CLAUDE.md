@@ -76,7 +76,7 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10. Add Bowl and CFP rules to the Payouts section if their prizes change.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 31. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
@@ -109,15 +109,22 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Survivor no longer ends Nov 28: update the saved `config.survivorEnd`, the league rule above, and the Rules page. Item 1 must carry the Survivor pick for Conference Champion Week.
    - Build note: the app handles one run today (`survivorStart`, `survivorEnd`, `survLate`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
 
+31. Army-Navy one-off contest. Decided Nov 4 for 2026 and on. 2026: Sat Dec 12. 2027: Sat Dec 11. It stands alone, with a 1% prize.
+   - Every picker takes one side against the spread and enters a tiebreaker. Among correct picks, the closest tiebreaker wins, and exact ties share.
+   - No season points, weekly win, Iron Man effect, or field goal. Its own small career stat. Robo-Sharp plays but cannot win.
+   - To settle: the second tiebreaker, which applies only to this contest, and the lock time.
+   - Build note: the app assumes 10 game weeks, so this needs a one game path. Check how ESPN labels the week. It must not touch the Bowl or CFP deadlines. A change needs the Rules page in the same build.
+   - Payouts (decided Nov 4): 13 weekly prizes at 1% (13%), Army-Navy 1%, Survivor stays 15% at 3.75% a run over 4 runs, all others unchanged. Total 100%. Update `PAY`, the calculator, the Rules text, the tests, and the league rule in the same build. They still say 14 weekly prizes and 3 runs at 5%.
+
 ### Next season (2027)
 4. Survivor: ATS, fixed runs. Decided: Survivor stays against the spread in 2026 and 2027. Replaces the two skulls idea, which is dropped.
    - Conference lock is being tested in the 2026 second run (item 10). Decide after that run whether it stays for 2027.
    - Pick one team against the spread. One loss and you are out of that run. The conflict warning stays.
-   - The season has 4 fixed runs (decided Nov 4). A 15 week season could split 4, 4, 4, and 3 weeks, with Conference Champion Week in the last run. Everybody starts each run alive, and used teams reset.
+   - The season has 4 fixed runs (decided Nov 4). The season is 13 weekly slates plus Conference Champion Week, 14 weeks in all (Week 0 is too small for a slate). It could split 4, 4, 3, and 3 weeks, with Conference Champion Week in the last run. Recheck the 2027 calendar. Everybody starts each run alive, and used teams reset.
    - No tiebreaker. Everyone still alive at the end of a run wins it. Pickers who split a win are each called Co-Champion and each gets the win on their stats page.
    - If every remaining picker goes out in the same week, they are all resurrected and play one more week. If that was the last week of the run or season, they share the title as Co-Champions instead.
    - Robo-Sharp keeps picking by spread edge.
-   - To settle: exact run weeks, and the Survivor share. At 15% of the pot, each run pays 3.75%, not 5%. Raising the share means cutting another prize. The Rules page and the `PAY` calculator still say 3 runs at 5% until this is set.
+   - To settle: exact run weeks. The Survivor share is 15%, or 3.75% a run (item 31).
 8. Ghost pickers: an unpaid tier so someone can try the league with no skin in the game and no effect on anyone else.
    - Paid members play every contest and can win payouts. The commissioner creates every ghost and gives the PIN, the same as any picker, and can flip the profile to paid. No open signups.
    - Ghosts play shadow versions of Survivor, the Bowl challenge, and the CFP bracket.
@@ -148,7 +155,7 @@ Left out on purpose: a field goal animation, too much work for the gain.
 
 Thrown out: 12 (group text kit). Benton will not send mass messages.
 Thrown out: 5 (upkeep share). No share of buy-ins, so the whole pot pays out.
-Do not add: daily check ins, points currency, in-app chat, more contests this season.
+Do not add: daily check ins, points currency, in-app chat, more contests this season beyond Army-Navy (item 31, Benton's call Nov 4).
 
 ### Back burner
 Benton will probably never do this.
