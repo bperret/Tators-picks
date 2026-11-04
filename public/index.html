@@ -575,7 +575,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Pick 10 games against the spread. Each correct pick is 1 point.</li>
         <li>Kick your field goal (FG) on one pick. If it covers, it is worth 3, the same as a real field goal.</li>
         <li>Guess the total points in game 1 for the tiebreaker.</li>
-        <li>Pick one Survivor team. Each team once a season.</li>
+        <li>Pick one Survivor team. Each team once a run.</li>
         <li>Everything locks Saturday at 10:15 a.m. CT. Then everyone's picks show.</li>
       </ol>
     </div>
@@ -609,7 +609,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. The weekly title has no prize in 2026. See Payouts for the plan starting in 2027.</li>
         <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses.</li>
         <li>Conference Champion Week is the final week of the regular season. Its points count in the season standings like any other week. Its winner earns a Conference Champion win, tracked apart from weekly wins.</li>
-        <li>Bowl games are a separate contest.</li>
+        <li>Army-Navy, the Bowl challenge, and the CFP bracket are separate contests. Their points do not count in the season standings. See Contests still to come.</li>
       </ul></details>
       <details><summary class="rh">Logins</summary>
       <ul>
@@ -627,22 +627,64 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <details><summary class="rh">Survivor</summary>
       <ul>
         <li>Each week, also pick one team from the slate against the spread. If it covers, you stay alive. If it does not, you are out.</li>
-        <li>You cannot pick the same team twice. A void game keeps you alive. A missed survivor pick puts you out.</li>
-        <li>If you join late and miss the first week of a Survivor, you are out of that Survivor. Resurrection does not bring you back.</li>
+        <li>You cannot pick the same team twice in a run. A void game keeps you alive. A missed survivor pick puts you out.</li>
+        <li>If you join late and miss the first week of a run, you are out of that run. Resurrection does not bring you back.</li>
         <li>Survivor picks lock and reveal with your regular picks. The last picker alive wins.</li>
-        <li>If every remaining picker goes out in the same week, they are all resurrected and play one more week. The teams they used stay used. In Survivor's last week, they share the title instead.</li>
-        <li>Survivor ends after the Saturday, November 28 week. There is no Survivor pick in Conference Champion Week. Everyone still alive after that week shares the title.</li>
+        <li>If every remaining picker goes out in the same week, they are all resurrected and play one more week. The teams they used stay used. In a run's last week, they share the title instead.</li>
+        <li>2026 has two runs. The first run ends after the Saturday, November 14 week, and everyone still alive then shares it. The second run is planned; see Contests still to come.</li>
+        <li>Everyone who shares a run's title is a Co-Champion.</li>
         <li>The Survivor tab shows every picker's pick each week, who is still alive, and which teams you have left.</li>
+      </ul></details>
+      <details id="contests"><summary class="rh">Contests still to come</summary>
+      <p class="note">This is the plan. It can change until each contest opens. 2026 has no prizes in any contest.</p>
+      <h3 class="rh">Second Survivor run</h3>
+      <ul>
+        <li>It covers the November 21 week, the November 28 week, and Conference Champion Week. Everyone starts it alive, even pickers who went out in the first run.</li>
+        <li>It is against the spread, with one change: the conference lock. Picking a team burns that team's conference for the rest of the run. Only your team's conference burns, so in a nonconference game the other team's conference stays open.</li>
+        <li>Independents count as one conference, so picking Notre Dame burns Independents.</li>
+        <li>The conference lock replaces the rule against using a team twice. If no legal game is left on the slate, you can pick any game, including a team you already used.</li>
+        <li>Robo-Sharp follows the conference lock too.</li>
+      </ul>
+      <h3 class="rh">Conference Champion Week</h3>
+      <ul>
+        <li>All 10 conference title games make up the slate, 5 on Friday, December 4 and 5 on Saturday, December 5.</li>
+        <li>One lock covers the week, before the first Friday kickoff at about 6 p.m. Central. Your regular picks, field goal, tiebreaker, and Survivor pick all lock then.</li>
+      </ul>
+      <h3 class="rh">Army-Navy</h3>
+      <ul>
+        <li>One game on Saturday, December 12. It stands alone and is straight up. The spread shows for information only.</li>
+        <li>Enter a predicted final score and a predicted halftime score before the lock.</li>
+        <li>The winner is decided in this order: the correct game winner, then the closest final score, then the closest halftime score. Exact ties share. Closest means the fewest points off, adding the miss on each team's score.</li>
+        <li>It earns its own career stat. It adds no season points, no weekly win, and has no field goal. It does not affect Iron Man. Robo-Sharp plays but cannot win.</li>
+      </ul>
+      <h3 class="rh">Bowl challenge</h3>
+      <ul>
+        <li>It has its own standings and covers all bowls outside the playoff except the Celebration Bowl, about 35 games from December 15 to January 2.</li>
+        <li>Choose any 10 bowls and pick them against the spread. Each correct pick is 1 point. Kick one field goal, worth 3 if it covers. A blank pick scores 0.</li>
+        <li>One lock covers the contest: Tuesday, December 15, before the first kickoff. Lines are set once after December 6. A void game scores for nobody and cannot be replaced after the lock.</li>
+        <li>Tiebreaker: everyone guesses the total points in one fixed bowl, picked or not. It is the bowl with the highest ranked AP teams.</li>
+        <li>Robo-Sharp takes its 10 biggest edges, shows with no rank, and cannot win. Its picks stay hidden until the lock.</li>
+      </ul>
+      <h3 class="rh">CFP bracket</h3>
+      <ul>
+        <li>Fill out one full 12 team bracket, straight up, before the first game on Friday, December 18. It has its own standings. The real field is set Sunday, December 6.</li>
+        <li>Rounds score 1, 2, 4, and 8, from the first round through the title game. A perfect bracket is 28. The top four seeds have byes, so they earn no first round points.</li>
+        <li>Nobody re-picks. A pick on a team that is already out scores 0. Tiebreaker: total points in the title game.</li>
+        <li>The Playoffs tab is for fun until then, and nothing there counts.</li>
+      </ul>
+      <h3 class="rh">Survivor in 2027</h3>
+      <ul>
+        <li>Survivor stays against the spread and has 4 fixed runs. Everyone starts each run alive, and used teams reset. Everyone still alive when a run ends is a Co-Champion of that run.</li>
       </ul></details>
       <details><summary class="rh">Stats</summary>
       <ul>
         <li>The Pickers tab shows each picker's past picks by week, career wins, and tendencies. Picks show only after each lock.</li>
-        <li>Conference Champion Week wins are their own career stat and do not count as weekly wins.</li>
+        <li>Conference Champion Week wins are their own career stat and do not count as weekly wins. Army-Navy wins are their own career stat too.</li>
         <li>Career wins count from Week 9 of 2026. A win shared with another picker also counts as a Co-Champion credit.</li>
         <li>Beat the close compares the line when picks opened to the last line saved before kickoff. If the line moved toward your side, you beat the close, even if your pick lost. Late picks count. Games where the line never moved do not count.</li>
         <li>Robo-Sharp appears in Beat the close with no rank. It has no career record.</li>
         <li>Your weekly rival is the picker just above you in the season standings as the week starts. The leader's rival is the picker right behind. Rivals are for fun and count for nothing.</li>
-        <li>Iron Man (\u{1F9BE}): you picked every game before the lock, every week from your first week on. The tiebreaker and Survivor do not count. Conference Champion Week counts. Bowls and the CFP bracket do not. A void game does not count against you. One missed game or week ends it for the season.</li>
+        <li>Iron Man (\u{1F9BE}): you picked every game before the lock, every week from your first week on. The tiebreaker and Survivor do not count. Conference Champion Week counts. Army-Navy, bowls, and the CFP bracket do not. A void game does not count against you. One missed game or week ends it for the season.</li>
         <li>A full season Iron Man starts in the season's first week and runs through Conference Champion Week. It stays on your Pickers page. If you start later, you can hold the status but not the full season.</li>
       </ul></details>
       <details id="payouts"><summary class="rh">Payouts</summary>
@@ -650,8 +692,10 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <p class="note">The 2027 buy-in is not set. Every prize is a share of the pot, so the plan works at any buy-in and any league size. Pot = buy-in x paid pickers.</p>
       <div class="tablewrap"><table class="paytab"><thead><tr><th>Prize</th><th class="num">Share</th><th class="num">Dollars</th></tr></thead><tbody id="payRows"></tbody></table></div>
       <ul>
-        <li>Conference Champion Week is the last regular season week, and its points count toward the season prizes. Its winner gets 6% instead of the 1% weekly prize. It is not one of the 14 weekly prizes.</li>
-        <li>Weekly wins pay 1% each, 14% over 14 weeks. Survivor's 15% is split evenly across its runs, 5% a run with 3 runs.</li>
+        <li>The regular season has 13 weekly slates plus Conference Champion Week, 14 weeks in all.</li>
+        <li>Conference Champion Week is the last regular season week, and its points count toward the season prizes. Its winner gets 6% instead of the 1% weekly prize. It is not one of the 13 weekly prizes.</li>
+        <li>Weekly wins pay 1% each, 13% over 13 weeks. Survivor's 15% is split evenly across its 4 runs, 3.75% a run.</li>
+        <li>Army-Navy pays 1%. Winners who tie exactly split it.</li>
         <li>Ties split the combined prizes for the tied places. If two pickers tie for 1st, they split 1st and 2nd.</li>
         <li>Everyone who wins a Survivor run together splits that run's prize.</li>
         <li>Robo-Sharp cannot win money. Its prize goes to the next best picker.</li>
@@ -667,10 +711,11 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <p id="payPot" class="paypot"></p>
       <div class="payform">
         <label>Season finish <select id="paySeason"><option value="0">No prize</option><option value="20">1st</option><option value="10">2nd</option><option value="5">3rd</option></select></label>
-        <label>Weekly wins <input type="number" id="payWeeks" min="0" max="14" value="0" inputmode="numeric"></label>
+        <label>Weekly wins <input type="number" id="payWeeks" min="0" max="13" value="0" inputmode="numeric"></label>
         <label>Conference Champion Week <select id="payConf"><option value="0">No</option><option value="6">Won it</option></select></label>
-        <label>Survivor runs won <input type="number" id="payRuns" min="0" max="3" value="0" inputmode="numeric"></label>
+        <label>Survivor runs won <input type="number" id="payRuns" min="0" max="4" value="0" inputmode="numeric"></label>
         <label>Winners in each run <input type="number" id="paySplit" min="1" max="200" value="1" inputmode="numeric"></label>
+        <label>Army-Navy <select id="payAN"><option value="0">No</option><option value="1">Won it</option></select></label>
         <label>Bowl challenge <select id="payBowl"><option value="0">No prize</option><option value="10">1st</option><option value="5">2nd</option></select></label>
         <label>CFP bracket <select id="payCfp"><option value="0">No prize</option><option value="10">1st</option><option value="5">2nd</option></select></label>
       </div>
@@ -1438,15 +1483,15 @@ window.tpRecap={state,render,revealLive,recapFacts,renderRecap,currentWeekId,sho
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */
-/* Shares of the pot in percent. They total 100 at 14 weeks and 3 Survivor runs. Money stays off the site; this only does the math. */
-const PAY=[["Season standings","1st",20],["Season standings","2nd",10],["Season standings","3rd",5],["Weekly winner","Each week (14)",1],["Conference Champion Week","Winner",6],["Survivor","Each run (3)",5],["Bowl challenge","1st",10],["Bowl challenge","2nd",5],["CFP bracket","1st",10],["CFP bracket","2nd",5]];
+/* Shares of the pot in percent. They total 100 at 13 weeks and 4 Survivor runs. Money stays off the site; this only does the math. */
+const PAY=[["Season standings","1st",20],["Season standings","2nd",10],["Season standings","3rd",5],["Weekly winner","Each week (13)",1],["Conference Champion Week","Winner",6],["Army-Navy","Winner",1],["Survivor","Each run (4)",3.75],["Bowl challenge","1st",10],["Bowl challenge","2nd",5],["CFP bracket","1st",10],["CFP bracket","2nd",5]];
 function payNum(id,lo,hi){const v=Math.floor(Number($("#"+id).value));return isNaN(v)?lo:Math.min(hi,Math.max(lo,v))}
 function payMoney(n){return "$"+Math.round(n).toLocaleString("en-US")}
 function payUpdate(){if(!$("#payRows"))return;
   const buy=payNum("payBuy",0,10000),n=payNum("payN",1,200);const pot=buy*n;const of=p=>pot*p/100;
   $("#payRows").innerHTML=PAY.map(([c,pr,sh])=>`<tr><td>${esc(c)} \u00b7 ${esc(pr)}</td><td class="num">${sh}%</td><td class="num">${payMoney(of(sh))}</td></tr>`).join("");
   $("#payPot").textContent=`Pot: ${payMoney(pot)} from ${n} picker${n===1?"":"s"} at ${payMoney(buy)}.`;
-  const sum=+$("#paySeason").value+payNum("payWeeks",0,14)+ +$("#payConf").value+payNum("payRuns",0,3)*5/payNum("paySplit",1,200)+ +$("#payBowl").value+ +$("#payCfp").value;
+  const sum=+$("#paySeason").value+payNum("payWeeks",0,13)+ +$("#payConf").value+ +$("#payAN").value+payNum("payRuns",0,4)*3.75/payNum("paySplit",1,200)+ +$("#payBowl").value+ +$("#payCfp").value;
   const won=of(sum);const net=won-buy;$("#payTotal").textContent=`You would win ${payMoney(won)}. After your buy-in, that is ${net<0?"-":"+"}${payMoney(Math.abs(net))}.`}
 document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});
 document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});

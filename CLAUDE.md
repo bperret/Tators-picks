@@ -25,7 +25,7 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Result reveal: `revealFinals()` runs after each refresh (the page polls every 60 seconds). A card and flash show games that went final since this device last looked, saved per login in localStorage `tp-seen-finals-<uid>`. Several finals share one card. A first visit on a device after a week closed stays quiet.
 - Weekly recap: Recap tab, built in the page by `recapFacts(wid)` from saved picks and results, for final weeks only, with a week picker. A banner on Picks shows until the latest recap is read (`tp-recap-seen-<uid>`). Clean jokes, referee voice. A negative award never lands on the same picker twice in a week. To grow it, add facts to `recapFacts`.
 - Survivor end: `config.survivorEnd` (default in `DEFAULT_CONFIG`, 2026-11-29 midnight CT; `SURVIVOR_END` overrides it, and `dev/server.mjs` sets a far date because tests use real dates). The page uses `survivorOpen`, the server uses `survivorClosed`. Saved config keeps its value, so a new season must update the saved config. `survivorRevived()` works out resurrection weeks for both the board and the grid.
-- Payouts: `#payouts` in Rules, `PAY` holds the shares, `payUpdate()` does the math. Page only; nothing is saved.
+- Payouts: `#payouts` in Rules, `PAY` holds the shares, `payUpdate()` does the math, and the shares total 100 at 13 weeks and 4 runs. Page only; nothing is saved.
 - Picker stats on the Pickers tab: career wins (`careerPanel`), tendencies (`insightPanel`), past picks by week (`pastPanel`). All read a data object D from `realStats()`, so tests can feed them a dummy league (see `dev/test.mjs`). Robo-Sharp gets none of these. Bowl and CFP wins read `bowl` and `cfp` in `realStats()`, empty until those contests exist.
 - Beat the close: `closingLines` in `lib/league.js` sends `state.closing` (saved last line before kickoff, half-point rule applied, started games only). `closeOf` compares it to `homeLine`. Moved games only; `closePanel` is on Standings, with Robo-Sharp unranked. The game log is read only if a started game has no saved line, since the page polls every 60 seconds.
 - Commish sections fold (details with `data-sec`), saved per device in localStorage `tp-commish-open`, plus Expand all and Collapse all. Defaults: This week and Swap games open; Automation opens when it has flags; League members opens when a new PIN is showing.
@@ -47,13 +47,13 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 ## League rules (decided)
 - 10 Saturday games kicking off 11 a.m. CT or later: 5 top AP games (ranked v ranked first), then 5 tightest lines among other ranked-team games. Half-point lines; on a whole number the underdog gets the half. Lines are final when picks open.
 - 1 point per correct pick, one 3 point field goal (FG; stored as `lock` in pick data; goalpost icon `GP`, no emoji exists), tiebreaker = total points in game 1 (game 2 if game 1 is void; blank = 0). Void games score for nobody.
-- Conference Champion Week is the final regular season week. Its points count in the season standings and season prizes like any week. Its winner gets a Conf Champ win, a separate career stat that is not a weekly win, and 6% instead of the 1% weekly prize. It is not one of the 14 weekly prizes. A week is flagged with `confChamp: true`.
+- Conference Champion Week is the final regular season week. Its points count in the season standings and season prizes like any week. Its winner gets a Conf Champ win, a separate career stat that is not a weekly win, and 6% instead of the 1% weekly prize. It is not one of the 13 weekly prizes. A week is flagged with `confChamp: true`.
 - Weekly winner: points, then tiebreaker, else shared. Season: points, field goals made, smallest total tiebreaker misses.
 - Survivor: one team ATS a week, no repeats, a miss means out. It ends after the Saturday Nov 28 week; anyone still alive shares the title. If every remaining picker goes out in the same week, all play one more week (used teams stay used); in the last week they share instead. A lone picker is never resurrected. A picker with no sheet in a Survivor's first week is out of it, and resurrection does not bring them back (`survLate`).
 - Robo-Sharp (🤖, black and silver): model side in every game, field goal on biggest edge, betting total as tiebreaker, biggest unused edge in Survivor. Shows in standings with no rank and never wins a week, trophy, Survivor, or the season; the best picker wins instead.
 - People are "pickers". Tabs: Picks, Standings, Recap, Survivor, Pickers, Teams, Playoffs, Rules, Profile, Commish. The public log never shows the commissioner's private nickname for a picker.
 - 2026 is a free test season: no buy-ins, no payouts. Weeks, standings, and titles still count. Payouts start in 2027, and the Rules page shows them as hypothetical so pickers can try scenarios and give feedback.
-- Money is off the site; the Rules page only posts the plan. Payouts are shares of the pot (Stay Engaged): season 20 / 10 / 5, weekly 1% each, Conference Champion Week 6%, Survivor 5% a run, Bowl 10 / 5, CFP 10 / 5. The buy-in is not set. Bowls are a separate contest.
+- Money is off the site; the Rules page only posts the plan. Payouts are shares of the pot (Stay Engaged): season 20 / 10 / 5, weekly 1% each over 13 weeks, Conference Champion Week 6%, Army-Navy 1%, Survivor 3.75% a run over 4 runs, Bowl 10 / 5, CFP 10 / 5. The buy-in is not set. Bowls are a separate contest.
 - No test weeks (decided Oct 31). Week 9 counts as the first week; every revealed week counts toward the season. Weeks keep their real numbers (next is Week 10). The old `scored` flag is ignored and new weeks save `scored: true`.
 
 ## CFP field rules (2026 season, checked Nov 4)
@@ -76,7 +76,7 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 31. Add Bowl and CFP rules to the Payouts section if their prizes change.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 31. The "Contests still to come" section (`#contests`) holds the plan for items 1, 2, 3, 4, 10, and 31 as of Nov 4. When one ships, move its text into the live rules, and keep this section in step with any tracker change. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
@@ -115,7 +115,6 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - No season points, weekly win, Iron Man effect, or field goal. Its own small career stat. Robo-Sharp plays but cannot win.
    - To settle: the lock time.
    - Build note: the app assumes 10 game weeks, so this needs a one game path. Check how ESPN labels the week. The scores job needs ESPN's halftime score, or the commissioner enters it by hand. It must not touch the Bowl or CFP deadlines. A change needs the Rules page in the same build.
-   - Payouts (decided Nov 4): 13 weekly prizes at 1% (13%), Army-Navy 1%, Survivor stays 15% at 3.75% a run over 4 runs, all others unchanged. Total 100%. Update `PAY`, the calculator, the Rules text, the tests, and the league rule in the same build. They still say 14 weekly prizes and 3 runs at 5%.
 
 ### Next season (2027)
 4. Survivor: ATS, fixed runs. Decided: Survivor stays against the spread in 2026 and 2027. Replaces the two skulls idea, which is dropped.
