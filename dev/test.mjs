@@ -393,13 +393,12 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("a shared Survivor run splits its prize", pay[1].includes("$190"), pay[1]);
   await m.click('[data-paybuy="25"]'); pay = await payTxt();
   check("buy-in chips change the dollars", pay[0].includes("$500") && pay[2].includes("$100"), pay[0]);
-  await m.fill("#payUp", "5"); pay = await payTxt();
-  check("upkeep shrinks the pot", pay[0].includes("$475") && pay[0].includes("$25 for upkeep"), pay[0]);
+  check("the Rules page does not mention upkeep", !/upkeep/i.test(await m.$eval("#payouts", (e) => e.textContent)));
   const pw = await m.evaluate(() => document.documentElement.scrollWidth);
   check("payouts have no sideways scroll on a phone", pw <= 390, String(pw));
   const tw = await m.$eval("#payouts .tablewrap", (e) => e.scrollWidth - e.clientWidth);
   check("payout table fits a phone without scrolling", tw <= 0, String(tw));
-  await m.fill("#payUp", "0"); await m.click('[data-paybuy="100"]');
+  await m.click('[data-paybuy="100"]');
   await m.locator("#payouts").screenshot({ path: "dev/test-payouts.png" });
   await m.evaluate(() => (location.hash = "#survivor")); await m.waitForTimeout(300);
   check("survivor board fills in", (await m.textContent("#v-survivor")).includes("MIA"));

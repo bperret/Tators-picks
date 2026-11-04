@@ -606,10 +606,8 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <div class="payform">
         <label>Buy-in $<input type="number" id="payBuy" min="0" max="10000" value="100" inputmode="numeric"></label>
         <label>Paid pickers <input type="number" id="payN" min="1" max="200" value="20" inputmode="numeric"></label>
-        <label>Upkeep % <input type="number" id="payUp" min="0" max="50" value="0" inputmode="numeric"></label>
       </div>
       <div class="bar paychips" aria-label="Quick buy-in"><button type="button" class="btn sm" data-paybuy="25">$25</button><button type="button" class="btn sm" data-paybuy="50">$50</button><button type="button" class="btn sm" data-paybuy="100">$100</button></div>
-      <p class="note">Upkeep is not decided. At 0%, the whole pot pays out.</p>
       <p id="payPot" class="paypot"></p>
       <div class="payform">
         <label>Season finish <select id="paySeason"><option value="0">No prize</option><option value="20">1st</option><option value="10">2nd</option><option value="5">3rd</option></select></label>
@@ -1387,9 +1385,9 @@ const PAY=[["Season standings","1st",20],["Season standings","2nd",10],["Season 
 function payNum(id,lo,hi){const v=Math.floor(Number($("#"+id).value));return isNaN(v)?lo:Math.min(hi,Math.max(lo,v))}
 function payMoney(n){return "$"+Math.round(n).toLocaleString("en-US")}
 function payUpdate(){if(!$("#payRows"))return;
-  const buy=payNum("payBuy",0,10000),n=payNum("payN",1,200),up=payNum("payUp",0,50);const gross=buy*n;const pot=gross*(1-up/100);const of=p=>pot*p/100;
+  const buy=payNum("payBuy",0,10000),n=payNum("payN",1,200);const pot=buy*n;const of=p=>pot*p/100;
   $("#payRows").innerHTML=PAY.map(([c,pr,sh])=>`<tr><td>${esc(c)} \u00b7 ${esc(pr)}</td><td class="num">${sh}%</td><td class="num">${payMoney(of(sh))}</td></tr>`).join("");
-  $("#payPot").textContent=`Pot: ${payMoney(pot)} from ${n} picker${n===1?"":"s"} at ${payMoney(buy)}${up?`, after ${payMoney(gross-pot)} for upkeep`:""}.`;
+  $("#payPot").textContent=`Pot: ${payMoney(pot)} from ${n} picker${n===1?"":"s"} at ${payMoney(buy)}.`;
   const sum=+$("#paySeason").value+payNum("payWeeks",0,14)+ +$("#payConf").value+payNum("payRuns",0,3)*5/payNum("paySplit",1,200)+ +$("#payBowl").value+ +$("#payCfp").value;
   const won=of(sum);const net=won-buy;$("#payTotal").textContent=`You would win ${payMoney(won)}. After your buy-in, that is ${net<0?"-":"+"}${payMoney(Math.abs(net))}.`}
 document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});

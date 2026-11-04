@@ -82,7 +82,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
 10. Second Survivor run this season. Decided, waiting on Benton's go to build. It must be live before the Nov 14 week opens, Wednesday Nov 11.
    - It starts the Nov 14 week and runs through Nov 28, 3 weeks. The first run ends with the Nov 7 week, and anyone alive then shares it.
-   - ATS for all of 2026; straight up starts in 2027 (item 4), though that is under review.
+   - ATS, the same as 2027 (item 4).
    - Conference lock, a test for this run. Picking a team burns its conference for the run. Only the picked team's conference burns, so in a nonconference game the other team's conference stays available. Burned conferences start empty at the run's start.
    - The no-repeat team rule goes away for this run, since a burned conference already blocks the team.
    - Independents count as one group, so picking Notre Dame burns Independents.
@@ -92,15 +92,14 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Build note: the app handles one run today (`survivorStart`, `survivorEnd`, `survLate`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
 
 ### Next season (2027)
-4. Survivor: straight up, fixed runs. Replaces the two skulls idea, which is dropped.
+4. Survivor: ATS, fixed runs. Decided: Survivor stays against the spread in 2026 and 2027. Replaces the two skulls idea, which is dropped.
    - Conference lock is being tested in the 2026 second run (item 10). Decide after that run whether it stays for 2027.
-   - Under review (Nov 2): Benton is thinking of keeping ATS in 2027, since 5 week runs need quick eliminations. Not decided. A rough model at 20 pickers: ATS gives a solo winner about 70% of runs; straight up leaves 9 to 11 alive after 5 weeks.
-   - Pick one team to win outright, not against the spread. One loss and you are out of that run.
+   - Pick one team against the spread. One loss and you are out of that run. The conflict warning stays.
    - The season has fixed runs, for example weeks 1 to 5, 6 to 10, and 11 to the last week before Conference Champion Week. Everybody starts each run alive, and used teams reset.
    - No tiebreaker. Everyone still alive at the end of a run wins it. Pickers who split a win are each called Co-Champion and each gets the win on their stats page.
    - If every remaining picker goes out in the same week, they are all resurrected and play one more week. If that was the last week of the run or season, they share the title as Co-Champions instead.
-   - Conflict warning goes away, since a straight up pick can win even if your ATS pick on that game loses.
-   - To settle: exact run weeks and Robo-Sharp's Survivor rule (it picks by spread edge today; the NFL plan's biggest projected FPI win fits).
+   - Robo-Sharp keeps picking by spread edge.
+   - To settle: exact run weeks.
 8. Ghost pickers: an unpaid tier so someone can try the league with no skin in the game and no effect on anyone else.
    - Paid members play every contest and can win payouts. The commissioner creates every ghost and gives the PIN, the same as any picker, and can flip the profile to paid. No open signups.
    - Ghosts play shadow versions of Survivor, the Bowl challenge, and the CFP bracket.
@@ -108,7 +107,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
    - Paid pickers cannot see ghosts. Ghosts cannot see each other.
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
-5. Upkeep share: Benton is considering 5% of each buy-in. Not decided. Vercel lists "receiving payment to create, update, or host the site" as commercial use, which Hobby does not allow, so taking this share means moving to Pro, $20 a seat a month. Check with Vercel support before 2027 buy-ins either way. The Payouts calculator has an upkeep box, set to 0. Buy-in amount is also not set.
+Buy-in amount for 2027 is not set.
 
 ### Engagement review (Nov 2): Benton's calls
 Design rule: this league is for people who care enough to check it without prompting. Benton sends no mass messages and follows up one person at a time by text if he wants. There is no group chat to count on. Nothing here may depend on outside prompting. Pickers who lose interest are allowed to drop off.
@@ -122,6 +121,7 @@ Ideas to shape later, not approved:
 20. For 2027, to review: add to home screen prompt, web push (not verified), accomplishments, and a 4 week fresh start contest if the season race goes stale.
 
 Thrown out: 12 (group text kit). Benton will not send mass messages.
+Thrown out: 5 (upkeep share). No share of buy-ins, so the whole pot pays out.
 Do not add: daily check ins, points currency, in-app chat, more contests this season.
 
 ### Back burner
@@ -140,7 +140,6 @@ NFL version (not built; decided Oct 31):
 ## Open items
 - Neon transfer is still unmeasured against 5 GB. If it shows over 30% used, build a light version check, so the full state loads only when something changed. Vercel was far under on Nov 3.
 - Page visit runs start off. After turning them on, watch one Saturday. If the count looks right and nothing flags, consider a 5 minute gap and a daily cap of 160. ESPN publishes no limit, so the cap is a judgment call.
-- Turn off the four old Claude-artifact scheduled tasks once Saturday scoring works on the new site.
 - ESPN rankings and FPI feed shapes were not verified live; watch for flags on the first runs.
 - The r/CFB parser was built from the page's table text, not its raw HTML. Watch for a Refresh rankings flag on the first run. Fallback: copy the poll table from the site and paste it in Update rankings.
 - Team stats: ESPN's scoreboard drops lines from finished games. The lines job filled weeks 1 to 9 from ESPN's core per-game odds feed, verified live Oct 29. New games get lines saved before kickoff by the ATS job on each run.
