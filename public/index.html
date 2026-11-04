@@ -242,6 +242,16 @@ details.manual .inner{margin-top:12px}
 .pvs{display:inline-flex;align-items:center;gap:5px}
 .pvc{background:var(--tc);color:var(--ti);border-radius:4px;padding:1px 6px;font-size:.78rem;font-weight:700}
 .pvk{flex-basis:100%;padding-left:calc(1.4em + 8px)}
+.gohead{font-family:var(--cond);font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:center;margin:20px 0 8px}
+.gotiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.gotile{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:8px;align-items:center;min-height:54px;padding:6px 9px;border-radius:8px;color:var(--chalk);text-decoration:none;background:repeating-linear-gradient(90deg,transparent 0 37px,rgba(244,246,242,.13) 37px 39px),linear-gradient(135deg,var(--turf2),var(--turf))}
+.gotile .goic{font-size:1.3rem;line-height:1}
+.gotile b{display:block;font-family:var(--cond);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--flag)}
+.gotile strong{display:block;font-family:var(--cond);font-weight:700;font-size:1rem;line-height:1.1}
+.gotile small{display:block;font-size:.76rem;line-height:1.2;opacity:.88}
+.gotile:hover strong{text-decoration:underline}
+.gotile:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){.gotile{transition:transform .12s}.gotile:hover{transform:translateY(-2px)}}
 .recapban{display:block;text-align:center;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
 .rchero h2{margin:0}
 .rchero .note{color:#e8edf2}
@@ -1062,8 +1072,10 @@ window.addEventListener("pagehide",()=>engFlush(true));
 window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
 function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if(v==="commish"&&!state.isOwner)v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
-  VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render()}
+  VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render();if(state.toTop){state.toTop=false;scrollTo(0,0)}}
 window.addEventListener("hashchange",route);
+/* The tiles sit at the bottom of a long page, so a tap must land at the top of the next tab. */
+document.addEventListener("click",e=>{if(e.target.closest(".gotile"))state.toTop=true});
 
 /* ---------- shared helpers ---------- */
 const BOT="bot";
@@ -1191,7 +1203,19 @@ function previewPanel(){const P=state.preview;if(!P)return "";
   const say=P.set?`The 10 games are set, but these lines can still move. Final lines post when picks open${P.autoOpen?" Wednesday at 6 p.m. CT":""}.`:"These are the likely games and current lines. We are waiting on final lines, which post Tuesday or Wednesday. The games can change until then.";
   return `<details class="panel pv" id="pvbox" ${state.pvClosed?"":"open"}><summary><h2 style="display:inline">Week ${P.week} preview</h2> <span class="pill wait">Picks not open</span></summary>${state.isOwner?'<p class="note">This is what pickers see right now.</p>':""}<p><b>You cannot pick yet.</b> ${say} A Picks are live alert shows here when you can.</p><ul class="pvlist">${rows}</ul>${P.linesAt?`<p class="note">Lines as of ${esc(kick(P.linesAt))}.</p>`:""}</details>`}
 document.addEventListener("toggle",e=>{if(e.target.id==="pvbox")state.pvClosed=!e.target.open},true);
-function renderPicks(){
+/* Stock tiles under the sheet so pickers find the other tabs. Each tile names its tab. */
+const GO_TILES=[
+  ["standings","\u{1F3C6}","Standings","Who's on top?","The season race"],
+  ["recap","\u{1F4E3}","Recap","Who drew a flag?","Awards and shame"],
+  ["survivor","\u{1F480}","Survivor","One miss, you're out","Who's still alive"],
+  ["players","\u{1F575}\uFE0F","Pickers","Scout the field","Records and tendencies"],
+  ["rankings","\u{1F4CB}","Teams","Do your homework","Polls, power, ATS"],
+  ["playoffs","\u{1F3DF}\uFE0F","Playoffs","Call your bracket","Just for fun"],
+  ["rules","\u{1F4D6}","Rules","Read the rulebook","Before you argue"],
+  ["profile","\u{1F3BD}","Profile","Suit up","Your look and theme"]];
+function goTiles(){return `<h2 class="gohead">Around the league</h2><nav class="gotiles" aria-label="Other tabs">${GO_TILES.map(([v,ic,tab,head,sub])=>`<a class="gotile" href="#${v}"><span class="goic" aria-hidden="true">${ic}</span><span><b>${tab}</b><strong>${head}</strong><small>${sub}</small></span></a>`).join("")}</nav>`}
+function renderPicks(){picksBody();if(state.db)$("#v-picks").insertAdjacentHTML("beforeend",goTiles())}
+function picksBody(){
   const el=$("#v-picks"),w=curWeek(),wid=currentWeekId();
   if(!state.db){el.innerHTML='<div class="panel empty">This league page needs you signed in to Claude, opened from the invite your commissioner sent.</div>';return}
   if(!w){const lf=lastShownWeek();const up=state.upcoming;

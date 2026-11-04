@@ -528,6 +528,18 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("a picker who is out gets no Survivor chip or warning", race.outNeeded === false && !/Surv/.test(race.chips) && !race.msgs.some((x) => /survivor/i.test(x)), race.chips + " | " + race.msgs.join(" "));
   check("a moved line shows its tag while picks are open", /Line moved: UGA -3\.5, was -2\.5 in the preview\./.test(race.picks.replace(/−/g, "-")), race.picks.slice(0, 400));
 
+  // ---- tab tiles under the sheet ----
+  await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#picks")); await m.waitForSelector("#v-picks .gotile");
+  const tiles = await m.$$eval("#v-picks .gotile", (a) => a.map((x) => x.getAttribute("href")));
+  const tabs = await m.$$eval("nav.tabs a:not([hidden])", (a) => a.map((x) => x.getAttribute("href")).filter((h) => h !== "#picks"));
+  check("the tiles link to every other tab", tiles.length === 8 && tabs.length === 8 && tabs.every((t) => tiles.includes(t)), JSON.stringify(tiles));
+  check("the tiles sit below the sheet and are not warnings", await m.evaluate(() => { const t = document.querySelector(".gotiles"), b = document.querySelector(".savebar"); return !t.closest(".warn,.savebar") && (!b || !!(b.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING)) }));
+  check("the tiles add no sideways scroll on a phone", (await m.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
+  await m.locator(".gotile[href='#rules']").scrollIntoViewIfNeeded(); await m.click(".gotile[href='#rules']"); await m.waitForTimeout(150);
+  check("a tile opens its tab at the top of the page", (await m.isVisible("#v-rules")) && (await m.evaluate(() => scrollY)) === 0);
+  await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
+  check("the tiles are back after a return to Picks", (await m.locator("#v-picks .gotile").count()) === 8);
+
   // ---- engagement and the page visit switch ----
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   await m.evaluate(() => (location.hash = "#rules")); await m.waitForTimeout(150);
