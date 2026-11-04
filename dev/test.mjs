@@ -546,6 +546,46 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "autoSettings", live: { on: false } }) }));
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   await m.screenshot({ path: "dev/test-standings.png", fullPage: false });
+  // CFP bracket prototype
+  const cfp25 = "Miami,Georgia,Utah,Indiana,Alabama,Kentucky,Texas,UCLA,BYU,Ole Miss,Notre Dame,Ohio State,Tennessee,LSU,Texas Tech,Wake Forest,Houston,Missouri,Iowa,USC,South Carolina,Arizona,Oregon,Florida,Boise State".split(",").map((team, i) => ({ rank: i + 1, team, record: "7-1" }));
+  const cfpConf = { Miami: "ACC", "Wake Forest": "ACC", Georgia: "SEC", Alabama: "SEC", Kentucky: "SEC", Texas: "SEC", "Ole Miss": "SEC", Tennessee: "SEC", LSU: "SEC", Missouri: "SEC", "South Carolina": "SEC", Florida: "SEC", Utah: "Big 12", BYU: "Big 12", "Texas Tech": "Big 12", Houston: "Big 12", Arizona: "Big 12", Indiana: "Big Ten", UCLA: "Big Ten", "Ohio State": "Big Ten", Iowa: "Big Ten", USC: "Big Ten", Oregon: "Big Ten", "Notre Dame": "Independent", "Boise State": "Pac-12" };
+  const fld = await c.evaluate(([teams, conf]) => {
+    const { cfpField } = window.tpBracket;
+    const now = cfpField({ teams }, conf);
+    const noNd = cfpField({ teams: teams.filter((t) => t.team !== "Notre Dame").map((t, i) => ({ ...t, rank: i + 1 })).concat([{ rank: 13.5, team: "Notre Dame" }]) }, conf);
+    const noG6 = cfpField({ teams: teams.filter((t) => t.team !== "Boise State") }, conf);
+    const noC = cfpField({ teams }, { ...conf, Miami: "" });
+    return { seeds: now.seeds.map((t) => t.team), how: now.seeds.map((t) => t.how), out: now.firstOut.team, noNd: noNd.seeds.map((t) => t.team), ndOut: noNd.seeds.length, g6: noG6.problems.join(), noC: noC.problems.join() };
+  }, [cfp25, cfpConf]);
+  check("CFP field matches the Nov 3 bracket", fld.seeds.join() === "Miami,Georgia,Utah,Indiana,Alabama,Kentucky,Texas,UCLA,BYU,Ole Miss,Notre Dame,Boise State", fld.seeds.join());
+  check("the Group of Six team takes seed 12 from No. 25", fld.how[11] === "Group of Six, Pac-12" && fld.out === "Ohio State", fld.how[11]);
+  check("Notre Dame's bid needs a top 12 rank", fld.how[10] === "Notre Dame, top 12" && fld.ndOut === 12, fld.noNd.join());
+  check("the field warns on a missing Group of Six team and a missing conference", fld.g6.includes("Group of Six") && fld.noC.includes("Miami"), fld.g6);
+  const casc = await c.evaluate(() => { const { brkPick } = window.tpBracket; let P = {}; P = brkPick(P, "f1", 9); P = brkPick(P, "q1", 9); P = brkPick(P, "q2", 4); P = brkPick(P, "s1", 9); P = brkPick(P, "t", 9); const a = Object.keys(P).length; P = brkPick(P, "f1", 8); return [a, Object.keys(P).join()]; });
+  check("changing a pick clears later picks of the old winner", casc[0] === 5 && casc[1] === "f1,q2", casc.join("|"));
+  const rk = (await pg.query("select value from kv where key = 'rankings'")).rows[0].value;
+  await pg.query("update kv set value = $1::jsonb where key = 'rankings'", [JSON.stringify({ ...rk, cfp: { asOf: "Nov 3, 2026", teams: cfp25 }, ats: { teams: Object.entries(cfpConf).map(([team, conf]) => ({ team, conf, su: "7-1", ats: "4-4-0" })) } })]);
+  await m.reload(); await m.waitForSelector("#app:not([hidden])");
+  check("pickers do not see the Bracket tab", !(await m.isVisible("#bracketTab")));
+  await m.evaluate(() => (location.hash = "#bracket")); await m.waitForTimeout(200);
+  check("a picker who opens #bracket lands on Picks", (await m.evaluate(() => location.hash)) !== "" && (await m.isHidden("#v-bracket")) && (await m.isVisible("#v-picks")));
+  await c.reload(); await c.waitForSelector("#app:not([hidden])");
+  check("the commissioner sees the Bracket tab", await c.isVisible("#bracketTab"));
+  await c.evaluate(() => (location.hash = "#bracket")); await c.waitForSelector("#v-bracket .brkfield");
+  check("the field table lists 12 seeds", (await c.locator("#v-bracket .brkfield tbody tr").count()) === 12);
+  check("the phone view shows one bracket", (await c.isVisible(".brknarrow")) && !(await c.isVisible(".brkwide")));
+  await c.click('.brknarrow [data-bg="f1"][data-bs="9"]');
+  check("a first round pick moves the team to the quarterfinal", (await c.locator('.brknarrow [data-bg="q1"][data-bs="9"]').count()) === 1);
+  await c.click("[data-brkchalk]");
+  check("Fill with higher seeds picks all 11 games", (await c.textContent("#brkMade")).includes("11 of 11"));
+  check("the champion shows on the title game", (await c.textContent(".brknarrow .brkchamp")).includes("Miami"));
+  await c.reload(); await c.waitForSelector("#v-bracket .brkfield");
+  check("bracket picks stay after a reload", (await c.textContent("#brkMade")).includes("11 of 11"));
+  check("the bracket has no sideways page scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth)) <= 390);
+  await c.setViewportSize({ width: 1400, height: 900 }); await c.waitForTimeout(100);
+  check("a wide screen shows the two sided bracket", (await c.isVisible(".brkwide")) && !(await c.isVisible(".brknarrow")));
+  check("the wide bracket has no sideways page scroll", (await c.evaluate(() => document.documentElement.scrollWidth)) <= 1400);
+  await c.setViewportSize({ width: 390, height: 844 });
 } catch (e) {
   check("test run", false, e.message);
 } finally {

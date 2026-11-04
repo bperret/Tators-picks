@@ -4,7 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <script>/* Saved Light or Dark choice from Profile, applied before the page draws. Auto follows the device. */try{var t=localStorage.getItem("tp-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}/* CFP bracket prototype */
+.brktop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.brktop h2{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0}
+.brkproto{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;background:var(--flag);color:var(--flag-ink);border-radius:3px;padding:1px 7px;white-space:nowrap}
+.brkrounds{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:10px 0 8px}
+.brkrounds button{font-family:var(--cond);font-weight:700;font-size:.92rem;letter-spacing:.03em;text-transform:uppercase;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 2px;cursor:pointer;line-height:1.15}
+.brkrounds button span{display:block;font-size:.76rem;font-weight:600;color:var(--muted);letter-spacing:0;text-transform:none}
+.brkrounds button.done{border-color:var(--win)}
+.brkrounds button.done span{color:var(--win)}
+.brkturf{border:3px solid var(--chalk);box-shadow:0 0 0 2px var(--turf);border-radius:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+  background:repeating-linear-gradient(90deg,transparent 0 118px,rgba(255,255,255,.13) 118px 120px),repeating-linear-gradient(90deg,var(--turf) 0 60px,var(--turf2) 60px 120px)}
+.brktree{display:flex;gap:22px;padding:10px 12px 14px;width:max-content;min-width:100%;box-sizing:border-box}
+.brkcol{flex:0 0 164px;display:flex;flex-direction:column;scroll-snap-align:start;scroll-margin-left:12px;min-width:0}
+.brkcolh{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--chalk);font-size:.98rem;line-height:1.15;text-align:center;min-height:40px}
+.brkcolh span{display:block;font-size:.78rem;font-weight:600;letter-spacing:.02em;text-transform:none;color:#d7e4da}
+.brkcolh b{color:var(--flag);font-weight:700}
+.brkbody{flex:1;display:flex;flex-direction:column;min-height:420px}
+.brkpair{flex:1;display:flex;flex-direction:column;position:relative;min-height:0}
+.brkgame{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;position:relative;min-height:0}
+.brkgame.stub::after{content:"";position:absolute;left:100%;top:50%;width:22px;border-top:2px solid var(--chalk)}
+.brkpair.join::after{content:"";position:absolute;top:25%;bottom:25%;left:100%;width:11px;border:2px solid var(--chalk);border-left:0}
+.brkpair.join::before{content:"";position:absolute;top:50%;left:calc(100% + 11px);width:11px;border-top:2px solid var(--chalk)}
+.brkrev .brkgame.stub::after{left:auto;right:100%}
+.brkrev .brkpair.join::after{left:auto;right:100%;border:2px solid var(--chalk);border-right:0}
+.brkrev .brkpair.join::before{left:auto;right:calc(100% + 11px)}
+.bt{display:grid;grid-template-columns:18px 30px minmax(0,1fr);align-items:center;gap:5px;width:100%;min-height:40px;padding:3px 6px 3px 4px;border:0;border-left:4px solid var(--tc,var(--line));border-radius:5px;background:var(--card);color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.bt .sd{font-family:var(--cond);font-weight:700;font-size:1.02rem;text-align:right;color:var(--muted)}
+.bt .nm{font-family:var(--cond);font-weight:600;font-size:1.04rem;line-height:1.05;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bt i{display:block;font-style:normal;font-weight:700;font-size:.62rem;line-height:1.1;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.bt.on{background:var(--flag);color:var(--flag-ink);box-shadow:0 0 0 2px var(--flag)}
+.bt.on .sd,.bt.on i{color:var(--flag-ink)}
+.bt.off{opacity:.6}
+.bt.off .nm{text-decoration:line-through}
+.bt.tbd{display:flex;align-items:center;justify-content:center;cursor:default;background:rgba(0,0,0,.2);border:1.5px dashed rgba(244,246,242,.55);color:var(--chalk);font-family:var(--cond);font-size:.86rem;letter-spacing:.02em;box-shadow:none}
+.bt:not(.tbd):hover{filter:brightness(.97)}
+.brkchamp{position:absolute;left:0;right:0;top:calc(50% + 54px);background:var(--board);border:1px solid var(--board-line);border-radius:6px;padding:6px 4px;text-align:center;color:var(--board-ink)}
+.brkchamp span{display:block;font-family:var(--cond);font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#c9b56a}
+.brkchamp b{display:block;font-family:var(--display);font-weight:400;font-size:1.02rem;line-height:1.15;overflow-wrap:anywhere}
+.brkgo{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between}
+.brkgo label{display:flex;flex-direction:column;gap:3px;font-size:.88rem;color:var(--muted)}
+.brkgo input{width:7.5em;font:inherit;padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+.brkfield{width:100%;background:transparent;color:var(--ink)}
+.brkfield td,.brkfield th{padding:5px 6px;color:var(--ink);background:transparent;border-bottom:1px solid var(--line);vertical-align:middle;text-shadow:none;white-space:normal}
+.brkfield th{color:var(--muted)}
+.brkfield .tmc span:last-child{margin-left:6px;font-weight:600}
+.brkfield .tmc>span{vertical-align:middle;display:inline-grid}
+.brkwarn{background:#fff3cd;color:#3a2a00;border-radius:6px;padding:8px;margin:8px 0}
+.brkwide{display:none}
+@media (min-width:700px){.brknarrow{width:min(860px,calc(100vw - 40px));position:relative;left:50%;transform:translateX(-50%)}.brknarrow .brkcol{flex:1 1 140px}.brkrounds{display:none}.brkturf{scroll-snap-type:none}}
+@media (min-width:1100px){.brknarrow{display:none}.brkwide{display:block;width:min(1240px,calc(100vw - 40px));position:relative;left:50%;transform:translateX(-50%)}
+  .brkwide .brktree{width:100%;gap:22px}.brkwide .brkcol{flex:1 1 0}.brkwide .brkbody{min-height:380px}.brkwide .brkturf{overflow:visible}}
+</style>
 <title>Tator's Picks</title>
 <meta name="theme-color" content="#1f5d34">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -503,6 +554,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#rankings" data-v="rankings">Teams</a>
     <a href="#rules" data-v="rules">Rules</a>
     <a href="#profile" data-v="profile">Profile</a>
+    <a href="#bracket" data-v="bracket" id="bracketTab" hidden>Bracket</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
 
@@ -629,6 +681,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <div class="panel" id="logPanel"></div>
   </section>
   <section class="view" id="v-profile" hidden></section>
+  <section class="view" id="v-bracket" hidden></section>
   <section class="view" id="v-commish" hidden></section>
   </div>
 </div>
@@ -752,7 +805,7 @@ function applyState(S){
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
-  $("#commishTab").hidden=!state.isOwner;
+  $("#commishTab").hidden=!state.isOwner;$("#bracketTab").hidden=!state.isOwner;
   syncDraft();
 }
 async function refresh(quiet){
@@ -948,17 +1001,17 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","commish"];
+const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","bracket","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
-function engNote(v){if(!ME||v==="commish"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engNote(v){if(!ME||v==="commish"||v==="bracket"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
 function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
 function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
   try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)engFlush(true)});
 window.addEventListener("pagehide",()=>engFlush(true));
 window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if(v==="commish"&&!state.isOwner)v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bracket")&&!state.isOwner)v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render()}
 window.addEventListener("hashchange",route);
@@ -1069,6 +1122,7 @@ function render(){
   if(state.view==="rankings")renderRankings();
   if(state.view==="players")renderPlayers();
   if(state.view==="survivor")renderSurvivor();
+  if(state.view==="bracket")renderBracket();
   if(state.view==="commish")renderCommish();
   if(state.view==="rules")renderLog();
   if(state.view==="profile")renderProfile();
@@ -1394,6 +1448,82 @@ document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("#pa
 document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-paybuy]");if(b){$("#payBuy").value=b.dataset.paybuy;payUpdate()}});
 payUpdate();
+
+/* ---------- CFP bracket prototype (commissioner only) ---------- */
+/* The field rules are in CLAUDE.md. For now the highest ranked team in each conference counts as its champion. */
+const CFP_P4=["ACC","Big Ten","Big 12","SEC"],CFP_G6=["AAC","Conference USA","MAC","Mountain West","Pac-12","Sun Belt"];
+function cfpField(cfp,conf){
+  const ranked=((cfp&&cfp.teams)||[]).map(t=>({team:canon(t.team),rank:Number(t.rank),record:t.record||"",conf:conf[canon(t.team)]||""})).filter(t=>t.rank).sort((a,b)=>a.rank-b.rank);
+  const problems=[],auto=new Map();
+  const noConf=ranked.filter(t=>!t.conf).map(t=>t.team);
+  if(noConf.length)problems.push(`No conference on file for ${noConf.join(", ")}.`);
+  CFP_P4.forEach(c=>{const t=ranked.find(x=>x.conf===c);if(t)auto.set(t.team,`${c} champion`);else problems.push(`No ${c} team is in the rankings, so its automatic bid is open.`)});
+  const g6=ranked.find(x=>CFP_G6.includes(x.conf));
+  if(g6)auto.set(g6.team,`Group of Six, ${g6.conf}`);else problems.push("No Group of Six team is in the top 25, so that bid went to an at-large team.");
+  const nd=ranked.find(x=>x.team==="Notre Dame"&&x.rank<=12);if(nd)auto.set(nd.team,"Notre Dame, top 12");
+  const inAuto=ranked.filter(t=>auto.has(t.team)),rest=ranked.filter(t=>!auto.has(t.team));
+  const atLarge=rest.slice(0,Math.max(0,12-inAuto.length));
+  const seeds=[...inAuto,...atLarge].sort((a,b)=>a.rank-b.rank).map((t,i)=>({...t,seed:i+1,how:auto.get(t.team)||"At-large"}));
+  if(ranked.length&&seeds.length<12)problems.push(`Only ${seeds.length} teams could be seeded.`);
+  return {seeds,firstOut:rest[atLarge.length]||null,problems}}
+/* a and b are seeds or the game whose winner comes in. The order matches the published bracket. */
+const BRK=[{id:"f1",r:0,a:9,b:8},{id:"f2",r:0,a:12,b:5},{id:"f3",r:0,a:10,b:7},{id:"f4",r:0,a:11,b:6},
+  {id:"q1",r:1,a:"f1",b:1},{id:"q2",r:1,a:4,b:"f2"},{id:"q3",r:1,a:"f3",b:2},{id:"q4",r:1,a:3,b:"f4"},
+  {id:"s1",r:2,a:"q1",b:"q2"},{id:"s2",r:2,a:"q3",b:"q4"},{id:"t",r:3,a:"s1",b:"s2"}];
+const BRKR=[{t:"First round",s:"First rd",d:"Dec 18 and 19",p:1},{t:"Quarterfinals",s:"Quarters",d:"Dec 30 and Jan 1",p:2},{t:"Semifinals",s:"Semis",d:"Jan 14 and 15",p:4},{t:"Title game",s:"Title",d:"Jan 25, Las Vegas",p:8}];
+const brkKey=()=>"tp-bracket-"+(state.uid||"me");
+function brkLoad(sig){const blank={sig,picks:{},tb:""};if(state.brk&&state.brk.sig===sig)return state.brk;let v=null;try{v=JSON.parse(localStorage.getItem(brkKey())||"null")}catch(e){}
+  return state.brk=v&&v.sig===sig?{sig,picks:v.picks||{},tb:v.tb||""}:blank}
+function brkSave(){try{localStorage.setItem(brkKey(),JSON.stringify(state.brk))}catch(e){}}
+const brkSide=(v,picks)=>typeof v==="number"?v:picks[v]||null;
+/* Picking a new winner clears later picks that had the old winner moving on. */
+function brkPick(picks,id,seed){const P={...picks};if(P[id]===seed)delete P[id];else P[id]=seed;
+  BRK.forEach(g=>{if(P[g.id]&&![brkSide(g.a,P),brkSide(g.b,P)].includes(P[g.id]))delete P[g.id]});return P}
+function brkHolder(v){return typeof v==="number"?`${v}`:v[0]==="f"?(()=>{const g=BRK.find(x=>x.id===v);return `${g.a} v ${g.b} winner`})():v[0]==="q"?"Quarterfinal winner":"Semifinal winner"}
+function brkSlot(F,B,g,v){const seed=brkSide(v,B.picks);if(!seed)return `<div class="bt tbd">${esc(brkHolder(v))}</div>`;
+  const t=F.seeds[seed-1];if(!t)return `<div class="bt tbd">Seed ${seed} open</div>`;
+  const L=teamLook(t.team),pick=B.picks[g.id],on=pick===seed,off=!!pick&&!on,other=brkSide(v===g.a?g.b:g.a,B.picks);
+  const tag=g.r===0&&other&&seed<other?"<i>Home</i>":g.r===1&&typeof v==="number"?"<i>Bye</i>":"";
+  return `<button type="button" class="bt${on?" on":""}${off?" off":""}" data-bg="${g.id}" data-bs="${seed}" aria-pressed="${on}" style="--tc:${esc(L.c1)}"><b class="sd">${seed}</b>${tChip(t.team)}<span class="nm">${esc(t.team)}${tag}</span></button>`}
+function brkGame(F,B,id,stub){const g=BRK.find(x=>x.id===id);const champ=id==="t"&&B.picks.t?F.seeds[B.picks.t-1]:null;
+  return `<div class="brkgame${stub?" stub":""}">${brkSlot(F,B,g,g.a)}${brkSlot(F,B,g,g.b)}${id==="t"?`<div class="brkchamp"><span>Champion</span><b>${champ?esc(champ.team):"Your pick"}</b></div>`:""}</div>`}
+const brkHead=r=>{const R=BRKR[r];return `<div class="brkcolh">${R.t}<span>${R.d} · <b>${R.p} pt${R.p>1?"s":""}</b></span></div>`};
+const brkCol=(r,body,rev)=>`<div class="brkcol${rev?" brkrev":""}" data-brkr="${r}">${brkHead(r)}<div class="brkbody">${body}</div></div>`;
+const brkPairOf=(F,B,ids,join,stub)=>`<div class="brkpair${join?" join":""}">${ids.map(id=>brkGame(F,B,id,stub)).join("")}</div>`;
+function brkTrees(F,B){const P=(ids,j,st)=>brkPairOf(F,B,ids,j,st);
+  const one=[brkCol(0,P(["f1","f2"],0,1)+P(["f3","f4"],0,1)),brkCol(1,P(["q1","q2"],1)+P(["q3","q4"],1)),brkCol(2,P(["s1","s2"],1)),brkCol(3,P(["t"],0))].join("");
+  const two=[brkCol(0,P(["f1","f2"],0,1)),brkCol(1,P(["q1","q2"],1)),brkCol(2,P(["s1"],0,1)),brkCol(3,P(["t"],0)),brkCol(2,P(["s2"],0,1),1),brkCol(1,P(["q3","q4"],1),1),brkCol(0,P(["f3","f4"],0,1),1)].join("");
+  return `<div class="brknarrow"><div class="brkturf" id="brkScroll"><div class="brktree">${one}</div></div></div><div class="brkwide"><div class="brkturf"><div class="brktree">${two}</div></div></div>`}
+function renderBracket(){const el=$("#v-bracket");if(!state.isOwner)return;
+  if(document.activeElement&&document.activeElement.id==="brkTb")return;
+  const R=state.rankings||{},conf={};((R.ats&&R.ats.teams)||[]).forEach(t=>{conf[canon(t.team)]=t.conf||""});
+  const head=`<div class="brktop"><h2>CFP Bracket</h2><span class="brkproto">Prototype · Only you see this</span></div>`;
+  if(!R.cfp||!(R.cfp.teams||[]).length){el.innerHTML=`<div class="panel">${head}<p class="note">No CFP rankings are saved yet. Tap Refresh rankings in Commish.</p></div>`;return}
+  const F=cfpField(R.cfp,conf),B=brkLoad(F.seeds.map(t=>t.team).join("|"));
+  const scroll=$("#brkScroll"),left=scroll?scroll.scrollLeft:0;
+  const made=BRK.filter(g=>B.picks[g.id]).length;
+  const rounds=BRKR.map((x,r)=>{const all=BRK.filter(g=>g.r===r),n=all.filter(g=>B.picks[g.id]).length;return `<button type="button" data-brkgo="${r}"${n===all.length?' class="done"':""}>${x.s}<span>${n} of ${all.length}</span></button>`}).join("");
+  const rows=F.seeds.map(t=>`<tr><td class="num">${t.seed}</td><td class="tmc">${tChip(t.team)}<span>${esc(t.team)}</span></td><td class="num">${t.rank}</td><td class="num">${esc(t.record)}</td><td>${esc(t.how)}${t.seed<=4?' <span class="pill">Bye</span>':""}</td></tr>`).join("");
+  el.innerHTML=`<div class="panel">${head}<p class="note">If the season ended today, from the CFP rankings of ${esc(R.cfp.asOf||"this week")}. Tap the winner of each game. For now, the highest ranked team in each conference counts as its champion.</p>
+    ${F.problems.map(x=>`<p class="brkwarn">${esc(x)}</p>`).join("")}</div>
+    <div class="brkrounds" aria-label="Rounds">${rounds}</div>${brkTrees(F,B)}
+    <div class="panel" style="margin-top:12px"><div class="brkgo"><label>Title game total points<input id="brkTb" type="number" min="0" max="200" inputmode="numeric" value="${esc(B.tb)}"></label><div class="bar"><button type="button" class="btn sm" data-brkchalk>Fill with higher seeds</button><button type="button" class="btn sm" data-brkclear>Clear</button></div></div>
+    <p class="note" style="margin-top:8px"><b id="brkMade">${made} of 11 picked.</b> Rounds score 1, 2, 4, and 8. A perfect bracket is 28. A pick on a team that is already out scores 0, and nobody re-picks. Picks save on this device only for now.</p></div>
+    <div class="panel" style="margin-top:12px"><h2>The field</h2><div class="tablewrap"><table class="brkfield"><thead><tr><th>Seed</th><th>Team</th><th>CFP</th><th>Rec</th><th>How in</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${F.firstOut?`<p class="note" style="margin-top:6px">First team out: ${esc(F.firstOut.team)}, No. ${F.firstOut.rank}.</p>`:""}
+    <details class="rules"><summary class="rh">How the field is set</summary><ul class="note"><li>Automatic bids: the ACC, Big Ten, Big 12, and SEC champions, plus the highest ranked Group of Six team.</li><li>Notre Dame is in with a top 12 finish.</li><li>The next highest ranked teams fill the field to 12.</li><li>Seeds follow the committee's rank. The four highest ranked teams get byes, champions or not.</li><li>Seeds 5 to 8 host the first round. There is no reseeding, and no change to avoid a rematch.</li></ul></details></div>`;
+  const sc=$("#brkScroll");if(sc)sc.scrollLeft=left}
+function brkToRound(r,smooth){const sc=$("#brkScroll");if(!sc)return;const c=sc.querySelector(`[data-brkr="${r}"]`);if(c)sc.scrollTo({left:c.offsetLeft-12,behavior:smooth?"smooth":"auto"})}
+document.addEventListener("click",e=>{if(state.view!=="bracket"||!state.brk)return;
+  const t=e.target.closest("[data-bg]");
+  if(t){const id=t.dataset.bg,g=BRK.find(x=>x.id===id),peers=BRK.filter(x=>x.r===g.r),was=peers.every(x=>state.brk.picks[x.id]);
+    state.brk.picks=brkPick(state.brk.picks,id,Number(t.dataset.bs));brkSave();renderBracket();
+    if(!was&&g.r<3&&peers.every(x=>state.brk.picks[x.id])&&matchMedia("(max-width:699px)").matches)brkToRound(g.r+1,true);return}
+  const go=e.target.closest("[data-brkgo]");if(go){brkToRound(Number(go.dataset.brkgo),true);return}
+  if(e.target.closest("[data-brkclear]")){state.brk.picks={};state.brk.tb="";brkSave();renderBracket();return}
+  if(e.target.closest("[data-brkchalk]")){const P={};BRK.forEach(g=>{P[g.id]=Math.min(brkSide(g.a,P),brkSide(g.b,P))});state.brk.picks=P;brkSave();renderBracket()}});
+document.addEventListener("input",e=>{if(e.target.id==="brkTb"&&state.brk){state.brk.tb=e.target.value;brkSave()}});
+window.tpBracket={cfpField,brkPick};
 
 /* ---------- rival, what you need, your week ---------- */
 function priorWeeks(wid){const w=state.weeks[wid];return countedWeeks().filter(k=>k<wid&&state.weeks[k].season===w.season)}

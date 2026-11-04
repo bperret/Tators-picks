@@ -40,6 +40,7 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - Your week: `yourWeek(wid)` and `yourWeekPanel` sit at the top of the Recap. Best pick is the correct pick the fewest pickers made. Worst beat is the closest miss. A field goal wins ties.
 - Iron Man: `ironOf(D, pid, season)` needs a pick on every non-void game, every week from the picker's first sheet on. `ironSeasons` counts full seasons, from the season's first week through a final Conference Champion Week. 🦾 shows on Standings and Pickers. Career tile: Iron Man seasons.
 - Engagement: Commissioner only (`state.engage`, `engagePanel`). The page POSTs tab opens and Recap reads to `/api/state` at most every 2 minutes, or as it hides (`engNote`, `engRecap`, `engFlush`). Polls send nothing. One row per picker in table `engage`. Sheet times come from `sheetStatus`.
+- CFP bracket prototype: `#bracket`, commissioner only, hidden in `route()` like Commish. `cfpField()` builds the field and `BRK` holds the 11 games. Phones get one sided swipeable rounds; 1100px and wider gets the two sided bracket. Picks and the tiebreaker save per device in localStorage `tp-bracket-<uid>`, and clear if the field changes. No server code.
 - Commissioner can lock early and unlock with a new deadline; both log publicly. `origDeadline` keeps the week tied to its Saturday.
 
 ## League rules (decided)
@@ -53,6 +54,19 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - 2026 is a free test season: no buy-ins, no payouts. Weeks, standings, and titles still count. Payouts start in 2027, and the Rules page shows them as hypothetical so pickers can try scenarios and give feedback.
 - Money is off the site; the Rules page only posts the plan. Payouts are shares of the pot (Stay Engaged): season 20 / 10 / 5, weekly 1% each, Conference Champion Week 6%, Survivor 5% a run, Bowl 10 / 5, CFP 10 / 5. The buy-in is not set. Bowls are a separate contest.
 - No test weeks (decided Oct 31). Week 9 counts as the first week; every revealed week counts toward the season. Weeks keep their real numbers (next is Week 10). The old `scored` flag is ignored and new weeks save `scored: true`.
+
+## CFP field rules (2026 season, checked Nov 4)
+Sources: collegefootballplayoff.com 12 team format page, NCAA.com bracket article of Nov 3, Sports Illustrated on the Group of Six change.
+- Field: 12 teams from the committee's final rankings, Sun Dec 6.
+- Automatic bids: the ACC, Big Ten, Big 12, and SEC champions, plus the highest ranked team from the Group of Six (AAC, Conference USA, MAC, Mountain West, Pac-12, Sun Belt). That team does not have to be a champion.
+- Notre Dame is in if it finishes in the top 12.
+- At-large: the highest ranked other teams fill the field to 12.
+- Seeding: straight by committee rank among the 12. A low ranked automatic bid drops to the bottom seeds. No conference champion byes.
+- Byes: seeds 1 to 4, the four highest ranked teams in the field, whether or not they are champions.
+- First round: No. 12 at No. 5, No. 11 at No. 6, No. 10 at No. 7, No. 9 at No. 8. The higher seed hosts, on campus or at a site it names. Dec 18 and 19.
+- Quarterfinals: No. 1 plays the 8/9 winner, No. 2 the 7/10 winner, No. 3 the 6/11 winner, No. 4 the 5/12 winner. No reseeding. No changes to avoid rematches or teams from the same conference. Seeds pick bowls in order, 1 first and 4 last. Fiesta Dec 30; Cotton, Peach, and Rose Jan 1.
+- Semifinals: Orange Jan 14, Sugar Jan 15. Title: Mon Jan 25, Allegiant Stadium, Las Vegas.
+- Prototype assumption: the highest ranked team in each conference is its champion. Benton may change this later. `cfpField()` reads the CFP list in rankings and conferences from the ATS list, so it updates with each committee release. It shows a warning for a ranked team with no conference, or a missing automatic bid.
 
 ## Idea tracker
 The landing spot for every idea not yet ready to build, for any timing: this season, this postseason, next season, or later. Add new ideas here as Benton names them. Build nothing here until he says it is ready. Timing heading = his target.
@@ -70,6 +84,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - The build must save `confChamp: true` on this week. Career stats, Weekly titles, the recap, and the Rules page already read it or describe it.
    - To settle: how the week builds if ESPN's week number or season type differs.
 2. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
+   - Prototype live Nov 4: Bracket tab, commissioner only. See the CFP field rules below. Picks stay on his device. Still to build: server saved brackets, the lock, standings, scoring, and results.
    - One bracket, fully filled out, with one lock before Dec 18. Own bracket screen, scoring, and standings, separate from the regular challenge. Tiebreaker: title game total.
    - The top four seeds have byes, so they earn no first round points. Nobody re-picks: a pick on a team that is already out scores 0.
    - Scoring doubles each round, so the title game counts the most: first round 1, quarterfinals 2, semifinals 4, title game 8. Perfect bracket = 28.
