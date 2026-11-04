@@ -51,6 +51,10 @@
 .brkfield .tmc span:last-child{margin-left:6px;font-weight:600}
 .brkfield .tmc>span{vertical-align:middle;display:inline-grid}
 .brkwarn{background:#fff3cd;color:#3a2a00;border-radius:6px;padding:8px;margin:8px 0}
+.brkswaps{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.brkswap{display:grid;grid-template-columns:22px 30px minmax(0,1fr);align-items:center;gap:6px}
+.brkswap .sd{font-family:var(--cond);font-weight:700;font-size:1.05rem;text-align:right;color:var(--muted)}
+.brkswap select{width:100%;font:inherit;padding:7px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
 .brkwide{display:none}
 @media (min-width:700px){.brknarrow{width:min(860px,calc(100vw - 40px));position:relative;left:50%;transform:translateX(-50%)}.brknarrow .brkcol{flex:1 1 140px}.brkrounds{display:none}.brkturf{scroll-snap-type:none}}
 @media (min-width:1100px){.brknarrow{display:none}.brkwide{display:block;width:min(1240px,calc(100vw - 40px));position:relative;left:50%;transform:translateX(-50%)}
@@ -552,9 +556,9 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#survivor" data-v="survivor">Survivor</a>
     <a href="#players" data-v="players">Pickers</a>
     <a href="#rankings" data-v="rankings">Teams</a>
+    <a href="#playoffs" data-v="playoffs">Playoffs</a>
     <a href="#rules" data-v="rules">Rules</a>
     <a href="#profile" data-v="profile">Profile</a>
-    <a href="#bracket" data-v="bracket" id="bracketTab" hidden>Bracket</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
 
@@ -681,7 +685,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <div class="panel" id="logPanel"></div>
   </section>
   <section class="view" id="v-profile" hidden></section>
-  <section class="view" id="v-bracket" hidden></section>
+  <section class="view" id="v-playoffs" hidden></section>
   <section class="view" id="v-commish" hidden></section>
   </div>
 </div>
@@ -805,7 +809,7 @@ function applyState(S){
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
-  $("#commishTab").hidden=!state.isOwner;$("#bracketTab").hidden=!state.isOwner;
+  $("#commishTab").hidden=!state.isOwner;
   syncDraft();
 }
 async function refresh(quiet){
@@ -1001,17 +1005,17 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","bracket","commish"];
+const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
-function engNote(v){if(!ME||v==="commish"||v==="bracket"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engNote(v){if(!ME||v==="commish"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
 function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
 function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
   try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)engFlush(true)});
 window.addEventListener("pagehide",()=>engFlush(true));
 window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bracket")&&!state.isOwner)v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if(v==="commish"&&!state.isOwner)v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render()}
 window.addEventListener("hashchange",route);
@@ -1122,7 +1126,7 @@ function render(){
   if(state.view==="rankings")renderRankings();
   if(state.view==="players")renderPlayers();
   if(state.view==="survivor")renderSurvivor();
-  if(state.view==="bracket")renderBracket();
+  if(state.view==="playoffs")renderBracket();
   if(state.view==="commish")renderCommish();
   if(state.view==="rules")renderLog();
   if(state.view==="profile")renderProfile();
@@ -1472,13 +1476,17 @@ const BRK=[{id:"f1",r:0,a:9,b:8},{id:"f2",r:0,a:12,b:5},{id:"f3",r:0,a:10,b:7},{
   {id:"s1",r:2,a:"q1",b:"q2"},{id:"s2",r:2,a:"q3",b:"q4"},{id:"t",r:3,a:"s1",b:"s2"}];
 const BRKR=[{t:"First round",s:"First rd",d:"Dec 18 and 19",p:1},{t:"Quarterfinals",s:"Quarters",d:"Dec 30 and Jan 1",p:2},{t:"Semifinals",s:"Semis",d:"Jan 14 and 15",p:4},{t:"Title game",s:"Title",d:"Jan 25, Las Vegas",p:8}];
 const brkKey=()=>"tp-bracket-"+(state.uid||"me");
-function brkLoad(sig){const blank={sig,picks:{},tb:""};if(state.brk&&state.brk.sig===sig)return state.brk;let v=null;try{v=JSON.parse(localStorage.getItem(brkKey())||"null")}catch(e){}
-  return state.brk=v&&v.sig===sig?{sig,picks:v.picks||{},tb:v.tb||""}:blank}
+function brkLoad(sig){const blank={sig,picks:{},tb:"",swaps:{}};if(state.brk&&state.brk.sig===sig)return state.brk;let v=null;try{v=JSON.parse(localStorage.getItem(brkKey())||"null")}catch(e){}
+  return state.brk=v&&v.sig===sig?{sig,picks:v.picks||{},tb:v.tb||"",swaps:v.swaps||{}}:blank}
 function brkSave(){try{localStorage.setItem(brkKey(),JSON.stringify(state.brk))}catch(e){}}
 const brkSide=(v,picks)=>typeof v==="number"?v:picks[v]||null;
 /* Picking a new winner clears later picks that had the old winner moving on. */
 function brkPick(picks,id,seed){const P={...picks};if(P[id]===seed)delete P[id];else P[id]=seed;
   BRK.forEach(g=>{if(P[g.id]&&![brkSide(g.a,P),brkSide(g.b,P)].includes(P[g.id]))delete P[g.id]});return P}
+/* Swaps are for fun: seed to team, on this device only. Picking a team already in the field trades the two seeds. */
+function brkSwapTeams(real,swaps,seed,team){const cur=real.map((t,i)=>swaps[i+1]||t),at=cur.indexOf(team),old=cur[seed-1];
+  if(at>=0)cur[at]=old;cur[seed-1]=team;const out={};cur.forEach((t,i)=>{if(t!==real[i])out[i+1]=t});return out}
+function brkApplySwaps(F,B,info){return {...F,seeds:F.seeds.map(t=>{const x=B.swaps[t.seed];if(!x||x===t.team)return t;const i=info[x]||{};return {...t,team:x,rank:i.rank||null,record:i.record||"",how:"Your swap"}})}}
 function brkHolder(v){return typeof v==="number"?`${v}`:v[0]==="f"?(()=>{const g=BRK.find(x=>x.id===v);return `${g.a} v ${g.b} winner`})():v[0]==="q"?"Quarterfinal winner":"Semifinal winner"}
 function brkSlot(F,B,g,v){const seed=brkSide(v,B.picks);if(!seed)return `<div class="bt tbd">${esc(brkHolder(v))}</div>`;
   const t=F.seeds[seed-1];if(!t)return `<div class="bt tbd">Seed ${seed} open</div>`;
@@ -1494,36 +1502,50 @@ function brkTrees(F,B){const P=(ids,j,st)=>brkPairOf(F,B,ids,j,st);
   const one=[brkCol(0,P(["f1","f2"],0,1)+P(["f3","f4"],0,1)),brkCol(1,P(["q1","q2"],1)+P(["q3","q4"],1)),brkCol(2,P(["s1","s2"],1)),brkCol(3,P(["t"],0))].join("");
   const two=[brkCol(0,P(["f1","f2"],0,1)),brkCol(1,P(["q1","q2"],1)),brkCol(2,P(["s1"],0,1)),brkCol(3,P(["t"],0)),brkCol(2,P(["s2"],0,1),1),brkCol(1,P(["q3","q4"],1),1),brkCol(0,P(["f3","f4"],0,1),1)].join("");
   return `<div class="brknarrow"><div class="brkturf" id="brkScroll"><div class="brktree">${one}</div></div></div><div class="brkwide"><div class="brkturf"><div class="brktree">${two}</div></div></div>`}
-function renderBracket(){const el=$("#v-bracket");if(!state.isOwner)return;
-  if(document.activeElement&&document.activeElement.id==="brkTb")return;
-  const R=state.rankings||{},conf={};((R.ats&&R.ats.teams)||[]).forEach(t=>{conf[canon(t.team)]=t.conf||""});
-  const head=`<div class="brktop"><h2>CFP Bracket</h2><span class="brkproto">Prototype · Only you see this</span></div>`;
-  if(!R.cfp||!(R.cfp.teams||[]).length){el.innerHTML=`<div class="panel">${head}<p class="note">No CFP rankings are saved yet. Tap Refresh rankings in Commish.</p></div>`;return}
-  const F=cfpField(R.cfp,conf),B=brkLoad(F.seeds.map(t=>t.team).join("|"));
+function renderBracket(force){const el=$("#v-playoffs"),ae=document.activeElement;
+  if(!force&&ae&&(ae.id==="brkTb"||(ae.tagName==="SELECT"&&el.contains(ae))))return;
+  const R=state.rankings||{},conf={},info={};
+  ((R.ats&&R.ats.teams)||[]).forEach(t=>{const n=canon(t.team);conf[n]=t.conf||"";info[n]={record:t.su||""}});
+  ((R.cfp&&R.cfp.teams)||[]).forEach(t=>{const n=canon(t.team);info[n]={rank:t.rank,record:t.record||(info[n]||{}).record||""}});
+  const head=`<div class="brktop"><h2>Playoff Bracket</h2><span class="brkproto">For fun · Not the real field</span></div>`;
+  if(!R.cfp||!(R.cfp.teams||[]).length){el.innerHTML=`<div class="panel">${head}<p class="note">${state.isOwner?"No CFP rankings are saved yet. Tap Refresh rankings in Commish.":"The CFP rankings are not in yet. Check back soon."}</p></div>`;return}
+  const F0=cfpField(R.cfp,conf),B=brkLoad(F0.seeds.map(t=>t.team).join("|")),F=brkApplySwaps(F0,B,info);
   const scroll=$("#brkScroll"),left=scroll?scroll.scrollLeft:0;
-  const made=BRK.filter(g=>B.picks[g.id]).length;
+  const made=BRK.filter(g=>B.picks[g.id]).length,nSwap=Object.keys(B.swaps).length;
   const rounds=BRKR.map((x,r)=>{const all=BRK.filter(g=>g.r===r),n=all.filter(g=>B.picks[g.id]).length;return `<button type="button" data-brkgo="${r}"${n===all.length?' class="done"':""}>${x.s}<span>${n} of ${all.length}</span></button>`}).join("");
-  const rows=F.seeds.map(t=>`<tr><td class="num">${t.seed}</td><td class="tmc">${tChip(t.team)}<span>${esc(t.team)}</span></td><td class="num">${t.rank}</td><td class="num">${esc(t.record)}</td><td>${esc(t.how)}${t.seed<=4?' <span class="pill">Bye</span>':""}</td></tr>`).join("");
-  el.innerHTML=`<div class="panel">${head}<p class="note">If the season ended today, from the CFP rankings of ${esc(R.cfp.asOf||"this week")}. Tap the winner of each game. For now, the highest ranked team in each conference counts as its champion.</p>
-    ${F.problems.map(x=>`<p class="brkwarn">${esc(x)}</p>`).join("")}</div>
+  const rows=F.seeds.map(t=>`<tr><td class="num">${t.seed}</td><td class="tmc">${tChip(t.team)}<span>${esc(t.team)}</span></td><td class="num">${t.rank||"NR"}</td><td class="num">${esc(t.record)}</td><td>${esc(t.how)}${t.seed<=4?' <span class="pill">Bye</span>':""}</td></tr>`).join("");
+  const all=Object.keys(info).sort((a,b)=>a.localeCompare(b));
+  const swapRows=F.seeds.map(t=>`<div class="brkswap">${`<b class="sd">${t.seed}</b>`}${tChip(t.team)}<select data-brkseed="${t.seed}" aria-label="Team for seed ${t.seed}">${all.map(n=>`<option${n===t.team?" selected":""}>${esc(n)}</option>`).join("")}</select></div>`).join("");
+  const backBtn=nSwap?`<button type="button" class="btn sm" data-brkreset>Back to the current field</button>`:"";
+  el.innerHTML=`<div class="panel">${head}<p class="note"><b>Just for fun. Nothing here counts.</b> This shows the field if the season ended today, from the CFP rankings of ${esc(R.cfp.asOf||"this week")}. The real field is set Sun Dec 6. Tap the winner of each game, or swap in any team you like. Your bracket stays on this device, and nobody else sees it.</p>
+    <p class="note" style="margin-top:6px">For now, the highest ranked team in each conference counts as its champion.</p>
+    ${nSwap?`<p class="brkwarn">You swapped ${nSwap} seed${nSwap===1?"":"s"}, so this is your own field.</p>`:""}
+    ${state.isOwner?F0.problems.map(x=>`<p class="brkwarn">${esc(x)}</p>`).join(""):""}</div>
     <div class="brkrounds" aria-label="Rounds">${rounds}</div>${brkTrees(F,B)}
     <div class="panel" style="margin-top:12px"><div class="brkgo"><label>Title game total points<input id="brkTb" type="number" min="0" max="200" inputmode="numeric" value="${esc(B.tb)}"></label><div class="bar"><button type="button" class="btn sm" data-brkchalk>Fill with higher seeds</button><button type="button" class="btn sm" data-brkclear>Clear</button></div></div>
-    <p class="note" style="margin-top:8px"><b id="brkMade">${made} of 11 picked.</b> Rounds score 1, 2, 4, and 8. A perfect bracket is 28. A pick on a team that is already out scores 0, and nobody re-picks. Picks save on this device only for now.</p></div>
-    <div class="panel" style="margin-top:12px"><h2>The field</h2><div class="tablewrap"><table class="brkfield"><thead><tr><th>Seed</th><th>Team</th><th>CFP</th><th>Rec</th><th>How in</th></tr></thead><tbody>${rows}</tbody></table></div>
-    ${F.firstOut?`<p class="note" style="margin-top:6px">First team out: ${esc(F.firstOut.team)}, No. ${F.firstOut.rank}.</p>`:""}
-    <details class="rules"><summary class="rh">How the field is set</summary><ul class="note"><li>Automatic bids: the ACC, Big Ten, Big 12, and SEC champions, plus the highest ranked Group of Six team.</li><li>Notre Dame is in with a top 12 finish.</li><li>The next highest ranked teams fill the field to 12.</li><li>Seeds follow the committee's rank. The four highest ranked teams get byes, champions or not.</li><li>Seeds 5 to 8 host the first round. There is no reseeding, and no change to avoid a rematch.</li></ul></details></div>`;
+    <p class="note" style="margin-top:8px"><b id="brkMade">${made} of 11 picked.</b> Nothing here counts. The points show the plan for the real contest: rounds score 1, 2, 4, and 8, for a perfect 28. A pick on a team that is already out scores 0, and nobody re-picks.</p></div>
+    <div class="panel" id="brkFieldPanel" style="margin-top:12px"><div class="brktop"><h2>The field</h2><button type="button" class="btn sm" data-brkswapmode aria-pressed="${!!state.brkSwap}">${state.brkSwap?"Done":"Swap teams"}</button></div>
+    ${state.brkSwap?`<p class="note">Pick any FBS team for a seed. Pick a team already in the field and the two trade seeds. Your picks stay on their seeds.</p><div class="brkswaps">${swapRows}</div>`:`<div class="tablewrap"><table class="brkfield"><thead><tr><th>Seed</th><th>Team</th><th>CFP</th><th>Rec</th><th>How in</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+    ${backBtn?`<div class="bar" style="margin-top:8px">${backBtn}</div>`:""}
+    ${F.firstOut&&!nSwap?`<p class="note" style="margin-top:6px">First team out: ${esc(F.firstOut.team)}, No. ${F.firstOut.rank}.</p>`:""}
+    <details class="rules"><summary class="rh">How the real field is set</summary><ul class="note"><li>Automatic bids: the ACC, Big Ten, Big 12, and SEC champions, plus the highest ranked Group of Six team.</li><li>Notre Dame is in with a top 12 finish.</li><li>The next highest ranked teams fill the field to 12.</li><li>Seeds follow the committee's rank. The four highest ranked teams get byes, champions or not.</li><li>Seeds 5 to 8 host the first round. There is no reseeding, and no change to avoid a rematch.</li></ul></details></div>`;
   const sc=$("#brkScroll");if(sc)sc.scrollLeft=left}
 function brkToRound(r,smooth){const sc=$("#brkScroll");if(!sc)return;const c=sc.querySelector(`[data-brkr="${r}"]`);if(c)sc.scrollTo({left:c.offsetLeft-12,behavior:smooth?"smooth":"auto"})}
-document.addEventListener("click",e=>{if(state.view!=="bracket"||!state.brk)return;
+document.addEventListener("click",e=>{if(state.view!=="playoffs"||!state.brk)return;
   const t=e.target.closest("[data-bg]");
   if(t){const id=t.dataset.bg,g=BRK.find(x=>x.id===id),peers=BRK.filter(x=>x.r===g.r),was=peers.every(x=>state.brk.picks[x.id]);
-    state.brk.picks=brkPick(state.brk.picks,id,Number(t.dataset.bs));brkSave();renderBracket();
+    state.brk.picks=brkPick(state.brk.picks,id,Number(t.dataset.bs));brkSave();renderBracket(true);
     if(!was&&g.r<3&&peers.every(x=>state.brk.picks[x.id])&&matchMedia("(max-width:699px)").matches)brkToRound(g.r+1,true);return}
   const go=e.target.closest("[data-brkgo]");if(go){brkToRound(Number(go.dataset.brkgo),true);return}
-  if(e.target.closest("[data-brkclear]")){state.brk.picks={};state.brk.tb="";brkSave();renderBracket();return}
-  if(e.target.closest("[data-brkchalk]")){const P={};BRK.forEach(g=>{P[g.id]=Math.min(brkSide(g.a,P),brkSide(g.b,P))});state.brk.picks=P;brkSave();renderBracket()}});
+  if(e.target.closest("[data-brkclear]")){state.brk.picks={};state.brk.tb="";brkSave();renderBracket(true);return}
+  if(e.target.closest("[data-brkswapmode]")){state.brkSwap=!state.brkSwap;renderBracket(true);return}
+  if(e.target.closest("[data-brkreset]")){state.brk.swaps={};brkSave();renderBracket(true);return}
+  if(e.target.closest("[data-brkchalk]")){const P={};BRK.forEach(g=>{P[g.id]=Math.min(brkSide(g.a,P),brkSide(g.b,P))});state.brk.picks=P;brkSave();renderBracket(true)}});
+document.addEventListener("change",e=>{const x=e.target.closest&&e.target.closest("[data-brkseed]");if(!x||!state.brk)return;
+  const R=state.rankings||{},conf={};((R.ats&&R.ats.teams)||[]).forEach(t=>{conf[canon(t.team)]=t.conf||""});
+  state.brk.swaps=brkSwapTeams(cfpField(R.cfp,conf).seeds.map(t=>t.team),state.brk.swaps,Number(x.dataset.brkseed),x.value);brkSave();x.blur();renderBracket(true)});
 document.addEventListener("input",e=>{if(e.target.id==="brkTb"&&state.brk){state.brk.tb=e.target.value;brkSave()}});
-window.tpBracket={cfpField,brkPick};
+window.tpBracket={cfpField,brkPick,brkSwapTeams};
 
 /* ---------- rival, what you need, your week ---------- */
 function priorWeeks(wid){const w=state.weeks[wid];return countedWeeks().filter(k=>k<wid&&state.weeks[k].season===w.season)}
@@ -1978,7 +2000,7 @@ function unlockForm(w){const orig=w.origDeadline&&Date.parse(w.origDeadline)>NOW
   return `<div class="autobar"><label for="unlockAt" class="note">New deadline</label><input type="datetime-local" id="unlockAt" value="${toLocalInput(orig)}"><button class="btn" data-act="unlock">Unlock picks</button></div>
   <p class="note">Unlocking hides everyone's picks again and lets players change them until the new deadline. Players already saw the picks while the week was locked. Games that already kicked off can still be picked, so set the deadline before the first kickoff you care about.${w.origDeadline?" The original deadline was "+kick(w.origDeadline)+".":""}</p>`}
 /* Commissioner only. Pages report tabs in small batches, never on a poll. Sheet times come from saved picks. */
-const ENG_NAMES={picks:"Picks",standings:"Standings",recap:"Recap",survivor:"Survivor",players:"Pickers",rankings:"Teams",rules:"Rules",profile:"Profile"};
+const ENG_NAMES={picks:"Picks",standings:"Standings",recap:"Recap",survivor:"Survivor",players:"Pickers",rankings:"Teams",playoffs:"Playoffs",rules:"Rules",profile:"Profile"};
 function engagePanel(){const E=state.engage;if(!E||!state.logins)return "";const cw=currentWeekId();const week=state.weeks[cw];const lastRecap=recapWeeks().slice(-1)[0];const short=iso=>new Date(iso).toLocaleString("en-US",{timeZone:TZ,weekday:"short",month:"numeric",day:"numeric",hour:"numeric",minute:"2-digit"});
   const rows=state.logins.filter(p=>!p.removed&&p.setupDone).map(p=>({p,e:E[p.id]||{}})).sort((a,b)=>(b.e.last||"").localeCompare(a.e.last||""));
   const total={};for(const {e} of rows)for(const [k,n] of Object.entries(e.pages||{}))total[k]=(total[k]||0)+n;
