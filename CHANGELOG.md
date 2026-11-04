@@ -82,6 +82,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Date | Change | Commit |
 |---|---|---|
+| Nov 4 | Survivor plan: second run moves to Nov 21 through Conference Champion Week; 4 runs in 2027 | `99bfc75` |
 | Nov 4 | Tracker cleanup: checks cleared, ideas 24 to 30 added, Survivor stays ATS, upkeep thrown out | `c512e73` |
 | Nov 2 | Idea tracker created, then built out with timing and the Rules page rule | `86e8325` through `85522d0` |
 | Oct 31 | NFL plan recorded; Open items heading restored | `9d583f4`, `4dd2e20` |
