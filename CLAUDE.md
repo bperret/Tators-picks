@@ -110,10 +110,11 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Build note: the app handles one run today (`survivorStart`, `survivorEnd`, `survLate`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
 
 31. Army-Navy one-off contest. Decided Nov 4 for 2026 and on. 2026: Sat Dec 12. 2027: Sat Dec 11. It stands alone, with a 1% prize.
-   - Every picker takes one side against the spread and enters a tiebreaker. Among correct picks, the closest tiebreaker wins, and exact ties share.
+   - Every picker enters two things: a predicted final score and a predicted halftime score. No separate side pick. The final score sets the picker's side against the half-point line.
+   - Winner order: correct outcome (the side that covers), then closest final score, then closest halftime score. Exact ties share. Closest means the fewest points off, adding the miss on each team's score.
    - No season points, weekly win, Iron Man effect, or field goal. Its own small career stat. Robo-Sharp plays but cannot win.
-   - To settle: the second tiebreaker, which applies only to this contest, and the lock time.
-   - Build note: the app assumes 10 game weeks, so this needs a one game path. Check how ESPN labels the week. It must not touch the Bowl or CFP deadlines. A change needs the Rules page in the same build.
+   - To settle: the lock time.
+   - Build note: the app assumes 10 game weeks, so this needs a one game path. Check how ESPN labels the week. The scores job needs ESPN's halftime score, or the commissioner enters it by hand. It must not touch the Bowl or CFP deadlines. A change needs the Rules page in the same build.
    - Payouts (decided Nov 4): 13 weekly prizes at 1% (13%), Army-Navy 1%, Survivor stays 15% at 3.75% a run over 4 runs, all others unchanged. Total 100%. Update `PAY`, the calculator, the Rules text, the tests, and the league rule in the same build. They still say 14 weekly prizes and 3 runs at 5%.
 
 ### Next season (2027)
