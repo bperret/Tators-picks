@@ -81,7 +81,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
    - Lock before the first Friday kickoff (about 6 p.m. CT), one lock for the week. The normal slate rule and the Saturday 10:15 a.m. lock do not apply.
-   - No Survivor pick this week. Survivor already ends after the Nov 28 week.
+   - Survivor pick this week: it is the last week of the second run (item 10), and the one Friday lock covers it. In a title game both teams share a conference, so the conference lock leaves about 8 of the 10 games open after two burned conferences.
    - The build must save `confChamp: true` on this week. Career stats, Weekly titles, the recap, and the Rules page already read it or describe it.
    - To settle: how the week builds if ESPN's week number or season type differs.
 2. CFP bracket challenge: a bracket, not ATS. 12 teams. Selection Sun Dec 6, first game Fri Dec 18, title Mon Jan 25.
@@ -96,26 +96,28 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Lines are set once, sometime after Dec 6. Timing not decided. A void game scores for nobody and cannot be replaced after the lock.
    - Robo-Sharp plays unranked and cannot win. It takes its 10 biggest edges. Unlike a regular week, its picks and model lines stay hidden until the lock.
    - The slate job skips postseason today (`seasonType !== 2`), so this needs its own build path.
-10. Second Survivor run this season. Decided, waiting on Benton's go to build. It must be live before the Nov 14 week opens, Wednesday Nov 11.
-   - It starts the Nov 14 week and runs through Nov 28, 3 weeks. The first run ends with the Nov 7 week, and anyone alive then shares it.
+10. Second Survivor run this season. Decided Nov 4, waiting on Benton's go to build. It must be live before the Nov 21 week opens, Wednesday Nov 18.
+   - The first run keeps going through the Nov 14 week, and anyone alive then shares it. The app already runs that week, so nothing changes until this build.
+   - The second run starts the Nov 21 week and runs through the Nov 28 week and Conference Champion Week, 3 weeks.
    - ATS, the same as 2027 (item 4).
    - Conference lock, a test for this run. Picking a team burns its conference for the run. Only the picked team's conference burns, so in a nonconference game the other team's conference stays available. Burned conferences start empty at the run's start.
    - The no-repeat team rule goes away for this run, since a burned conference already blocks the team.
    - Independents count as one group, so picking Notre Dame burns Independents.
    - If no legal game is left on the slate, the picker can pick any game, including a team already used.
    - Everyone starts the run alive, including pickers already out. A picker who joins after the run's first week and misses it is out of that run.
-   - Build it all together: the second run, the conference lock, and the Rules text, in one build. The first run keeps the no-repeat team rule through Nov 7. The server must enforce the lock, as it does used teams today, and Robo-Sharp's Survivor pick must follow it.
+   - Build it all together: the second run, the conference lock, and the Rules text, in one build. The first run keeps the no-repeat team rule through Nov 14. The server must enforce the lock, as it does used teams today, and Robo-Sharp's Survivor pick must follow it.
+   - Survivor no longer ends Nov 28: update the saved `config.survivorEnd`, the league rule above, and the Rules page. Item 1 must carry the Survivor pick for Conference Champion Week.
    - Build note: the app handles one run today (`survivorStart`, `survivorEnd`, `survLate`). Career stats count one Survivor win a season. Item 4 needs runs too, so this work carries into 2027. A change needs the Rules page in the same build.
 
 ### Next season (2027)
 4. Survivor: ATS, fixed runs. Decided: Survivor stays against the spread in 2026 and 2027. Replaces the two skulls idea, which is dropped.
    - Conference lock is being tested in the 2026 second run (item 10). Decide after that run whether it stays for 2027.
    - Pick one team against the spread. One loss and you are out of that run. The conflict warning stays.
-   - The season has fixed runs, for example weeks 1 to 5, 6 to 10, and 11 to the last week before Conference Champion Week. Everybody starts each run alive, and used teams reset.
+   - The season has 4 fixed runs (decided Nov 4). A 15 week season could split 4, 4, 4, and 3 weeks, with Conference Champion Week in the last run. Everybody starts each run alive, and used teams reset.
    - No tiebreaker. Everyone still alive at the end of a run wins it. Pickers who split a win are each called Co-Champion and each gets the win on their stats page.
    - If every remaining picker goes out in the same week, they are all resurrected and play one more week. If that was the last week of the run or season, they share the title as Co-Champions instead.
    - Robo-Sharp keeps picking by spread edge.
-   - To settle: exact run weeks.
+   - To settle: exact run weeks, and the Survivor share. At 15% of the pot, each run pays 3.75%, not 5%. Raising the share means cutting another prize. The Rules page and the `PAY` calculator still say 3 runs at 5% until this is set.
 8. Ghost pickers: an unpaid tier so someone can try the league with no skin in the game and no effect on anyone else.
    - Paid members play every contest and can win payouts. The commissioner creates every ghost and gives the PIN, the same as any picker, and can flip the profile to paid. No open signups.
    - Ghosts play shadow versions of Survivor, the Bowl challenge, and the CFP bracket.
