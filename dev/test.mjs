@@ -80,6 +80,7 @@ try {
   check("collapse all shuts every section", (await c.locator('#v-commish details[data-sec][open]').count()) === 0);
   await c.click('[data-csec="1"]'); await c.waitForTimeout(100);
   check("expand all opens every section", (await c.locator('#v-commish details[data-sec]:not([open])').count()) === 0);
+  await c.click(".mbadd summary");
   await c.fill("#apName", "Mike"); await c.fill("#apPhone", "(214) 555-0123");
   await c.click("#addPlayerForm button[type=submit]"); await c.waitForTimeout(400);
   const pin = (await c.textContent(".bigpin")).trim();
@@ -97,7 +98,8 @@ try {
   check("right PIN still paused", (await m.textContent("#loginErr")).includes("Try again in"));
   await c.evaluate(() => (location.hash = "#commish")); await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
   check("commissioner sees the pause", (await c.textContent("#v-commish")).includes("Paused"));
-  const mikeRow = c.locator(".lgrow", { hasText: "Mike" });
+  const mikeRow = c.locator(".mbitem", { hasText: "Mike" });
+  await mikeRow.locator(".mbrow").click();
   await mikeRow.locator('[data-dact="reset"]').click(); await c.waitForTimeout(400);
   const pin2 = (await c.textContent(".bigpin")).trim();
   await c.click('[data-dact="hidepin"]');
@@ -121,7 +123,12 @@ try {
 
   // ---- picks with warnings, then complete ----
   const sides = m.locator(".side:not([disabled])");
+  const saveCls = async () => { const b = m.locator("#saveBtn"); return { cls: await b.getAttribute("class"), text: await b.textContent(), off: await b.isDisabled() } };
+  const save0 = await saveCls();
+  check("Save stays plain with nothing to save", !/unsaved|\bsaved/.test(save0.cls) && save0.text === "Save picks" && save0.off, JSON.stringify(save0));
   await sides.nth(0).click(); await sides.nth(3).click();
+  const save1 = await saveCls();
+  check("a change turns Save red", /unsaved/.test(save1.cls) && !save1.off, JSON.stringify(save1));
   await m.click("#saveBtn"); await m.waitForTimeout(200);
   check("incomplete sheet warns", (await m.textContent(".warn")).includes("no pick"));
   await m.click("#warnBack");
@@ -133,13 +140,21 @@ try {
   await m.selectOption("#survSel", "g5|away");
   await m.click("#saveBtn"); await m.waitForTimeout(500);
   check("complete sheet saves", (await m.textContent(".phist summary")).includes("last saved"));
+  const save2 = await saveCls();
+  check("a saved sheet turns Save green", /(^| )saved/.test(save2.cls) && !/unsaved/.test(save2.cls) && save2.text === "Saved" && save2.off, JSON.stringify(save2));
+  await m.fill("#tbInput", "52");
+  check("a tiebreaker change turns Save red again", /unsaved/.test((await saveCls()).cls));
+  await m.fill("#tbInput", "51");
+  await m.click("#saveBtn"); await m.waitForTimeout(500);
+  const save3 = await saveCls();
+  check("a second save turns Save green", /(^| )saved/.test(save3.cls) && save3.text === "Saved", JSON.stringify(save3));
   const before = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
   check("picks hidden from others before the lock", !before.reveals["2026-w10"]);
   const ss = Object.values((before.sheetStatus || {})["2026-w10"] || {});
   check("commissioner gets sheet status without sides", ss.length === 1 && ss[0].games.length === 5 && ss[0].flag && ss[0].tb && ss[0].surv && !/"(home|away)"/.test(JSON.stringify(before.sheetStatus)), JSON.stringify(before.sheetStatus));
   await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
   const cm = await c.textContent("#v-commish");
-  check("League members shows who is in and who is complete", cm.includes("Week 10 sheets: 1 complete, 0 missing parts, 1 not in") && cm.includes("Week 10: Complete") && cm.includes("Week 10: No sheet"), cm.slice(cm.indexOf("League members"), cm.indexOf("League members") + 400));
+  check("League members shows who is in and who is complete", cm.includes("Week 10 sheets") && cm.includes("Not in 1") && cm.includes("Missing parts 0") && cm.includes("Complete 1") && cm.includes("No sheet"), cm.slice(cm.indexOf("League members"), cm.indexOf("League members") + 400));
   // The commissioner saves a partial sheet: two picks, no field goal, no tiebreaker.
   await c.evaluate(() => (location.hash = "#picks")); await c.waitForTimeout(300);
   const cs = c.locator(".side:not([disabled])");
@@ -148,7 +163,29 @@ try {
   if (await c.isVisible("#warnSave")) { await c.click("#warnSave"); await c.waitForTimeout(400); }
   await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
   const cm2 = await c.textContent("#v-commish");
-  check("partial sheet lists what is missing", cm2.includes("1 missing parts") && cm2.includes("Missing: 2 of 5 picks, no field goal, no tiebreaker"), cm2.slice(cm2.indexOf("League members"), cm2.indexOf("League members") + 500));
+  check("partial sheet lists what is missing", cm2.includes("Missing parts 1") && cm2.includes("2 of 5 picks, no field goal, no tiebreaker"), cm2.slice(cm2.indexOf("League members"), cm2.indexOf("League members") + 500));
+  // ---- League members table ----
+  await c.evaluate(() => { const d = document.querySelector('details[data-sec="members"]'); d.open = true });
+  const whoFirst = await c.textContent(".mbitem:first-child .mbwho");
+  check("the table puts pickers who need attention first", whoFirst.includes("(you)"), whoFirst);
+  await c.click('[data-mbf="done"]');
+  check("a chip filters the table", (await c.locator(".mbitem").count()) === 1 && (await c.textContent(".mbitem")).includes("Mike"));
+  await c.evaluate(() => (location.hash = "#rules")); await c.waitForTimeout(100); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(200);
+  check("the filter survives a redraw", (await c.locator(".mbitem").count()) === 1 && (await c.getAttribute('[data-mbf="done"]', "aria-pressed")) === "true");
+  await c.click('[data-mbf="removed"]');
+  check("an empty filter says so", (await c.textContent("#mbBox")).includes("No pickers here."));
+  await c.fill("#mbQ", "0123");
+  check("search finds a picker by phone across every filter", (await c.locator(".mbitem").count()) === 1 && (await c.isVisible("#mbQ")) && (await c.evaluate(() => document.activeElement.id)) === "mbQ");
+  await c.fill("#mbQ", "");
+  await c.click('[data-mbf="all"]');
+  check("All shows the active pickers", (await c.locator(".mbitem").count()) === 2);
+  const mikeOpen = c.locator(".mbitem", { hasText: "Mike" });
+  check("a closed row hides the buttons", (await mikeOpen.locator('[data-dact="reset"]').count()) === 0);
+  await mikeOpen.locator(".mbrow").click();
+  check("an open row has the text link, Reset PIN, and Remove", (await mikeOpen.locator('a[href="sms:+12145550123"]').count()) === 1 && (await mikeOpen.locator('[data-dact="reset"]').count()) === 1 && (await mikeOpen.locator('[data-dact="remove"]').count()) === 1);
+  check("the open row shows the full sheet line", (await mikeOpen.textContent()).includes("Week 10: Complete"));
+  check("the table adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
+  await mikeOpen.locator(".mbrow").click();
 
   // ---- commissioner locks early, then unlocks ----
   await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);

@@ -163,6 +163,9 @@ td.pn{max-width:8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .savebar{flex-wrap:wrap;position:sticky;bottom:0;background:var(--bg);padding-block:7px calc(7px + env(safe-area-inset-bottom,0px));border-top:4px solid transparent;border-image:repeating-linear-gradient(90deg,var(--stripe-a) 0 8px,var(--stripe-b) 8px 16px) 4;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .savebar .cks{flex:1 1 0;min-width:0}
 .savebar #saveBtn{padding-block:7px}
+/* Fixed colors, so white text stays readable in dark mode. */
+#saveBtn.unsaved{background:#b3261e;border-color:#b3261e;color:#fff}
+#saveBtn.saved{background:#1c7a45;border-color:#1c7a45;color:#fff;opacity:1}
 .board{background:var(--board);border:1px solid var(--board-line);border-radius:8px;padding:14px;color:var(--board-ink)}
 .board h2{font-family:var(--display);font-weight:400;font-size:1.3rem;margin:0 0 4px;color:var(--board-ink)}
 .board .note{color:var(--board-dim)}
@@ -463,7 +466,19 @@ td.svc.next{border:1px dashed var(--line)}
 .pill.wait{background:var(--flag);color:var(--flag-ink)}
 .pill.bad{background:var(--loss);color:#fff}
 .pill.ok{background:var(--win,#2f8f5b);color:#fff}
-.sheetsum{margin:4px 0 12px}.sheetsum p{margin:4px 0}.sheetsum .pill{margin-right:6px}
+.mbadd{margin:4px 0 10px}.mbadd summary{display:inline-block;list-style:none;cursor:pointer}.mbadd summary::-webkit-details-marker{display:none}
+.mbq{display:block;width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.mbweek{margin:0 0 6px}
+.mbchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.mbchip{font-family:var(--cond);font-weight:700;font-size:.86rem;letter-spacing:.03em;min-height:34px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);cursor:pointer}
+.mbchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.mbhead,.mbrow{display:grid;grid-template-columns:minmax(0,1fr) 94px 66px;gap:6px;align-items:center}
+.mbhead{font-family:var(--cond);font-weight:700;font-size:.76rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);padding-bottom:4px}
+.mbrow{width:100%;min-height:44px;padding:6px 0;background:none;border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.mbrow .note{font-size:.72rem;white-space:nowrap}
+.mbwho{min-width:0}.mbwho b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mbwho small{display:block;font-size:.76rem;line-height:1.2;color:var(--muted)}
+.mbdetail{display:flex;flex-direction:column;gap:4px;align-items:flex-start;padding:2px 0 10px}
+.mbdetail .lgbtns{margin-top:4px;justify-content:flex-start}
 .pinbox{border:2px solid var(--flag);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .pinbox p{margin:0}
 .bigpin{font-family:var(--cond);font-size:2rem;letter-spacing:.2em;font-variant-numeric:tabular-nums}
@@ -962,22 +977,47 @@ function sheetCheck(){
   const ids=Object.keys(by);const grp=k=>ids.filter(id=>by[id].st===k);
   return {w,by,done:grp("done"),part:grp("part"),none:grp("none")};
 }
+/* League members table. Filter, search, and the open row live in state, so the 30 second redraw keeps them. */
+const mbName=a=>a.name||a.invited||"New picker";
+function mbSheet(a,SC){const s=SC&&SC.by[a.id];
+  if(a.removed)return {k:"removed",rank:9,pill:'<span class="pill">Removed</span>'};
+  if(!SC)return a.setupDone?{k:"active",rank:1,pill:'<span class="pill">Active</span>'}:{k:"never",rank:0,pill:'<span class="pill bad">No login</span>'};
+  if(s.st==="done")return {k:"done",rank:2,pill:'<span class="pill ok">Complete</span>',s};
+  if(s.st==="part")return {k:"part",rank:1,pill:'<span class="pill wait">Missing</span>',s,miss:s.label.replace("Missing: ","")};
+  return {k:"none",rank:0,pill:`<span class="pill bad">${a.setupDone?"No sheet":"No login"}</span>`,s}}
+function mbRow(a,SC,t){const v=mbSheet(a,SC),open=state.mbOpen===a.id,locked=a.lockedUntil&&Date.parse(a.lockedUntil)>t;
+  const saved=v.s&&v.s.at?new Date(v.s.at).toLocaleString("en-US",{timeZone:TZ,weekday:"short",hour:"numeric",minute:"2-digit"}):"";
+  const sub=[v.miss,locked?`Paused ${Math.ceil((Date.parse(a.lockedUntil)-t)/60000)} min`:""].filter(Boolean).join(" · ");
+  const seen=state.engage&&state.engage[a.id]&&state.engage[a.id].last;
+  const facts=[a.invited&&a.invited!==a.name?"Nickname: "+esc(a.invited):"",v.s?`Week ${SC.w.week}: ${esc(v.s.label)}`:"",v.s&&v.s.at?"Last saved "+esc(when(v.s.at)):"",seen?"Last seen "+esc(when(seen)):"",a.setupDone?"":"Not logged in yet",a.lockouts?a.lockouts+" pause"+(a.lockouts>1?"s":""):""].filter(Boolean);
+  const rm=a.isCommish?"":`<button class="btn sm${a.removed?"":" danger"}" data-dact="${a.removed?"restore":"remove"}" data-id="${esc(a.id)}">${a.removed?"Restore":"Remove"}</button>`;
+  const phone=a.isCommish||!a.phone||a.phone.length!==10?`<span>${fmtPhone(a.phone)}</span>`:`<a href="sms:+1${esc(a.phone)}">Text ${fmtPhone(a.phone)}</a>`;
+  return `<div class="mbitem"><button type="button" class="mbrow" data-mbr="${esc(a.id)}" aria-expanded="${open}"><span class="mbwho"><b>${chip(a.id)}${esc(mbName(a))}${a.isCommish?" (you)":""}</b>${sub?`<small>${esc(sub)}</small>`:""}</span><span>${v.pill}</span><span class="note">${esc(saved)}</span></button>${open?`<div class="mbdetail">${phone}${facts.map(x=>`<span class="note">${x}</span>`).join("")}<span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${rm}</span></div>`:""}</div>`}
+function mbBody(){const L=state.logins||[],t=NOW(),SC=sheetCheck();
+  const has=k=>a=>mbSheet(a,SC).k===k;
+  const F={all:a=>!a.removed,none:has("none"),part:has("part"),done:has("done"),never:a=>!a.removed&&!a.setupDone,removed:a=>a.removed};
+  const chips=[["all","All"],...(SC?[["none","Not in"],["part","Missing parts"],["done","Complete"]]:[]),["never","Never logged in"],["removed","Removed"]];
+  const q=(state.mbQ||"").trim().toLowerCase(),dig=q.replace(/\D/g,"");
+  const fk=chips.some(c=>c[0]===state.mbFilter)?state.mbFilter:"all";
+  /* A search looks across everyone, so a name turns up whichever chip is on. */
+  const list=L.filter(q?a=>mbName(a).toLowerCase().includes(q)||(a.invited||"").toLowerCase().includes(q)||(!!dig&&(a.phone||"").includes(dig)):F[fk]).sort((a,b)=>mbSheet(a,SC).rank-mbSheet(b,SC).rank||mbName(a).localeCompare(mbName(b)));
+  return `${SC?`<p class="note mbweek"><b>Week ${SC.w.week} sheets${SC.w.status==="locked"?" (locked)":""}.</b> You see what each sheet is missing, never which side anyone picked.</p>`:""}<div class="mbchips" role="group" aria-label="Filter pickers">${chips.map(([k,l])=>`<button type="button" class="mbchip" data-mbf="${k}" aria-pressed="${!q&&fk===k}">${l} <b>${L.filter(F[k]).length}</b></button>`).join("")}</div>
+    ${list.length?`<div class="mbhead" aria-hidden="true"><span>Picker</span><span>Sheet</span><span>Saved</span></div><div class="mblist">${list.map(a=>mbRow(a,SC,t)).join("")}</div>`:'<p class="note">No pickers here.</p>'}`}
+function mbPaint(id){const b=$("#mbBox");if(!b)return;b.innerHTML=mbBody();if(id){const r=b.querySelector(`[data-mbr="${CSS.escape(id)}"]`);if(r)r.focus()}}
+document.addEventListener("click",e=>{const f=e.target.closest("[data-mbf]");
+  if(f){state.mbFilter=f.dataset.mbf;state.mbQ="";const q=$("#mbQ");if(q)q.value="";mbPaint();const c=$(`[data-mbf="${f.dataset.mbf}"]`);if(c)c.focus();return}
+  const r=e.target.closest("[data-mbr]");if(r){const id=r.dataset.mbr;state.mbOpen=state.mbOpen===id?null:id;mbPaint(id)}});
+document.addEventListener("input",e=>{if(e.target.id==="mbQ"){state.mbQ=e.target.value;mbPaint()}});
+document.addEventListener("toggle",e=>{const d=e.target;if(d&&d.classList&&d.classList.contains("mbadd"))state.mbAdd=d.open},true);
 function loginsPanel(){
-  const L=state.logins||[];const t=NOW();const SC=sheetCheck();
-  const nmOf=id=>{const a=L.find(x=>x.id===id);return a?(a.name||a.invited||"New picker"):id};
-  const sheetPill=id=>{const s=SC&&SC.by[id];if(!s)return "";return `<span class="pill ${s.st==="done"?"ok":s.st==="part"?"wait":"bad"}">Week ${SC.w.week}: ${esc(s.label)}</span>${s.at?`<span class="note">Last saved ${esc(when(s.at))}</span>`:""}`};
-  const sheetSum=SC?`<div class="sheetsum"><p><b>Week ${SC.w.week} sheets${SC.w.status==="locked"?" (locked)":""}:</b> ${SC.done.length} complete, ${SC.part.length} missing parts, ${SC.none.length} not in.</p>${[["part","Missing parts",SC.part],["none","Not in",SC.none],["done","Complete",SC.done]].filter(x=>x[2].length).map(([k,l,ids])=>`<p class="note"><span class="pill ${k==="done"?"ok":k==="part"?"wait":"bad"}">${l}</span> ${ids.map(id=>esc(nmOf(id))+(k==="part"?" ("+esc(SC.by[id].label.replace("Missing: ",""))+")":"")).join("; ")}</p>`).join("")}<p class="note">You see what each sheet is missing, never which side anyone picked.</p></div>`:"";
-  const rows=L.map(a=>{const locked=a.lockedUntil&&Date.parse(a.lockedUntil)>t;
-    const st=a.removed?'<span class="pill">Removed</span>':locked?`<span class="pill bad">Paused ${Math.ceil((Date.parse(a.lockedUntil)-t)/60000)} min</span>`:a.setupDone?'<span class="pill">Active</span>':'<span class="pill wait">Not logged in yet</span>';
-    const rm=a.isCommish?"":`<button class="btn sm${a.removed?"":" danger"}" data-dact="${a.removed?"restore":"remove"}" data-id="${esc(a.id)}">${a.removed?"Restore":"Remove"}</button>`;
-    return `<div class="lgrow"><span class="t"><b>${chip(a.id)}${esc(a.name||a.invited||"New picker")}${a.isCommish?" (you)":""}</b><span class="note">${a.invited&&a.invited!==a.name?"Nickname: "+esc(a.invited)+" · ":""}${fmtPhone(a.phone)}${a.lockouts?" · "+a.lockouts+" pause"+(a.lockouts>1?"s":""):""}</span>${st}${a.removed?"":sheetPill(a.id)}</span><span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${rm}</span></div>`}).join("");
-  const sp=state.shownPin;
+  const L=state.logins||[],SC=sheetCheck(),sp=state.shownPin;
   const nOn=L.filter(a=>!a.removed).length;
   return `${secTag("members",false,"",!!sp)}${secHead("League members",nOn+" picker"+(nOn===1?"":"s")+(SC?" · Week "+SC.w.week+": "+SC.done.length+" complete":""))}
     ${sp?`<div class="pinbox" id="pinbox" role="status"><p>${sp.what==="added"?"Picker added.":"New PIN"+(sp.who?" for "+esc(sp.who):"")+"."} ${sp.self?"This is your new PIN. You will log in again with it.":"Text it to "+fmtPhone(sp.num)+"."} It shows only once.</p><b class="bigpin">${sp.pin}</b><button class="btn" data-dact="hidepin">Done</button></div>`:""}
-    ${sheetSum}<div class="lglist">${rows}</div>
-    <form id="addPlayerForm" class="bar addp" novalidate><input id="apName" type="text" maxlength="24" placeholder="Nickname (only you see it)" aria-label="Nickname, only you see it"><input id="apPhone" type="tel" inputmode="tel" placeholder="Cell number" aria-label="Cell number"><button class="btn primary" type="submit">Add picker</button></form>
-    <p class="note">Adding a picker creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Removing a picker hides them from standings and blocks new picks.</p></details>`}
+    <details class="mbadd"${state.mbAdd?" open":""}><summary class="btn sm">+ Add picker</summary><form id="addPlayerForm" class="bar addp" novalidate><input id="apName" type="text" maxlength="24" placeholder="Nickname (only you see it)" aria-label="Nickname, only you see it"><input id="apPhone" type="tel" inputmode="tel" placeholder="Cell number" aria-label="Cell number"><button class="btn primary" type="submit">Add picker</button></form><p class="note">Adding a picker creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later.</p></details>
+    <input id="mbQ" class="mbq" type="search" placeholder="Search name, nickname, or phone" aria-label="Search pickers" value="${esc(state.mbQ||"")}">
+    <div id="mbBox">${mbBody()}</div>
+    <p class="note">Tap a picker for their phone, Reset PIN, and Remove. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Removing a picker hides them from standings and blocks new picks.</p></details>`}
 function importPanel(){
   return `${secTag("backups",false,"manual")}${secHead("Manual backups","paste a slate or rankings by hand")}<form id="slateForm" class="inner" novalidate><h2>Load a slate</h2><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
   <form id="rankForm" class="inner" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings and Update ratings. Paste rankings JSON for the Teams tab. JSON with only a "power" part updates just those ratings and keeps the polls. For the r/CFB poll, select its table on poll.redditcfb.com, copy, and paste it here. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form></details>`}
@@ -992,6 +1032,8 @@ async function savePicks(force){
   const r=await api("/api/picks",{weekId:wid,sel:state.draft.sel,lock:state.draft.lock,tb:state.draft.tb,surv:state.draft.surv||null,abbr:abbrMap(w)});
   if(!r.ok){toast(r.error);if(b){b.disabled=false;b.textContent="Save picks"}if(r.status===423||r.status===401)await refresh(true);return}
   state.dirty=false;state.warn=null;toast("Picks saved");await refresh(true);
+  /* The refresh skips the redraw while a field has focus, so set the button here too. */
+  const sb=$("#saveBtn");if(sb){sb.disabled=true;sb.textContent="Saved";sb.classList.remove("unsaved");sb.classList.add("saved")}
 }
 async function logAction(){} /* the server writes the log */
 
@@ -1219,6 +1261,8 @@ const GO_TILES=[
 function goTiles(cur){return `<h2 class="gohead">Around the league</h2><nav class="gotiles" aria-label="Other tabs">${GO_TILES.filter(t=>t[0]!==cur).map(([v,ic,tab,head,sub])=>`<a class="gotile" href="#${v}"><span class="goic" aria-hidden="true">${ic}</span><span><b>${tab}</b><strong>${head}</strong><small>${sub}</small></span></a>`).join("")}</nav>`}
 /* render() runs on every poll, so the footer only redraws when the tab changes. */
 function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=!v||v==="commish"?"":goTiles(v)}
+/* Red with unsaved changes, green once a sheet is saved, plain when there is nothing to save yet. */
+function saveBtnH(){const saved=!state.dirty&&(state.sheetsIn||[]).includes(state.uid);return `<button class="btn primary${state.dirty?" unsaved":saved?" saved":""}" id="saveBtn" ${state.dirty?"":"disabled"}>${saved?"Saved":"Save picks"}</button>`}
 function renderPicks(){
   const el=$("#v-picks"),w=curWeek(),wid=currentWeekId();
   if(!state.db){el.innerHTML='<div class="panel empty">This league page needs you signed in to Claude, opened from the invite your commissioner sent.</div>';return}
@@ -1313,7 +1357,7 @@ function renderPicks(){
     // Short chip labels keep the sticky bar to one row; the full wording is in the title and for screen readers.
     const ck=(ok,t,full)=>`<span class="ck ${ok?"ok":"no"}" title="${esc(full)}" aria-label="${esc(full)}">${ok?"\u2713":"!"} ${t}</span>`;
     const warnH=state.warn&&state.warn.length?`<div class="warn" role="alert"><h2>Your sheet is not complete</h2><ul>${state.warn.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div class="bar"><button class="btn" id="warnBack">Keep picking</button><button class="btn primary" id="warnSave">Save anyway</button></div></div>`:"";
-    h+=`<div class="savebar">${warnH}<div class="chain" aria-hidden="true">${gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>`<i class="${d.sel[g.id]?"on":""}"></i>`).join("")}</div><span class="cks">${ck(n>=nvoid,n+" of "+nvoid,n>=nvoid?"First down: all "+nvoid+" games picked":n+" of "+nvoid+" games picked, "+(nvoid-n)+" to go")}${ck(!!d.lock,"FG",d.lock?"Field goal kicked":"No field goal yet")}${ck(d.tb!=null,"TB",d.tb!=null?"Tiebreaker entered":"No tiebreaker yet")}${survNeeded(wid)?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Surv clash":"Survivor",survConflict(w,d)?"Survivor pick is the other side of one of your game picks":d.surv?"Survivor picked":"No survivor pick yet"):""}</span><button class="btn primary" id="saveBtn" ${state.dirty?"":"disabled"}>${state.dirty?"Save picks":"Saved"}</button></div>`}
+    h+=`<div class="savebar">${warnH}<div class="chain" aria-hidden="true">${gs.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>`<i class="${d.sel[g.id]?"on":""}"></i>`).join("")}</div><span class="cks">${ck(n>=nvoid,n+" of "+nvoid,n>=nvoid?"First down: all "+nvoid+" games picked":n+" of "+nvoid+" games picked, "+(nvoid-n)+" to go")}${ck(!!d.lock,"FG",d.lock?"Field goal kicked":"No field goal yet")}${ck(d.tb!=null,"TB",d.tb!=null?"Tiebreaker entered":"No tiebreaker yet")}${survNeeded(wid)?ck(!!d.surv&&!survConflict(w,d),survConflict(w,d)?"Surv clash":"Survivor",survConflict(w,d)?"Survivor pick is the other side of one of your game picks":d.surv?"Survivor picked":"No survivor pick yet"):""}</span>${saveBtnH()}</div>`}
   else if(w.status==="open"&&pastDeadline(w))h+='<div class="note">Picks are locked. Everyone\'s picks show here in a moment.</div>';
   el.innerHTML=h;
 }
@@ -1338,7 +1382,7 @@ document.addEventListener("click",async e=>{
   const stm=e.target.closest("[data-steam]");if(stm){const k=stm.dataset.steam;state.statOpen=state.statOpen===k?null:k;renderRankings();return}
   const act=e.target.closest("[data-act]");if(act)commishAct(act.dataset.act,act.dataset);
 });
-document.addEventListener("input",e=>{if(e.target.id==="tbInput"&&state.draft){const v=e.target.value;state.draft.tb=v===""?null:Math.max(0,Math.round(Number(v)));state.dirty=true;const b=$("#saveBtn");if(b){b.disabled=false;b.textContent="Save picks"}}});
+document.addEventListener("input",e=>{if(e.target.id==="tbInput"&&state.draft){const v=e.target.value;state.draft.tb=v===""?null:Math.max(0,Math.round(Number(v)));state.dirty=true;const b=$("#saveBtn");if(b){b.disabled=false;b.textContent="Save picks";b.classList.remove("saved");b.classList.add("unsaved")}}});
 document.addEventListener("change",async e=>{
   if(e.target.id==="liveChk"||e.target.id==="liveGap"||e.target.id==="liveCap"){const live=e.target.id==="liveChk"?{on:e.target.checked}:e.target.id==="liveGap"?{gap:+e.target.value}:{cap:+e.target.value};const r=await api("/api/admin",{action:"autoSettings",live});toast(r.ok?"Saved":r.error);await refresh(true);render();return}
   if(e.target.id==="autoOpenChk"){const r=await api("/api/admin",{action:"autoSettings",autoOpen:e.target.checked});toast(r.ok?(e.target.checked?"Picks will open by themselves":"Picks open only when you tap Open picks"):r.error);await refresh(true);renderCommish()}
