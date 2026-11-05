@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.31.1 | Nov 4, 8:20 PM | Tracker | Added item 32: shuffle the emoji quick row | S | 1 | `7f53972` |
 | 1.31 | Nov 4, 7:49 PM | Commish, Picks | League members table with chips, search, open rows, and Add picker on top; Save button turns red on a change and green once saved | M | 120 | `4a4ad3e` |
 | 1.30.1 | Nov 4, 6:36 PM | All tabs | Around the league tiles on every tab but Commish, with a Picks tile, new Playoffs line, and necktie on Profile | S | 40 | `6357b70` |
 | 1.30 | Nov 4, 5:38 PM | Picks | Around the league: 8 turf green tiles at the bottom of Picks that link to the other tabs | S | 41 | `f9b40f4` |
