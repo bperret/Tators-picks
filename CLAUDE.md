@@ -153,6 +153,7 @@ Ideas to shape later, not approved:
 28. Consensus model line: average VSiN with an SP+ implied line, so one source does not drive Robo-Sharp. Needs a sourced home field value. Low value.
 29. Bad beat note: mark a half-point loss on the game card. Data already stored. Low value, since Pickers stats already count bad beats.
 30. Page visit runs: after a clean Saturday with the switch on, consider a 5 minute gap and a daily cap of 160. ESPN publishes no limit, so the cap is a judgment call.
+32. Shuffle the emoji quick row for each picker, for more variety in looks. Very small. Do it the next time that code is open, with no build of its own. No assigned emojis and no blocked duplicates. Benton added this Nov 4.
 Left out on purpose: a field goal animation, too much work for the gain.
 
 Thrown out: 12 (group text kit). Benton will not send mass messages.
