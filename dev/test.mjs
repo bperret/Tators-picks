@@ -311,6 +311,37 @@ try {
   const st = await m.textContent("#v-standings");
   check("standings show the week", st.includes("Week 10") && st.includes("Mike T."));
   check("Robo-Sharp plays", st.includes("Robo-Sharp"));
+  // Season table: who shows, correct pick %, and the sort.
+  const season = await m.evaluate(async () => {
+    const { state } = window.tpRecap; const { seasonRows, pickPct, pctText, seasonSort } = window.tpStats;
+    const server = await (await fetch("/api/state")).json();
+    const keep = { roster: state.roster, pickedIn: state.pickedIn, sort: state.seasonSort };
+    state.roster = [...state.roster, "open0", "tbOnly"]; state.pickedIn = [...state.pickedIn, "open0"];
+    const ids = seasonRows(false, true).map((r) => r.pid);
+    const zero = seasonRows(false, true).find((r) => r.pid === "open0");
+    Object.assign(state, { roster: keep.roster, pickedIn: keep.pickedIn });
+    const a = { pid: "a", w: 6, l: 4 }, b = { pid: "b", w: 3, l: 1 }, c = { pid: "c", w: 0, l: 0 }, d = { pid: "d", w: 3, l: 2 }, e = { pid: "e", w: 6, l: 4 }, f = { pid: "f", w: 12, l: 8 };
+    state.seasonSort = "pct"; const order = seasonSort([c, a, e, f, b, d]).map((r) => r.pid).join(""); state.seasonSort = "pts"; const plain = seasonSort([c, a]).map((r) => r.pid).join(""); state.seasonSort = keep.sort;
+    return { me: server.pickedIn.includes(state.uid), noSides: server.pickedIn.every((x) => typeof x === "string"), zero: ids.includes("open0"), rec: zero && [zero.w, zero.l, zero.pts], tbOnly: ids.includes("tbOnly"), bot: ids.includes("__bot") || ids.some((x) => /bot|robo/i.test(x)), order, plain, pct: pctText({ w: 5, l: 3 }), none: pctText({ w: 0, l: 0 }), nullPct: pickPct({ w: 0, l: 0 }) };
+  });
+  check("a picker with one game in shows at 0-0; an empty sheet does not", season.me && season.noSides && season.zero && season.rec.join() === "0,0,0" && !season.tbOnly, JSON.stringify(season));
+  check("correct pick % reads 62.5%, a dash before any graded pick", season.pct === "62.5%" && season.none === "–" && season.nullPct === null, JSON.stringify(season));
+  check("Pct sort: best first, more correct picks on a tie, no graded picks last", season.order === "bfaedc" && season.plain === "ca", JSON.stringify(season));
+  const rankBefore = await m.locator("#v-standings .board:has(h2:text-matches('Season')) tbody tr td:first-child").allTextContents();
+  await m.click("[data-seasonsort=pct]");
+  check("tapping Pct says the sort is on and # stays the real rank", (await m.textContent("#v-standings")).includes("Sorted by correct pick %") && (await m.getAttribute("[data-seasonsort=pct]", "aria-pressed")) === "true" && [...(await m.locator("#v-standings .board:has(h2:text-matches('Season')) tbody tr td:first-child").allTextContents())].sort().join() === [...rankBefore].sort().join());
+  await m.click("[data-seasonsort=pts]");
+  check("tapping Pts goes back to points", !(await m.textContent("#v-standings")).includes("Sorted by correct pick %"));
+  // A full season's numbers and long names must fit a phone with no sideways scroll.
+  const vp = m.viewportSize();
+  for (const width of [360, 390]) {
+    await m.setViewportSize({ width, height: 740 });
+    const fit = await m.evaluate(() => { const box = [...document.querySelectorAll("#v-standings .board")].find((b) => /Season/.test(b.querySelector("h2").textContent)).querySelector(".tablewrap");
+      box.querySelectorAll("tbody tr").forEach((tr) => { const c = tr.children; c[1].lastChild.textContent = "Christopher Montgomery"; ["112", "78-52", "60.0%", "14-6", "123"].forEach((t, i) => (c[i + 2].textContent = t)); });
+      return { sw: box.scrollWidth, cw: box.clientWidth }; });
+    check(`season table fits a ${width} wide phone`, fit.sw <= fit.cw, JSON.stringify(fit));
+  }
+  await m.setViewportSize(vp);
   // Survivor end and resurrection, drawn on the page with made-up weeks.
   const sv = await m.evaluate(() => {
     const { state, survivorBoard, survivorGrid, survivorRevived, survivorOpen, renderSurvivor } = window.tpRecap;

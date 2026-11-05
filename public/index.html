@@ -174,7 +174,8 @@ table{border-collapse:collapse;width:100%;font-family:var(--cond);font-size:1.02
 th,td{padding:7px 6px;border-bottom:1px solid var(--board-line);text-align:left;white-space:nowrap}
 th{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--board-dim);font-weight:600}
 td{color:var(--board-ink)}
-@media (max-width:420px){th,td{padding:7px 4px}table{font-size:.95rem}td.pn{max-width:7em}.yd{max-width:100%}th{letter-spacing:.05em}}
+@media (max-width:420px){th,td{padding:7px 4px}table{font-size:.95rem}td.pn{max-width:5.6em}.yd{max-width:100%}th{letter-spacing:.05em}}
+@media (max-width:380px){th,td{padding:7px 2px}}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 td.num{text-shadow:0 0 6px rgba(242,194,48,.35)}
 tr.me td{background:rgba(242,194,48,.12)}
@@ -878,7 +879,7 @@ function applyState(S){
   PLAYERS={};S.players.forEach(p=>PLAYERS[p.id]=p);ME=S.me;
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Player");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
-    uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,
+    uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
   $("#commishTab").hidden=!state.isOwner;
   syncDraft();
@@ -1710,9 +1711,15 @@ function ironSeasons(D,pid){return statSeasons(D).filter(s=>{const r=ironOf(D,pi
 function ironTag(pid){if(pid===BOT)return "";return ironOf(realStats(),pid,state.config&&state.config.season)?' <span title="Iron Man: every pick in, every week" aria-label="Iron Man">\u{1F9BE}</span>':""}
 
 /* ---------- standings ---------- */
+/* Share of graded picks that were right. Null until a pick is graded. Field goals count once. */
+const pickPct=r=>r.w+r.l?r.w/(r.w+r.l):null;
+const pctText=r=>{const p=pickPct(r);return p==null?"–":(p*100).toFixed(1)+"%"};
+/* Display order only. Rank numbers always come from points. Ties keep their standings order. */
+function seasonSort(rows){return state.seasonSort==="pct"?[...rows].sort((a,b)=>(pickPct(b)??-1)-(pickPct(a)??-1)||b.w-a.w):rows}
+/* Everyone with at least one game picked, including a sheet in a week that has not locked. */
 function seasonRows(includeTest,withBot){
-  const weeks=countedWeeks(includeTest);
-  return allPlayerIds(withBot).map(pid=>{const t={pid,pts:0,w:0,l:0,lw:0,ll:0,tb:0,weeks:0};
+  const weeks=countedWeeks(includeTest);const inn=new Set(state.pickedIn||[]);
+  return allPlayerIds(withBot).filter(pid=>pid===BOT||inn.has(pid)).map(pid=>{const t={pid,pts:0,w:0,l:0,lw:0,ll:0,tb:0,weeks:0};
     for(const wid of weeks){const p=pid===BOT?botPicks(state.weeks[wid]):(state.reveals[wid].players&&state.reveals[wid].players[pid]);if(!p)continue;const s=scoreWeek(state.weeks[wid],p);t.pts+=s.pts;t.w+=s.w;t.l+=s.l;t.lw+=s.lw;t.ll+=s.ll;t.tb+=s.tbMiss||0;t.weeks++}
     return t}).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb);
 }
@@ -1735,8 +1742,9 @@ function renderStandings(){
   }else if(w){h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">Weekly standings appear after picks lock at ${kick(w.deadline)}.</p></div>`}
   const max=Math.max(1,...active.map(r=>r.pts));
   h+=`<div class="board"><h2>Season ${state.config?state.config.season:""}</h2>`;
-  if(!active.length||!countedWeeks(false).length)h+='<p class="note">No scored weeks yet.</p>';
-  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${active.map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${ironTag(r.pid)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${out.map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div><p class="note">Ranked by points, then field goals made, then smallest total tiebreaker miss. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.</p>`;
+  const byPct=state.seasonSort==="pct";const sortBtn=(k,t,title)=>`<button class="ssort" data-seasonsort="${k}" aria-pressed="${(k==="pct")===byPct}" title="${title}">${t}</button>`;
+  if(!active.length)h+='<p class="note">No picks in yet.</p>';
+  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${ironTag(r.pid)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${seasonSort(out).map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}<p class="note">Ranked by points, then field goals made, then smallest total tiebreaker miss. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.</p>`;
   if(active.some(r=>ironTag(r.pid)))h+='<p class="note">\u{1F9BE} Iron Man: every pick in, every week.</p>';
   {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of Robo-Sharp.</p>`}}
   h+="</div>";
@@ -1746,6 +1754,8 @@ function renderStandings(){
     h+=`<div class="panel surv"><h2>Survivor</h2><p>${alive.length} of ${hum.length} still alive${alive.length&&alive.length<=4?": "+alive.map(r=>esc(nm(r.pid))).join(", "):""}.</p><p class="note"><a href="#survivor">See the full Survivor board</a></p></div>`}
   el.innerHTML=h;
 }
+
+document.addEventListener("click",e=>{const b=e.target.closest("[data-seasonsort]");if(!b)return;state.seasonSort=b.dataset.seasonsort;renderStandings()});
 
 /* ---------- survivor ---------- */
 function survivorGrid(){
@@ -2075,7 +2085,7 @@ function pastPanel(D,pid,surv){const ks=[...D.wids].filter(k=>D.players(k)[pid])
     let sv="";if(p.surv){const g=w.games.find(x=>x.id===p.surv.g);if(g){const team=p.surv.s==="home"?g.home:g.away;const c=coverSide(g,rs[g.id]);sv=`Survivor: ${esc(teamLook(team,g,p.surv.s).abbr)}, ${rs[g.id]&&rs[g.id].void?"void":c?(c===p.surv.s?"survived":"out"):"not final"}.`}}
     return `<details class="wkh"${i===0?" open":""}><summary><b>Week ${w.week}${statSeasons(D).length>1?" \u00b7 "+esc(w.season):""}</b><span class="note">${s.pts} pts \u00b7 ${s.w}-${s.l} \u00b7 ${tied?"T-":""}${ordinal(rank)} of ${all.length}</span></summary><ul class="pplist">${rows}</ul>${tb||sv?`<p class="note">${tb} ${sv}</p>`:""}</details>`}).join("");
   return `<div class="panel"><h2>Past picks</h2>${body}</div>`}
-window.tpStats={closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
+window.tpStats={seasonRows,pickPct,pctText,seasonSort,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
 
 function titlesPanel(){const weeks=countedWeeks(state.incTest).filter(w=>state.weeks[w].status==="final");if(!weeks.length)return "";
   const shelf=weeks.slice().reverse().map(wid=>{const win=weekWinners(wid);return win.length?`<span class="tro">🏆 ${state.weeks[wid].confChamp?"Conf Champ":"W"+state.weeks[wid].week} · ${win.map(p=>esc(first(p))).join(" & ")}</span>`:""}).join("");
