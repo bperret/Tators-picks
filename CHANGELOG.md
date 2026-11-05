@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.30.1 | Nov 4, 6:36 PM | All tabs | Around the league tiles on every tab but Commish, with a Picks tile, new Playoffs line, and necktie on Profile | S | 40 | `6357b70` |
 | 1.30 | Nov 4, 5:38 PM | Picks | Around the league: 8 turf green tiles at the bottom of Picks that link to the other tabs | S | 41 | `f9b40f4` |
 | 1.29.1 | Nov 4, 11:37 a.m. | Rules | Contests still to come section; payouts at 13 weekly prizes, Army-Navy 1%, and 4 Survivor runs at 3.75%; calculator updated | M | 75 | `b4343cd` |
 | 1.29 | Nov 4, 8:43 a.m. | Playoffs | Bracket renamed Playoffs and opened to every login as a for fun illustration; team swaps on each device | M | 80 | `c9643b6` |
