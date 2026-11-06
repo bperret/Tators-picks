@@ -921,6 +921,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     await c.click('[data-act="roboFill"]'); await c.waitForTimeout(500);
     await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
     const panel = await c.textContent('[data-sec="robo"]');
+    check("each week in the Robo-Sharp check counts its bands", /Bands: \d+ heavy, \d+ leans, \d+ slight, \d+ coin flip\./.test(panel), panel.slice(0, 400));
     check("Save inputs fills weeks and shows old vs new", /Week \d+/.test(panel) && /Field goal:/.test(panel), panel.slice(0, 300));
     await c.check("#roboChk"); await c.waitForTimeout(500);
     const cfg = await c.evaluate(() => window.tpRobo && document.querySelector('[data-sec="robo"]').textContent.includes("new model on"));
@@ -940,8 +941,8 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     });
     check("Robo's card names what drove the pick", why[0].startsWith("Market call:") && why[0].includes("\u22126") || why[0].includes("-6"), why.join(" | "));
     check("Robo's card says ratings call, both, or coin flip", why[1] === "Ratings call: 1 of 1 like it" && why[2] === "Ratings and market agree" && why[3] === "Ratings split, market flat", why.join(" | "));
-    const bands = await c.evaluate(() => { const { roboEval, roboBand } = window.tpRobo; const g = { away: "Texas", home: "Ole Miss", neutral: true, homeLine: -2.5 };
-      return [0.5, 1, 2, 4].map((e) => roboBand(roboEval({ ...g, modelLine: -2.5 - e }, {}).p)[2]); });
+    const bands = await c.evaluate(() => { const { roboEval, roboBand } = window.tpRobo; const g = { away: "Texas", home: "Ole Miss", neutral: true, homeLine: -10.5 };
+      return [0.3, 0.8, 1.6, 3].map((e) => roboBand(roboEval({ ...g, modelLine: -10.5 - e }, {}).p)[2]); });
     check("Robo's confidence bands run from coin flip to heavy lean", bands.join() === "Coin flip,Slight lean,Leans,Heavy lean", bands.join());
     check("a market move after the open shows as a Robo flip", flip.join() === "away>home", flip.join());
     const log = await pg.query("select detail from log where action = 'Changed Robo-Sharp' order by id desc limit 1");

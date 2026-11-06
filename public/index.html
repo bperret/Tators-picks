@@ -1334,7 +1334,8 @@ function roboEval(g,inp){
   const agree=M.filter(x=>Math.sign(x[1]-L)===sg).length;
   return {side,s,p:normCdf(Math.abs(s)/ROBO_W.sd),agree,n:M.length,cons,mkt,ek,em,models:M}}
 /* How strongly Robo-Sharp feels, from its cover chance. The label shows; the percent stays in Commish. */
-const ROBO_BANDS=[[0.58,"heavy","Heavy lean"],[0.55,"lean","Leans"],[0.53,"slight","Slight lean"],[0,"flip","Coin flip"]];
+/* Cuts by edge in points, as cover chances: 2 pts = 55.9%, 1.25 = 53.7%, 0.5 = 51.5%. The blend shrinks edges, so the cuts sit low. */
+const ROBO_BANDS=[[0.559,"heavy","Heavy lean"],[0.537,"lean","Leans"],[0.515,"slight","Slight lean"],[0,"flip","Coin flip"]];
 function roboBand(p){return ROBO_BANDS.find(b=>p>=b[0])}
 /* What drove the pick, in words: both, the market alone, the ratings alone, or neither. */
 function roboWhy(g,E){const sg=E.side==="away"?1:-1;const mktWith=E.ek!=null&&Math.abs(E.ek)>=0.5&&Math.sign(E.ek)===sg;const ratWith=E.n>0&&E.agree*2>E.n;
@@ -2686,7 +2687,9 @@ function roboPanel(){
     const fg=g=>g?esc(teamLook(g.away,g,"away").abbr)+" at "+esc(teamLook(g.home,g,"home").abbr):"–";
     const sv=x=>{const g=x&&gm(w,x.g);return g?ab(g,x.s):"–"};
     const E=roboEvals(w);
-    rows+=`<h3 class="rh">Week ${w.week}</h3><p class="note">${ch.length?`<b>${ch.length} side${ch.length===1?"":"s"} change.</b>`:"No sides change."} Field goal: ${fg(gm(w,O.lock))} to ${fg(gm(w,N.lock))}${O.lock===N.lock?" (same)":""}. Survivor: ${sv(O.surv)} to ${sv(N.surv)}. ${so.graded?`Points so far: old ${so.pts} (${so.w}-${so.l}), new ${sn.pts} (${sn.w}-${sn.l}).`:"No games graded yet."}${w.robo.last.note?" "+esc(w.robo.last.note):""}</p>
+    const bc={};Object.values(E).forEach(e=>{const k=roboBand(e.p)[1];bc[k]=(bc[k]||0)+1});
+    const bands="Bands: "+[["heavy","heavy"],["lean","leans"],["slight","slight"],["flip","coin flip"]].map(([k,l])=>(bc[k]||0)+" "+l).join(", ")+".";
+    rows+=`<h3 class="rh">Week ${w.week}</h3><p class="note">${bands}</p><p class="note">${ch.length?`<b>${ch.length} side${ch.length===1?"":"s"} change.</b>`:"No sides change."} Field goal: ${fg(gm(w,O.lock))} to ${fg(gm(w,N.lock))}${O.lock===N.lock?" (same)":""}. Survivor: ${sv(O.surv)} to ${sv(N.surv)}. ${so.graded?`Points so far: old ${so.pts} (${so.w}-${so.l}), new ${sn.pts} (${sn.w}-${sn.l}).`:"No games graded yet."}${w.robo.last.note?" "+esc(w.robo.last.note):""}</p>
       <div class="tablewrap"><table><thead><tr><th>Game</th><th class="num">Line</th><th>Old</th><th>New</th><th class="num">Agree</th><th class="num">Cover</th></tr></thead><tbody>${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const e=E[g.id],diff=O.sel[g.id]!==N.sel[g.id];
         return `<tr${diff?' class="me"':""}><td>${fg(g)}</td><td class="num">${fmtLine(g.homeLine)}</td><td>${ab(g,O.sel[g.id])}${O.lock===g.id?" FG":""}</td><td>${diff?"<b>":""}${ab(g,N.sel[g.id])}${diff?"</b>":""}${N.lock===g.id?" FG":""}</td><td class="num">${e&&e.n?e.agree+"/"+e.n:"–"}</td><td class="num">${e?Math.round(e.p*100)+"%":"–"}</td></tr>`}).join("")}</tbody></table></div>`}
   /* Model scoreboard: each source's side against our line, graded on final slate games. Only you see this. */
