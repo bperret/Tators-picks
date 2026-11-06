@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.37.1 | Nov 6, LATER | Teams | Record vs ranked teams now uses today's AP poll, split into top 5, top 15, and top 25, on the team card and in Matchup; rank at kickoff and its game log refill removed | S | 27 | COMMIT |
 | 1.37 | Nov 6, 10:18 AM | Teams, Picks, Automation | Matchup view on Teams (item 39): any two teams, home field toggle, SP+, FPI, and VSiN projected spreads with VSiN home field values, betting line and edge flags, side by side stats, SP+ rank by week; a Matchup link on every Picks and preview game; the game log saves ranks at kickoff with a one time refill. What you need shows your place and the gap to 1st, 2nd, and 3rd (item 46) | M | 166 | `afc2a32` |
 | 1.36.4 | Nov 6, 8:32 AM | All tabs, Commish | Wording cleanup: player becomes picker in messages and the public log (old log rows renamed too); removed leftover messages and dead code from the Claude artifact days | S | 44 | `e14ccf9` |
 | 1.36.3 | Nov 6, 8:15 AM | Rules, Army-Navy | Fix: the Rules page showed the Iron Man icon as raw code text; removed unused styles from the old Army-Navy layout; changelog times for 1.36.0 to 1.36.2 corrected to git | S | 7 | `c5dbf71` |

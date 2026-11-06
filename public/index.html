@@ -2179,13 +2179,12 @@ function teamStatRows(games,R){
   const T={},z=()=>[0,0,0];
   for(const g of games)for(const side of ["a","h"]){
     const me=canon(g[side]),opp=canon(g[side==="a"?"h":"a"]);if(!fbs.has(me))continue;
-    const t=T[me]||(T[me]={team:me,g:0,w:0,l:0,pf:0,pa:0,opp:[],fcs:0,ats:z(),fav:z(),dog:z(),home:z(),road:z(),cov:[],ou:z(),vsAp:[0,0],log:[]});
+    const t=T[me]||(T[me]={team:me,g:0,w:0,l:0,pf:0,pa:0,opp:[],fcs:0,ats:z(),fav:z(),dog:z(),home:z(),road:z(),cov:[],ou:z(),vs5:[0,0],vs15:[0,0],vs25:[0,0],log:[]});
     const pf=side==="a"?g.as:g.hs,pa=side==="a"?g.hs:g.as;
     t.g++;pf>pa?t.w++:t.l++;t.pf+=pf;t.pa+=pa;
     if(sp[opp]!=null)t.opp.push(sp[opp]);else if(!fbs.has(opp))t.fcs++;
-    /* Opponent's rank at kickoff when the log saved it (ESPN's scoreboard rank: AP, or CFP once it is out), else today's AP rank. */
-    const kr=side==="a"?g.hr:g.ar,hasK=side==="a"?"hr" in g:"ar" in g;if(!hasK)t.vsNow=1;
-    if(hasK?kr&&kr<=25:ap[opp])t.vsAp[pf>pa?0:1]++;
+    /* Record against teams in today's AP poll: top 5, top 15, and top 25, each counting the tiers above it. Today's rank predicts; rank at kickoff does not. */
+    {const r=ap[opp],i=pf>pa?0:1;if(r){t.vs25[i]++;if(r<=15)t.vs15[i]++;if(r<=5)t.vs5[i]++}}
     let line=null,cov=null;
     if(g.l!=null){line=side==="h"?g.l:-g.l;cov=pf-pa+line;const i=cov>0?0:cov<0?1:2;t.ats[i]++;t.cov.push(cov);
       if(line<0)t.fav[i]++;else if(line>0)t.dog[i]++;if(!g.n)(side==="h"?t.home:t.road)[i]++}
@@ -2245,7 +2244,7 @@ function teamCard(t,C){
   if(r){const nl=r.g-r.cov.length;
     h+=`<span>Record</span><b>${r.w}-${r.l}, ${tSg(r.mgn)} a game (${tF1(r.ppg)} scored, ${tF1(r.pag)} allowed)</b>
     <span>Schedule</span><b>${r.sos==null?"No FBS opponents rated":"Opponents' SP+ "+tSg(r.sos)+", #"+r.sosRank+" hardest"}${r.fcs?`, plus ${r.fcs} FCS game${r.fcs>1?"s":""}`:""}</b>
-    <span>${r.vsNow?"vs AP top 25":"vs top 25"}</span><b>${r.vsAp[0]}-${r.vsAp[1]}${r.vsNow?"":' <span class="note">ranked at kickoff</span>'}</b>
+    <span>vs today's AP</span><b>Top 5 ${tRs(r.vs5)} · Top 15 ${tRs(r.vs15)} · Top 25 ${tRs(r.vs25)}</b>
     <span>ATS</span><b>${tRs(r.ats)}, average cover ${tSg(r.cvr)}${nl?` (${nl} game${nl>1?"s":""} with no line)`:""}</b>
     ${!C.useLog&&cv?`<span>ATS, Covers</span><b>${esc(String(cv.ats).replace(/-0$/,""))} for the season</b>`:""}
     <span>As favorite</span><b>${tRs(r.fav)}</b><span>As underdog</span><b>${tRs(r.dog)}</b>
@@ -2380,7 +2379,6 @@ function matchupView(C){
   const ats=t=>{const r=C.stats[t];if(C.useLog&&r)return tRs(r.ats);const c=C.covers[t];return c?String(c.ats).replace(/-0$/,""):r?tRs(r.ats):"–"};
   /* SP+ and FPI rate against an average team, so they get a sign. VSiN is an absolute power number, so it shows as is. */
   const rat=(m,t)=>m[t]?`${m===C.vsin?tF1(m[t].rating):tSg(m[t].rating)} (#${m[t].rank})`:"–";
-  const kick25=sa&&!sa.vsNow&&sh&&!sh.vsNow;
   /* [label, shown for team one, shown for team two, number for one, number for two, 1 when higher is better, -1 when lower, 0 for no winner] */
   const rows=[["AP",rk(C.ap,a)||"–",rk(C.ap,h)||"–",rk(C.ap,a),rk(C.ap,h),-1],["CFP",rk(C.cfp,a)||"–",rk(C.cfp,h)||"–",rk(C.cfp,a),rk(C.cfp,h),-1],["r/CFB",rk(C.rc,a)||"–",rk(C.rc,h)||"–",rk(C.rc,a),rk(C.rc,h),-1],
     ["SP+",rat(C.sp,a),rat(C.sp,h),C.sp[a]&&C.sp[a].rating,C.sp[h]&&C.sp[h].rating,1],
@@ -2389,11 +2387,11 @@ function matchupView(C){
     ["Record",rec(a),rec(h),sa&&sa.w/sa.g,sh&&sh.w/sh.g,1],["ATS",ats(a),ats(h),sa&&tPct(sa.ats),sh&&tPct(sh.ats),1],["Avg cover",sa?tSg(sa.cvr):"–",sh?tSg(sh.cvr):"–",sa&&sa.cvr,sh&&sh.cvr,1],
     ["Points for",sa?tF1(sa.ppg):"–",sh?tF1(sh.ppg):"–",sa&&sa.ppg,sh&&sh.ppg,1],["Points allowed",sa?tF1(sa.pag):"–",sh?tF1(sh.pag):"–",sa&&sa.pag,sh&&sh.pag,-1],["Margin",sa?tSg(sa.mgn):"–",sh?tSg(sh.mgn):"–",sa&&sa.mgn,sh&&sh.mgn,1],
     ["Schedule",sa&&sa.sosRank?"#"+sa.sosRank:"–",sh&&sh.sosRank?"#"+sh.sosRank:"–",sa&&sa.sosRank,sh&&sh.sosRank,-1],
-    [kick25?"vs top 25":"vs AP top 25",sa?sa.vsAp[0]+"-"+sa.vsAp[1]:"–",sh?sh.vsAp[0]+"-"+sh.vsAp[1]:"–",sa&&(sa.vsAp[0]-sa.vsAp[1]),sh&&(sh.vsAp[0]-sh.vsAp[1]),1],
+    ...[["5","vs top 5"],["15","vs top 15"],["25","vs top 25"]].map(([n,l])=>{const k="vs"+n;return [l,sa?tRs(sa[k]):"–",sh?tRs(sh[k]):"–",sa&&(sa[k][0]-sa[k][1]),sh&&(sh[k][0]-sh[k][1]),1]}),
     ["Home field",hfaOf(a)+" pts",hfaOf(h)+" pts",null,null,0]];
   const cell=(v,x,y,dir)=>{const win=dir&&x!=null&&y!=null&&x!==y&&(dir>0?x>y:x<y);return `<span class="${win?"mubest":""}">${esc(String(v))}</span>`};
   o+=`<div class="panel"><h2>Side by side</h2><div class="muside"><span></span><b>${tChip(a)} ${esc(LA.abbr)}</b><b>${tChip(h)} ${esc(LH.abbr)}</b>${rows.map(([l,va,vh,na,nh,dir])=>`<span class="note">${l}</span>${cell(va,na,nh,dir)}${cell(vh,nh,na,dir)}`).join("")}</div>
-    <p class="note">Green bold marks the better number. Schedule: 1 is the hardest. ${kick25?"vs top 25 counts games against teams ranked at kickoff.":"vs AP top 25 counts games against teams in today's AP poll."} ${C.loaded?"":C.error?esc(C.error):"Loading game stats…"}</p>`;
+    <p class="note">Green bold marks the better number. Schedule: 1 is the hardest. The vs top 5, 15, and 25 rows are records against teams in today's AP poll, each tier counting the ones above it. ${C.loaded?"":C.error?esc(C.error):"Loading game stats…"}</p>`;
   const tr=t=>{const T=muTrend(C,t);return T.length?T.map(([w,r])=>`<span>${w} <b>#${r}</b></span>`).join(" → "):"No SP+ history yet"};
   o+=`<h3 class="rh">SP+ rank by week</h3><p class="mutrend"><b>${esc(LA.abbr)}</b> ${tr(a)}</p><p class="mutrend"><b>${esc(LH.abbr)}</b> ${tr(h)}</p><p class="note">Weekly SP+ snapshots start Nov 2, so the trend grows each week.</p></div>`;
   return o}

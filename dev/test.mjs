@@ -555,6 +555,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.click('[data-steam="Georgia"]'); await m.waitForTimeout(200);
   let det = await m.textContent(".sdet");
   check("team card shows polls, record, FCS game, and cover", det.includes("r/CFB 1") && det.includes("2-0") && det.includes("1 FCS game") && det.includes("Covered") && det.includes("no line"), det.slice(0, 240));
+  check("team card splits the record vs today's AP top 5, 15, and 25", /vs today's AP.*Top 5 \d+-\d+ · Top 15 \d+-\d+ · Top 25 \d+-\d+/.test(det), det.slice(0, 400));
   let sw = await m.evaluate(() => document.documentElement.scrollWidth);
   check("Polls has no sideways scroll on a phone", sw <= 390, String(sw));
   await m.click('[data-rank="power"]'); await m.waitForTimeout(200);
