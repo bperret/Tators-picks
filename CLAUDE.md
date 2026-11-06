@@ -136,22 +136,32 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
    - Paid pickers cannot see ghosts. Ghosts cannot see each other.
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
-33. Founding badge (working name Foundation Builder). Added Nov 5. Every picker who makes at least 1 pick in 2026 gets a permanent badge and icon, like Iron Man, as a thank you for testing the app from the beginning. It starts showing in 2027.
-   - Name is open. It must be college football themed. Options: Foundation Builder, Day One Recruit, Redshirt Class of 2026, Founding Class.
-   - Automatic: `state.pickedIn` already holds everyone with a game picked, but it covers all seasons, so the build must freeze a 2026 list. Nobody can earn this after 2026. Robo-Sharp gets none.
-   - Nothing needs building in 2026, since saved picks hold the answer.
-   - To settle: the cutoff (end of Conference Champion Week, or end of the postseason), and whether a Bowl, CFP, or Army-Navy entry alone counts as a pick.
-34. Booster badge (working name Booster or Bag Man). Added Nov 5. Each year a picker can give $5 or more toward infrastructure and new features and get a badge for that year. It is optional. It replaces the upkeep share, which stays thrown out: the whole pot still pays out, and a Booster gift is separate from the buy-in.
-   - Name is open. It must be college football themed. Options: Booster, Bag Man, NIL Collective.
-   - Permanent: each year earned stays on the profile, with a count or year list.
+33. Class badges. Decided Nov 5. A permanent badge on each picker's profile for the season they joined.
+   - 2026: Redshirt Class of 2026, the special one, with its own look and icon. Any 2026 game counts, including a game in only the Bowl, CFP, or Army-Navy contest.
+   - Every new picker after that gets a standard Class of 20XX. Nobody can earn the Redshirt after 2026.
+   - Automatic from a picker's first pick. `state.pickedIn` covers all seasons, so the build must save a class year per picker. Robo-Sharp gets none.
+   - Ghosts get no class badge. A ghost who goes paid starts a new paid profile (item 8), and that profile gets the class of that year.
+   - Removed pickers restart and lose their badges, Redshirt included. It is harsh but consistent with item 8. A picker who comes back gets the class of the return year.
+   - Starts showing in 2027. Nothing needs building in 2026, since saved picks hold the answer.
+   - The Rules page does not explain this badge.
+34. Booster badge. Decided Nov 5. Each year a picker can give $5 or more toward infrastructure and new features and get a Booster badge for that year. It is optional. The upkeep share stays thrown out: the whole pot still pays out, and a Booster gift is separate from the buy-in.
+   - Permanent: each year earned stays on the profile, with a count or year list. A removed picker restarts and loses it, the same as item 33.
    - Cosmetic only: no effect on picks, standings, contests, or payouts.
    - Money stays off the site. The commissioner flips the badge on by hand for a season. The app saves the season only, never an amount or a payment.
-   - To settle: does a badge sit on the Pickers profile only, or also on Standings and other places; and does a Rules page line explain it.
-Shared build note for 33 and 34: one saved badge list per picker that survives a removal, drawn by one helper, so the Standings, Pickers, and any other spot match Iron Man's look. Conflict to settle: item 8 says pickers who stop paying restart their history, but these badges are permanent. Decide if a restarted profile keeps them, and if a ghost can earn or see them (item 8 says ghosts cannot earn accomplishments).
+   - The Rules page explains this badge.
+   - To settle: does the badge sit on the Pickers profile only, or also on Standings and other places; and can a ghost be a Booster.
+Build note for 33 and 34: one saved badge list per picker, drawn by one helper, so every spot matches Iron Man's look.
+35. League group chat with a content schedule. Decided Nov 5, reverses the old no group chat call. For 2027, not 2026. GroupMe or Signal, leaning GroupMe, not final.
+   - Regular timed reminders on the weekly rhythm: Mon preview, Wed 6 p.m. live, Sat 10:15 a.m. lock, Sunday recap.
+   - A content schedule with clear rules updates around the postseason challenges (Conference Champion Week, Army-Navy, Bowl, CFP) and season dates.
+   - Messages stay consistent in tone and look with the app: plain, short, referee voice.
+   - The app must still work for a picker who is not in the chat. The weekly rhythm stays as is.
+   - Before automation: GitHub Actions runs often come hours apart, so timed posts need a check. Check volume and block risk first, as with any new API use.
+   - To settle: the platform, the schedule itself, and manual or automatic posting.
 Buy-in amount for 2027 is not set.
 
 ### Engagement review (Nov 2): Benton's calls
-Design rule: this league is for people who care enough to check it without prompting. Benton sends no mass messages and follows up one person at a time by text if he wants. There is no group chat to count on. Nothing here may depend on outside prompting. Pickers who lose interest are allowed to drop off.
+Design rule: this league is for people who care enough to check it without prompting. In 2026 Benton sends no mass messages and follows up one person at a time by text if he wants, and there is no group chat to count on. A group chat is planned for 2027 (item 35), but the app itself must not depend on outside prompting. Pickers who lose interest are allowed to drop off.
 Keep the weekly rhythm, Picks, Recap, Survivor, weekly titles, and Robo-Sharp as they are. Fixed times are the habit: Mon preview, Wed 6 p.m. live, Sat 10:15 a.m. lock, Sunday recap.
 
 Separate task, to investigate:
@@ -169,7 +179,7 @@ Ideas to shape later, not approved:
 30. Page visit runs: after a clean Saturday with the switch on, consider a 5 minute gap and a daily cap of 160. ESPN publishes no limit, so the cap is a judgment call.
 Left out on purpose: a field goal animation, too much work for the gain.
 
-Thrown out: 12 (group text kit). Benton will not send mass messages.
+Thrown out for 2026: 12 (group text kit). Replaced by item 35 for 2027.
 Thrown out: 5 (upkeep share). No share of buy-ins, so the whole pot pays out.
 Do not add: daily check ins, points currency, in-app chat, more contests this season beyond Army-Navy (item 31, Benton's call Nov 4).
 
