@@ -136,6 +136,18 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
    - Paid pickers cannot see ghosts. Ghosts cannot see each other.
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
+33. Founding badge (working name Foundation Builder). Added Nov 5. Every picker who makes at least 1 pick in 2026 gets a permanent badge and icon, like Iron Man, as a thank you for testing the app from the beginning. It starts showing in 2027.
+   - Name is open. It must be college football themed. Options: Foundation Builder, Day One Recruit, Redshirt Class of 2026, Founding Class.
+   - Automatic: `state.pickedIn` already holds everyone with a game picked, but it covers all seasons, so the build must freeze a 2026 list. Nobody can earn this after 2026. Robo-Sharp gets none.
+   - Nothing needs building in 2026, since saved picks hold the answer.
+   - To settle: the cutoff (end of Conference Champion Week, or end of the postseason), and whether a Bowl, CFP, or Army-Navy entry alone counts as a pick.
+34. Booster badge (working name Booster or Bag Man). Added Nov 5. Each year a picker can give $5 or more toward infrastructure and new features and get a badge for that year. It is optional. It replaces the upkeep share, which stays thrown out: the whole pot still pays out, and a Booster gift is separate from the buy-in.
+   - Name is open. It must be college football themed. Options: Booster, Bag Man, NIL Collective.
+   - Permanent: each year earned stays on the profile, with a count or year list.
+   - Cosmetic only: no effect on picks, standings, contests, or payouts.
+   - Money stays off the site. The commissioner flips the badge on by hand for a season. The app saves the season only, never an amount or a payment.
+   - To settle: does a badge sit on the Pickers profile only, or also on Standings and other places; and does a Rules page line explain it.
+Shared build note for 33 and 34: one saved badge list per picker that survives a removal, drawn by one helper, so the Standings, Pickers, and any other spot match Iron Man's look. Conflict to settle: item 8 says pickers who stop paying restart their history, but these badges are permanent. Decide if a restarted profile keeps them, and if a ghost can earn or see them (item 8 says ghosts cannot earn accomplishments).
 Buy-in amount for 2027 is not set.
 
 ### Engagement review (Nov 2): Benton's calls
