@@ -149,14 +149,16 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Cosmetic only: no effect on picks, standings, contests, or payouts.
    - Money stays off the site. The commissioner flips the badge on by hand for a season. The app saves the season only, never an amount or a payment.
    - The Rules page explains this badge.
-   - To settle: does the badge sit on the Pickers profile only, or also on Standings and other places; and can a ghost be a Booster.
-Build note for 33 and 34: one saved badge list per picker, drawn by one helper, so every spot matches Iron Man's look.
-35. League group chat with a content schedule. Decided Nov 5, reverses the old no group chat call. For 2027, not 2026. GroupMe or Signal, leaning GroupMe, not final.
+   - Ghosts cannot be Boosters.
+Build note for 33 and 34: one saved badge list per picker, drawn by one helper, so every spot matches Iron Man's look. Badges show on the Pickers profile, and on Standings as long as the row stays clean (Benton, Nov 5). Check the look on a phone before shipping.
+35. League group chat with a content schedule. Decided Nov 5, reverses the old no group chat call. For 2027, not 2026. GroupMe or Signal, not final. Benton likes Signal more, but wants dynamic messages from the app if GroupMe can do it.
    - Regular timed reminders on the weekly rhythm: Mon preview, Wed 6 p.m. live, Sat 10:15 a.m. lock, Sunday recap.
    - A content schedule with clear rules updates around the postseason challenges (Conference Champion Week, Army-Navy, Bowl, CFP) and season dates.
    - Messages stay consistent in tone and look with the app: plain, short, referee voice.
    - The app must still work for a picker who is not in the chat. The weekly rhythm stays as is.
    - Before automation: GitHub Actions runs often come hours apart, so timed posts need a check. Check volume and block risk first, as with any new API use.
+   - Dynamic messages from the app: GroupMe bots take one POST with a bot ID and text, so the app can fill in live facts, such as how many sheets are not in. Never send sides before the lock. `recapFacts` runs in the page, so a server post needs recap facts on the server.
+   - Signal option: a Copy message button in Commish fills the same text, and Benton pastes it by hand.
    - To settle: the platform, the schedule itself, and manual or automatic posting.
 Buy-in amount for 2027 is not set.
 
