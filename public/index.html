@@ -429,6 +429,38 @@ td.svc.next{border:1px dashed var(--line)}
 .autherr{margin:6px 0 0;color:var(--loss);font-weight:600}
 .linkbtn{font:inherit;background:none;border:0;color:var(--ink);text-decoration:underline;cursor:pointer;padding:0;font-weight:400}
 .pinopt summary{cursor:pointer;margin-top:8px;color:var(--muted)}
+.onb h2{margin:0}
+.onbstep{margin:0;font-family:var(--cond);font-weight:700;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.onblist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.onblist li{display:flex;gap:10px;align-items:flex-start}
+.onbn{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);font-family:var(--cond);font-weight:700}
+.onbcap{margin:12px 0 0;font-family:var(--cond);font-weight:700;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase}
+.onb .lookprev{margin-top:4px}
+.onbcustom summary{cursor:pointer;margin-top:10px;color:var(--muted)}
+.prevrow{display:flex;align-items:center;gap:10px;width:100%}
+.prevrow .rk{font-family:var(--cond);font-weight:700;color:var(--muted)}
+.prevrow .num{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)}
+.rcards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;scrollbar-width:none;margin-top:6px}
+.rcards::-webkit-scrollbar{display:none}
+.rcard{flex:0 0 100%;scroll-snap-align:start;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--bg)}
+.rcard .ric{font-size:1.9rem;line-height:1}
+.rcard .ric .gp{width:30px;height:30px;stroke:currentColor;stroke-width:2.4;fill:none}
+.rcard h3{margin:8px 0 6px}
+.rcard p{margin:0 0 8px}
+.rcard .rex{border-left:4px solid var(--flag,#c9a227);padding:6px 10px;background:var(--card);border-radius:4px}
+.rdots{display:flex;justify-content:center;gap:6px;margin-top:8px}
+.rdots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.rdots i.on{background:var(--ink)}
+.rbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:4px}
+.rbar .btn{flex:0 0 auto;min-width:46%}
+.rookie{border:2px solid var(--ink)}
+.rookie h2{margin:0 0 2px}
+.rksteps{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.rksteps li{display:flex;gap:10px;align-items:flex-start}
+.rksteps .rkn{flex:none;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:2px solid var(--ink);font-family:var(--cond);font-weight:700;font-size:.85rem}
+.rksteps li.ok .rkn{background:#1e7a3a;border-color:#1e7a3a;color:#fff}
+.rksteps li.ok b{text-decoration:line-through;text-decoration-thickness:2px}
+.rksteps .linkbtn{font-size:.88rem}
 .demohint{border-style:dashed}
 .hintrow{display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;align-items:center;padding-block:4px;font-variant-numeric:tabular-nums}
 .hintrow b{font-family:var(--cond);font-size:1.05rem;letter-spacing:.03em}
@@ -549,19 +581,37 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <button class="btn primary" type="submit" id="loginBtn">Log in</button>
       <p class="note">Forgot your PIN? Text the commissioner. Only the commissioner can reset it.</p>
     </form>
-    <form id="setupForm" class="panel authcard" novalidate hidden>
-      <h2>Set up your profile</h2>
-      <p class="note">This is how the league sees you. You can change it any time.</p>
+    <div id="welcomeCard" class="panel authcard onb" hidden>
+      <p class="onbstep">Welcome to the field</p>
+      <h2>You made the roster</h2>
+      <p>Tator's Picks is a college football pick em against the spread. Ten games a week, one league, bragging rights all season.</p>
+      <ol class="onblist">
+        <li><span class="onbn">1</span><span><b>Your jersey.</b> A name and a look for the standings.</span></li>
+        <li><span class="onbn">2</span><span><b>The rules.</b> Three cards, about 20 seconds.</span></li>
+        <li><span class="onbn">3</span><span><b>Your first picks.</b> We walk you through the sheet.</span></li>
+      </ol>
+      <p class="note">About a minute, start to finish.</p>
+      <button class="btn primary" type="button" id="onbGo">Let's go</button>
+    </div>
+    <form id="setupForm" class="panel authcard onb" novalidate hidden>
+      <p class="onbstep">Step 1 of 3 · Your jersey</p>
+      <h2>Suit up</h2>
+      <p class="note">Pick the name the league will see. We already picked a look for you. Shuffle it or make it yours. You can change both any time in Profile.</p>
       <label for="setupName">Display name</label>
-      <input id="setupName" type="text" maxlength="24" placeholder="Big Tony">
-      <div id="setupLook"></div>
-      <details class="pinopt"><summary>Change your PIN now (optional)</summary>
-        <label for="setupPin1">New PIN</label><input id="setupPin1" type="password" inputmode="numeric" maxlength="6" placeholder="6 digits" autocomplete="new-password">
-        <label for="setupPin2">New PIN again</label><input id="setupPin2" type="password" inputmode="numeric" maxlength="6" placeholder="6 digits" autocomplete="new-password">
-      </details>
+      <input id="setupName" type="text" maxlength="24" placeholder="Big Tony" autocomplete="nickname">
+      <p class="onbcap">How you show up on Standings</p>
+      <div class="lookprev" id="setupPrev"></div>
+      <button class="btn" type="button" id="onbShuffle">🎲 Shuffle my look</button>
+      <details class="onbcustom" id="setupCustom"><summary>Pick my own emoji and colors</summary><div id="setupLook"></div></details>
       <p class="autherr" id="setupErr" role="alert" hidden></p>
-      <button class="btn primary" type="submit">Save and continue</button>
+      <button class="btn primary" type="submit">Next: the rules</button>
     </form>
+    <div id="rulesCard" class="panel authcard onb" hidden>
+      <p class="onbstep">Step 2 of 3 · The rules</p>
+      <div class="rcards" id="rcards"></div>
+      <div class="rdots" id="rdots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+      <div class="rbar"><button class="linkbtn" type="button" id="rulesSkip">Skip the rules</button><button class="btn primary" type="button" id="rulesNext">Next</button></div>
+    </div>
   </section>
   <div id="app" hidden>
   <header class="field">
@@ -840,7 +890,7 @@ const GP='<svg class="gp" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 23
 function tag(pid,lk){const a=accByUid(pid);const st=a&&a.c1?` style="background:${a.c1};color:${inkFor(a.c1)};box-shadow:inset 0 -3px 0 ${a.c2}"`:"";return `<span class="ptag${lk?" lk":""}"${st}>${lk?GP:""}${a&&a.emoji?a.emoji+" ":""}${esc(first(pid))}</span>`}
 function talkLine(pid){if(pid===BOT)return '<p class="talk">Robo-Sharp takes the model side in every game, kicks its field goal on its biggest edge, guesses the betting total, and rides its biggest unused edge in Survivor. Beat the bot.</p>';return ""}
 function emBtn(pre,a,e,label){return `<button type="button" class="emb" data-pick="${pre}:emoji" data-val="${e}" aria-pressed="${a.emoji===e}"${label?` title="${esc(label)}" aria-label="${esc(label)}"`:""}>${e}</button>`}
-function lookPicker(pre,a){
+function lookPicker(pre,a,noPrev){
   const teamEm=[];const seen=new Set();Object.keys(TEAMS).sort().forEach(n=>{const e=TEAMS[n][3];if(e&&!seen.has(e)){seen.add(e);teamEm.push([e,n])}});
   return `<fieldset class="lookf"><legend>Your emoji</legend><div class="emgrid">${QUICK.map(e=>emBtn(pre,a,e)).join("")}</div>
   <details class="emmore"><summary>More emoji</summary>
@@ -850,10 +900,24 @@ function lookPicker(pre,a){
   <div class="emtype"><label for="${pre}EmIn">Or type any emoji from your keyboard</label><div class="bar"><input id="${pre}EmIn" type="text" maxlength="16" placeholder="😀" inputmode="text"><button type="button" class="btn sm" data-emuse="${pre}">Use it</button></div></div></fieldset>
   <fieldset class="lookf"><legend>Main color</legend><div class="swgrid">${SWATCH.map(([n,c])=>`<button type="button" class="swb" data-pick="${pre}:c1" data-val="${c}" aria-pressed="${a.c1===c}" aria-label="${n}" title="${n}" style="background:${c}"></button>`).join("")}</div></fieldset>
   <fieldset class="lookf"><legend>Second color</legend><div class="swgrid">${SWATCH.map(([n,c])=>`<button type="button" class="swb" data-pick="${pre}:c2" data-val="${c}" aria-pressed="${a.c2===c}" aria-label="${n}" title="${n}" style="background:${c}"></button>`).join("")}</div></fieldset>
-  <div class="lookprev" id="${pre}Prev"></div>`}
+  ${noPrev?"":`<div class="lookprev" id="${pre}Prev"></div>`}`}
 function paintPreview(pre,draft,name){const el=$("#"+pre+"Prev");if(!el)return;const c1=draft.c1||"#9AA3AD",c2=draft.c2||"#FFFFFF";
-  el.innerHTML=`<span class="pchip big" style="background:${c1};box-shadow:inset 0 0 0 4px ${c2}">${draft.emoji||"?"}</span><span class="ptag" style="background:${c1};color:${inkFor(c1)};box-shadow:inset 0 -3px 0 ${c2}">${draft.emoji?draft.emoji+" ":""}${esc(name||"Your name")}</span><span class="note">This is how you show up in standings and picks.</span>`}
+  el.innerHTML=`<span class="pchip big" style="background:${c1};box-shadow:inset 0 0 0 4px ${c2}">${draft.emoji||"?"}</span><span class="ptag" style="background:${c1};color:${inkFor(c1)};box-shadow:inset 0 -3px 0 ${c2}">${draft.emoji?draft.emoji+" ":""}${esc(name||"Your name")}</span>${pre==="setup"?'<span class="num">0 pts</span>':'<span class="note">This is how you show up in standings and picks.</span>'}`;
+  if(pre==="setup")el.innerHTML=`<div class="prevrow"><span class="rk">#1</span>${el.innerHTML}</div>`}
 const LOOK={setup:{},pf:{}};
+/* First login walk-on: Welcome, Jersey (step 1), Rules (step 2), then the rookie sheet on Picks (step 3). */
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function randomLook(){const c1=rnd(SWATCH)[1];let c2=rnd(SWATCH)[1];while(c2===c1)c2=rnd(SWATCH)[1];return {emoji:rnd(QUICK),c1,c2}}
+function setLook(pre,L){LOOK[pre]={...L};for(const k of ["emoji","c1","c2"])document.querySelectorAll(`[data-pick="${pre}:${k}"]`).forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.val===L[k])));paintPreview(pre,LOOK[pre],lookName(pre))}
+let ONB_HOLD=false,RCARD=0;
+function onb(step){api("/api/state",{onboard:step})} /* one small write per step, for the commissioner's Engagement view */
+const RULE_CARDS=()=>[
+  ["🏈","Pick 10 games against the spread","Each week has 10 games. Tap the team you think covers. Every correct pick is 1 point.",'<b>LSU -3.5</b> covers if LSU wins by 4 or more. <b>Alabama +3.5</b> covers if Alabama wins, or loses by 3 or fewer. Lines end in .5, so nobody pushes.'],
+  [GP,"Kick one field goal","Tap the goalpost on the pick you trust most. If that pick covers, it scores 3 points instead of 1.","One field goal a week. Make it count."],
+  ["⏱️","Beat the lock","Most weeks, picks lock Saturday at 10:15 a.m. CT. The countdown on Picks always shows the real time. Change your picks as often as you want until then.","<b>Tiebreaker:</b> guess the total points in the first game. <b>Survivor:</b> pick one extra team each week. Miss once and you're out."]];
+function paintRules(){$("#rcards").innerHTML=RULE_CARDS().map(([ic,h,t,x],i)=>`<section class="rcard" aria-label="Rule ${i+1} of 3"><div class="ric">${ic}</div><h3>${h}</h3><p>${t}</p><p class="rex">${x}</p></section>`).join("");RCARD=0;rulesUi()}
+function rulesUi(){document.querySelectorAll("#rdots i").forEach((d,i)=>d.classList.toggle("on",i===RCARD));const b=$("#rulesNext");if(b)b.textContent=RCARD>=2?"Make my picks":"Next"}
+async function rulesDone(skipped){onb(skipped?"skip":"rules");ONB_HOLD=false;location.hash="#picks";await refresh()}
 const lookName=pre=>((pre==="setup"?$("#setupName"):$("#pfName"))||{value:""}).value.trim();
 document.addEventListener("click",e=>{const u=e.target.closest("[data-emuse]");if(!u)return;const pre=u.dataset.emuse;const v=$("#"+pre+"EmIn").value.trim();
   if(!isOneEmoji(v)){toast("Type or paste a single emoji.");return}
@@ -861,7 +925,7 @@ document.addEventListener("click",e=>{const u=e.target.closest("[data-emuse]");i
   paintPreview(pre,LOOK[pre],lookName(pre));toast("Emoji set")});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-pick]");if(!b||b.disabled)return;const [pre,k]=b.dataset.pick.split(":");LOOK[pre][k]=b.dataset.val;const dm=b.closest("details.emmore");if(dm){dm.open=false;dm.closest(".lookf").scrollIntoView({block:"nearest"})}
   if(pre==="setup")showErr("#setupErr","");document.querySelectorAll(`[data-pick="${pre}:${k}"]`).forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.val===b.dataset.val)));paintPreview(pre,LOOK[pre],lookName(pre))});
-document.addEventListener("input",e=>{if(e.target.id==="setupName")paintPreview("setup",LOOK.setup,e.target.value.trim());if(e.target.id==="pfName")paintPreview("pf",LOOK.pf,e.target.value.trim())});
+document.addEventListener("input",e=>{if(e.target.id==="setupName"){paintPreview("setup",LOOK.setup,e.target.value.trim());showErr("#setupErr","")}if(e.target.id==="pfName")paintPreview("pf",LOOK.pf,e.target.value.trim())});
 function lookErr(L){if(!L.emoji)return "Pick an emoji.";if(!L.c1||!L.c2)return "Pick both colors.";if(L.c1===L.c2)return "Pick two different colors.";return ""}
 const digits=x=>String(x||"").replace(/\D/g,"").replace(/^1(?=\d{10}$)/,"");
 const fmtPhone=n=>n&&n.length===10?`(${n.slice(0,3)}) ${n.slice(3,6)}-${n.slice(6)}`:(n||"");
@@ -872,8 +936,11 @@ function abbrMap(w){const m={};for(const g of (w&&w.games)||[]){m[g.away]=teamLo
 function showAuth(which){
   clearInterval(POLL);POLL=null;
   $("#app").hidden=true;$("#auth").hidden=false;
-  for(const id of ["firstForm","loginForm","setupForm"])$("#"+id).hidden=id!==which;
-  if(which==="setupForm"){LOOK.setup={};$("#setupLook").innerHTML=lookPicker("setup",{});paintPreview("setup",{},"");setTimeout(()=>$("#setupName").focus(),50)}
+  if(which==="welcomeCard"&&(!$("#welcomeCard").hidden||!$("#setupForm").hidden))return; /* a refresh must not restart the walk-on */
+  for(const id of ["firstForm","loginForm","welcomeCard","setupForm","rulesCard"])$("#"+id).hidden=id!==which;
+  if(which==="welcomeCard")onb("welcome");
+  if(which==="setupForm"){$("#setupLook").innerHTML=lookPicker("setup",{},true);$("#setupCustom").open=false;setLook("setup",randomLook());setTimeout(()=>$("#setupName").focus(),50)}
+  if(which==="rulesCard")paintRules();
   window.scrollTo(0,0);
 }
 function applyState(S){
@@ -891,7 +958,8 @@ async function refresh(quiet){
   if(S.status===401){showAuth(S.needsSetup?"firstForm":"loginForm");return false}
   if(!S.ok){if(!quiet)toast(S.error);return false}
   applyState(S);
-  if(!S.me.setupDone){showAuth("setupForm");return false}
+  if(!S.me.setupDone){showAuth("welcomeCard");return false}
+  if(ONB_HOLD)return false;
   if($("#app").hidden){$("#auth").hidden=true;$("#app").hidden=false;route();window.scrollTo(0,0)}
   else{const ae=document.activeElement;if(!(ae&&ae.closest&&ae.closest("form,select,input")))render()}
   if(!POLL)POLL=setInterval(()=>{if(!document.hidden&&!state.dirty)refresh(true)},60000);
@@ -900,6 +968,12 @@ async function refresh(quiet){
   return true;
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ME&&!state.dirty)refresh(true)});
+document.addEventListener("click",e=>{const id=e.target.closest("button")&&e.target.closest("button").id;
+  if(id==="onbGo"){onb("suit");showAuth("setupForm")}
+  if(id==="onbShuffle"){setLook("setup",randomLook());showErr("#setupErr","")}
+  if(id==="rulesNext"){if(RCARD>=2){rulesDone(false);return}const c=$("#rcards");RCARD++;c.scrollTo({left:RCARD*c.clientWidth+RCARD*12,behavior:"smooth"});rulesUi()}
+  if(id==="rulesSkip")rulesDone(true)});
+document.addEventListener("scroll",e=>{if(e.target&&e.target.id==="rcards"){const c=e.target;const i=Math.round(c.scrollLeft/(c.clientWidth+12));if(i!==RCARD){RCARD=Math.max(0,Math.min(2,i));rulesUi()}}},true);
 
 /* ---------- forms ---------- */
 document.addEventListener("submit",async e=>{
@@ -918,12 +992,11 @@ document.addEventListener("submit",async e=>{
     showErr("#loginErr","");$("#loginPin").value="";await refresh();
   }
   if(f.id==="setupForm"){
-    const name=$("#setupName").value.trim(),p1=$("#setupPin1").value.trim(),p2=$("#setupPin2").value.trim();
-    if(!name){showErr("#setupErr","Enter a display name.");return}
+    const name=$("#setupName").value.trim();
+    if(!name){showErr("#setupErr","Enter a display name.");$("#setupName").focus();return}
     const le=lookErr(LOOK.setup);if(le){showErr("#setupErr",le);return}
-    if(p1||p2){if(!/^\d{6}$/.test(p1)){showErr("#setupErr","A PIN is 6 digits.");return}if(p1!==p2){showErr("#setupErr","The two PINs do not match.");return}}
-    const r=await api("/api/auth",{action:"profile",name,emoji:LOOK.setup.emoji,c1:LOOK.setup.c1,c2:LOOK.setup.c2,newPin:p1||undefined});
-    if(!r.ok){showErr("#setupErr",r.error);return}showErr("#setupErr","");await refresh();
+    const r=await api("/api/auth",{action:"profile",name,emoji:LOOK.setup.emoji,c1:LOOK.setup.c1,c2:LOOK.setup.c2});
+    if(!r.ok){showErr("#setupErr",r.error);return}showErr("#setupErr","");onb("jersey");ONB_HOLD=true;showAuth("rulesCard");
   }
   if(f.id==="profileForm"){
     const name=$("#pfName").value.trim();if(!name){toast("Enter a display name.");return}
@@ -1032,9 +1105,11 @@ async function savePicks(force){
   if(state.draft.lock&&!state.draft.sel[state.draft.lock]){toast("Pick a side in your field goal game first.");return}
   if(!force){const m=missingItems(w,wid,state.draft);if(m.length){state.warn=m;renderPicks();return}}
   const b=$("#saveBtn");if(b){b.disabled=true;b.textContent="Saving…"}
+  const wasRookie=isRookie();
   const r=await api("/api/picks",{weekId:wid,sel:state.draft.sel,lock:state.draft.lock,tb:state.draft.tb,surv:state.draft.surv||null,abbr:abbrMap(w)});
   if(!r.ok){toast(r.error);if(b){b.disabled=false;b.textContent="Save picks"}if(r.status===423||r.status===401)await refresh(true);return}
   state.dirty=false;state.warn=null;toast("Picks saved");await refresh(true);
+  if(wasRookie&&!isRookie()){onb("sheet");showRoster(w)}
   /* The refresh skips the redraw while a field has focus, so set the button here too. */
   const sb=$("#saveBtn");if(sb){sb.disabled=true;sb.textContent="Saved";sb.classList.remove("unsaved");sb.classList.add("saved")}
 }
@@ -1225,6 +1300,7 @@ function render(){
     else if(state.upcoming){$("#weekLine").textContent=`Week ${state.upcoming.week} slate drops soon.${lf?" Week "+lf.week+" is final.":""}`;setB("Slate coming","plain")}
     else{$("#weekLine").textContent=lf?`Week ${lf.week} is final. The next slate drops Tuesday.`:"The first slate drops Tuesday.";setB("Off week","plain")}}
   if(state.view==="picks"){renderPicks();if(state.preview)$("#v-picks").insertAdjacentHTML("afterbegin",previewPanel());const ban=recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban)}
+  if(state.view==="picks"){const rk=$("#rookie");if(rk&&rk.parentNode.firstElementChild!==rk)rk.parentNode.prepend(rk)}
   if(state.view==="recap")renderRecap();
   if(state.view==="standings")renderStandings();
   if(state.view==="rankings")renderRankings();
@@ -1266,11 +1342,26 @@ function goTiles(cur){return `<h2 class="gohead">Around the league</h2><nav clas
 function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=!v||v==="commish"?"":goTiles(v)}
 /* Red with unsaved changes, green once a sheet is saved, plain when there is nothing to save yet. */
 function saveBtnH(){const saved=!state.dirty&&(state.sheetsIn||[]).includes(state.uid);return `<button class="btn primary${state.dirty?" unsaved":saved?" saved":""}" id="saveBtn" ${state.dirty?"":"disabled"}>${saved?"Saved":"Save picks"}</button>`}
+/* A rookie has no saved pick on any sheet yet. Until the first save, Picks leads with a plain step list. */
+function isRookie(){return !!state.uid&&!state.isOwner&&!removed().includes(state.uid)&&state.canWrite!==false&&!(state.pickedIn||[]).includes(state.uid)}
+function rookiePanel(){if(!isRookie())return "";const w=curWeek(),wid=currentWeekId();
+  const editable=w&&w.status==="open"&&!pastDeadline(w);
+  if(!editable)return `<div class="panel rookie" id="rookie"><p class="onbstep">Step 3 of 3 · Your first picks</p><h2>You're on the roster</h2><p>Your first sheet opens when picks go live, most weeks on Wednesday at 6 p.m. CT. ${state.preview?"The likely games for next week are below.":"Look around until then. Standings and Teams are a good start."}</p></div>`;
+  const d=state.draft||{sel:{}},rs=w.results||{};const open=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void));const n=open.filter(g=>d.sel&&d.sel[g.id]).length;
+  const step=(ok,i,t,x)=>`<li class="${ok?"ok":""}"><span class="rkn">${ok?"\u2713":i}</span><span><b>${t}</b><br><span class="note">${x}</span></span></li>`;
+  const sv=survNeeded(wid);let i=0;
+  return `<div class="panel rookie" id="rookie"><p class="onbstep">Step 3 of 3 · Your first picks</p><h2>Your first sheet</h2><p class="note">Do these in any order. Nobody sees your picks until the lock, ${esc(kick(w.deadline))}.</p><ol class="rksteps">
+    ${step(n>=open.length,++i,`Pick a side in every game (${n} of ${open.length})`,"Tap the team you think covers the spread.")}
+    ${step(!!d.lock,++i,"Kick your field goal","Tap the goalpost on your surest pick. It scores 3 if it covers.")}
+    ${step(d.tb!=null,++i,"Guess the tiebreaker",'Total points in the first game. <button type="button" class="linkbtn" data-jump="tb">Take me there</button>')}
+    ${sv?step(!!d.surv&&!survConflict(w,d),++i,"Make your Survivor pick",'One team against the spread. Miss and you are out. <button type="button" class="linkbtn" data-jump="surv">Take me there</button>'):""}
+    ${step(false,++i,"Save your picks","Tap Save picks at the bottom. You can change them until the lock.")}
+  </ol></div>`}
 function renderPicks(){
   const el=$("#v-picks"),w=curWeek(),wid=currentWeekId();
   if(!state.db){el.innerHTML='<div class="panel empty">This league page needs you signed in to Claude, opened from the invite your commissioner sent.</div>';return}
   if(!w){const lf=lastShownWeek();const up=state.upcoming;
-    if(state.preview){el.innerHTML=lf?`<p class="note"><a href="#standings">See how Week ${lf.week} ended</a></p>`:"";return}
+    if(state.preview){el.innerHTML=rookiePanel()+(lf?`<p class="note"><a href="#standings">See how Week ${lf.week} ended</a></p>`:"");return}
     el.innerHTML=`<div class="panel empty"><h2>${up?"Week "+up.week+" is almost here":"Off week"}</h2><p>${up?"This week's 10 games are being set."+(up.autoOpen?" Picks open "+kick(up.opens).replace(/ \d.*$/,"")+" at 6 p.m. CT.":" Picks open soon."):"The next 10 games post Tuesday, and picks open Wednesday at 6 p.m. CT."}</p>${lf?`<p><a href="#standings">See how Week ${lf.week} ended</a></p>`:""}</div>`;return}
   if(w.status==="draft"&&!state.isOwner){el.innerHTML='<div class="panel empty">The commissioner is finalizing this week\'s slate. Picks open soon.</div>';return}
   const out=removed().includes(state.uid);
@@ -1284,7 +1375,8 @@ function renderPicks(){
   else if(rev&&players[state.uid]){const P=weekPlayers(wid);const rows=Object.entries(P).map(([pid,p])=>({pid,...scoreWeek(w,p)})).sort((a,b)=>b.pts-a.pts);const me=rows.find(r=>r.pid===state.uid);const place=rows.filter(r=>r.pts>me.pts).length+1;const ties=rows.filter(r=>r.pts===me.pts).length>1;
     const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;
     h+=`<div class="countdown strip"><span>You <b>${me.pts}</b> pts</span><span>${me.w}-${me.l}</span><span>${nf}/${w.games.length} final</span><span>${ties?"T-":""}${ordinal(place)}</span></div>`}
-  h+=racePanel(wid);
+  const rookie=isRookie();
+  if(rookie)h+=rookiePanel();else h+=racePanel(wid);
   if(w.status==="open"&&!pastDeadline(w)){const ids=(state.sheetsIn||[]).filter(p=>!removed().includes(p));const all=Object.keys(PLAYERS).filter(p=>!removed().includes(p)&&PLAYERS[p].setupDone);
     h+=`<p class="note sheets">Sheets in: ${ids.length} of ${all.length||ids.length}${ids.length?" · "+ids.map(p=>esc(first(p))).join(", "):""}. Picks stay hidden until the lock.</p>`}
   if(w.status==="draft")h+='<div class="note">Draft view. Only you see this until you open picks in the Commissioner tab.</div>';
@@ -1385,6 +1477,7 @@ document.addEventListener("click",async e=>{
   const stm=e.target.closest("[data-steam]");if(stm){const k=stm.dataset.steam;state.statOpen=state.statOpen===k?null:k;renderRankings();return}
   const act=e.target.closest("[data-act]");if(act)commishAct(act.dataset.act,act.dataset);
 });
+document.addEventListener("change",e=>{if(e.target.id==="tbInput"&&isRookie())renderPicks()});
 document.addEventListener("input",e=>{if(e.target.id==="tbInput"&&state.draft){const v=e.target.value;state.draft.tb=v===""?null:Math.max(0,Math.round(Number(v)));state.dirty=true;const b=$("#saveBtn");if(b){b.disabled=false;b.textContent="Save picks";b.classList.remove("saved");b.classList.add("unsaved")}}});
 document.addEventListener("change",async e=>{
   if(e.target.id==="liveChk"||e.target.id==="liveGap"||e.target.id==="liveCap"){const live=e.target.id==="liveChk"?{on:e.target.checked}:e.target.id==="liveGap"?{gap:+e.target.value}:{cap:+e.target.value};const r=await api("/api/admin",{action:"autoSettings",live});toast(r.ok?"Saved":r.error);await refresh(true);render();return}
@@ -1432,6 +1525,7 @@ function revealFinals(){
 const LIVE_MEM={};
 function revealLive(){
   const w=curWeek();if(!state.uid||!w||w.status!=="open"||pastDeadline(w)||removed().includes(state.uid)||state.canWrite===false||$("#reveal"))return;
+  if(isRookie())return; /* the rookie steps on Picks cover it */
   const key="tp-seen-live-"+state.uid;let seen=LIVE_MEM[key]||null;try{seen=localStorage.getItem(key)||seen}catch(e){}
   if(seen===w.id)return;LIVE_MEM[key]=w.id;try{localStorage.setItem(key,w.id)}catch(e){}
   if((state.sheetsIn||[]).includes(state.uid))return;
@@ -1440,6 +1534,11 @@ function revealLive(){
   document.body.appendChild(el);
   clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},12000);
 }
+function showRoster(w){let el=$("#reveal");if(el)el.remove();
+  const cls=w.season===2026?"the Redshirt Class of 2026":"the Class of "+w.season;
+  el=document.createElement("div");el.id="reveal";el.className="live roster";el.setAttribute("role","status");
+  el.innerHTML=`<div class="rvflash"></div><div class="rvcard"><div class="rvhead">${SIG.td}<h2>You're on the roster!</h2></div><p>Your first sheet is in. Welcome to ${cls}.</p><p class="rvsum">Change your picks any time before the lock, ${esc(kick(w.deadline))}.</p><button type="button" data-rvclose>Got it</button></div>`;
+  document.body.appendChild(el);clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},12000)}
 function showReveal(w,mine,items){
   const nW=items.filter(x=>x.won).length,nL=items.length-nW;const one=items.length===1?items[0]:null;
   const tone=nW&&nL?"mix":nW?"win":"loss";
@@ -2136,7 +2235,16 @@ function engagePanel(){const E=state.engage;if(!E||!state.logins)return "";const
   const count=e=>Object.values(e.pages||{}).reduce((a,b)=>a+b,0);
   const body=rows.map(({p,e})=>{const sh=((state.sheetStatus||{})[cw]||{})[p.id];return `<tr><td>${esc(p.name||p.invited||"Picker")}</td><td>${e.last?esc(short(e.last)):"Not yet"}</td><td>${sh?esc(short(sh.at)):"No sheet"}</td><td>${lastRecap&&(e.recaps||{})[lastRecap]?"Read":"No"}</td><td class="num">${e.days||0}</td><td class="num">${count(e)}</td></tr>`}).join("");
   const pages=Object.keys(ENG_NAMES).filter(k=>total[k]).map(k=>`${ENG_NAMES[k]} ${total[k]}`).join(" · ");
-  return `${secTag("engage",false)}${secHead("Engagement","who is checking in")}<p class="note">Counts start Nov 3, 2026. Only you see this. Last seen and tab counts can lag by a few minutes.</p><div class="tablewrap"><table><thead><tr><th>Picker</th><th>Last seen</th><th>${week?"Week "+week.week+" sheet":"Sheet"}</th><th>${lastRecap?"Week "+state.weeks[lastRecap].week+" Recap":"Recap"}</th><th class="num">Days</th><th class="num">Tabs</th></tr></thead><tbody>${body}</tbody></table></div><p class="note">By tab: ${pages||"nothing yet"}.</p></details>`}
+  const onbH=onboardFunnel(E);
+  return `${secTag("engage",false)}${secHead("Engagement","who is checking in")}<p class="note">Counts start Nov 3, 2026. Only you see this. Last seen and tab counts can lag by a few minutes.</p><div class="tablewrap"><table><thead><tr><th>Picker</th><th>Last seen</th><th>${week?"Week "+week.week+" sheet":"Sheet"}</th><th>${lastRecap?"Week "+state.weeks[lastRecap].week+" Recap":"Recap"}</th><th class="num">Days</th><th class="num">Tabs</th></tr></thead><tbody>${body}</tbody></table></div><p class="note">By tab: ${pages||"nothing yet"}.</p>${onbH}</details>`}
+/* First login walk-on: where new pickers stop. Steps: welcome, suit (Let's go), jersey (saved), rules or skip, sheet (first save). */
+function onboardFunnel(E){const L=(state.logins||[]).filter(p=>!p.removed&&!p.isCommish);const inn=new Set(state.pickedIn||[]);
+  const rows=L.map(p=>({p,o:(E[p.id]||{}).onboard||{}})).filter(x=>Object.keys(x.o).length);
+  if(!rows.length)return '<h3 class="rh">First login</h3><p class="note">Counts start Nov 5, 2026. No new picker has opened the walk-on yet.</p>';
+  const cnt=f=>rows.filter(f).length;
+  const at=({p,o})=>inn.has(p.id)||o.sheet?null:!o.suit&&!p.setupDone?"Welcome":!p.setupDone?"Jersey":!(o.rules||o.skip)?"Rules":"First sheet";
+  const stuck=rows.map(x=>[x.p,at(x)]).filter(([,s])=>s);
+  return `<h3 class="rh">First login</h3><p class="note">Counts start Nov 5, 2026. Welcome ${cnt(x=>x.o.welcome)} · Let's go ${cnt(x=>x.o.suit)} · Jersey ${cnt(x=>x.p.setupDone)} · Rules ${cnt(x=>x.o.rules)} (skipped ${cnt(x=>x.o.skip)}) · First sheet ${cnt(x=>inn.has(x.p.id)||x.o.sheet)}.</p>${stuck.length?`<p class="note">Stopped at: ${stuck.map(([p,s])=>`${esc(p.name||p.invited||"Picker")} (${s})`).join(", ")}.</p>`:""}`}
 function autoPanel(){
   const A=state.auto;if(!A)return "";
   const fl=A.flags||[],runs=A.runs||{},L=A.labels||{},Lv=A.live||{on:false,gap:10,cap:80,today:0};

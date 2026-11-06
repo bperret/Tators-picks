@@ -30,6 +30,19 @@ async function newPage() {
   await p.route(/fonts\.(googleapis|gstatic)/, (r) => r.abort());
   return p;
 }
+// First login walk-on: Welcome, Jersey, Rules. Pass skip to skip the rules cards.
+async function walkOn(p, name, emoji, c1, c2, skip) {
+  await p.waitForSelector("#welcomeCard:not([hidden])");
+  await p.click("#onbGo");
+  await p.waitForSelector("#setupForm:not([hidden])");
+  await p.fill("#setupName", name);
+  await p.click("#setupCustom summary");
+  await pickLook(p, "setup", emoji, c1, c2);
+  await p.click("#setupForm button[type=submit]");
+  await p.waitForSelector("#rulesCard:not([hidden])");
+  if (skip) await p.click("#rulesSkip");
+  else for (let i = 0; i < 3; i++) { await p.click("#rulesNext"); await p.waitForTimeout(150); }
+}
 async function pickLook(p, pre, emoji, c1, c2) {
   await p.click(`[data-pick="${pre}:emoji"][data-val="${emoji}"]`);
   await p.click(`[data-pick="${pre}:c1"][aria-label="${c1}"]`);
@@ -47,11 +60,27 @@ try {
   check("wrong setup code refused", (await c.textContent("#firstErr")).includes("not right"));
   await c.fill("#fsCode", process.env.SETUP_CODE);
   await c.click("#firstForm button[type=submit]");
+  await c.waitForSelector("#welcomeCard:not([hidden])");
+  check("first login opens on the welcome card", (await c.textContent("#welcomeCard")).includes("You made the roster") && !(await c.isVisible("#setupForm")));
+  await c.screenshot({ path: "dev/test-welcome.png" });
+  await c.click("#onbGo");
   await c.waitForSelector("#setupForm:not([hidden])");
-  await c.fill("#setupName", "Tator");
-  await pickLook(c, "setup", "🐯", "Purple", "Gold");
+  const pre = await c.evaluate(() => ({ prev: document.querySelector("#setupPrev").textContent, pressed: ["emoji", "c1", "c2"].filter((k) => document.querySelector(`#setupLook [data-pick="setup:${k}"][aria-pressed="true"]`)).length, custom: document.querySelector("#setupCustom").open, pin: !!document.querySelector("#setupPin1") }));
+  check("the jersey comes pre-filled with an emoji and two colors", pre.pressed === 3 && pre.prev.includes("#1") && !pre.custom && !pre.pin, JSON.stringify(pre));
+  const look1 = await c.evaluate(() => document.querySelector("#setupPrev .ptag").getAttribute("style"));
+  let shuffled = false; for (let i = 0; i < 5 && !shuffled; i++) { await c.click("#onbShuffle"); shuffled = (await c.evaluate(() => document.querySelector("#setupPrev .ptag").getAttribute("style"))) !== look1; }
+  check("Shuffle changes the look", shuffled);
   await c.click("#setupForm button[type=submit]");
-  await c.waitForSelector("#app:not([hidden])");
+  check("the jersey needs only a name", (await c.textContent("#setupErr")).includes("display name") && (await c.isVisible("#setupForm")));
+  await c.fill("#setupName", "Tator");
+  await c.screenshot({ path: "dev/test-jersey.png" });
+  await c.click("#setupForm button[type=submit]");
+  await c.waitForSelector("#rulesCard:not([hidden])");
+  check("the rules cards come after the jersey", (await c.locator(".rcard").count()) === 3 && (await c.textContent("#rulesNext")) === "Next");
+  await c.screenshot({ path: "dev/test-rules.png" });
+  await c.reload(); await c.waitForSelector("#app:not([hidden])");
+  check("a reload during the rules lands in the app, with the jersey saved", (await c.evaluate(() => window.tpRecap.state.names[window.tpRecap.state.uid])) === "Tator");
+  await c.evaluate(() => (location.hash = "#picks"));
   check("commissioner reaches the app", await c.isVisible("#commishTab"));
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(200);
   check("automation panel flags the missing CRON_SECRET", (await c.textContent("#v-commish")).includes("CRON_SECRET is not set"));
@@ -104,22 +133,28 @@ try {
   const pin2 = (await c.textContent(".bigpin")).trim();
   await c.click('[data-dact="hidepin"]');
   await m.fill("#loginPin", pin2); await m.click("#loginBtn");
-  await m.waitForSelector("#setupForm:not([hidden])");
-  await m.fill("#setupName", "Mike T.");
-  await pickLook(m, "setup", "🤠", "Maroon", "White");
-  await m.click("#setupForm button[type=submit]");
+  await m.evaluate(() => (location.hash = "#survivor"));
+  await walkOn(m, "Mike T.", "🤠", "Maroon", "White");
   await m.waitForSelector("#app:not([hidden])");
   check("player finishes first login", !(await m.isVisible("#commishTab")));
+  check("Make my picks lands on Picks", (await m.evaluate(() => location.hash)) === "#picks");
+  await m.waitForTimeout(300);
+  const rk0 = await m.textContent("#rookie");
+  check("a rookie sees the first sheet steps at the top", rk0.includes("Your first sheet") && rk0.includes("0 of 5") && (await m.evaluate(() => document.querySelector("#v-picks").firstElementChild.id)) === "rookie", rk0);
+  check("a rookie gets no Picks are live pop-up", !(await m.isVisible("#reveal")));
+  await m.screenshot({ path: "dev/test-rookie.png", fullPage: false });
+  await m.evaluate(() => { const { state } = window.tpRecap; state.isOwner = false; });
+  await m.evaluate(() => { const { state, revealLive } = window.tpRecap; state.pickedIn = [state.uid]; revealLive(); });
   await m.waitForSelector("#reveal.live");
-  check("a new picker sees the Picks are live alert", (await m.textContent("#reveal.live")).includes("lines are final"));
+  check("a picker past the rookie sheet sees the Picks are live alert", (await m.textContent("#reveal.live")).includes("lines are final"));
   await m.waitForTimeout(1000); await m.screenshot({ path: "dev/test-live.png" });
   await m.click("[data-rvgo]"); await m.waitForTimeout(100);
   check("Make my picks closes the alert and goes to Picks", !(await m.isVisible("#reveal")) && (await m.evaluate(() => location.hash)) === "#picks");
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   check("the alert shows once a week", !(await m.isVisible("#reveal")));
-  await m.evaluate(() => { const { state, revealLive } = window.tpRecap; localStorage.removeItem("tp-seen-live-" + state.uid); state.sheetsIn = [state.uid]; revealLive(); });
+  await m.evaluate(() => { const { state, revealLive } = window.tpRecap; localStorage.removeItem("tp-seen-live-" + state.uid); state.sheetsIn = [state.uid]; state.pickedIn = [state.uid]; revealLive(); });
   check("the alert skips a picker whose sheet is in", !(await m.isVisible("#reveal")));
-  await m.evaluate(() => { const { state } = window.tpRecap; localStorage.removeItem("tp-seen-live-" + state.uid); state.sheetsIn = []; });
+  await m.evaluate(() => { const { state, render } = window.tpRecap; localStorage.removeItem("tp-seen-live-" + state.uid); state.sheetsIn = []; state.pickedIn = []; render(); });
 
   // ---- picks with warnings, then complete ----
   const sides = m.locator(".side:not([disabled])");
@@ -138,8 +173,13 @@ try {
   await m.selectOption("#survSel", "g1|home");
   check("survivor conflict warns", (await m.locator("#survPanel .conflict").count()) === 1);
   await m.selectOption("#survSel", "g5|away");
+  check("rookie steps tick as the sheet fills", (await m.locator("#rookie li.ok").count()) >= 3, await m.textContent("#rookie"));
   await m.click("#saveBtn"); await m.waitForTimeout(500);
   check("complete sheet saves", (await m.textContent(".phist summary")).includes("last saved"));
+  check("the first save shows You're on the roster with the Redshirt class", (await m.textContent("#reveal.roster")).includes("Redshirt Class of 2026"));
+  await m.waitForTimeout(800); await m.screenshot({ path: "dev/test-roster.png" });
+  await m.click("#reveal [data-rvclose]");
+  check("the rookie steps leave after the first save", !(await m.isVisible("#rookie")));
   const save2 = await saveCls();
   check("a saved sheet turns Save green", /(^| )saved/.test(save2.cls) && !/unsaved/.test(save2.cls) && save2.text === "Saved" && save2.off, JSON.stringify(save2));
   await m.fill("#tbInput", "52");
@@ -644,6 +684,10 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(250);
   await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
   check("the Engagement section lists pickers", /Engagement/.test(await c.textContent("#v-commish")) && /Last seen/.test(await c.textContent("#v-commish")));
+  const ob = cSt.engage[mid].onboard || {};
+  check("the walk-on steps are recorded once each", ["welcome", "suit", "jersey", "rules", "sheet"].every((k) => ob[k]) && !ob.skip, JSON.stringify(ob));
+  const fun = await c.textContent("#v-commish");
+  check("Engagement shows the first login funnel", /First login/.test(fun) && /Welcome 1 · Let's go 1 · Jersey 1 · Rules 1 \(skipped 0\) · First sheet 1/.test(fun), fun.slice(fun.indexOf("First login"), fun.indexOf("First login") + 200));
   check("the page visit switch starts off", !(await c.isChecked("#liveChk")) && cSt.auto.live.on === false && cSt.auto.live.gap === 10 && cSt.auto.live.cap === 80);
   const badGap = await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "autoSettings", live: { gap: 1 } }) }).then((r) => r.status));
   check("a gap under 5 minutes is refused", badGap === 400);
