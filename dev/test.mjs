@@ -117,7 +117,7 @@ try {
     check("one-time jobs live in Setup and one-time tools, not Automation", (await c.locator('[data-sec="auto"] [data-job="gamelog"], [data-sec="auto"] [data-job="lines"]').count()) === 0 && (await c.locator('[data-sec="tools"] [data-job="gamelog"], [data-sec="tools"] [data-job="lines"]').count()) === 2 && auto.length > 0 && tools.length > 0);
     check("Automation has no second Open picks or Pull scores button", (await c.locator('[data-sec="auto"] [data-job="open"], [data-sec="auto"] [data-job="scores"]').count()) === 0);
     check("set-once settings sit in Setup and one-time tools", (await c.locator('[data-sec="tools"] #liveChk, [data-sec="tools"] #ovTeam, [data-sec="tools"] #nameInput, [data-sec="tools"] #slateForm').count()) === 4);
-  check("Commish has no Robo-Sharp section or switch", (await c.locator('#v-commish [data-sec="robo"], #roboChk, [data-act="roboFill"]').count()) === 0);
+  check("Commish keeps the Robo-Sharp section but has no switch or Save inputs", (await c.locator('#v-commish [data-sec="robo"]').count()) === 1 && (await c.locator('#roboChk, [data-act="roboFill"]').count()) === 0);
   }
   await c.click(".mbadd summary");
   await c.fill("#apName", "Mike"); await c.fill("#apPhone", "(214) 555-0123");
@@ -923,6 +923,13 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     check("Robo-Sharp follows the market when the ratings sit on our line", ev.a.side === "home" && Math.abs(ev.a.s + 1.5) < 0.01, JSON.stringify(ev.a));
     check("Robo-Sharp adds a little when its line crosses 7", Math.abs(ev.b.s + 1.4) < 0.01, JSON.stringify(ev.b));
     check("Robo-Sharp blends three ratings and counts who agrees", ev.d.side === "away" && ev.d.cons === -7 && ev.d.agree === 2 && ev.d.n === 3, JSON.stringify(ev.d));
+    await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+    await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
+    {
+      const panel = await c.textContent('[data-sec="robo"]');
+      check("the Robo-Sharp section shows the bands and the model scoreboard, no old vs new", /Confidence bands/.test(panel) && /Model scoreboard/.test(panel) && !/old vs new/i.test(panel) && !/Field goal:/.test(panel), panel.slice(0, 300));
+      check("week bands read as counts when a week has inputs", !/Week \d+\./.test(panel) || /Bands: \d+ heavy, \d+ leans, \d+ slight, \d+ coin flip\./.test(panel), panel.slice(0, 300));
+    }
     await c.evaluate(() => (location.hash = "#rules")); await c.waitForTimeout(300);
     check("Rules show only the new Robo-Sharp text", await c.evaluate(() => !document.querySelector("#roboRulesNew").hidden && !document.querySelector("#roboRulesOld")));
     const flip = await c.evaluate(() => {

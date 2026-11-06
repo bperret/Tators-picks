@@ -2669,6 +2669,26 @@ function autoPanel(){
     <p class="note">Page visit runs: ${Lv.on?`on, every ${Lv.gap} minutes. Today: ${Lv.today} of ${Lv.cap}.${Lv.at?" Last one "+esc(when(Lv.at))+".":""}`:"off."} Settings are in Setup and one-time tools.</p>
     <div class="autobar"><button class="btn sm" data-act="pause">${A.paused?"Resume automation":"Pause automation"}</button></div>
     <p class="note">Each week, on the first run at or after each time below. The schedule can run hours late. Monday 9 a.m. posts a preview for pickers, and its lines update every 6 hours. Tuesday 1 p.m. builds a draft from ESPN, and pickers see those 10 games with no picks allowed. Wednesday 6 p.m. refreshes the lines and opens picks, unless you already opened them, the box above is off, the week is on hold, or it has under 10 games. Open picks always refreshes the lines first. Refresh lines works any time before picks open: it updates the draft, or the preview if there is no draft yet. Once picks open, lines are final. After the lock, scores update on each run, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Each button here does the same job by hand. Open picks and Pull scores have their buttons in This week and Scores. Fill game log and Fill lines are in Setup and one-time tools. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.</p></details>`}
+/* Commish: Robo-Sharp check. Band counts for every week with saved inputs, and a back end model scoreboard. */
+function roboPanel(){
+  const wids=Object.keys(state.weeks).sort().filter(k=>{const w=state.weeks[k];return w&&w.robo&&w.robo.last});
+  let rows="";
+  for(const wid of wids){const w=state.weeks[wid];
+    const E=roboEvals(w);
+    const bc={};Object.values(E).forEach(e=>{const k=roboBand(e.p)[1];bc[k]=(bc[k]||0)+1});
+    const bands="Bands: "+[["heavy","heavy"],["lean","leans"],["slight","slight"],["flip","coin flip"]].map(([k,l])=>(bc[k]||0)+" "+l).join(", ")+".";
+    rows+=`<p class="note"><b>Week ${w.week}.</b> ${bands}</p>`;
+}
+  /* Model scoreboard: each source's side against our line, graded on final slate games. Only you see this. */
+  const sc={};const add=(k,side,c)=>{if(!side)return;const t=sc[k]||(sc[k]=[0,0]);t[side===c?0:1]++};
+  const sideOf=(x,L)=>x==null?null:x-L>0?"away":x-L<0?"home":null;
+  for(const wid of wids){const w=state.weeks[wid];const E=roboEvals(w);for(const g of w.games||[]){const c=coverSide(g,(w.results||{})[g.id]);const e=E[g.id];if(!c||!e)continue;
+    for(const [k,x] of e.models)add(k,sideOf(x,g.homeLine),c);add("Consensus",sideOf(e.cons,g.homeLine),c);add("Market move",e.ek==null||Math.abs(e.ek)<0.5?null:e.ek>0?"away":"home",c);add("Robo-Sharp (new)",e.side,c)}}
+  const keys=["FPI","SP+","VSiN","Consensus","Market move","Robo-Sharp (new)"].filter(k=>sc[k]);
+  const board=keys.length?`<div class="tablewrap"><table><thead><tr><th>Source</th><th class="num">ATS</th><th class="num">Pct</th></tr></thead><tbody>${keys.map(k=>{const t=sc[k];return `<tr><td>${k}</td><td class="num">${t[0]}-${t[1]}</td><td class="num">${t[0]+t[1]?Math.round(t[0]/(t[0]+t[1])*100)+"%":"–"}</td></tr>`}).join("")}</tbody></table></div><p class="note">Graded against our line on final slate games. About 150 games are needed before these say much.</p>`:'<p class="note">No graded games with saved inputs yet.</p>';
+  return `${secTag("robo",false)}${secHead("Robo-Sharp","bands and scoreboard")}
+    <h3 class="rh">Confidence bands</h3>${rows||'<p class="note">No week has saved inputs yet.</p>'}
+    <h3 class="rh">Model scoreboard</h3>${board}</details>`}
 /* Commish: one-time and set-once tools, folded at the bottom, left out of Expand all. Nothing here is needed week to week. */
 function toolsPanel(){
   const A=state.auto,Lv=(A&&A.live)||{on:false,gap:10,cap:80};
@@ -2708,7 +2728,7 @@ function renderCommish(){
     const rs=w.results||{};
     h+=`${secTag("scores",false)}${secHead("Scores",(()=>{const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;return nf+" of "+w.games.length+" final"})())}<p class="note">Each game: away score, home score, status. ESPN scores fill in on each run${liveOn()?`, and about every ${liveGap()} minutes while games are live and someone has the site open`:""}. To enter a score yourself, set the game to In progress, Final, or Void and save. Set it back to ESPN to hand it back.</p><div class="grid2 scoreg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)}</span><input type="number" id="ra-${esc(g.id)}" placeholder="${esc(teamLook(g.away).abbr)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" placeholder="${esc(teamLook(g.home).abbr)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status">${(()=>{const man=r.src==="manual"||(r.void&&r.src!=="auto");const cur=!man?"auto":r.void?"void":r.final?"final":"";return [["auto","ESPN"+(r.src==="auto"&&r.status?" · "+r.status:"")],["","In progress"],["final","Final"],["void","Void"]].map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`).join("")})()}</select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button><button class="btn" data-act="run" data-job="scores">Pull scores now</button></div></details>`;
   }
-  h+=autoPanel()+loginsPanel()+engagePanel()+toolsPanel();
+  h+=autoPanel()+loginsPanel()+engagePanel()+roboPanel()+toolsPanel();
   el.innerHTML=h;
 }
 
