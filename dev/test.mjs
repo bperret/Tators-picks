@@ -163,6 +163,7 @@ try {
   const sides = m.locator(".side:not([disabled])");
   const saveCls = async () => { const b = m.locator("#saveBtn"); return { cls: await b.getAttribute("class"), text: await b.textContent(), off: await b.isDisabled() } };
   const save0 = await saveCls();
+  check("an open week with no saved sheet shows the Picks dot", ((await m.getAttribute("#picksTab", "class")) || "").includes("hot"));
   check("Save stays plain with nothing to save", !/unsaved|\bsaved/.test(save0.cls) && save0.text === "Save picks" && save0.off, JSON.stringify(save0));
   await sides.nth(0).click(); await sides.nth(3).click();
   const save1 = await saveCls();
@@ -184,6 +185,7 @@ try {
   await m.click("#reveal [data-rvclose]");
   check("the rookie steps leave after the first save", !(await m.isVisible("#rookie")));
   const save2 = await saveCls();
+  check("a saved sheet clears the Picks dot", !((await m.getAttribute("#picksTab", "class")) || "").includes("hot"));
   check("a saved sheet turns Save green", /(^| )saved/.test(save2.cls) && !/unsaved/.test(save2.cls) && save2.text === "Saved" && save2.off, JSON.stringify(save2));
   await m.fill("#tbInput", "52");
   check("a tiebreaker change turns Save red again", /unsaved/.test((await saveCls()).cls));
@@ -702,8 +704,11 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   const bwSides = () => c.locator('#v-bowls .side[data-bws="away"]');
   await c.locator("#v-bowls .flagbtn").nth(2).click();
   check("a field goal needs a pick first", (await c.getAttribute("#v-bowls .flagbtn >> nth=2", "aria-pressed")) === "false");
-  for (let i = 0; i < 10; i++) await bwSides().nth(i).click();
+  await bwSides().nth(0).click();
+  check("each pick shows a white count", (await c.textContent("#toast")) === "You have picked 1 of 10 bowls." && (await c.getAttribute("#toast", "class")).includes("info"));
+  for (let i = 1; i < 10; i++) await bwSides().nth(i).click();
   await bwSides().nth(10).click();
+  check("the 11th pick warns in yellow", (await c.textContent("#toast")).startsWith("You have 10 bowls") && !(await c.getAttribute("#toast", "class")).includes("info"));
   check("an 11th pick is blocked", (await c.locator('#v-bowls .side[aria-pressed="true"]').count()) === 10 && (await c.textContent("#bwStat")).startsWith("10 of 10"));
   await c.locator("#v-bowls .flagbtn").nth(2).click();
   await c.fill("#bwTb", "55");
@@ -718,11 +723,29 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("picks are read only after the lock", (await c.locator("#v-bowls .side:not([disabled])").count()) === 0);
   await c.click('[data-bwph="live"]');
   check("After lock shows some bowls not played yet", (await c.textContent("#v-bowls")).includes("Not played yet") && (await c.textContent("#v-bowls")).includes("Final:"));
-  await c.click('[data-bwct="an"]');
-  check("Army-Navy shows its placeholder", (await c.textContent("#v-bowls")).includes("Predict the final score"));
   check("the prototype adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
-  await c.click('[data-bwct="bowl"]'); await c.click('[data-bwph="pre"]');
+  await c.click('[data-bwph="pre"]');
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
+
+  // ---- Army-Navy prototype ----
+  check("pickers do not see the Army-Navy tab", await m.isHidden("#anTab"));
+  await c.evaluate(() => (location.hash = "#armynavy")); await c.waitForSelector("#an-fa");
+  check("the Army-Navy tab has no tiles and shows the dot", (await c.locator("#goFoot .gotile").count()) === 0 && ((await c.getAttribute("#anTab", "class")) || "").includes("hot"));
+  await c.fill("#an-fa", "17"); await c.fill("#an-fn", "17"); await c.fill("#an-ha", "7"); await c.fill("#an-hn", "3");
+  check("a tied final is refused", (await c.textContent("#anErr")).includes("no ties"));
+  await c.fill("#an-fn", "20"); await c.fill("#an-hn", "24");
+  check("a halftime above the final is refused", (await c.textContent("#anErr")).includes("halftime"));
+  await c.fill("#an-hn", "10");
+  check("a full entry reads back and clears the dot", (await c.textContent("#anRead")).includes("Navy wins by 3") && !((await c.getAttribute("#anTab", "class")) || "").includes("hot"));
+  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#armynavy")); await c.waitForSelector("#an-fa");
+  check("the Army-Navy entry survives a reload", (await c.inputValue("#an-fn")) === "20");
+  await c.click('[data-anph="final"]');
+  const anT = await c.textContent("#v-armynavy .bwt");
+  check("Army-Navy final ranks by winner, then final, then halftime", anT.includes("You") && anT.includes("Robo-Sharp") && (await c.locator("#v-armynavy .bwt tr", { hasText: "Robo-Sharp" }).locator("td").first().textContent()) === "—" && (await c.isDisabled("#an-fa")));
+  await c.click('[data-anph="half"]');
+  check("halftime view has no winner yet", (await c.textContent("#v-armynavy")).includes("The final decides it"));
+  check("the Army-Navy tab adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
+  await c.click('[data-anph="pre"]'); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
 
   // ---- engagement and the page visit switch ----
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);

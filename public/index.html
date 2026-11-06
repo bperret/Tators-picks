@@ -195,6 +195,7 @@ tr.out td{color:var(--board-dim);text-decoration:line-through;text-shadow:none}
 .rh{font-family:var(--cond);font-weight:700;font-size:1.05rem;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 4px;color:var(--muted)}
 .swaplog{font-size:.85rem;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--flag);color:var(--flag-ink);font-family:var(--cond);font-weight:700;letter-spacing:.04em;padding:8px 14px;border-radius:6px;font-size:1rem;z-index:20;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.toast.info{background:#fff;color:#141414;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 body:has(.savebar:not([hidden])) .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .grid2{display:grid;grid-template-columns:1fr auto auto auto;gap:6px 8px;align-items:center;font-size:.9rem}
 .grid2 .t{min-width:0;overflow-wrap:anywhere;grid-column:1/-1;font-weight:600;margin-top:6px}
@@ -256,9 +257,15 @@ details.manual .inner{margin-top:12px}
 .gotile:hover strong{text-decoration:underline}
 .gotile:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
 @media (prefers-reduced-motion:no-preference){.gotile{transition:transform .12s}.gotile:hover{transform:translateY(-2px)}}
-#bowlsTab.hot::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--loss);margin-left:5px;vertical-align:super}
-@media (prefers-reduced-motion:no-preference){#bowlsTab.hot::after{animation:bwpulse 1.2s ease-in-out infinite}}
+nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--loss);margin-left:5px;vertical-align:super}
+@media (prefers-reduced-motion:no-preference){nav.tabs a.hot::after{animation:bwpulse 1.2s ease-in-out infinite}}
 @keyframes bwpulse{50%{opacity:.25;transform:scale(1.5)}}
+.angrid{display:grid;grid-template-columns:minmax(0,1fr) 72px 72px;gap:8px;align-items:center}
+.anh{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.76rem;color:var(--muted);text-align:center}
+.anteam{display:flex;align-items:center;gap:8px;min-width:0}.anteam .mono{grid-row:auto;flex:none}
+.anbox{width:100%;box-sizing:border-box;font:inherit;font-family:var(--cond);font-weight:700;font-size:1.3rem;text-align:center;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.anread{font-family:var(--cond);font-weight:700;margin:6px 0 0}.anerr{color:var(--loss);font-size:.88rem;margin:2px 0 0}.anerr:empty{display:none}
+.rulesbox{margin-top:14px}.rulesbox ul{margin:4px 0 0;padding-left:20px}
 .bwproto{border:2px dashed var(--line);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.86rem;line-height:1.35}
 .bwcts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .bwct{text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer}
@@ -270,7 +277,7 @@ details.manual .inner{margin-top:12px}
 .bwwho{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:.76rem;color:var(--muted);line-height:1.3}
 .bwfin{font-family:var(--cond);font-size:.9rem;color:var(--muted)}
 .bwtb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.9rem}.bwtb input{width:84px;font:inherit;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
-.bwt{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:12px}.bwt th,.bwt td{padding:5px 6px;border-top:1px solid var(--line);text-align:left}.bwt th{font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:.74rem;color:var(--muted)}.bwt .n{text-align:right;font-variant-numeric:tabular-nums}.bwt tr.me td{font-weight:700}
+.bwt{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:12px}table.bwt{background:transparent;color:var(--ink)}.bwt th,.bwt td{padding:5px 6px;border-top:1px solid var(--line);text-align:left;color:var(--ink);background:transparent;text-shadow:none}.bwt th{font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:.74rem;color:var(--muted)}.bwt .n{text-align:right;font-variant-numeric:tabular-nums}.bwt tr.me td{font-weight:700;background:var(--card)}
 .recapban{display:block;text-align:center;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
 .rchero h2{margin:0}
 .rchero .note{color:#e8edf2}
@@ -646,7 +653,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   </header>
   <div class="refrule" aria-hidden="true"></div>
   <nav class="tabs" aria-label="Sections">
-    <a href="#picks" data-v="picks">Picks</a>
+    <a href="#picks" data-v="picks" id="picksTab">Picks</a>
     <a href="#standings" data-v="standings">Standings</a>
     <a href="#recap" data-v="recap">Recap</a>
     <a href="#survivor" data-v="survivor">Survivor</a>
@@ -656,6 +663,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#rules" data-v="rules">Rules</a>
     <a href="#profile" data-v="profile">Profile</a>
     <a href="#bowls" data-v="bowls" id="bowlsTab" hidden>Bowl Season</a>
+    <a href="#armynavy" data-v="armynavy" id="anTab" hidden>Army-Navy</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
 
@@ -829,6 +837,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   <section class="view" id="v-profile" hidden></section>
   <section class="view" id="v-playoffs" hidden></section>
   <section class="view" id="v-bowls" hidden></section>
+  <section class="view" id="v-armynavy" hidden></section>
   <section class="view" id="v-commish" hidden></section>
   <div id="goFoot"></div>
   </div>
@@ -846,7 +855,7 @@ function teamLook(name,g,side){const key=ALIAS[String(name).toLowerCase().replac
   const hex=c1.replace("#","");const r=parseInt(hex.slice(0,2),16),gg=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);const lum=(0.299*r+0.587*gg+0.114*b)/255;return {abbr,c1,c2,emoji,ink:lum>0.62?"#111111":"#ffffff"}}
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
+function toast(msg,kind){const t=$("#toast");t.textContent=msg;t.classList.toggle("info",kind==="info");t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
 const fmtLine=n=>n===0?"PK":(n>0?"+":"−")+Math.abs(n);
 function kick(iso){try{return new Date(iso).toLocaleString("en-US",{timeZone:TZ,weekday:"short",hour:"numeric",minute:"2-digit"})+" CT"}catch(e){return iso}}
 
@@ -972,7 +981,7 @@ function applyState(S){
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
-  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;
+  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;
   syncDraft();
 }
 async function refresh(quiet){
@@ -1203,17 +1212,17 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","commish"];
+const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
-function engNote(v){if(!ME||v==="commish"||v==="bowls"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
 function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
 function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
   try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)engFlush(true)});
 window.addEventListener("pagehide",()=>engFlush(true));
 window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls")&&!state.isOwner)v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy")&&!state.isOwner)v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render();if(state.toTop){state.toTop=false;scrollTo(0,0)}}
 window.addEventListener("hashchange",route);
@@ -1305,6 +1314,53 @@ const SIG={
 };
 
 /* ---------- render ---------- */
+/* Army-Navy prototype (item 31). Commissioner only, on the hidden Army-Navy tab. Saves on this device only; nothing reaches the server.
+   Kickoff is a placeholder from Navy's event page (Dec 12, East Rutherford, N.J., 3 p.m. listed). The spread is a sample from the SP+ gap, for information only. */
+const AN_KICK="2026-12-12T20:00:00Z",AN_TOTAL=40.5;
+const AN_FAKE=["Big Tuna","Coach K","Sooner Steve","Bayou Bill","Mrs. Q","The Professor","Deacon","Lefty"];
+function anState(){const k="tp-anproto-"+(state.uid||"x");if(state.an&&state.anKey===k)return state.an;state.anKey=k;
+  let d=null;try{d=JSON.parse(localStorage.getItem(k))}catch(e){}state.an=d&&typeof d==="object"&&"fa" in d?d:{fa:"",fn:"",ha:"",hn:""};return state.an}
+function anSave(){try{localStorage.setItem(state.anKey,JSON.stringify(state.an))}catch(e){}}
+function anErr(d){const v=["fa","fn","ha","hn"].map(k=>d[k]);if(v.some(x=>x===""))return "";const [fa,fn,ha,hn]=v.map(Number);
+  if(fa===fn)return "Football has no ties. Pick a winner in the final score.";if(ha>fa||hn>fn)return "A halftime score cannot be higher than that team's final score.";return ""}
+function anDone(){const d=state.an;return !!d&&["fa","fn","ha","hn"].every(k=>d[k]!=="")&&!anErr(d)}
+/* Spread: negative means Navy is favored. Sample from the SP+ gap with the half-point rule. */
+function anLine(){const sp=bwRate("sp"),a=canon("Army"),n=canon("Navy");return bwHalf(a in sp&&n in sp?sp[a]-sp[n]:-3)}
+function anResult(ph){if(ph==="pre")return null;const half={a:10,n:7};return ph==="half"?{half}:{half,fin:{a:17,n:20}}}
+function anField(){const ln=anLine(),P=AN_FAKE.map((name,i)=>{const r=k=>bwHash(name+k);const fa=7+Math.floor(r("a")*24);let fn=7+Math.floor(r("n")*24);if(fn===fa)fn+=3;
+    return {id:"f"+i,name,fa,fn,ha:Math.floor(fa*(.3+r("h")*.3)),hn:Math.floor(fn*(.3+r("i")*.3))}});
+  const d=state.an;if(anDone())P.push({id:"me",name:"You",fa:+d.fa,fn:+d.fn,ha:+d.ha,hn:+d.hn});
+  let rn=Math.round((AN_TOTAL-ln)/2),ra=Math.round(AN_TOTAL)-rn;if(ra===rn)ln<0?rn++:ra++;
+  P.push({id:BOT,name:"Robo-Sharp",fa:ra,fn:rn,ha:Math.floor(ra*.45),hn:Math.floor(rn*.45)});return P}
+function anTable(P,ph){const R=anResult(ph);
+  const rows=P.map(p=>{const hm=Math.abs(p.ha-R.half.a)+Math.abs(p.hn-R.half.n);if(!R.fin)return {...p,hm,ok:null,fm:null};
+    const ok=(p.fa>p.fn)===(R.fin.a>R.fin.n);return {...p,hm,ok,fm:Math.abs(p.fa-R.fin.a)+Math.abs(p.fn-R.fin.n)}});
+  rows.sort(R.fin?(x,y)=>(y.ok-x.ok)||x.fm-y.fm||x.hm-y.hm:(x,y)=>x.hm-y.hm);
+  let rk=0,prev=null,n=0;const body=rows.map(r=>{let shown="—";if(r.id!==BOT){n++;const key=R.fin?r.ok+"|"+r.fm+"|"+r.hm:"";if(!R.fin)shown="";else{if(key!==prev){rk=n;prev=key}shown=rk}}
+    return `<tr class="${r.id==="me"?"me":""}"><td>${shown}</td><td>${r.id===BOT?"🤖 ":""}${esc(r.name)}</td><td class="n">${r.fa}-${r.fn}</td><td class="n">${r.ha}-${r.hn}</td>${R.fin?`<td class="n">${r.ok?"✓":"✗"}</td><td class="n">${r.fm}</td>`:""}<td class="n">${r.hm}</td></tr>`}).join("");
+  return `<h3 class="rh">${R.fin?"Final standings":"At halftime"}</h3><p class="bwfin">${R.fin?`Final: Army ${R.fin.a}, Navy ${R.fin.n} · `:""}Halftime: Army ${R.half.a}, Navy ${R.half.n}</p>
+    <table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Final</th><th class="n">Half</th>${R.fin?'<th class="n">Win</th><th class="n">Off</th>':""}<th class="n">Half off</th></tr></thead><tbody>${body}</tbody></table>
+    <p class="note">Scores are Army first, then Navy. Sample pickers and a made-up result. ${R.fin?"Order: the right winner, then the fewest points off the final, then the fewest off halftime. Exact ties share.":"Nobody wins at halftime. The final decides it."} Robo-Sharp plays unranked and cannot win.</p>`}
+function renderAN(){const el=$("#v-armynavy");if(!state.isOwner){el.innerHTML="";return}
+  const d=anState(),ph=state.anPhase||"pre",ln=anLine(),A=teamLook("Army",null,"away"),N=teamLook("Navy",null,"home"),err=anErr(d);
+  const fav=ln<0?`Navy ${fmtLine(ln)}`:`Army ${fmtLine(-ln)}`;
+  const box=(k,who,lbl)=>`<input class="anbox" id="an-${k}" type="number" inputmode="numeric" min="0" max="99" value="${esc(d[k])}" aria-label="${lbl} score for ${who}" ${ph==="pre"?"":"disabled"}>`;
+  const team=(L,name)=>`<span class="anteam" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}"><span class="mono" aria-hidden="true">${esc(L.abbr)}</span><b>${name}${L.emoji?" "+L.emoji:""}</b></span>`;
+  let h=`<div class="bwproto"><b>Prototype. Only you can see this tab.</b> Your entry saves on this device only and counts for nothing.</div>
+    <h2 class="rh">⚓ Army-Navy · Sat Dec 12 · ${esc(kick(AN_KICK).replace(/^\w+ /,""))}</h2>
+    <p class="note">East Rutherford, N.J. Straight up: the spread does not count. Spread for information: ${esc(fav)} (sample). Lock time is not set.</p>
+    <div class="bwbar" role="group" aria-label="Preview">${[["pre","Before lock"],["half","Halftime"],["final","Final"]].map(([k,l])=>`<button type="button" class="mbchip" data-anph="${k}" aria-pressed="${ph===k}">${l}</button>`).join("")}</div>
+    <div class="game anform"><div class="angrid"><span></span><span class="anh">Final</span><span class="anh">Halftime</span>${team(A,"Army")}${box("fa","Army","Final")}${box("ha","Army","Halftime")}${team(N,"Navy")}${box("fn","Navy","Final")}${box("hn","Navy","Halftime")}</div>
+    <p class="anread" id="anRead">${anRead(d)}</p><p class="anerr" id="anErr" role="alert">${esc(err)}</p></div>`;
+  if(ph!=="pre")h+=anTable(anField(),ph);
+  h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul><li>Enter a predicted final score and a predicted halftime score. Your final score names your winner.</li><li>Winner order: the right winner first, then the closest final score, then the closest halftime score. Closest means the fewest points off, adding the miss on each team. Exact ties share.</li><li>No season points, no weekly win, no field goal. It has its own career stat.</li></ul></div>
+    <p class="note" style="margin-top:14px">Kickoff from Navy's event page, which lists Dec 12, 3 to 7 p.m., in East Rutherford, N.J. The spread is a sample from the SP+ gap with the half-point rule. The red dot on the tab pulses until your entry is complete.</p>`;
+  el.innerHTML=h}
+function anRead(d){if(!anDone())return ["fa","fn","ha","hn"].every(k=>d[k]==="")?"Enter all four scores.":"Fill in all four scores.";
+  const fa=+d.fa,fn=+d.fn,w=fa>fn?"Army":"Navy";return `Your call: ${w} wins by ${Math.abs(fa-fn)}, ${Math.max(fa,fn)}-${Math.min(fa,fn)}. Halftime ${d.ha}-${d.hn}, Army first.`}
+document.addEventListener("click",e=>{const t=e.target.closest("#v-armynavy [data-anph]");if(!t)return;state.anPhase=t.dataset.anph;renderAN()});
+document.addEventListener("input",e=>{const m=/^an-(fa|fn|ha|hn)$/.exec(e.target.id||"");if(!m)return;const d=anState();d[m[1]]=e.target.value.replace(/\D/g,"").slice(0,2);anSave();
+  $("#anRead").textContent=anRead(d);$("#anErr").textContent=anErr(d);$("#anTab").classList.toggle("hot",!anDone())});
 /* Bowl challenge prototype (item 3). Commissioner only, on the hidden Bowl Season tab. Picks save on this device only; nothing reaches the server.
    Teams: Athlon's Nov 1 projections. Dates: ESPN's 2026-27 schedule. Lines are samples from the SP+ gap, neutral site, half-point rule. */
 const BOWL_SRC="Teams from Athlon Sports' bowl projections after Week 9 (Nov 1). Athlon listed South Carolina twice, so Kentucky fills the Liberty Bowl. Dates from ESPN's 2026-27 schedule.";
@@ -1312,7 +1368,7 @@ const BOWL_LOCK="2026-12-15T22:30:00Z";
 const BOWLS=[["b01","Salute to Veterans Bowl","2026-12-15T22:30:00Z","Montgomery, Ala.","Middle Tennessee","Georgia Southern"],["b02","Frisco Football Classic","2026-12-16T02:00:00Z","Frisco, Texas","Louisiana Tech","North Texas"],["b03","Boca Raton Bowl","2026-12-18T16:00:00Z","Boca Raton, Fla.","James Madison","Memphis"],["b04","Gasparilla Bowl","2026-12-18T19:30:00Z","Tampa, Fla.","Virginia","Auburn"],["b05","Myrtle Beach Bowl","2026-12-21T16:00:00Z","Conway, S.C.","Tulane","Marshall"],["b06","Famous Idaho Potato Bowl","2026-12-21T19:30:00Z","Boise, Idaho","Toledo","North Dakota State"],["b07","Puerto Rico Bowl","2026-12-22T18:30:00Z","Bayamón, P.R.","Miami (Ohio)","Florida Atlantic"],["b08","Cure Bowl","2026-12-22T22:00:00Z","Orlando, Fla.","Jacksonville State","Western Michigan"],["b09","Independence Bowl","2026-12-23T01:30:00Z","Shreveport, La.","Texas A&M","UCF"],["b10","New Orleans Bowl","2026-12-23T19:00:00Z","New Orleans","Liberty","Louisiana"],["b11","Armed Forces Bowl","2026-12-23T22:30:00Z","Fort Worth, Texas","UTSA","Air Force"],["b12","Poinsettia Bowl","2026-12-24T00:30:00Z","San Diego","Fresno State","Washington"],["b13","Frisco Bowl","2026-12-24T02:00:00Z","Frisco, Texas","Tulsa","Delaware"],["b14","New Mexico Bowl","2026-12-24T19:30:00Z","Albuquerque, N.M.","New Mexico","Arizona State"],["b15","Hawai'i Bowl","2026-12-25T00:00:00Z","Honolulu","UNLV","Texas State"],["b16","Pinstripe Bowl","2026-12-26T17:00:00Z","New York","Pitt","Minnesota"],["b17","Fenway Bowl","2026-12-26T19:00:00Z","Boston","North Carolina","Army"],["b18","Duke's Mayo Bowl","2026-12-26T20:30:00Z","Charlotte, N.C.","Louisville","Northwestern"],["b19","68 Ventures Bowl","2026-12-26T22:30:00Z","Mobile, Ala.","Ohio","Arkansas State"],["b20","Cactus Bowl","2026-12-27T00:30:00Z","Tempe, Ariz.","Cincinnati","Michigan"],["b21","Military Bowl","2026-12-28T19:00:00Z","Annapolis, Md.","Duke","South Florida"],["b22","Holiday Bowl","2026-12-28T22:00:00Z","San Diego","Virginia Tech","Oregon State"],["b23","Birmingham Bowl","2026-12-29T19:00:00Z","Birmingham, Ala.","NC State","Mississippi State"],["b24","Pop-Tarts Bowl","2026-12-29T22:30:00Z","Orlando, Fla.","Wake Forest","Houston"],["b25","Alamo Bowl","2026-12-30T02:00:00Z","San Antonio","Texas Tech","USC"],["b26","Gator Bowl","2026-12-30T16:30:00Z","Jacksonville, Fla.","SMU","Florida"],["b27","Music City Bowl","2026-12-30T20:00:00Z","Nashville, Tenn.","Nebraska","South Carolina"],["b28","ReliaQuest Bowl","2026-12-31T17:00:00Z","Tampa, Fla.","Wisconsin","Alabama"],["b29","Sun Bowl","2026-12-31T19:00:00Z","El Paso, Texas","Clemson","Arizona"],["b30","Las Vegas Bowl","2026-12-31T20:45:00Z","Las Vegas","Oregon","Tennessee"],["b31","Texas Bowl","2027-01-01T00:30:00Z","Houston","Oklahoma State","Missouri"],["b32","Citrus Bowl","2027-01-02T17:00:00Z","Orlando, Fla.","Iowa","Ole Miss"],["b33","First Responder Bowl","2027-01-02T20:30:00Z","Dallas","Baylor","Penn State"],["b34","Liberty Bowl","2027-01-03T00:30:00Z","Memphis, Tenn.","West Virginia","Kentucky"],["b35","Arizona Bowl",null,"Tucson, Ariz.","Buffalo","Wyoming"]];
 const BW_FAKE=["Big Tuna","Coach K","Sooner Steve","Bayou Bill","Mrs. Q","The Professor","Deacon","Lefty"];
 const BW_LIVE_CUT="2026-12-27T00:00:00Z";
-function bwHash(x){let h=2166136261;for(const c of String(x)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0)/4294967296}
+function bwHash(x){let h=2166136261;for(const c of String(x)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}h^=h>>>16;h=Math.imul(h,0x85ebca6b);h^=h>>>13;h=Math.imul(h,0xc2b2ae35);h^=h>>>16;return (h>>>0)/4294967296}
 function bwHalf(v){if(Math.abs(v%1)===.5)return v;const r=Math.round(v*2)/2;if(Math.abs(r%1)===.5)return r;return r<0?r-.5:r>0?r+.5:.5}
 function bwRate(k){const R=state.rankings||{},m={};((R.power&&R.power[k]&&R.power[k].teams)||[]).forEach(t=>m[canon(t.team)]=t.rating);return m}
 function bwGames(){const sp=bwRate("sp"),fpi=bwRate("fpi"),ap={};((state.rankings&&state.rankings.ap&&state.rankings.ap.teams)||[]).forEach(t=>ap[canon(t.team)]=t.rank);
@@ -1356,10 +1412,9 @@ function bwCard(g,ph,P,isTb){const d=state.bw,ed=ph==="pre",r=bwRes(g,ph),mine=d
     <div class="sides">${side("away")}${side("home")}<button class="flagbtn" data-bwlock="${g.id}" aria-pressed="${d.lock===g.id}" aria-label="Kick your field goal on this bowl: 3 points if it covers" ${ed?"":"disabled"}>${GP}<span>FG</span><span class="fl3">3 pts</span></button></div>
     ${tbBox}${ph==="pre"?"":`<div class="bwfin">${r?`Final: ${esc(g.away)} ${r.a}, ${esc(g.home)} ${r.h}`:"Not played yet"}</div><div class="bwwho"><span>${esc(teamLook(g.away,g,"away").abbr)}: ${who("away")}</span><span>${esc(teamLook(g.home,g,"home").abbr)}: ${who("home")}</span></div>`}</div>`}
 function renderBowls(){const el=$("#v-bowls");if(!state.isOwner){el.innerHTML="";return}
-  const d=bwState(),ct=state.bwCt||"bowl",ph=state.bwPhase||"pre",G=bwGames(),tb=bwTie(G),n=Object.keys(d.sel).length;
-  const cts=`<div class="bwcts" role="group" aria-label="Contests"><button type="button" class="bwct" data-bwct="bowl" aria-pressed="${ct==="bowl"}"><b>🏟️ Bowl challenge</b><small>Pick 10 of 35 bowls · Locks Tue Dec 15</small></button><button type="button" class="bwct" data-bwct="an" aria-pressed="${ct==="an"}"><b>⚓ Army-Navy</b><small>Sat Dec 12 · Prototype next</small></button></div>`;
+  const d=bwState(),ph=state.bwPhase||"pre",G=bwGames(),tb=bwTie(G),n=Object.keys(d.sel).length;
+  const cts=`<h2 class="rh">🏟️ Bowl challenge · Pick 10 of 35 bowls · Locks Tue Dec 15</h2>`;
   let h=`<div class="bwproto"><b>Prototype. Only you can see this tab.</b> Picks save on this device only and count for nothing. Sample teams and lines; details at the bottom.</div>${cts}`;
-  if(ct==="an"){el.innerHTML=h+`<div class="game"><h3 class="rh">Army-Navy · Sat Dec 12</h3><p>Predict the final score and the halftime score. Straight up, so the spread is for information only.</p><p class="note">Winner order: the right winner, then the closest final score, then the closest halftime score. Lock time is not set. This prototype comes next.</p></div>`;return}
   const f=state.bwFilter||"all";
   h+=`<div class="bwbar" role="group" aria-label="Preview">${[["pre","Before lock"],["live","After lock"],["final","Final"]].map(([k,l])=>`<button type="button" class="mbchip" data-bwph="${k}" aria-pressed="${ph===k}">${l}</button>`).join("")}</div>`;
   if(ph==="pre"){h+=`<p class="bwstat" id="bwStat">${bwStat()}</p><div class="bwbar" role="group" aria-label="Show">${[["all","All bowls",35],["mine","My picks",n]].map(([k,l,c])=>`<button type="button" class="mbchip" data-bwf="${k}" aria-pressed="${f===k}">${l} <b>${c}</b></button>`).join("")}</div>`}
@@ -1371,13 +1426,12 @@ function renderBowls(){const el=$("#v-bowls");if(!state.isOwner){el.innerHTML=""
   h+=`<p class="note" style="margin-top:14px">${esc(BOWL_SRC)} Lines are samples from the SP+ gap at a neutral site, with the half-point rule. The red dot on the tab previews the real one: it pulses until your sheet is complete.</p>`;
   el.innerHTML=h}
 function bwStat(){const d=state.bw,n=Object.keys(d.sel).length;return `${n} of 10 picked · ${d.lock?"Field goal set":"No field goal yet"} · ${d.tb!==""?"Tiebreaker in":"No tiebreaker yet"}${bwDone()?" · Sheet complete":""}`}
-document.addEventListener("click",e=>{if(!e.target.closest("#v-bowls"))return;const t=e.target.closest("[data-bws],[data-bwlock],[data-bwph],[data-bwf],[data-bwct]");if(!t)return;const d=bwState();
-  if(t.dataset.bwct){state.bwCt=t.dataset.bwct}
-  else if(t.dataset.bwph){state.bwPhase=t.dataset.bwph}
+document.addEventListener("click",e=>{if(!e.target.closest("#v-bowls"))return;const t=e.target.closest("[data-bws],[data-bwlock],[data-bwph],[data-bwf]");if(!t)return;const d=bwState();
+  if(t.dataset.bwph){state.bwPhase=t.dataset.bwph}
   else if(t.dataset.bwf){state.bwFilter=t.dataset.bwf}
   else if(t.dataset.bwlock){const id=t.dataset.bwlock;if(!d.sel[id]){toast("Pick a side in this bowl first.");return}d.lock=d.lock===id?null:id;bwSave()}
   else{const id=t.dataset.bwg,sd=t.dataset.bws;if(d.sel[id]===sd){delete d.sel[id];if(d.lock===id)d.lock=null}
-    else{if(!d.sel[id]&&Object.keys(d.sel).length>=10){toast("You have 10 bowls. Tap a pick again to drop it first.");return}d.sel[id]=sd}bwSave()}
+    else{if(!d.sel[id]&&Object.keys(d.sel).length>=10){toast("You have 10 bowls. Tap a pick again to drop it first.");return}d.sel[id]=sd}bwSave();toast(`You have picked ${Object.keys(d.sel).length} of 10 bowls.`,"info")}
   renderBowls();$("#bowlsTab").classList.toggle("hot",!bwDone())});
 document.addEventListener("input",e=>{if(e.target.id!=="bwTb")return;const d=bwState();d.tb=e.target.value.replace(/\D/g,"").slice(0,3);bwSave();const st=$("#bwStat");if(st)st.textContent=bwStat();$("#bowlsTab").classList.toggle("hot",!bwDone())});
 function render(){
@@ -1405,8 +1459,11 @@ function render(){
   if(state.view==="survivor")renderSurvivor();
   if(state.view==="playoffs")renderBracket();
   if(state.view==="commish")renderCommish();
-  if(state.isOwner){bwState();$("#bowlsTab").classList.toggle("hot",!bwDone())}
+  if(state.isOwner){bwState();$("#bowlsTab").classList.toggle("hot",!bwDone());anState();$("#anTab").classList.toggle("hot",!anDone())}
+  /* Picks gets the action dot while a week is open and this login has no saved sheet. */
+  $("#picksTab").classList.toggle("hot",!!(state.db&&w&&w.status==="open"&&!(state.sheetsIn||[]).includes(state.uid)));
   if(state.view==="bowls")renderBowls();
+  if(state.view==="armynavy")renderAN();
   if(state.view==="rules")renderLog();
   if(state.view==="profile")renderProfile();
 }
@@ -1438,7 +1495,7 @@ const GO_TILES=[
   ["profile","\u{1F454}","Profile","Suit up","Your look and theme"]];
 function goTiles(cur){return `<h2 class="gohead">Around the league</h2><nav class="gotiles" aria-label="Other tabs">${GO_TILES.filter(t=>t[0]!==cur).map(([v,ic,tab,head,sub])=>`<a class="gotile" href="#${v}"><span class="goic" aria-hidden="true">${ic}</span><span><b>${tab}</b><strong>${head}</strong><small>${sub}</small></span></a>`).join("")}</nav>`}
 /* render() runs on every poll, so the footer only redraws when the tab changes. */
-function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=!v||v==="commish"||v==="bowls"?"":goTiles(v)}
+function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=!v||["commish","bowls","armynavy"].includes(v)?"":goTiles(v)}
 /* Red with unsaved changes, green once a sheet is saved, plain when there is nothing to save yet. */
 function saveBtnH(){const saved=!state.dirty&&(state.sheetsIn||[]).includes(state.uid);return `<button class="btn primary${state.dirty?" unsaved":saved?" saved":""}" id="saveBtn" ${state.dirty?"":"disabled"}>${saved?"Saved":"Save picks"}</button>`}
 /* A rookie has no saved pick on any sheet yet. Until the first save, Picks leads with a plain step list. */
