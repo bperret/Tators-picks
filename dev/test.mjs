@@ -110,7 +110,14 @@ try {
   await c.click('[data-csec="0"]'); await c.waitForTimeout(100);
   check("collapse all shuts every section", (await c.locator('#v-commish details[data-sec][open]').count()) === 0);
   await c.click('[data-csec="1"]'); await c.waitForTimeout(100);
-  check("expand all opens every section", (await c.locator('#v-commish details[data-sec]:not([open])').count()) === 0);
+  check("expand all opens every section", (await c.locator('#v-commish details[data-sec]:not([data-noall]):not([open])').count()) === 0);
+  check("expand all skips Setup and one-time tools", (await c.locator('#v-commish details[data-sec="tools"]:not([open])').count()) === 1);
+  {
+    const auto = await c.textContent('[data-sec="auto"]'), tools = await c.textContent('[data-sec="tools"]');
+    check("one-time jobs live in Setup and one-time tools, not Automation", (await c.locator('[data-sec="auto"] [data-job="gamelog"], [data-sec="auto"] [data-job="lines"]').count()) === 0 && (await c.locator('[data-sec="tools"] [data-job="gamelog"], [data-sec="tools"] [data-job="lines"]').count()) === 2 && auto.length > 0 && tools.length > 0);
+    check("Automation has no second Open picks or Pull scores button", (await c.locator('[data-sec="auto"] [data-job="open"], [data-sec="auto"] [data-job="scores"]').count()) === 0);
+    check("set-once settings sit in Setup and one-time tools", (await c.locator('[data-sec="tools"] #liveChk, [data-sec="tools"] #roboChk, [data-sec="tools"] #ovTeam, [data-sec="tools"] #nameInput, [data-sec="tools"] #slateForm').count()) === 5);
+  }
   await c.click(".mbadd summary");
   await c.fill("#apName", "Mike"); await c.fill("#apPhone", "(214) 555-0123");
   await c.click("#addPlayerForm button[type=submit]"); await c.waitForTimeout(400);
@@ -920,9 +927,9 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     check("Commish has the Robo-Sharp check, switch off", (await c.textContent('[data-sec="robo"]')).includes("new model off"));
     await c.click('[data-act="roboFill"]'); await c.waitForTimeout(500);
     await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
-    const panel = await c.textContent('[data-sec="robo"]');
+    const panel = await c.textContent('[data-sec="robo"]'), tpanel = await c.textContent('[data-sec="tools"]');
     check("each week in the Robo-Sharp check counts its bands", /Bands: \d+ heavy, \d+ leans, \d+ slight, \d+ coin flip\./.test(panel), panel.slice(0, 400));
-    check("Save inputs fills weeks and shows old vs new", /Week \d+/.test(panel) && /Field goal:/.test(panel), panel.slice(0, 300));
+    check("Save inputs fills weeks and shows old vs new in the tools", /Week \d+: old vs new/.test(tpanel) && /Field goal:/.test(tpanel) && !/Field goal:/.test(panel), tpanel.slice(0, 300));
     await c.check("#roboChk"); await c.waitForTimeout(500);
     const cfg = await c.evaluate(() => window.tpRobo && document.querySelector('[data-sec="robo"]').textContent.includes("new model on"));
     check("the switch turns the new Robo-Sharp on", cfg);

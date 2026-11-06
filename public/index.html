@@ -1199,8 +1199,8 @@ function loginsPanel(){
     <div id="mbBox">${mbBody()}</div>
     <p class="note">Tap a picker for their phone, Reset PIN, and Remove. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Remove greys a picker out in Standings with no points and blocks new picks, but keeps their picks and profile saved; Restore brings it all back. To wipe a picker, Remove them, then Start over: it deletes their picks and profile, keeps the phone and PIN, and runs the first login walk-on again.</p></details>`}
 function importPanel(){
-  return `${secTag("backups",false,"manual")}${secHead("Manual backups","paste a slate or rankings by hand")}<form id="slateForm" class="inner" novalidate><h2>Load a slate</h2><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
-  <form id="rankForm" class="inner" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings and Update ratings. Paste rankings JSON for the Teams tab. JSON with only a "power" part updates just those ratings and keeps the polls. For the r/CFB poll, select its table on poll.redditcfb.com, copy, and paste it here. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form></details>`}
+  return `<form id="slateForm" class="inner" novalidate><h3 class="rh">Load a slate</h3><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
+  <form id="rankForm" class="inner" novalidate><h3 class="rh">Update rankings</h3><p class="note">Manual backup for Refresh rankings and Update ratings. Paste rankings JSON for the Teams tab. JSON with only a "power" part updates just those ratings and keeps the polls. For the r/CFB poll, select its table on poll.redditcfb.com, copy, and paste it here. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form>`}
 
 /* ---------- saving picks ---------- */
 async function savePicks(force){
@@ -2630,10 +2630,10 @@ function trendChart(weeks,ids,sel){
 /* Each Commish section folds open and shut. The open or shut choice is saved per device. */
 const COPEN=(()=>{try{return JSON.parse(localStorage.getItem("tp-commish-open")||"{}")||{}}catch(e){return {}}})();
 function secOpen(id,def){return Object.prototype.hasOwnProperty.call(COPEN,id)?!!COPEN[id]:!!def}
-function secTag(id,def,cls,force){return `<details class="panel csec${cls?" "+cls:""}" data-sec="${id}"${force||secOpen(id,def)?" open":""}>`}
+function secTag(id,def,cls,force,extra){return `<details class="panel csec${cls?" "+cls:""}" data-sec="${id}"${extra?" "+extra:""}${force||secOpen(id,def)?" open":""}>`}
 function secHead(title,note){return `<summary><h2 style="display:inline">${title}</h2>${note?` <span class="note">${note}</span>`:""}</summary>`}
 document.addEventListener("toggle",e=>{const d=e.target;if(!d||!d.dataset||!d.dataset.sec)return;COPEN[d.dataset.sec]=d.open;try{localStorage.setItem("tp-commish-open",JSON.stringify(COPEN))}catch(x){}},true);
-document.addEventListener("click",e=>{const b=e.target.closest("[data-csec]");if(!b)return;const on=b.dataset.csec==="1";document.querySelectorAll("#v-commish details[data-sec]").forEach(d=>{d.open=on})});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-csec]");if(!b)return;const on=b.dataset.csec==="1";document.querySelectorAll("#v-commish details[data-sec]").forEach(d=>{if(on&&d.hasAttribute("data-noall"))return;d.open=on})});
 function commishWeekId(){const c=state.cwk;return c&&state.weeks[c]&&state.weeks[c].status!=="final"?c:currentWeekId()}
 function weekPicker(wid){const open=Object.values(state.weeks).filter(x=>x.id===currentWeekId()||x.status==="locked").sort((a,b)=>a.id<b.id?1:-1);
   if(open.length<2)return "";return `<div class="bar"><label for="cwkSel" class="note">Working on</label><select id="cwkSel">${open.map(x=>`<option value="${esc(x.id)}" ${x.id===wid?"selected":""}>Week ${x.week}${x.id===currentWeekId()?" (current)":" (not final)"}</option>`).join("")}</select></div>`}
@@ -2659,29 +2659,30 @@ function onboardFunnel(E){const L=(state.logins||[]).filter(p=>!p.removed&&!p.is
   const at=({p,o})=>inn.has(p.id)||o.sheet?null:!o.suit&&!p.setupDone?"Welcome":!p.setupDone?"Jersey":!(o.rules||o.skip)?"Rules":"First sheet";
   const stuck=rows.map(x=>[x.p,at(x)]).filter(([,s])=>s);
   return `<h3 class="rh">First login</h3><p class="note">Counts start Nov 5, 2026. Welcome ${cnt(x=>x.o.welcome)} · Let's go ${cnt(x=>x.o.suit)} · Jersey ${cnt(x=>x.p.setupDone)} · Rules ${cnt(x=>x.o.rules)} (skipped ${cnt(x=>x.o.skip)}) · First sheet ${cnt(x=>inn.has(x.p.id)||x.o.sheet)}.</p>${stuck.length?`<p class="note">Stopped at: ${stuck.map(([p,s])=>`${esc(p.name||p.invited||"Picker")} (${s})`).join(", ")}.</p>`:""}`}
+/* Automation jobs. Weekly jobs show in Automation; one-time backfills sit in Setup and one-time tools. A null button shows status only. */
+const AUTO_JOBS=[["preview","Build preview"],["slate","Build from ESPN"],["refresh","Refresh lines"],["open",null],["scores",null],["rankings","Refresh rankings"],["ats","Update ATS"],["ratings","Update ratings"]];
+const TOOL_JOBS=[["gamelog","Fill game log"],["lines","Fill lines"]];
+function jobRow(A,j,btn){const r=(A.runs||{})[j],L=A.labels||{};return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.idle?"Nothing to do":r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span>${btn?`<button class="btn sm" data-act="run" data-job="${j}">${btn}</button>`:"<span></span>"}</div>`}
 function autoPanel(){
   const A=state.auto;if(!A)return "";
   const fl=A.flags||[],runs=A.runs||{},L=A.labels||{},Lv=A.live||{on:false,gap:10,cap:80,today:0};
   const failedRun=Object.values(runs).some(r=>!r.ok);const calm=!fl.length&&!failedRun&&!A.paused;
   const flagsH=fl.length?fl.map(f=>`<div class="aflag"><span class="pill ${f.level==="error"?"bad":"wait"}">${f.level==="error"?"Failed":"Check"}</span><span>${esc(f.msg)}</span>${f.fixed?"<span></span>":`<button class="btn sm" data-act="dismiss" data-key="${esc(f.key)}">Dismiss</button>`}</div>`).join(""):`<p class="note">${A.paused?"No flags. Automation is paused.":failedRun?"No open flags, but a job below failed on its last run.":"No flags. No job failed on its last run."}</p>`;
-  const jobs=[["preview","Build preview"],["slate","Build from ESPN"],["refresh","Refresh lines"],["open","Open picks"],["scores","Pull scores"],["rankings","Refresh rankings"],["ats","Update ATS"],["gamelog","Fill game log"],["lines","Fill lines"],["ratings","Update ratings"]];
-  const rows=jobs.map(([j,btn])=>{const r=runs[j];return `<div class="lgrow"><span class="t"><b>${esc(L[j]||j)}</b><span class="note">${r?`${r.idle?"Nothing to do":r.ok?"Worked":"Failed"} ${esc(when(r.at))}${r.by&&r.by!=="Automation"?" (you tapped it)":""}. ${esc(r.msg||"")}`:"Has not run yet."}</span></span><button class="btn sm" data-act="run" data-job="${j}"${j==="open"?' data-force="1"':""}>${btn}</button></div>`}).join("");
+  const rows=AUTO_JOBS.map(([j,btn])=>jobRow(A,j,btn)).join("");
   return `${secTag("auto",false,"auto"+(fl.some(f=>f.level==="error")?" alert":""),fl.length>0)}<summary><h2 style="display:inline">Automation${fl.length?` <span class="pill ${fl.some(f=>f.level==="error")?"bad":"wait"}">${fl.length} flag${fl.length>1?"s":""}</span>`:calm?' <span class="pill">All good</span>':A.paused?' <span class="pill wait">Paused</span>':' <span class="pill bad">Check jobs</span>'}</h2></summary>
     <p class="note">${A.paused?"Paused. Nothing runs on the schedule until you resume it. The buttons below still work.":`The GitHub schedule is set for twice an hour, but its runs can come hours apart.${A.lastTick?" Last run "+esc(when(A.lastTick))+".":""}`}</p>
     ${flagsH}
     <h3 class="rh">Jobs</h3><div class="lglist">${rows}</div>
     <div class="autobar"><label class="note"><input type="checkbox" id="autoOpenChk" ${A.autoOpen?"checked":""}> Open picks by themselves Wednesday 6 p.m. CT</label></div>
-    <div class="autobar"><label class="note"><input type="checkbox" id="liveChk" ${Lv.on?"checked":""}> Let page visits run overdue scores and the Wednesday open</label></div>
-    <div class="autobar"><label class="note">Every <input type="number" id="liveGap" min="5" max="60" value="${Lv.gap}" style="width:4.5em"> minutes</label><label class="note">Daily cap <input type="number" id="liveCap" min="1" max="160" value="${Lv.cap}" style="width:4.5em"></label></div>
-    <p class="note">Today: ${Lv.today} of ${Lv.cap} page visit runs.${Lv.at?" Last one "+esc(when(Lv.at))+".":""} A 403 or 429 from ESPN turns this off with a flag.</p>
+    <p class="note">Page visit runs: ${Lv.on?`on, every ${Lv.gap} minutes. Today: ${Lv.today} of ${Lv.cap}.${Lv.at?" Last one "+esc(when(Lv.at))+".":""}`:"off."} Settings are in Setup and one-time tools.</p>
     <div class="autobar"><button class="btn sm" data-act="pause">${A.paused?"Resume automation":"Pause automation"}</button></div>
-    <p class="note">Each week, on the first run at or after each time below. The schedule can run hours late. Monday 9 a.m. posts a preview for pickers, and its lines update every 6 hours. Tuesday 1 p.m. builds a draft from ESPN, and pickers see those 10 games with no picks allowed. Wednesday 6 p.m. refreshes the lines and opens picks, unless you already opened them, the box above is off, the week is on hold, or it has under 10 games. Open picks always refreshes the lines first. Refresh lines works any time before picks open: it updates the draft, or the preview if there is no draft yet. Once picks open, lines are final. After the lock, scores update on each run, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Every button here does the same job by hand. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.</p></details>`}
+    <p class="note">Each week, on the first run at or after each time below. The schedule can run hours late. Monday 9 a.m. posts a preview for pickers, and its lines update every 6 hours. Tuesday 1 p.m. builds a draft from ESPN, and pickers see those 10 games with no picks allowed. Wednesday 6 p.m. refreshes the lines and opens picks, unless you already opened them, the box above is off, the week is on hold, or it has under 10 games. Open picks always refreshes the lines first. Refresh lines works any time before picks open: it updates the draft, or the preview if there is no draft yet. Once picks open, lines are final. After the lock, scores update on each run, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Each button here does the same job by hand. Open picks and Pull scores have their buttons in This week and Scores. Fill game log and Fill lines are in Setup and one-time tools. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.</p></details>`}
 /* Commish: Robo-Sharp check. Old vs new picks for every week with saved inputs, the switch, and a back end model scoreboard. */
 function roboPanel(){
   const wids=Object.keys(state.weeks).sort().filter(k=>{const w=state.weeks[k];return w&&w.robo&&w.robo.last});
   const ab=(g,sd)=>sd?esc(teamLook(sd==="home"?g.home:g.away,g,sd).abbr):"–";
   const gm=(w,id)=>(w.games||[]).find(g=>g.id===id);
-  let rows="";
+  let rows="",cmp="";
   for(const wid of wids){const w=state.weeks[wid];const O=botPicks(w,"old")||{sel:{}},N=botPicks(w,"new")||{sel:{}};
     const ch=(w.games||[]).filter(g=>O.sel[g.id]!==N.sel[g.id]);const so=scoreWeek(w,O),sn=scoreWeek(w,N);
     const fg=g=>g?esc(teamLook(g.away,g,"away").abbr)+" at "+esc(teamLook(g.home,g,"home").abbr):"–";
@@ -2689,7 +2690,8 @@ function roboPanel(){
     const E=roboEvals(w);
     const bc={};Object.values(E).forEach(e=>{const k=roboBand(e.p)[1];bc[k]=(bc[k]||0)+1});
     const bands="Bands: "+[["heavy","heavy"],["lean","leans"],["slight","slight"],["flip","coin flip"]].map(([k,l])=>(bc[k]||0)+" "+l).join(", ")+".";
-    rows+=`<h3 class="rh">Week ${w.week}</h3><p class="note">${bands}</p><p class="note">${ch.length?`<b>${ch.length} side${ch.length===1?"":"s"} change.</b>`:"No sides change."} Field goal: ${fg(gm(w,O.lock))} to ${fg(gm(w,N.lock))}${O.lock===N.lock?" (same)":""}. Survivor: ${sv(O.surv)} to ${sv(N.surv)}. ${so.graded?`Points so far: old ${so.pts} (${so.w}-${so.l}), new ${sn.pts} (${sn.w}-${sn.l}).`:"No games graded yet."}${w.robo.last.note?" "+esc(w.robo.last.note):""}</p>
+    rows+=`<p class="note"><b>Week ${w.week}.</b> ${bands}</p>`;
+    cmp+=`<h3 class="rh">Week ${w.week}: old vs new</h3><p class="note">${ch.length?`<b>${ch.length} side${ch.length===1?"":"s"} change.</b>`:"No sides change."} Field goal: ${fg(gm(w,O.lock))} to ${fg(gm(w,N.lock))}${O.lock===N.lock?" (same)":""}. Survivor: ${sv(O.surv)} to ${sv(N.surv)}. ${so.graded?`Points so far: old ${so.pts} (${so.w}-${so.l}), new ${sn.pts} (${sn.w}-${sn.l}).`:"No games graded yet."}${w.robo.last.note?" "+esc(w.robo.last.note):""}</p>
       <div class="tablewrap"><table><thead><tr><th>Game</th><th class="num">Line</th><th>Old</th><th>New</th><th class="num">Agree</th><th class="num">Cover</th></tr></thead><tbody>${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const e=E[g.id],diff=O.sel[g.id]!==N.sel[g.id];
         return `<tr${diff?' class="me"':""}><td>${fg(g)}</td><td class="num">${fmtLine(g.homeLine)}</td><td>${ab(g,O.sel[g.id])}${O.lock===g.id?" FG":""}</td><td>${diff?"<b>":""}${ab(g,N.sel[g.id])}${diff?"</b>":""}${N.lock===g.id?" FG":""}</td><td class="num">${e&&e.n?e.agree+"/"+e.n:"–"}</td><td class="num">${e?Math.round(e.p*100)+"%":"–"}</td></tr>`}).join("")}</tbody></table></div>`}
   /* Model scoreboard: each source's side against our line, graded on final slate games. Only you see this. */
@@ -2699,18 +2701,37 @@ function roboPanel(){
     for(const [k,x] of e.models)add(k,sideOf(x,g.homeLine),c);add("Consensus",sideOf(e.cons,g.homeLine),c);add("Market move",e.ek==null||Math.abs(e.ek)<0.5?null:e.ek>0?"away":"home",c);add("Robo-Sharp (new)",e.side,c)}}
   const keys=["FPI","SP+","VSiN","Consensus","Market move","Robo-Sharp (new)"].filter(k=>sc[k]);
   const board=keys.length?`<div class="tablewrap"><table><thead><tr><th>Source</th><th class="num">ATS</th><th class="num">Pct</th></tr></thead><tbody>${keys.map(k=>{const t=sc[k];return `<tr><td>${k}</td><td class="num">${t[0]}-${t[1]}</td><td class="num">${t[0]+t[1]?Math.round(t[0]/(t[0]+t[1])*100)+"%":"–"}</td></tr>`}).join("")}</tbody></table></div><p class="note">Graded against our line on final slate games. About 150 games are needed before these say much.</p>`:'<p class="note">No graded games with saved inputs yet.</p>';
+  ROBO_CMP=cmp;
   return `${secTag("robo",false)}${secHead("Robo-Sharp",roboOn()?"new model on":"new model off")}
+    <h3 class="rh">Confidence bands</h3>${rows||'<p class="note">No week has saved inputs yet.</p>'}
+    <h3 class="rh">Model scoreboard</h3>${board}<p class="note">The switch, Save inputs, and the old vs new check are in Setup and one-time tools.</p></details>`}
+let ROBO_CMP="";
+/* Commish: one-time and set-once tools, folded at the bottom, left out of Expand all. Nothing here is needed week to week. */
+function toolsPanel(){
+  const A=state.auto,Lv=(A&&A.live)||{on:false,gap:10,cap:80};
+  const ovs=(state.config&&state.config.teamOverrides)||{};
+  return `${secTag("tools",false,"manual tools",false,"data-noall")}${secHead("Setup and one-time tools","rarely needed")}
+    <p class="note">Set-once settings, backfills, and manual backups. Expand all skips this section.</p>
+    <h3 class="rh">Robo-Sharp setup</h3>
     <div class="autobar"><label class="note"><input type="checkbox" id="roboChk" ${roboOn()?"checked":""}> Use the new Robo-Sharp (three ratings plus the market) for every week with saved inputs</label></div>
     <p class="note">Off: every week uses the FPI line alone, as before. On: pickers see the new picks, the lean line, flip alerts, and the new Rules text. Weeks with no saved inputs stay on the old way.</p>
     <div class="autobar"><button class="btn sm" data-act="roboFill">Save inputs for weeks with none</button></div>
     <p class="note">An open week saves today's market lines and ratings. A locked or final week saves closing lines after the fact, so its new picks know more than Robo-Sharp could have known then.</p>
-    ${rows||'<p class="note">No week has saved inputs yet.</p>'}
-    <h3 class="rh">Model scoreboard</h3>${board}</details>`}
+    ${ROBO_CMP}
+    ${A?`<h3 class="rh">Backfill jobs</h3><p class="note">One-time fills. The game log rechecks the last two weeks by itself each Sunday, and Fill lines stops itself once nothing is missing.</p><div class="lglist">${TOOL_JOBS.map(([j,b])=>jobRow(A,j,b)).join("")}</div>
+    <h3 class="rh">Page visit runs</h3>
+    <div class="autobar"><label class="note"><input type="checkbox" id="liveChk" ${Lv.on?"checked":""}> Let page visits run overdue scores and the Wednesday open</label></div>
+    <div class="autobar"><label class="note">Every <input type="number" id="liveGap" min="5" max="60" value="${Lv.gap}" style="width:4.5em"> minutes</label><label class="note">Daily cap <input type="number" id="liveCap" min="1" max="160" value="${Lv.cap}" style="width:4.5em"></label></div>
+    <p class="note">A 403 or 429 from ESPN turns this off with a flag.</p>`:""}
+    <h3 class="rh">School letters and emoji</h3><p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters (up to 5)" aria-label="Letters, up to 5" style="width:130px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}
+    <h3 class="rh">League name</h3><div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div>
+    <h3 class="rh">Manual backups</h3><p class="note">Paste a slate or rankings by hand when ESPN or a job fails.</p>
+    ${importPanel()}</details>`}
 function renderCommish(){
   const el=$("#v-commish"),wid=commishWeekId(),w=state.weeks[wid]||null;
   if(!state.isOwner){el.innerHTML="";return}
   let h="";
-  if(!w){el.innerHTML=autoPanel()+loginsPanel()+engagePanel()+'<div class="panel empty">No week loaded yet. Tap Build from ESPN above, or paste a slate below.</div>'+importPanel();return}
+  if(!w){el.innerHTML=autoPanel()+loginsPanel()+engagePanel()+'<div class="panel empty">No week loaded yet. Tap Build from ESPN in Automation, or paste a slate in Setup and one-time tools below.</div>'+toolsPanel();return}
   h+=weekPicker(wid);
   const nSub=(state.sheetCount||{})[wid]||0;
   const nAct=(state.logins||[]).filter(a=>!a.removed&&a.setupDone).length;
@@ -2730,11 +2751,8 @@ function renderCommish(){
     const rs=w.results||{};
     h+=`${secTag("scores",false)}${secHead("Scores",(()=>{const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;return nf+" of "+w.games.length+" final"})())}<p class="note">Each game: away score, home score, status. ESPN scores fill in on each run${liveOn()?`, and about every ${liveGap()} minutes while games are live and someone has the site open`:""}. To enter a score yourself, set the game to In progress, Final, or Void and save. Set it back to ESPN to hand it back.</p><div class="grid2 scoreg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)}</span><input type="number" id="ra-${esc(g.id)}" placeholder="${esc(teamLook(g.away).abbr)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" placeholder="${esc(teamLook(g.home).abbr)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status">${(()=>{const man=r.src==="manual"||(r.void&&r.src!=="auto");const cur=!man?"auto":r.void?"void":r.final?"final":"";return [["auto","ESPN"+(r.src==="auto"&&r.status?" · "+r.status:"")],["","In progress"],["final","Final"],["void","Void"]].map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`).join("")})()}</select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button><button class="btn" data-act="run" data-job="scores">Pull scores now</button></div></details>`;
   }
-  h+="<!--AUTO-->";
-  const ovs=(state.config&&state.config.teamOverrides)||{};
-  h+=`${secTag("letters",false)}${secHead("School letters and emoji")}<p class="note">Set your own letters (up to 5) or emoji for any school. Leave a field blank to keep the default.</p><div class="bar"><select id="ovTeam" aria-label="School">${Object.keys(TEAMS).sort().map(n=>`<option>${esc(n)}</option>`).join("")}</select><input type="text" id="ovAbbr" maxlength="5" placeholder="Letters (up to 5)" aria-label="Letters, up to 5" style="width:130px"><input type="text" id="ovEmoji" maxlength="8" placeholder="Emoji" aria-label="Emoji" style="width:80px"><button class="btn" data-act="override">Save label</button></div>${Object.keys(ovs).length?`<p class="note">Custom: ${Object.entries(ovs).map(([n,o])=>esc(n)+" "+esc(o.abbr||"")+" "+esc(o.emoji||"")).join(" \u00b7 ")}</p>`:""}</details>`;
-  h+=`${secTag("name",false)}${secHead("League name")}<div class="bar"><input type="text" id="nameInput" value="${esc(state.config&&state.config.name||"")}" maxlength="40" aria-label="League name"><button class="btn" data-act="rename">Save name</button></div></details>`;
-  el.innerHTML=h.replace("<!--AUTO-->",autoPanel()+loginsPanel()+engagePanel()+roboPanel())+importPanel();
+  h+=autoPanel()+loginsPanel()+engagePanel()+roboPanel()+toolsPanel();
+  el.innerHTML=h;
 }
 
 
