@@ -939,7 +939,10 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
       return [roboWhy(g, mk), roboWhy(g, rt), roboWhy(g, both), roboWhy(g, flat)];
     });
     check("Robo's card names what drove the pick", why[0].startsWith("Market call:") && why[0].includes("\u22126") || why[0].includes("-6"), why.join(" | "));
-    check("Robo's card says ratings call, both, or coin flip", why[1] === "Ratings call: 1 of 1 like it" && why[2] === "Ratings and market agree" && why[3] === "Coin flip", why.join(" | "));
+    check("Robo's card says ratings call, both, or coin flip", why[1] === "Ratings call: 1 of 1 like it" && why[2] === "Ratings and market agree" && why[3] === "Ratings split, market flat", why.join(" | "));
+    const bands = await c.evaluate(() => { const { roboEval, roboBand } = window.tpRobo; const g = { away: "Texas", home: "Ole Miss", neutral: true, homeLine: -2.5 };
+      return [0.5, 1, 2, 4].map((e) => roboBand(roboEval({ ...g, modelLine: -2.5 - e }, {}).p)[2]); });
+    check("Robo's confidence bands run from coin flip to heavy lean", bands.join() === "Coin flip,Slight lean,Leans,Heavy lean", bands.join());
     check("a market move after the open shows as a Robo flip", flip.join() === "away>home", flip.join());
     const log = await pg.query("select detail from log where action = 'Changed Robo-Sharp' order by id desc limit 1");
     check("turning it on is logged", log.rows.length === 1);
