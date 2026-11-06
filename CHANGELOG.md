@@ -101,7 +101,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Date | Change | Commit |
 |---|---|---|
-| Nov 6 | Tracker: items 39 to 46 from the review of another pick em app (matchup preview absorbs 24 to 27, drop worst week tested in 2026, segments replace the fresh start); rule change posts move to the GroupMe plan | COMMIT |
+| Nov 6 | Tracker: items 39 to 46 from the review of another pick em app (matchup preview absorbs 24 to 27, drop worst week tested in 2026, segments replace the fresh start); rule change posts move to the GroupMe plan | `4984cdb` |
 | Nov 4 | Item 32 added to the tracker: shuffle the emoji quick row | `7f53972` |
 | Nov 4 | Army-Navy contest added to the tracker; payouts planned at 13 weekly prizes and 14 weeks in all | `504ea5e` |
 | Nov 4 | Survivor plan: second run moves to Nov 21 through Conference Champion Week; 4 runs in 2027 | `99bfc75` |
