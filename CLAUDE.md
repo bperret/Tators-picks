@@ -151,15 +151,18 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - The Rules page explains this badge.
    - Ghosts cannot be Boosters.
 Build note for 33 and 34: one saved badge list per picker, drawn by one helper, so every spot matches Iron Man's look. Badges show on the Pickers profile, and on Standings as long as the row stays clean (Benton, Nov 5). Check the look on a phone before shipping.
-35. League group chat with a content schedule. Decided Nov 5, reverses the old no group chat call. For 2027, not 2026. GroupMe or Signal, not final. Benton likes Signal more, but wants dynamic messages from the app if GroupMe can do it.
+35. League group chat with a content schedule. Decided Nov 5, reverses the old no group chat call. For 2027, not 2026. Platform: GroupMe (Benton, Nov 5). Signal was the other option; it has no official bot API, so it would mean posting by hand.
    - Regular timed reminders on the weekly rhythm: Mon preview, Wed 6 p.m. live, Sat 10:15 a.m. lock, Sunday recap.
    - A content schedule with clear rules updates around the postseason challenges (Conference Champion Week, Army-Navy, Bowl, CFP) and season dates.
-   - Messages stay consistent in tone and look with the app: plain, short, referee voice.
+   - Messages stay consistent in tone and look with the app: plain, short, referee voice. GroupMe text is limited to 1,000 characters.
+   - Dynamic messages: a GroupMe bot posts with one POST of a bot ID and text, so the app fills in live facts. Examples: "Lock is at 10:15. 4 sheets are not in." "Week 11 is final. Top score was 9." "6 still alive in Survivor." "Bowl lock is Tuesday. Pick 10 of 35 bowls." Never send sides before the lock.
+   - Picker commands, an option: GroupMe sends each group message to a bot callback URL, so a picker could type "standings" and get the top 5 back. Needs a new API route. Not decided.
+   - Keep pickers from muting the group. GroupMe gives the owner no control over members' notifications; each member sets their own mute. The owner tools: make it an Announcement Group, where only the owner and admins post and members can like. Keep posts few and fixed (about 3 or 4 a week). @mentions notify a member even when they muted the group, so use them only for a picker whose sheet is not in, never a mass ping.
+   - To check before building: can a bot post in an Announcement Group, and can a bot send an @mention. Neither is in GroupMe's docs. Test with a throwaway group.
+   - Timing: GitHub Actions runs often come hours apart, so a lock reminder could land late. It needs a more reliable trigger. Check volume and block risk first, as with any new API use. GroupMe docs state no rate limit.
+   - `recapFacts` runs in the page, so a Sunday recap post needs recap facts built on the server.
    - The app must still work for a picker who is not in the chat. The weekly rhythm stays as is.
-   - Before automation: GitHub Actions runs often come hours apart, so timed posts need a check. Check volume and block risk first, as with any new API use.
-   - Dynamic messages from the app: GroupMe bots take one POST with a bot ID and text, so the app can fill in live facts, such as how many sheets are not in. Never send sides before the lock. `recapFacts` runs in the page, so a server post needs recap facts on the server.
-   - Signal option: a Copy message button in Commish fills the same text, and Benton pastes it by hand.
-   - To settle: the platform, the schedule itself, and manual or automatic posting.
+   - To settle: the schedule itself, the reliable trigger, and Announcement Group or open chat.
 Buy-in amount for 2027 is not set.
 
 ### Engagement review (Nov 2): Benton's calls
