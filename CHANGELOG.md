@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.36.2 | Nov 6, 8:10 AM | Army-Navy | Entry cards centered; prototype marked complete | S | 4 | COMMIT |
 | 1.36.1 | Nov 6, 8:30 AM | Army-Navy | Patriotic redesign: flag hero, new header order, halftime then final entry cards, Go Army and Go Navy, Salute to Service, Traditions. Bowl Blitz prototype marked done | M | 77 | `384a4a9` |
 | 1.36.0 | Nov 6, 7:55 AM | Pickers | Class badges: Redshirt Class of 2026 or Class of 20XX under each profile name, plus a Classes section listing every class (item 33, part) | S | 51 | `90c07fa` |
 | 1.35.4 | Nov 6, 6:55 AM | Bowl Blitz | Tab renamed from Bowl Season; each bowl gets an emoji and its own name color, readable in light and dark (items 37, 38) | S | 39 | `e1fb5bb` |
