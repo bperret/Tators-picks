@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.33.2 | Nov 6, 6:41 AM | Commish | Start over on a removed picker (two taps): deletes picks, pick history, and engagement, clears the profile, signs them out, keeps phone and PIN so the walk-on runs again. Remove note now says Remove keeps data | S | 21 | `9a3db45` |
 | 1.35 | Nov 6, 6:37 AM | Army-Navy, Picks, Bowl Season | Commissioner-only Army-Navy prototype tab (final and halftime entry, checks, Before lock / Halftime / Final preview); red action dot on Picks until your sheet is saved; white "You have picked N of 10 bowls" toast | M | 137 | `f20ed86` |
 | 1.34 | Nov 6, 6:19 AM | Bowl Season | Commissioner-only prototype tab: Bowl challenge with 35 sample bowls, pick 10, field goal, tiebreaker bowl, and a Before lock / After lock / Final preview; Army-Navy placeholder | M | 145 | `0e60275` |
 | 1.33.1 | Nov 6, 6:27 AM | Sign in, Picks | Pick my own look is a full size gold button; the recap banner waits until a rookie's first save; late joiners get a Survivor bench card that explains the rules and why they sit the run out, with no pick box | S | 22 | `eb6d191` |
