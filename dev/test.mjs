@@ -618,6 +618,17 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(150);
   check("the Commish tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);
 
+  // ---- emoji quick row ----
+  const quickRow = async () => { await m.evaluate(() => (location.hash = "#profile")); await m.waitForSelector("#v-profile .emgrid"); return (await m.$$eval("#v-profile .emgrid", (g) => [...g[0].children].map((b) => b.textContent.trim()))); };
+  const qa = await quickRow();
+  await m.locator("#v-profile .emgrid").first().locator("button").nth(3).click(); await m.waitForTimeout(100);
+  const qa2 = await quickRow();
+  await m.reload(); await m.waitForSelector("#app:not([hidden])");
+  const qb = await quickRow();
+  check("the quick row holds still while a picker chooses", qa.join() === qa2.join());
+  check("the quick row keeps all 20 emojis in a new order on each load", qa.length === 20 && qb.length === 20 && [...qa].sort().join() === [...qb].sort().join() && qa.join() !== qb.join(), qa.join("") + " / " + qb.join(""));
+  await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
+
   // ---- engagement and the page visit switch ----
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   await m.evaluate(() => (location.hash = "#rules")); await m.waitForTimeout(150);

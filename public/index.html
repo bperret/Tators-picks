@@ -819,7 +819,9 @@ async function api(path,body){
     d.status=r.status;d.ok=r.ok&&!d.error;if(!d.ok&&!d.error)d.error="Something went wrong. Try again.";return d}
   catch(e){return {ok:false,status:0,error:"Could not reach the site. Check your connection and try again."}}}
 function accByUid(uid){return PLAYERS[uid]}
+/* Shuffled once per page load, so the row holds still while a picker chooses but no emoji always sits in the same spot. */
 const QUICK=["🏈","🏆","🔥","💰","🎯","🤠","🐯","🦅","🐊","🐻","🦁","🐺","🐗","🦬","🐶","🦆","🐍","⚡","👑","💀"];
+for(let i=QUICK.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[QUICK[i],QUICK[j]]=[QUICK[j],QUICK[i]]}
 const MORE=[
  ["Animals","🐯🦁🐻🐺🦊🐗🦬🐂🐃🐎🦌🐐🐏🐑🐶🐱🐆🦍🐘🦏🦛🐊🐍🦎🐢🦖🐉🦅🦉🦆🐓🦃🦩🐦🐝🦂🦀🦞🐙🦈🐬🐟🦘🐿️🦫🦄"],
  ["Sports","🏈🏀⚾🥎⚽🏐🏒🏑🏏⛳🎾🏓🥊🥋🏆🥇🥈🥉🏅🎯🎳⛷️🏄🏇🏎️🚴🏋️"],
