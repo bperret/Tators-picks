@@ -1064,7 +1064,8 @@ document.addEventListener("click",async e=>{
   if(k==="logout"){await api("/api/auth",{action:"logout"});ME=null;location.hash="#picks";showAuth("loginForm")}
   if(k==="reset"){const r=await api("/api/admin",{action:"resetPin",id:d.dataset.id});if(!r.ok){toast(r.error);return}const who=(state.logins||[]).find(x=>x.id===d.dataset.id);state.shownPin={num:r.phone,pin:r.pin,what:"reset",self:r.self,who:who&&(who.name||who.invited)};if(!r.self)await refresh();renderCommish();const pb=$("#pinbox");if(pb)pb.scrollIntoView({block:"center"})}
   if(k==="hidepin"){const self=state.shownPin&&state.shownPin.self;state.shownPin=null;if(self){showAuth("loginForm");return}renderCommish()}
-  if(k==="startover"){if(!d.dataset.armed){d.dataset.armed="1";d.textContent="Tap again: wipe picks and profile";return}
+  if(k==="startover"){if(!soArmed(d.dataset.id)){state.soArm={id:d.dataset.id,at:Date.now()};d.textContent="Tap again: wipe picks and profile";return}
+    state.soArm=null;d.disabled=true;d.textContent="Starting over…";
     const r=await api("/api/admin",{action:"startOver",id:d.dataset.id});if(!r.ok){toast(r.error);return}toast("Started over. Same phone and PIN; the walk-on runs at their next login.");state.mbFilter="all";await refresh();renderCommish()}
   if(k==="remove"||k==="restore"){const r=await api("/api/admin",{action:"setRemoved",id:d.dataset.id,removed:k==="remove"});if(!r.ok){toast(r.error);return}toast(k==="remove"?"Picker removed":"Picker restored");await refresh();renderCommish()}
 });
@@ -1099,7 +1100,7 @@ function mbRow(a,SC,t){const v=mbSheet(a,SC),open=state.mbOpen===a.id,locked=a.l
   const sub=[v.miss,locked?`Paused ${Math.ceil((Date.parse(a.lockedUntil)-t)/60000)} min`:""].filter(Boolean).join(" · ");
   const seen=state.engage&&state.engage[a.id]&&state.engage[a.id].last;
   const facts=[a.invited&&a.invited!==a.name?"Nickname: "+esc(a.invited):"",v.s?`Week ${SC.w.week}: ${esc(v.s.label)}`:"",v.s&&v.s.at?"Last saved "+esc(when(v.s.at)):"",seen?"Last seen "+esc(when(seen)):"",a.setupDone?"":"Not logged in yet",a.lockouts?a.lockouts+" pause"+(a.lockouts>1?"s":""):""].filter(Boolean);
-  const rm=a.isCommish?"":`<button class="btn sm${a.removed?"":" danger"}" data-dact="${a.removed?"restore":"remove"}" data-id="${esc(a.id)}">${a.removed?"Restore":"Remove"}</button>`+(a.removed?`<button class="btn sm danger" data-dact="startover" data-id="${esc(a.id)}">Start over</button>`:"");
+  const rm=a.isCommish?"":`<button class="btn sm${a.removed?"":" danger"}" data-dact="${a.removed?"restore":"remove"}" data-id="${esc(a.id)}">${a.removed?"Restore":"Remove"}</button>`+(a.removed?`<button class="btn sm danger" data-dact="startover" data-id="${esc(a.id)}">${soArmed(a.id)?"Tap again: wipe picks and profile":"Start over"}</button>`:"");
   const phone=a.isCommish||!a.phone||a.phone.length!==10?`<span>${fmtPhone(a.phone)}</span>`:`<a href="sms:+1${esc(a.phone)}">Text ${fmtPhone(a.phone)}</a>`;
   return `<div class="mbitem"><button type="button" class="mbrow" data-mbr="${esc(a.id)}" aria-expanded="${open}"><span class="mbwho"><b>${chip(a.id)}${esc(mbName(a))}${a.isCommish?" (you)":""}</b>${sub?`<small>${esc(sub)}</small>`:""}</span><span>${v.pill}</span><span class="note">${esc(saved)}</span></button>${open?`<div class="mbdetail">${phone}${facts.map(x=>`<span class="note">${x}</span>`).join("")}<span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${rm}</span></div>`:""}</div>`}
 function mbBody(){const L=state.logins||[],t=NOW(),SC=sheetCheck();
@@ -1112,6 +1113,8 @@ function mbBody(){const L=state.logins||[],t=NOW(),SC=sheetCheck();
   const list=L.filter(q?a=>mbName(a).toLowerCase().includes(q)||(a.invited||"").toLowerCase().includes(q)||(!!dig&&(a.phone||"").includes(dig)):F[fk]).sort((a,b)=>mbSheet(a,SC).rank-mbSheet(b,SC).rank||mbName(a).localeCompare(mbName(b)));
   return `${SC?`<p class="note mbweek"><b>Week ${SC.w.week} sheets${SC.w.status==="locked"?" (locked)":""}.</b> You see what each sheet is missing, never which side anyone picked.</p>`:""}<div class="mbchips" role="group" aria-label="Filter pickers">${chips.map(([k,l])=>`<button type="button" class="mbchip" data-mbf="${k}" aria-pressed="${!q&&fk===k}">${l} <b>${L.filter(F[k]).length}</b></button>`).join("")}</div>
     ${list.length?`<div class="mbhead" aria-hidden="true"><span>Picker</span><span>Sheet</span><span>Saved</span></div><div class="mblist">${list.map(a=>mbRow(a,SC,t)).join("")}</div>`:'<p class="note">No pickers here.</p>'}`}
+/* Start over arms on the first tap and fires on a second tap within 30 seconds. The arm lives in state, so the Commish redraw every 30 seconds cannot reset it. */
+function soArmed(id){return !!state.soArm&&state.soArm.id===id&&Date.now()-state.soArm.at<30000}
 function mbPaint(id){const b=$("#mbBox");if(!b)return;b.innerHTML=mbBody();if(id){const r=b.querySelector(`[data-mbr="${CSS.escape(id)}"]`);if(r)r.focus()}}
 document.addEventListener("click",e=>{const f=e.target.closest("[data-mbf]");
   if(f){state.mbFilter=f.dataset.mbf;state.mbQ="";const q=$("#mbQ");if(q)q.value="";mbPaint();const c=$(`[data-mbf="${f.dataset.mbf}"]`);if(c)c.focus();return}
@@ -1814,7 +1817,7 @@ function renderRecap(){
   h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
   el.innerHTML=h;
 }
-window.tpRecap={state,render,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems}; /* for the browser test */
+window.tpRecap={state,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */

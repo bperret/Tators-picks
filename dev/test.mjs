@@ -842,6 +842,9 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   const gone = c.locator(".mbitem", { hasText: "Mike" }); await gone.locator(".mbrow").click();
   await gone.locator('[data-dact="startover"]').click();
   check("Start over asks for a second tap", (await gone.locator('[data-dact="startover"]').textContent()).includes("Tap again"));
+  await c.evaluate(() => window.tpRecap.renderCommish && window.tpRecap.renderCommish());
+  await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
+  check("a Commish redraw keeps Start over armed", (await gone.locator('[data-dact="startover"]').textContent()).includes("Tap again"));
   await gone.locator('[data-dact="startover"]').click(); await c.waitForTimeout(600);
   const rows = async (t) => (await pg.query(`select count(*)::int n from ${t} where player_id = $1`, [mid2])).rows[0].n;
   const pl = (await pg.query("select name, setup_done, removed from players where id = $1", [mid2])).rows[0];
