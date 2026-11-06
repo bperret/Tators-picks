@@ -5,6 +5,7 @@ import { parseRedditText } from "../lib/polls.js";
 import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../lib/http.js";
 import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings } from "../lib/league.js";
 import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES } from "../lib/auto.js";
+import { captureRobo } from "../lib/robo.js";
 
 const BY = "Commissioner";
 
@@ -198,6 +199,47 @@ export default async function handler(req, res) {
         await setKv("config", cfg);
         await addLog(BY, "Changed automation", parts.join(". "));
         return send(res, 200, { ok: true });
+      }
+      case "robo": {
+        const cfg = await getConfig();
+        if (typeof b.on === "boolean") {
+          if (b.on === !!cfg.robo2) return send(res, 200, { ok: true });
+          cfg.robo2 = b.on;
+          await setKv("config", cfg);
+          await addLog(BY, "Changed Robo-Sharp", b.on ? "Robo-Sharp now blends three ratings with the betting market" : "Robo-Sharp is back to the FPI line alone");
+          return send(res, 200, { ok: true });
+        }
+        if (b.backfill) {
+          // Weeks with no Robo-Sharp inputs get them now. An open week uses today's market lines and ratings.
+          // A locked or final week uses the line saved last before each kickoff (the close) and the ratings
+          // saved with that week if they hold SP+ or VSiN, else today's. Both are after the fact, and the note says so.
+          const now = Date.now();
+          const R = (await getKv("rankings", null)) || {};
+          const ats = await getKv("atsAuto", { lines: {} });
+          const tg = (await getKv("teamGames", null)) || { games: {} };
+          const close = (id) => (ats.lines && ats.lines[id] != null ? ats.lines[id] : tg.games && tg.games[id] ? tg.games[id].l : null);
+          const done = [];
+          for (const r of await q("select id, data from weeks order by id")) {
+            const w = r.data;
+            if (w.robo && w.robo.last) continue;
+            const st = effectiveStatus(w, now);
+            if (st === "draft") continue;
+            const day = new Date(now).toLocaleDateString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric" });
+            if (st === "open" && now < Date.parse(w.deadline)) {
+              captureRobo(w, R.power, (id) => ats.lines && ats.lines[id], now, `Saved ${day}, after picks opened, so there is no opening lean to compare.`);
+            } else {
+              const snap = await one("select data from snapshots where week_id = $1", [w.id]);
+              const sp = snap && snap.data && snap.data.power;
+              const useSnap = sp && ((sp.sp && sp.sp.teams && sp.sp.teams.length) || (sp.vsin && sp.vsin.teams && sp.vsin.teams.length));
+              captureRobo(w, useSnap ? sp : R.power, close, now, `Filled ${day}, after the fact: closing lines and ${useSnap ? "the ratings saved with this week" : `ratings as of ${day}`}.`);
+            }
+            await putWeek(w);
+            done.push(w.week);
+          }
+          if (done.length) await addLog(BY, "Updated Robo-Sharp", `Saved its inputs for Week ${done.join(", ")}`);
+          return send(res, 200, { ok: true, weeks: done });
+        }
+        return fail(res, 400, "Nothing to change.");
       }
       case "config": {
         const cfg = await getConfig();

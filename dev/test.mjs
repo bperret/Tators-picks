@@ -902,6 +902,43 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.fill("#loginPhone", "2145550123"); await m.fill("#loginPin", pin2); await m.click("#loginBtn");
   await m.waitForSelector("#welcomeCard:not([hidden])");
   check("the same PIN logs in and the walk-on runs again", (await m.textContent("#welcomeCard")).includes("You made the roster"));
+  // ---- Robo-Sharp: new model, inputs, switch, flip alert ----
+  {
+    const ev = await c.evaluate(() => {
+      const { roboEval } = window.tpRobo;
+      const base = { away: "Florida", home: "Georgia", neutral: true };
+      const a = roboEval({ ...base, homeLine: -7.5, modelLine: -7.5 }, { mkt: -10 });
+      const b = roboEval({ ...base, homeLine: -6.5, modelLine: -6.5 }, { mkt: -8 });
+      const d = roboEval({ ...base, homeLine: -7.5, modelLine: -6 }, { sp: [10, 20], vs: [80, 85] });
+      return { a, b, d };
+    });
+    check("Robo-Sharp follows the market when the ratings sit on our line", ev.a.side === "home" && Math.abs(ev.a.s + 1.5) < 0.01, JSON.stringify(ev.a));
+    check("Robo-Sharp adds a little when its line crosses 7", Math.abs(ev.b.s + 1.4) < 0.01, JSON.stringify(ev.b));
+    check("Robo-Sharp blends three ratings and counts who agrees", ev.d.side === "away" && ev.d.cons === -7 && ev.d.agree === 2 && ev.d.n === 3, JSON.stringify(ev.d));
+    await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+    await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
+    check("Commish has the Robo-Sharp check, switch off", (await c.textContent('[data-sec="robo"]')).includes("new model off"));
+    await c.click('[data-act="roboFill"]'); await c.waitForTimeout(500);
+    await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
+    const panel = await c.textContent('[data-sec="robo"]');
+    check("Save inputs fills weeks and shows old vs new", /Week \d+/.test(panel) && /Field goal:/.test(panel), panel.slice(0, 300));
+    await c.check("#roboChk"); await c.waitForTimeout(500);
+    const cfg = await c.evaluate(() => window.tpRobo && document.querySelector('[data-sec="robo"]').textContent.includes("new model on"));
+    check("the switch turns the new Robo-Sharp on", cfg);
+    await c.evaluate(() => (location.hash = "#rules")); await c.waitForTimeout(300);
+    check("Rules show the new Robo-Sharp text", await c.evaluate(() => !document.querySelector("#roboRulesNew").hidden && document.querySelector("#roboRulesOld").hidden));
+    const flip = await c.evaluate(() => {
+      const g = { id: "x1", slot: 1, away: "Florida", home: "Georgia", neutral: true, homeLine: -7.5, modelLine: -7.5 };
+      const w = { id: "2099-w01", games: [g], robo: { v: 2, first: { g: { x1: { mkt: -7.5 } } }, last: { g: { x1: { mkt: -11 } } } } };
+      return window.tpRobo.roboFlips(w).map((f) => f.from + ">" + f.to);
+    });
+    check("a market move after the open shows as a Robo flip", flip.join() === "away>home", flip.join());
+    const log = await pg.query("select detail from log where action = 'Changed Robo-Sharp' order by id desc limit 1");
+    check("turning it on is logged", log.rows.length === 1);
+    await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+    await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
+    await c.uncheck("#roboChk"); await c.waitForTimeout(500);
+  }
 } catch (e) {
   check("test run", false, e.message);
 } finally {
