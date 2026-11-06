@@ -691,15 +691,17 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
 
   // ---- Bowl challenge prototype ----
-  check("pickers do not see the Bowl Season tab", await m.isHidden("#bowlsTab"));
+  check("pickers do not see the Bowl Blitz tab", await m.isHidden("#bowlsTab"));
   await m.evaluate(() => (location.hash = "#bowls")); await m.waitForTimeout(150);
-  check("a picker cannot open the Bowl Season tab", (await m.isVisible("#v-picks")) && !(await m.isVisible("#v-bowls")));
+  check("a picker cannot open the Bowl Blitz tab", (await m.isVisible("#v-picks")) && !(await m.isVisible("#v-bowls")));
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
-  check("the commissioner sees the Bowl Season tab", await c.isVisible("#bowlsTab"));
+  check("the commissioner sees the Bowl Blitz tab", await c.isVisible("#bowlsTab"));
   await c.evaluate(() => (location.hash = "#bowls")); await c.waitForSelector("#v-bowls .game");
   check("the prototype lists 35 bowls and no Celebration Bowl", (await c.locator("#v-bowls .game").count()) === 35 && !(await c.textContent("#v-bowls")).includes("Celebration"));
+  check("the tab is named Bowl Blitz", (await c.textContent("#bowlsTab")).trim() === "Bowl Blitz");
+  check("every bowl has an emoji and its own name color", await c.evaluate(() => { const n = [...document.querySelectorAll("#v-bowls .bwname")]; return n.length === 35 && n.every((x) => /^\S+ /.test(x.textContent) && x.style.getPropertyValue("--bc").startsWith("var(--bc-")) && new Set(n.map((x) => getComputedStyle(x).color)).size >= 8 }));
   check("the tiebreaker bowl is pinned first", (await c.locator("#v-bowls .bwlist > .game").first().getAttribute("class")).includes("tbgame"));
-  check("the Bowl Season tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);
+  check("the Bowl Blitz tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);
   check("the unfinished sheet shows the dot", (await c.getAttribute("#bowlsTab", "class") || "").includes("hot"));
   const bwSides = () => c.locator('#v-bowls .side[data-bws="away"]');
   await c.locator("#v-bowls .flagbtn").nth(2).click();
