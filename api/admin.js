@@ -49,6 +49,21 @@ export default async function handler(req, res) {
         await addLog(BY, b.removed ? "Removed a player" : "Restored a player", label(p));
         return send(res, 200, { ok: true });
       }
+      // Start over: a removed picker becomes a brand new entry with the same phone and PIN.
+      // Deletes their picks, pick history, and engagement, clears the profile, and signs them out.
+      case "startOver": {
+        const p = await one("select * from players where id = $1", [b.id]);
+        if (!p) return fail(res, 404, "Player not found.");
+        if (p.is_commish) return fail(res, 400, "The commissioner cannot be started over.");
+        if (!p.removed) return fail(res, 400, "Remove the picker first, then Start over.");
+        const who = label(p);
+        await q("delete from picks where player_id = $1", [p.id]);
+        await q("delete from pick_history where player_id = $1", [p.id]);
+        await q("delete from engage where player_id = $1", [p.id]);
+        await q("update players set name = '', emoji = '', c1 = '', c2 = '', setup_done = false, removed = false, session_v = session_v + 1, fail_count = 0, locked_until = null, lockouts = 0 where id = $1", [p.id]);
+        await addLog(BY, "Started a picker over", who);
+        return send(res, 200, { ok: true });
+      }
       case "importWeek": {
         const w = b.week;
         const errs = validateWeek(w);

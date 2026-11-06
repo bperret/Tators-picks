@@ -829,6 +829,29 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("a wide screen shows the two sided bracket", (await c.isVisible(".brkwide")) && !(await c.isVisible(".brknarrow")));
   check("the wide bracket has no sideways page scroll", (await c.evaluate(() => document.documentElement.scrollWidth)) <= 1400);
   await c.setViewportSize({ width: 390, height: 844 });
+  // ---- Remove keeps data; Start over wipes it and runs the walk-on again ----
+  const mid2 = (await m.evaluate(() => fetch("/api/state").then((r) => r.json()))).me.id;
+  const adm = (body) => c.evaluate((b) => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then((r) => r.json()), body);
+  const early = await adm({ action: "startOver", id: mid2 });
+  check("Start over needs a removed picker", !early.ok && /Remove the picker first/.test(early.error), JSON.stringify(early));
+  await adm({ action: "setRemoved", id: mid2, removed: true });
+  check("Remove keeps the picks", (await pg.query("select count(*)::int n from picks where player_id = $1", [mid2])).rows[0].n > 0);
+  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+  await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
+  await c.click('[data-mbf="removed"]'); await c.waitForTimeout(100);
+  const gone = c.locator(".mbitem", { hasText: "Mike" }); await gone.locator(".mbrow").click();
+  await gone.locator('[data-dact="startover"]').click();
+  check("Start over asks for a second tap", (await gone.locator('[data-dact="startover"]').textContent()).includes("Tap again"));
+  await gone.locator('[data-dact="startover"]').click(); await c.waitForTimeout(600);
+  const rows = async (t) => (await pg.query(`select count(*)::int n from ${t} where player_id = $1`, [mid2])).rows[0].n;
+  const pl = (await pg.query("select name, setup_done, removed from players where id = $1", [mid2])).rows[0];
+  check("Start over wipes picks, history, and engagement", (await rows("picks")) === 0 && (await rows("pick_history")) === 0 && (await rows("engage")) === 0);
+  check("Start over clears the profile and restores the picker", pl.name === "" && !pl.setup_done && !pl.removed, JSON.stringify(pl));
+  await m.reload(); await m.waitForSelector("#loginForm:not([hidden])");
+  check("Start over signs the picker out", await m.isVisible("#loginForm"));
+  await m.fill("#loginPhone", "2145550123"); await m.fill("#loginPin", pin2); await m.click("#loginBtn");
+  await m.waitForSelector("#welcomeCard:not([hidden])");
+  check("the same PIN logs in and the walk-on runs again", (await m.textContent("#welcomeCard")).includes("You made the roster"));
 } catch (e) {
   check("test run", false, e.message);
 } finally {
