@@ -530,6 +530,22 @@ td.svc.next{border:1px dashed var(--line)}
 .pchip{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:.85rem;margin-right:6px;vertical-align:-4px}
 .pchip.bot{background:#111111;box-shadow:inset 0 0 0 2px #9AA3AD}
 .talk{margin:0 0 8px;color:var(--muted);font-style:italic}
+.mulink{font:inherit;font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;margin-left:6px;padding:1px 7px;border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;white-space:nowrap}
+.mupicks{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:end;margin:8px 0}
+.mupick{display:flex;flex-direction:column;gap:3px;min-width:0}.mupick select{width:100%;min-width:0}.mupick .note{color:var(--board-dim)}
+.muswap{padding:6px 10px}.mubackp{margin:0 0 8px}.mubackp .linkbtn{color:var(--board-ink)}
+.musite{margin:4px 0 10px}
+.tseg{flex-wrap:nowrap}.tseg .segb{flex:1 1 0;min-width:0;padding:6px 4px;font-size:.92rem;text-align:center}
+.mutable{display:flex;flex-direction:column;font-family:var(--cond);font-size:1.02rem}
+.murow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:8px;padding:6px 0;border-bottom:1px solid var(--board-line);color:var(--board-ink);align-items:center}
+.murow.muhead{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--board-dim)}
+.murow .note{color:var(--board-dim)}.murow.muavg b{color:var(--flag)}
+.muedge{background:var(--flag);color:var(--flag-ink);border-radius:3px;padding:0 6px;font-weight:700;white-space:nowrap}
+.muflags{margin:8px 0 0;padding:8px 10px;border-radius:6px;background:rgba(255,209,0,.12);border:1px solid var(--board-dim);color:var(--board-ink)}.muflags p{margin:2px 0}
+.muside{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.1fr);gap:6px 10px;align-items:center;font-variant-numeric:tabular-nums}
+.muside>b{display:flex;align-items:center;gap:6px;font-family:var(--cond)}.muside>span{min-width:0;overflow-wrap:anywhere}
+.mubest{font-weight:700;color:var(--win)}
+.mutrend{margin:2px 0;font-size:.92rem;line-height:1.6}
 .clsrow{margin:0 0 10px}
 .clsb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-family:var(--cond);font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;background:var(--chip);color:var(--ink);border:1px solid var(--line);vertical-align:middle}
 .clsb.rs{background:#a3201a;color:#fff;border-color:#7a1712;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
@@ -1537,7 +1553,7 @@ function tickCountdown(){const el=$("#countdown"),w=curWeek();if(el&&w){el.textC
 /* Before picks open. Nothing here can be picked. The games come from the preview job, or from the draft once it exists. */
 function previewPanel(){const P=state.preview;if(!P)return "";
   const team=(g,s)=>{const L=teamLook(g[s],g,s);const rk=g[s+"Rank"];const ln=fmtLine(s==="home"?g.homeLine:-g.homeLine);return `<span class="pvs"><span class="pvc" style="--tc:${L.c1};--ti:${L.ink}">${esc(L.abbr)}</span>${rk<99?`<span class="note">#${rk}</span>`:""}<b>${esc(ln)}</b></span>`};
-  const rows=[...P.games].sort((a,b)=>a.slot-b.slot).map(g=>`<li class="pvg"><span class="pvn">${g.slot}</span>${team(g,"away")}<span class="note">${g.neutral?"vs":"at"}</span>${team(g,"home")}<span class="note pvk">${esc(kick(g.kickoff))}</span></li>`).join("");
+  const rows=[...P.games].sort((a,b)=>a.slot-b.slot).map(g=>`<li class="pvg"><span class="pvn">${g.slot}</span>${team(g,"away")}<span class="note">${g.neutral?"vs":"at"}</span>${team(g,"home")}<span class="note pvk">${esc(kick(g.kickoff))} <button type="button" class="mulink" data-mu="${esc(g.id)}" aria-label="Matchup preview: ${esc(g.away)} at ${esc(g.home)}">\u{1F4CA} Matchup</button></span></li>`).join("");
   const say=P.set?`The 10 games are set, but these lines can still move. Final lines post when picks open${P.autoOpen?" Wednesday at 6 p.m. CT":""}.`:"These are the likely games and current lines. We are waiting on final lines, which post Tuesday or Wednesday. The games can change until then.";
   return `<details class="panel pv" id="pvbox" ${state.pvClosed?"":"open"}><summary><h2 style="display:inline">Week ${P.week} preview</h2> <span class="pill wait">Picks not open</span></summary>${state.isOwner?'<p class="note">This is what pickers see right now.</p>':""}<p><b>You cannot pick yet.</b> ${say} A Picks are live alert shows here when you can.</p><ul class="pvlist">${rows}</ul>${P.linesAt?`<p class="note">Lines as of ${esc(kick(P.linesAt))}.</p>`:""}</details>`}
 document.addEventListener("toggle",e=>{if(e.target.id==="pvbox")state.pvClosed=!e.target.open},true);
@@ -1613,7 +1629,7 @@ function renderPicks(){
       const mine=mp===s;return `<span class="cv ${mine?"good":"bad"}">${mine?(done?"You covered":"You\u2019re covering"):(done?"Beat you":"Beating you")}</span>`};
     const sideBtn=(s,team,rk,ln)=>{const L=teamLook(team,g,s);return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-g="${esc(g.id)}" data-s="${s}" aria-pressed="${d.sel&&d.sel[g.id]===s}" aria-label="${esc(team)} ${ln}" ${editable&&!isVoid?"":"disabled"}>${coverTag(s)}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+'</span>':""}</span><span class="ln">${ln}${rk&&rk<99?'<span class="rk">#'+rk+'</span>':""}</span></button>`};
     const conflictHere=survConflict(w,d)===g.id;
-    h+=`<div class="game ${g.slot<=5?"mq":"tl"}${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}">${tg&&tg.id===g.id?'<button type="button" class="tbband" data-jump="tb"><span>🎯 Tiebreaker game</span><span>Total \u2193</span></button>':""}<div class="gmeta"><span class="slot">Game ${g.slot}${g.swap?" · swapped in":""}</span><span class="when">${isVoid?"VOID":esc(teamLook(g.away,g,"away").abbr)+(g.neutral?" vs ":" at ")+esc(teamLook(g.home,g,"home").abbr)+" · "+kick(g.kickoff)}${g.neutral&&!isVoid?" · Neutral site":""}</span></div>
+    h+=`<div class="game ${g.slot<=5?"mq":"tl"}${isVoid?" void":""}${tg&&tg.id===g.id?" tbgame":""}" id="g-${esc(g.id)}">${tg&&tg.id===g.id?'<button type="button" class="tbband" data-jump="tb"><span>🎯 Tiebreaker game</span><span>Total \u2193</span></button>':""}<div class="gmeta"><span class="slot">Game ${g.slot}${g.swap?" · swapped in":""} <button type="button" class="mulink" data-mu="${esc(g.id)}" aria-label="Matchup preview: ${esc(g.away)} at ${esc(g.home)}">\u{1F4CA} Matchup</button></span><span class="when">${isVoid?"VOID":esc(teamLook(g.away,g,"away").abbr)+(g.neutral?" vs ":" at ")+esc(teamLook(g.home,g,"home").abbr)+" · "+kick(g.kickoff)}${g.neutral&&!isVoid?" · Neutral site":""}</span></div>
       <div class="sides">${sideBtn("away",g.away,g.awayRank,awayLn)}${sideBtn("home",g.home,g.homeRank,homeLn)}<button class="flagbtn" data-lock="${esc(g.id)}" aria-pressed="${d.lock===g.id}" aria-label="Kick your field goal on this game: 3 points if it covers" ${editable&&!isVoid?"":"disabled"}>${flag}<span>FG</span><span class="fl3">3 pts</span></button></div>`;
     if(!locked&&typeof g.pvLine==="number"){const fav=g.homeLine<0?"home":"away";const sign=fav==="home"?1:-1;h+=`<p class="note lnmv">Line moved: ${esc(teamLook(fav==="home"?g.home:g.away,g,fav).abbr)} ${fmtLine(sign*g.homeLine)}, was ${fmtLine(sign*g.pvLine)} in the preview.</p>`}
     if(r&&!isVoid&&(r.final||r.away||r.home)){
@@ -1996,7 +2012,12 @@ function raceFacts(wid){const w=state.weeks[wid],me=state.uid,rs=w.results||{};c
   const ps=weekPlayers(wid);const mine=ps[me];if(!mine)return out;const S=scoreWeek(w,mine);
   const left=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void)&&!coverSide(g,rs[g.id]));
   if(w.status!=="final"&&left.length){const pts=Object.entries(ps).map(([pid,p])=>({pid,pts:scoreWeek(w,p).pts}));const top=Math.max(...pts.map(x=>x.pts));const back=top-S.pts;const tail=`with ${pl(left.length,"game")} left`;
-    if(back>0){const room=left.filter(g=>(mine.sel||{})[g.id]).length+(left.some(g=>g.id===mine.lock)?2:0);out.need=`${back} back of the lead ${tail}.${S.pts+room<top?" The week is out of reach.":""}`}
+    /* Behind: the gap to the lead, your place, the gap to 2nd and 3rd above you, and what you can still score. Robo-Sharp is not counted. */
+    if(back>0){const room=left.filter(g=>(mine.sel||{})[g.id]).length+(left.some(g=>g.id===mine.lock)?2:0);
+      const others=pts.filter(x=>x.pid!==me).map(x=>x.pts).sort((x,y)=>y-x);const place=others.filter(x=>x>S.pts).length+1,tied=others.includes(S.pts);
+      const gaps=[2,3].filter(k=>k<place&&others[k-1]>S.pts).map(k=>`${ordinal(k)} is ${others[k-1]-S.pts} ahead`);
+      const gone=[1,2,3].filter(k=>others[k-1]!=null&&S.pts+room<others[k-1]).map(ordinal);
+      out.need=`${back} back of the lead ${tail}. You are ${tied?"tied for ":""}${ordinal(place)}.${gaps.length?" "+gaps.join(", ")+".":""} You can still score up to ${pl(room,"point")}.${gone.length===3?" A top 3 finish is out of reach.":gone.length?" "+gone.join(" and ")+(gone.length>1?" are":" is")+" out of reach.":""}`}
     else{const others=pts.filter(x=>x.pid!==me).map(x=>x.pts);const nx=others.length?Math.max(...others):0;out.need=nx===S.pts?`Tied for the lead ${tail}.`:`You lead the week by ${S.pts-nx} ${tail}.`}}
   if(riv){const rp=ps[riv];if(!rp)out.rival=`Your rival ${first(riv)} has no sheet this week.`;else{const R=scoreWeek(w,rp).pts;
       out.rival=w.status!=="final"?`Your rival ${first(riv)}: ${R}. You: ${S.pts}.`:S.pts>R?`You beat your rival ${first(riv)}, ${S.pts} to ${R}.`:S.pts<R?`Your rival ${first(riv)} beat you, ${R} to ${S.pts}.`:`You and your rival ${first(riv)} tied at ${R}.`}}
@@ -2162,7 +2183,9 @@ function teamStatRows(games,R){
     const pf=side==="a"?g.as:g.hs,pa=side==="a"?g.hs:g.as;
     t.g++;pf>pa?t.w++:t.l++;t.pf+=pf;t.pa+=pa;
     if(sp[opp]!=null)t.opp.push(sp[opp]);else if(!fbs.has(opp))t.fcs++;
-    if(ap[opp])t.vsAp[pf>pa?0:1]++;
+    /* Opponent's rank at kickoff when the log saved it (ESPN's scoreboard rank: AP, or CFP once it is out), else today's AP rank. */
+    const kr=side==="a"?g.hr:g.ar,hasK=side==="a"?"hr" in g:"ar" in g;if(!hasK)t.vsNow=1;
+    if(hasK?kr&&kr<=25:ap[opp])t.vsAp[pf>pa?0:1]++;
     let line=null,cov=null;
     if(g.l!=null){line=side==="h"?g.l:-g.l;cov=pf-pa+line;const i=cov>0?0:cov<0?1:2;t.ats[i]++;t.cov.push(cov);
       if(line<0)t.fav[i]++;else if(line>0)t.dog[i]++;if(!g.n)(side==="h"?t.home:t.road)[i]++}
@@ -2222,7 +2245,7 @@ function teamCard(t,C){
   if(r){const nl=r.g-r.cov.length;
     h+=`<span>Record</span><b>${r.w}-${r.l}, ${tSg(r.mgn)} a game (${tF1(r.ppg)} scored, ${tF1(r.pag)} allowed)</b>
     <span>Schedule</span><b>${r.sos==null?"No FBS opponents rated":"Opponents' SP+ "+tSg(r.sos)+", #"+r.sosRank+" hardest"}${r.fcs?`, plus ${r.fcs} FCS game${r.fcs>1?"s":""}`:""}</b>
-    <span>vs AP top 25</span><b>${r.vsAp[0]}-${r.vsAp[1]}</b>
+    <span>${r.vsNow?"vs AP top 25":"vs top 25"}</span><b>${r.vsAp[0]}-${r.vsAp[1]}${r.vsNow?"":' <span class="note">ranked at kickoff</span>'}</b>
     <span>ATS</span><b>${tRs(r.ats)}, average cover ${tSg(r.cvr)}${nl?` (${nl} game${nl>1?"s":""} with no line)`:""}</b>
     ${!C.useLog&&cv?`<span>ATS, Covers</span><b>${esc(String(cv.ats).replace(/-0$/,""))} for the season</b>`:""}
     <span>As favorite</span><b>${tRs(r.fav)}</b><span>As underdog</span><b>${tRs(r.dog)}</b>
@@ -2302,14 +2325,95 @@ function atsView(C){
   return h+"</div>";
 }
 
+/* ---------- Matchup preview (item 39) ---------- */
+/* Any two teams side by side, with each model's projected spread. Picks and the preview link here with the game filled in.
+   Home field: VSiN's 2026 team values (Adam Burke, Aug 31, 2026): 2 points by default, 1 to 3.5 by home record.
+   SP+ and FPI publish no home field number, so all three models add the same value. Neutral adds nothing. */
+const HFA_SRC="Home field: VSiN's 2026 team values by Adam Burke (2 points standard, 1 to 3.5 by home record over three seasons). SP+ and FPI do not publish one, so every model adds the same number.";
+const HFA=(()=>{const m={};[[3.5,"Alabama|Boise State|BYU|Georgia Southern|Indiana|Iowa|Jacksonville State|James Madison|Marshall|Miami (OH)|Mississippi|Missouri|North Dakota State|Notre Dame|Ohio|Ohio State|Oregon|SMU|Texas|Texas Tech|Toledo|UTSA|Washington|Western Michigan"],
+  [3,"Arizona|Ball State|Central Michigan|Connecticut|Delaware|Georgia Tech|Hawaii|Kansas State|LSU|Miami (FL)|Oklahoma|South Florida|USC|Utah State|Washington State|Western Kentucky"],
+  [2.5,"Arkansas State|Colorado|Duke|Eastern Michigan|Florida State|Georgia|Illinois|Iowa State|Kennesaw State|Liberty|Memphis|Michigan|Minnesota|Navy|North Carolina State|North Texas|Penn State|Pitt|TCU|Tennessee|Tulane|UNLV|Utah|Vanderbilt"],
+  [1.5,"Arkansas|Baylor|Florida Atlantic|Michigan State|Middle Tennessee|Northern Illinois|Stanford|UCLA"],[1,"Charlotte|Georgia State|Kent State|Massachusetts|Nevada|Purdue|Tulsa|UTEP"]].forEach(([v,l])=>l.split("|").forEach(n=>m[canon(n)]=v));return m})();
+const hfaOf=t=>HFA[t]??2;
+const MU_MODELS=[["sp","SP+"],["fpi","FPI"],["vsin","VSiN"]];
+/* The slate or preview game for these two teams, either way round. */
+function muGame(a,h){const w=curWeek(),gs=(w&&w.games)||(state.preview&&state.preview.games)||[];return gs.find(g=>{const x=canon(g.away),y=canon(g.home);return (x===a&&y===h)||(x===h&&y===a)})||null}
+function muTeams(C){return [...new Set([...Object.keys(TEAMS),...Object.keys(C.sp),...Object.keys(C.covers)])].sort((x,y)=>x.localeCompare(y))}
+/* Projected margin for team two (the right side): positive means team two wins by that much. */
+function muProject(C,a,h,site){const hf=site==="h"?hfaOf(h):site==="a"?-hfaOf(a):0;
+  return MU_MODELS.map(([k,l])=>{const A=C[k][a],H=C[k][h];return A&&H&&typeof A.rating==="number"&&typeof H.rating==="number"?{k,l,m:Math.round((H.rating-A.rating+hf)*10)/10}:{k,l,m:null}})}
+function muSay(m,a,h){if(m==null)return "No rating";if(Math.abs(m)<0.05)return "Even";const t=m>0?h:a;return `${teamLook(t).abbr} by ${Math.abs(m).toFixed(1)}`}
+/* SP+ rank after each saved week, then today. */
+function muTrend(C,t){const out=[];for(const wid of Object.keys(state.history||{}).sort()){const sp=((state.history[wid]||{}).power||{}).sp;const row=sp&&(sp.teams||[]).find(x=>canon(x.team)===t);if(row&&state.weeks[wid])out.push(["W"+state.weeks[wid].week,row.rank])}
+  if(C.sp[t])out.push(["Now",C.sp[t].rank]);return out}
+function matchupView(C){
+  const all=muTeams(C);const M=state.mu||{};const a=all.includes(M.a)?M.a:"",h=all.includes(M.h)?M.h:"",site=M.site||"n";
+  const opt=(cur,id,lbl)=>`<label class="mupick"><span class="note">${lbl}</span><select id="${id}" aria-label="${lbl}"><option value="">Pick a team</option>${all.map(t=>`<option ${t===cur?"selected":""}>${esc(t)}</option>`).join("")}</select></label>`;
+  let o=`<div class="board"><h2>Matchup</h2><p class="note">Pick any two teams, or tap Matchup on a game in Picks. Projected spreads come from each rating system plus home field.</p>
+    <div class="mupicks">${opt(a,"muA","Team one")}<button type="button" class="btn sm muswap" data-muswap aria-label="Swap the two teams">⇄</button>${opt(h,"muH","Team two")}</div>`;
+  if(M.from)o+=`<p class="mubackp"><button type="button" class="linkbtn" data-muback="${esc(M.from)}">← Back to this game in Picks</button></p>`;
+  if(!a||!h||a===h)return o+`<p class="note">${a&&a===h?"Pick two different teams.":"Pick two teams to compare."}</p></div>`;
+  const LA=teamLook(a),LH=teamLook(h);
+  o+=`<div class="seg musite" role="group" aria-label="Home field">${[["a",LA.abbr+" home"],["n","Neutral"],["h",LH.abbr+" home"]].map(([k,l])=>`<button class="segb sm" data-musite="${k}" aria-pressed="${site===k}">${esc(l)}</button>`).join("")}</div>`;
+  const P=muProject(C,a,h,site),have=P.filter(x=>x.m!=null);
+  const g=muGame(a,h);const realSite=g?(g.neutral?"n":canon(g.home)===h?"h":"a"):null;
+  /* The betting line as a margin for team two. */
+  const lineM=g?(canon(g.home)===h?-g.homeLine:g.homeLine):null;
+  const avg=have.length?Math.round(have.reduce((t,x)=>t+x.m,0)/have.length*10)/10:null;
+  o+=`<div class="mutable"><div class="murow muhead"><span>Model</span><span>Projection</span>${g?"<span>vs line</span>":"<span></span>"}</div>`;
+  for(const x of P){let edge="";if(g&&x.m!=null&&site===realSite){const e=Math.round((x.m-lineM)*10)/10;edge=Math.abs(e)>=3?`<span class="muedge">${esc(teamLook(e>0?h:a).abbr)} +${Math.abs(e).toFixed(1)}</span>`:`<span class="note">${e===0?"Same":Math.abs(e).toFixed(1)+" off"}</span>`}
+    o+=`<div class="murow"><span>${x.l}</span><b>${esc(muSay(x.m,a,h))}</b><span>${edge}</span></div>`}
+  if(have.length>1)o+=`<div class="murow muavg"><span>Average</span><b>${esc(muSay(avg,a,h))}</b><span></span></div>`;
+  if(g)o+=`<div class="murow"><span>Betting line</span><b>${lineM===0?"Pick'em":esc(teamLook(lineM>0?h:a).abbr)+" "+fmtLine(-Math.abs(lineM))}</b><span class="note">${g.neutral?"Neutral":esc(teamLook(g.home).abbr)+" home"}</span></div>`;
+  if(g&&typeof g.modelLine==="number"){const fm=canon(g.home)===h?-g.modelLine:g.modelLine;o+=`<div class="murow"><span>\u{1F916} Robo-Sharp</span><b>${esc(muSay(fm,a,h))}</b><span class="note">ESPN FPI game projection</span></div>`}
+  o+="</div>";
+  const flags=[];
+  if(have.length>1){const ms=have.map(x=>x.m),sp=Math.max(...ms)-Math.min(...ms);if(sp>=3)flags.push(`The models disagree by ${sp.toFixed(1)} points.`)}
+  if(g&&site===realSite){const big=have.filter(x=>Math.abs(x.m-lineM)>=3);if(big.length)flags.push(`${big.map(x=>x.l).join(" and ")} ${big.length>1?"differ":"differs"} from the betting line by 3 or more points.`)}
+  if(g&&site!==realSite)flags.push(`Set home field to ${realSite==="n"?"Neutral":esc(teamLook(realSite==="h"?h:a).abbr)+" home"} to compare with the betting line.`);
+  if(flags.length)o+=`<div class="muflags">${flags.map(f=>`<p>⚠️ ${f}</p>`).join("")}</div>`;
+  o+=`<p class="note">${site==="n"?"Neutral site: no home field added.":`${esc((site==="h"?LH:LA).abbr)} gets ${hfaOf(site==="h"?h:a)} points of home field.`} ${esc(HFA_SRC)}</p></div>`;
+  /* Side by side */
+  const sa=C.stats[a],sh=C.stats[h];
+  const rk=(m,t)=>m[t]?m[t].rank:null;
+  const rec=t=>{const r=C.stats[t];return r?r.w+"-"+r.l:C.covers[t]?C.covers[t].su:"–"};
+  const ats=t=>{const r=C.stats[t];if(C.useLog&&r)return tRs(r.ats);const c=C.covers[t];return c?String(c.ats).replace(/-0$/,""):r?tRs(r.ats):"–"};
+  /* SP+ and FPI rate against an average team, so they get a sign. VSiN is an absolute power number, so it shows as is. */
+  const rat=(m,t)=>m[t]?`${m===C.vsin?tF1(m[t].rating):tSg(m[t].rating)} (#${m[t].rank})`:"–";
+  const kick25=sa&&!sa.vsNow&&sh&&!sh.vsNow;
+  /* [label, shown for team one, shown for team two, number for one, number for two, 1 when higher is better, -1 when lower, 0 for no winner] */
+  const rows=[["AP",rk(C.ap,a)||"–",rk(C.ap,h)||"–",rk(C.ap,a),rk(C.ap,h),-1],["CFP",rk(C.cfp,a)||"–",rk(C.cfp,h)||"–",rk(C.cfp,a),rk(C.cfp,h),-1],["r/CFB",rk(C.rc,a)||"–",rk(C.rc,h)||"–",rk(C.rc,a),rk(C.rc,h),-1],
+    ["SP+",rat(C.sp,a),rat(C.sp,h),C.sp[a]&&C.sp[a].rating,C.sp[h]&&C.sp[h].rating,1],
+    ["FPI",rat(C.fpi,a),rat(C.fpi,h),C.fpi[a]&&C.fpi[a].rating,C.fpi[h]&&C.fpi[h].rating,1],
+    ["VSiN",rat(C.vsin,a),rat(C.vsin,h),C.vsin[a]&&C.vsin[a].rating,C.vsin[h]&&C.vsin[h].rating,1],
+    ["Record",rec(a),rec(h),sa&&sa.w/sa.g,sh&&sh.w/sh.g,1],["ATS",ats(a),ats(h),sa&&tPct(sa.ats),sh&&tPct(sh.ats),1],["Avg cover",sa?tSg(sa.cvr):"–",sh?tSg(sh.cvr):"–",sa&&sa.cvr,sh&&sh.cvr,1],
+    ["Points for",sa?tF1(sa.ppg):"–",sh?tF1(sh.ppg):"–",sa&&sa.ppg,sh&&sh.ppg,1],["Points allowed",sa?tF1(sa.pag):"–",sh?tF1(sh.pag):"–",sa&&sa.pag,sh&&sh.pag,-1],["Margin",sa?tSg(sa.mgn):"–",sh?tSg(sh.mgn):"–",sa&&sa.mgn,sh&&sh.mgn,1],
+    ["Schedule",sa&&sa.sosRank?"#"+sa.sosRank:"–",sh&&sh.sosRank?"#"+sh.sosRank:"–",sa&&sa.sosRank,sh&&sh.sosRank,-1],
+    [kick25?"vs top 25":"vs AP top 25",sa?sa.vsAp[0]+"-"+sa.vsAp[1]:"–",sh?sh.vsAp[0]+"-"+sh.vsAp[1]:"–",sa&&(sa.vsAp[0]-sa.vsAp[1]),sh&&(sh.vsAp[0]-sh.vsAp[1]),1],
+    ["Home field",hfaOf(a)+" pts",hfaOf(h)+" pts",null,null,0]];
+  const cell=(v,x,y,dir)=>{const win=dir&&x!=null&&y!=null&&x!==y&&(dir>0?x>y:x<y);return `<span class="${win?"mubest":""}">${esc(String(v))}</span>`};
+  o+=`<div class="panel"><h2>Side by side</h2><div class="muside"><span></span><b>${tChip(a)} ${esc(LA.abbr)}</b><b>${tChip(h)} ${esc(LH.abbr)}</b>${rows.map(([l,va,vh,na,nh,dir])=>`<span class="note">${l}</span>${cell(va,na,nh,dir)}${cell(vh,nh,na,dir)}`).join("")}</div>
+    <p class="note">Green bold marks the better number. Schedule: 1 is the hardest. ${kick25?"vs top 25 counts games against teams ranked at kickoff.":"vs AP top 25 counts games against teams in today's AP poll."} ${C.loaded?"":C.error?esc(C.error):"Loading game stats…"}</p>`;
+  const tr=t=>{const T=muTrend(C,t);return T.length?T.map(([w,r])=>`<span>${w} <b>#${r}</b></span>`).join(" → "):"No SP+ history yet"};
+  o+=`<h3 class="rh">SP+ rank by week</h3><p class="mutrend"><b>${esc(LA.abbr)}</b> ${tr(a)}</p><p class="mutrend"><b>${esc(LH.abbr)}</b> ${tr(h)}</p><p class="note">Weekly SP+ snapshots start Nov 2, so the trend grows each week.</p></div>`;
+  return o}
+function muOpen(a,h,site,from){state.mu={a:canon(a),h:canon(h),site,from:from||null};state.rankView="matchup";state.toTop=true;if(location.hash==="#rankings")route();else location.hash="#rankings"}
+document.addEventListener("click",e=>{
+  const g=e.target.closest("[data-mu]");if(g){const id=g.dataset.mu,w=curWeek();const gm=((w&&w.games)||[]).concat((state.preview&&state.preview.games)||[]).find(x=>x.id===id);if(gm)muOpen(gm.away,gm.home,gm.neutral?"n":"h",id);return}
+  const st=e.target.closest("[data-musite]");if(st){state.mu={...(state.mu||{}),site:st.dataset.musite};renderRankings();return}
+  if(e.target.closest("[data-muswap]")){const M=state.mu||{};state.mu={...M,a:M.h,h:M.a,site:M.site==="h"?"a":M.site==="a"?"h":M.site};renderRankings();return}
+  const bk=e.target.closest("[data-muback]");if(bk){const id=bk.dataset.muback;location.hash="#picks";setTimeout(()=>{const c=document.getElementById("g-"+id);if(c){c.scrollIntoView({block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1200)}},80)}});
+document.addEventListener("change",e=>{if(e.target.id==="muA"||e.target.id==="muH"){const M=state.mu||{};state.mu={...M,[e.target.id==="muA"?"a":"h"]:e.target.value,from:null};e.target.blur();renderRankings()}});
+window.tpMatchup={muProject,hfaOf,muGame};
 function renderRankings(){
   const el=$("#v-rankings");const R=state.rankings;
-  const v={ap:"polls",cfp:"polls",stats:"power"}[state.rankView]||state.rankView||"polls";state.rankView=["polls","power","ats"].includes(v)?v:"polls";
-  const seg=`<div class="seg" role="group" aria-label="Teams view">${[["polls","Polls"],["power","Power"],["ats","ATS"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${state.rankView===k}">${l}</button>`).join("")}</div>`;
+  const v={ap:"polls",cfp:"polls",stats:"power"}[state.rankView]||state.rankView||"polls";state.rankView=["polls","power","ats","matchup"].includes(v)?v:"polls";
+  const seg=`<div class="seg tseg" role="group" aria-label="Teams view">${[["polls","Polls"],["power","Power"],["ats","ATS"],["matchup","Matchup"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${state.rankView===k}">${l}</button>`).join("")}</div>`;
   if(!R){el.innerHTML=seg+'<div class="panel empty">Team rankings update by themselves from ESPN. They show here after the first update.</div>';return}
   if(!state.teamGames&&!state.tgLoading)loadTeamGames();
   const C=teamsCtx(R);
-  el.innerHTML=seg+(state.rankView==="polls"?pollsView(C):state.rankView==="power"?powerView(C):atsView(C));
+  if(el.contains(document.activeElement)&&document.activeElement.tagName==="SELECT")return; /* a poll redraw must not close an open team list */
+  el.innerHTML=seg+(state.rankView==="polls"?pollsView(C):state.rankView==="power"?powerView(C):state.rankView==="matchup"?matchupView(C):atsView(C));
 }
 
 /* ---------- players ---------- */

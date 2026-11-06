@@ -446,7 +446,8 @@ try {
   await m.waitForTimeout(200);
   const pvt = await m.textContent("#pvbox");
   check("the preview says picks are not open and lists the games", pvt.includes("You cannot pick yet") && pvt.includes("Tuesday or Wednesday") && (await m.locator("#pvbox .pvg").count()) === 5, pvt.slice(0, 200));
-  check("the preview has no pick buttons", (await m.locator("#pvbox button").count()) === 0);
+  check("the preview has no pick buttons", (await m.locator("#pvbox button:not(.mulink)").count()) === 0);
+  check("each preview game links to its matchup", (await m.locator("#pvbox .mulink").count()) === (await m.locator("#pvbox .pvg").count()));
   await m.evaluate(() => { const { state, render } = window.tpRecap; state.preview.set = true; render(); });
   check("a set slate says the games are set", (await m.textContent("#pvbox")).includes("The 10 games are set"));
   await m.setViewportSize({ width: 390, height: 800 }); await m.waitForTimeout(100);
@@ -547,7 +548,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
   await m.evaluate(() => (location.hash = "#rankings")); await m.waitForTimeout(400);
   const segs = await m.locator("#v-rankings [data-rank]").allTextContents();
-  check("Teams has Polls, Power, ATS", segs.join(",") === "Polls,Power,ATS", segs.join(","));
+  check("Teams has Polls, Power, ATS, Matchup", segs.join(",") === "Polls,Power,ATS,Matchup", segs.join(","));
   check("Polls lists teams from all three polls", (await m.locator('#v-rankings [data-steam="Tulane"]').count()) === 1 && (await m.locator("#v-rankings .g-pol[data-steam]").count()) >= 26);
   await m.click('[data-tsort="polls:rc"]'); await m.waitForTimeout(200);
   check("sorting by r/CFB puts its #1 first", (await m.getAttribute("#v-rankings .g-pol[data-steam] >> nth=0", "data-steam")) === "Georgia");
@@ -574,6 +575,33 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("ATS uses the game log when every game has a line", (await m.textContent("#v-rankings")).includes("closing lines from ESPN") && atsRow.includes("2-0+1.3"), atsRow);
   sw = await m.evaluate(() => document.documentElement.scrollWidth);
   check("ATS has no sideways scroll on a phone", sw <= 390, String(sw));
+  // ---- Matchup preview (item 39) ----
+  const hfa = await m.evaluate(() => { const { hfaOf, muProject } = window.tpMatchup;
+    const C = { sp: { Texas: { rating: 20 }, Purdue: { rating: 2 } }, fpi: { Texas: { rating: 15 }, Purdue: { rating: 5 } }, vsin: {} };
+    return { olemiss: hfaOf("Ole Miss"), uconn: hfaOf("UConn"), pitt: hfaOf("Pittsburgh"), mioh: hfaOf("Miami (OH)"), rice: hfaOf("Rice"), umass: hfaOf("UMass"),
+      neutral: muProject(C, "Texas", "Purdue", "n").map((x) => x.m), purdueHome: muProject(C, "Texas", "Purdue", "h").map((x) => x.m), texasHome: muProject(C, "Texas", "Purdue", "a").map((x) => x.m) }; });
+  check("home field uses VSiN's team values, 2 by default", hfa.olemiss === 3.5 && hfa.uconn === 3 && hfa.pitt === 2.5 && hfa.mioh === 3.5 && hfa.rice === 2 && hfa.umass === 1, JSON.stringify(hfa));
+  check("model spreads: ratings gap plus home field, none when neutral, missing ratings stay empty", hfa.neutral.join() === "-18,-10," && hfa.purdueHome.join() === "-17,-9," && hfa.texasHome.join() === "-21.5,-13.5,", JSON.stringify(hfa));
+  await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(300);
+  const muLink = await m.evaluate(() => { const b = document.querySelector("#v-picks .mulink"); if (!b) return null; const { state } = window.tpRecap; const w = state.weeks[state.config.currentWeek]; const g = w.games.find((x) => x.id === b.dataset.mu); return { id: b.dataset.mu, away: g.away, home: g.home, neutral: !!g.neutral }; });
+  check("each game on Picks has a Matchup link", !!muLink && (await m.locator("#v-picks .mulink").count()) >= 1, JSON.stringify(muLink));
+  if (muLink) {
+    await m.click(`#v-picks .mulink[data-mu="${muLink.id}"]`); await m.waitForTimeout(400);
+    const mu = await m.evaluate(() => ({ hash: location.hash, seg: (document.querySelector('#v-rankings [data-rank="matchup"]') || {}).ariaPressed || document.querySelector('#v-rankings [data-rank="matchup"]').getAttribute("aria-pressed"),
+      a: document.querySelector("#muA").value, h: document.querySelector("#muH").value, site: (document.querySelector('#v-rankings [data-musite][aria-pressed="true"]') || {}).dataset.musite,
+      text: document.querySelector("#v-rankings").textContent, back: !!document.querySelector("[data-muback]") }));
+    check("the link opens Matchup with both teams and the home team filled in", mu.hash === "#rankings" && mu.seg === "true" && mu.site === (muLink.neutral ? "n" : "h") && mu.back, JSON.stringify({ ...mu, text: undefined }));
+    check("Matchup shows each model, the betting line, Robo-Sharp, and side by side", ["SP+", "FPI", "VSiN", "Betting line", "Side by side", "Home field", "SP+ rank by week"].every((x) => mu.text.includes(x)), mu.text.slice(0, 400));
+    await m.click('[data-musite="n"]'); await m.waitForTimeout(150);
+    const mu2 = await m.textContent("#v-rankings");
+    check("changing home field off the real site asks to match it before comparing to the line", muLink.neutral || (mu2.includes("Neutral site: no home field added.") && mu2.includes("to compare with the betting line")), mu2.slice(0, 300));
+    await m.click("[data-muswap]"); await m.waitForTimeout(150);
+    check("swap trades the two teams", (await m.inputValue("#muA")) === mu.h && (await m.inputValue("#muH")) === mu.a);
+    sw = await m.evaluate(() => document.documentElement.scrollWidth);
+    check("Matchup has no sideways scroll on a phone", sw <= 390, String(sw));
+    await m.selectOption("#muA", "Rice"); await m.waitForTimeout(150);
+    check("picking a team by hand starts a new matchup with no back link", (await m.inputValue("#muA")) === "Rice" && !(await m.locator("[data-muback]").count()));
+  }
   const width = await m.evaluate(() => document.documentElement.scrollWidth);
   check("no sideways scroll on a phone", width <= 390, String(width));
   await m.evaluate(() => (location.hash = "#profile")); await m.waitForTimeout(300);
@@ -655,7 +683,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("the leader's rival is the picker right behind", race.leaderRival === "b", JSON.stringify(race));
   check("your rival is the picker just above you", race.myRival === "b" && race.bRival === "a", JSON.stringify([race.myRival, race.bRival]));
   check("no rival before there are standings", race.noRivalFirstWeek === null);
-  check("What you need reads the live week", /back of the lead with 2 games left\./.test(race.locked.need) && /^Your rival .*: \d+\. You: \d+\.$/.test(race.locked.rival), JSON.stringify(race.locked));
+  check("What you need reads the live week", /back of the lead with 2 games left\. You are tied for 2nd\..* You can still score up to \d+ points?\./.test(race.locked.need) && /^Your rival .*: \d+\. You: \d+\.$/.test(race.locked.rival), JSON.stringify(race.locked));
   check("Your week has record, best pick, worst beat, and rank move", race.yw.w === 1 && race.yw.l === 3 && race.yw.best === "x3" && race.yw.was != null && race.yw.now != null && !!race.yw.worst, JSON.stringify(race.yw));
   check("Your week shows at the top of the Recap", /Your week/.test(race.recap) && /Best pick/.test(race.recap) && /Worst beat/.test(race.recap) && /Season rank/.test(race.recap), race.recap);
   check("Iron Man holds with every pick in", race.ironMe && race.ironMe.weeks === 2 && race.ironMe.full, JSON.stringify(race.ironMe));

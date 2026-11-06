@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.37 | Nov 6, LATER | Teams, Picks, Automation | Matchup view on Teams (item 39): any two teams, home field toggle, SP+, FPI, and VSiN projected spreads with VSiN home field values, betting line and edge flags, side by side stats, SP+ rank by week; a Matchup link on every Picks and preview game; the game log saves ranks at kickoff with a one time refill. What you need shows your place and the gap to 1st, 2nd, and 3rd (item 46) | M | 166 | COMMIT |
 | 1.36.4 | Nov 6, 8:32 AM | All tabs, Commish | Wording cleanup: player becomes picker in messages and the public log (old log rows renamed too); removed leftover messages and dead code from the Claude artifact days | S | 44 | `e14ccf9` |
 | 1.36.3 | Nov 6, 8:15 AM | Rules, Army-Navy | Fix: the Rules page showed the Iron Man icon as raw code text; removed unused styles from the old Army-Navy layout; changelog times for 1.36.0 to 1.36.2 corrected to git | S | 7 | `c5dbf71` |
 | 1.36.2 | Nov 6, 8:04 AM | Army-Navy | Entry cards centered; prototype marked complete | S | 4 | `75d3967` |
@@ -101,6 +102,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Date | Change | Commit |
 |---|---|---|
+| Nov 6 | Tracker: item 42 settled (late joiner weeks count toward 5; a tie for lowest drops the week that helps most); items 24 to 27 absorbed into the Matchup view | Shared with 1.37 |
 | Nov 6 | Tracker: items 39 to 46 from the review of another pick em app (matchup preview absorbs 24 to 27, drop worst week tested in 2026, segments replace the fresh start); rule change posts move to the GroupMe plan | `4984cdb` |
 | Nov 4 | Item 32 added to the tracker: shuffle the emoji quick row | `7f53972` |
 | Nov 4 | Army-Navy contest added to the tracker; payouts planned at 13 weekly prizes and 14 weeks in all | `504ea5e` |
