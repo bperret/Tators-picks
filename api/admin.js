@@ -202,13 +202,6 @@ export default async function handler(req, res) {
       }
       case "robo": {
         const cfg = await getConfig();
-        if (typeof b.on === "boolean") {
-          if (b.on === !!cfg.robo2) return send(res, 200, { ok: true });
-          cfg.robo2 = b.on;
-          await setKv("config", cfg);
-          await addLog(BY, "Changed Robo-Sharp", b.on ? "Robo-Sharp now blends three ratings with the betting market" : "Robo-Sharp is back to the FPI line alone");
-          return send(res, 200, { ok: true });
-        }
         if (b.backfill) {
           // Weeks with no Robo-Sharp inputs get them now. An open week uses today's market lines and ratings.
           // A locked or final week uses the line saved last before each kickoff (the close) and the ratings

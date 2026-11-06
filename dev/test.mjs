@@ -116,7 +116,8 @@ try {
     const auto = await c.textContent('[data-sec="auto"]'), tools = await c.textContent('[data-sec="tools"]');
     check("one-time jobs live in Setup and one-time tools, not Automation", (await c.locator('[data-sec="auto"] [data-job="gamelog"], [data-sec="auto"] [data-job="lines"]').count()) === 0 && (await c.locator('[data-sec="tools"] [data-job="gamelog"], [data-sec="tools"] [data-job="lines"]').count()) === 2 && auto.length > 0 && tools.length > 0);
     check("Automation has no second Open picks or Pull scores button", (await c.locator('[data-sec="auto"] [data-job="open"], [data-sec="auto"] [data-job="scores"]').count()) === 0);
-    check("set-once settings sit in Setup and one-time tools", (await c.locator('[data-sec="tools"] #liveChk, [data-sec="tools"] #roboChk, [data-sec="tools"] #ovTeam, [data-sec="tools"] #nameInput, [data-sec="tools"] #slateForm').count()) === 5);
+    check("set-once settings sit in Setup and one-time tools", (await c.locator('[data-sec="tools"] #liveChk, [data-sec="tools"] #ovTeam, [data-sec="tools"] #nameInput, [data-sec="tools"] #slateForm').count()) === 4);
+  check("Commish has no Robo-Sharp section or switch", (await c.locator('#v-commish [data-sec="robo"], #roboChk, [data-act="roboFill"]').count()) === 0);
   }
   await c.click(".mbadd summary");
   await c.fill("#apName", "Mike"); await c.fill("#apPhone", "(214) 555-0123");
@@ -922,19 +923,8 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     check("Robo-Sharp follows the market when the ratings sit on our line", ev.a.side === "home" && Math.abs(ev.a.s + 1.5) < 0.01, JSON.stringify(ev.a));
     check("Robo-Sharp adds a little when its line crosses 7", Math.abs(ev.b.s + 1.4) < 0.01, JSON.stringify(ev.b));
     check("Robo-Sharp blends three ratings and counts who agrees", ev.d.side === "away" && ev.d.cons === -7 && ev.d.agree === 2 && ev.d.n === 3, JSON.stringify(ev.d));
-    await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
-    await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
-    check("Commish has the Robo-Sharp check, switch off", (await c.textContent('[data-sec="robo"]')).includes("new model off"));
-    await c.click('[data-act="roboFill"]'); await c.waitForTimeout(500);
-    await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
-    const panel = await c.textContent('[data-sec="robo"]'), tpanel = await c.textContent('[data-sec="tools"]');
-    check("each week in the Robo-Sharp check counts its bands", /Bands: \d+ heavy, \d+ leans, \d+ slight, \d+ coin flip\./.test(panel), panel.slice(0, 400));
-    check("Save inputs fills weeks and shows old vs new in the tools", /Week \d+: old vs new/.test(tpanel) && /Field goal:/.test(tpanel) && !/Field goal:/.test(panel), tpanel.slice(0, 300));
-    await c.check("#roboChk"); await c.waitForTimeout(500);
-    const cfg = await c.evaluate(() => window.tpRobo && document.querySelector('[data-sec="robo"]').textContent.includes("new model on"));
-    check("the switch turns the new Robo-Sharp on", cfg);
     await c.evaluate(() => (location.hash = "#rules")); await c.waitForTimeout(300);
-    check("Rules show the new Robo-Sharp text", await c.evaluate(() => !document.querySelector("#roboRulesNew").hidden && document.querySelector("#roboRulesOld").hidden));
+    check("Rules show only the new Robo-Sharp text", await c.evaluate(() => !document.querySelector("#roboRulesNew").hidden && !document.querySelector("#roboRulesOld")));
     const flip = await c.evaluate(() => {
       const g = { id: "x1", slot: 1, away: "Florida", home: "Georgia", neutral: true, homeLine: -7.5, modelLine: -7.5 };
       const w = { id: "2099-w01", games: [g], robo: { v: 2, first: { g: { x1: { mkt: -7.5 } } }, last: { g: { x1: { mkt: -11 } } } } };
@@ -952,11 +942,6 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
       return [0.3, 0.8, 1.6, 3].map((e) => roboBand(roboEval({ ...g, modelLine: -10.5 - e }, {}).p)[2]); });
     check("Robo's confidence bands run from coin flip to heavy lean", bands.join() === "Coin flip,Slight lean,Leans,Heavy lean", bands.join());
     check("a market move after the open shows as a Robo flip", flip.join() === "away>home", flip.join());
-    const log = await pg.query("select detail from log where action = 'Changed Robo-Sharp' order by id desc limit 1");
-    check("turning it on is logged", log.rows.length === 1);
-    await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
-    await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
-    await c.uncheck("#roboChk"); await c.waitForTimeout(500);
   }
 } catch (e) {
   check("test run", false, e.message);

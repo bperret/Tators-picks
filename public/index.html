@@ -786,7 +786,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Your cell number is never shown to other pickers.</li>
       </ul></details>
       <details><summary class="rh">Robo-Sharp</summary>
-      <ul id="roboRulesNew" hidden>
+      <ul id="roboRulesNew">
         <li>Robo-Sharp is the league's computer picker. It plays every week and cannot win anything. Beat the bot.</li>
         <li><b>Its line.</b> It blends three computer power ratings (SP+, FPI, and VSiN) into one line of its own.</li>
         <li><b>The market.</b> Our lines freeze Wednesday night. The betting market keeps moving. When the market moves away from our line, Robo-Sharp takes the side our line now gives value. It trusts the market more than the ratings.</li>
@@ -795,11 +795,6 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li><b>Survivor.</b> It takes the team most likely to cover among the teams it can still use.</li>
         <li><b>Tiebreaker.</b> It guesses the betting total.</li>
         <li><b>Picks can change until the lock.</b> What it shows at the lock is what it plays. If it changes a side after picks open, the game shows a Robo flip alert.</li>
-        <li>Robo-Sharp shows in the standings where its score lands, but it takes no rank and cannot win a week, a trophy, Survivor, or the season. If it finishes on top, the best picker wins.</li>
-      </ul>
-      <ul id="roboRulesOld">
-        <li>Robo-Sharp is a computer picker. Each week it takes the side the model line favors against the betting line in every game, and kicks its field goal on the game with the biggest gap. The model line is a computer projection of the spread. Each game shows it with its source (ESPN FPI from week 10 on).</li>
-        <li>Its tiebreaker guess is the betting total for the tiebreaker game. In Survivor it takes the biggest edge on a team it has not used.</li>
         <li>Robo-Sharp shows in the standings where its score lands, but it takes no rank and cannot win a week, a trophy, Survivor, or the season. If it finishes on top, the best picker wins.</li>
       </ul></details>
       <details><summary class="rh">Survivor</summary>
@@ -986,7 +981,7 @@ function chip(pid,big){if(pid===BOT)return `<span class="pchip bot${big?" big":"
 // Field goal icon: a goalpost (base post, crossbar, two uprights). No emoji exists for it.
 const GP='<svg class="gp" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 23v-10M3 13h18M3 13V1.5M21 13V1.5"/></svg>';
 function tag(pid,lk){const a=accByUid(pid);const st=a&&a.c1?` style="background:${a.c1};color:${inkFor(a.c1)};box-shadow:inset 0 -3px 0 ${a.c2}"`:"";return `<span class="ptag${lk?" lk":""}"${st}>${lk?GP:""}${a&&a.emoji?a.emoji+" ":""}${esc(first(pid))}</span>`}
-function talkLine(pid){if(pid===BOT)return roboOn()?'<p class="talk">Robo-Sharp blends three computer ratings with the betting market, kicks its field goal where all three agree, guesses the betting total, and takes its surest cover in Survivor. Its picks are final at the lock. Beat the bot.</p>':'<p class="talk">Robo-Sharp takes the model side in every game, kicks its field goal on its biggest edge, guesses the betting total, and rides its biggest unused edge in Survivor. Beat the bot.</p>';return ""}
+function talkLine(pid){if(pid===BOT)return '<p class="talk">Robo-Sharp blends three computer ratings with the betting market, kicks its field goal where all three agree, guesses the betting total, and takes its surest cover in Survivor. Its picks are final at the lock. Beat the bot.</p>';return ""}
 function emBtn(pre,a,e,label){return `<button type="button" class="emb" data-pick="${pre}:emoji" data-val="${e}" aria-pressed="${a.emoji===e}"${label?` title="${esc(label)}" aria-label="${esc(label)}"`:""}>${e}</button>`}
 function lookPicker(pre,a,noPrev){
   const teamEm=[];const seen=new Set();Object.keys(TEAMS).sort().forEach(n=>{const e=TEAMS[n][3];if(e&&!seen.has(e)){seen.add(e);teamEm.push([e,n])}});
@@ -1230,7 +1225,6 @@ async function commishAct(act,ds){
   if(act==="unlock"){const v=$("#unlockAt").value;const t=v?new Date(v).getTime():NaN;if(!Number.isFinite(t)){toast("Choose a new deadline first.");return}
     r=await api("/api/admin",{action:"unlock",weekId:wid,until:new Date(t).toISOString()});msg="Picks unlocked until "+kick(new Date(t).toISOString())}
   if(act==="dismiss"){r=await api("/api/admin",{action:"dismissFlag",key:ds.key});msg="Flag dismissed"}
-  if(act==="roboFill"){r=await api("/api/admin",{action:"robo",backfill:true});msg=r&&r.weeks&&r.weeks.length?"Saved Robo-Sharp inputs for Week "+r.weeks.join(", "):"Every week already had inputs"}
   if(act==="pause"){r=await api("/api/admin",{action:"autoSettings",autoPaused:!(state.auto&&state.auto.paused)});msg=state.auto&&state.auto.paused?"Automation resumed":"Automation paused"}
   if(act==="open"){r=await api("/api/admin",{action:"runJob",job:"open",force:true});if(r.ok){const o=(r.ran||{}).open||{};msg=(o.ok||o.busy?"":"Failed. ")+(o.msg||"")}}
   if(act==="todraft"){r=await api("/api/admin",{action:"setStatus",weekId:wid,status:"draft"});msg="Moved back to draft"}
@@ -1308,13 +1302,12 @@ function modelSide(g){if(typeof g.modelLine!=="number")return null;const e=g.mod
 /* Robo-Sharp. Two versions, picked per week by roboMode(w):
    "old": the FPI line alone. Model side in every game, field goal on the biggest gap, the betting total
    as its tiebreaker, and in Survivor the biggest gap on a team it has not used.
-   "new" (config.robo2 on and the week has saved inputs in w.robo): blends three ratings with the
+   "new" (the week has saved inputs in w.robo; permanent since Nov 6, no switch): blends three ratings with the
    betting market (roboEval). The server saves the inputs while picks are open and stops at the lock,
    so a locked week's sheet never changes. Weights below are starting values, not tested ones. */
 const ROBO_W={mkt:0.6,model:0.4,sd:13.5};
 const ROBO_KEYS=[[3,0.5],[7,0.5],[10,0.25],[14,0.25]];
-function roboOn(){return !!(state.config&&state.config.robo2)}
-function roboMode(w){return roboOn()&&w&&w.robo&&w.robo.last?"new":"old"}
+function roboMode(w){return w&&w.robo&&w.robo.last?"new":"old"}
 /* One game. inp = {mkt, sp:[away,home], vs:[away,home]}. Every line is the home team's line.
    s above 0 means value on the away side. Returns null when nothing rates the game. */
 function roboEval(g,inp){
@@ -1611,7 +1604,7 @@ function render(){
   $("#picksTab").classList.toggle("hot",!!(state.db&&w&&w.status==="open"&&!(state.sheetsIn||[]).includes(state.uid)));
   if(state.view==="bowls")renderBowls();
   if(state.view==="armynavy")renderAN();
-  if(state.view==="rules"){renderLog();const on=roboOn();$("#roboRulesNew").hidden=!on;$("#roboRulesOld").hidden=on}
+  if(state.view==="rules"){renderLog()}
   if(state.view==="profile")renderProfile();
 }
 function ordinal(n){const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
@@ -1794,7 +1787,6 @@ document.addEventListener("click",async e=>{
 document.addEventListener("change",e=>{if(e.target.id==="tbInput"&&isRookie())renderPicks()});
 document.addEventListener("input",e=>{if(e.target.id==="tbInput"&&state.draft){const v=e.target.value;state.draft.tb=v===""?null:Math.max(0,Math.round(Number(v)));state.dirty=true;const b=$("#saveBtn");if(b){b.disabled=false;b.textContent="Save picks";b.classList.remove("saved");b.classList.add("unsaved")}}});
 document.addEventListener("change",async e=>{
-  if(e.target.id==="roboChk"){const r=await api("/api/admin",{action:"robo",on:e.target.checked});toast(r.ok?(e.target.checked?"New Robo-Sharp is on":"Robo-Sharp is back to the FPI line"):r.error);await refresh(true);render();return}
   if(e.target.id==="liveChk"||e.target.id==="liveGap"||e.target.id==="liveCap"){const live=e.target.id==="liveChk"?{on:e.target.checked}:e.target.id==="liveGap"?{gap:+e.target.value}:{cap:+e.target.value};const r=await api("/api/admin",{action:"autoSettings",live});toast(r.ok?"Saved":r.error);await refresh(true);render();return}
   if(e.target.id==="autoOpenChk"){const r=await api("/api/admin",{action:"autoSettings",autoOpen:e.target.checked});toast(r.ok?(e.target.checked?"Picks will open by themselves":"Picks open only when you tap Open picks"):r.error);await refresh(true);renderCommish()}
   if(e.target.id==="cwkSel"){state.cwk=e.target.value;renderCommish()}});
@@ -2677,47 +2669,12 @@ function autoPanel(){
     <p class="note">Page visit runs: ${Lv.on?`on, every ${Lv.gap} minutes. Today: ${Lv.today} of ${Lv.cap}.${Lv.at?" Last one "+esc(when(Lv.at))+".":""}`:"off."} Settings are in Setup and one-time tools.</p>
     <div class="autobar"><button class="btn sm" data-act="pause">${A.paused?"Resume automation":"Pause automation"}</button></div>
     <p class="note">Each week, on the first run at or after each time below. The schedule can run hours late. Monday 9 a.m. posts a preview for pickers, and its lines update every 6 hours. Tuesday 1 p.m. builds a draft from ESPN, and pickers see those 10 games with no picks allowed. Wednesday 6 p.m. refreshes the lines and opens picks, unless you already opened them, the box above is off, the week is on hold, or it has under 10 games. Open picks always refreshes the lines first. Refresh lines works any time before picks open: it updates the draft, or the preview if there is no draft yet. Once picks open, lines are final. After the lock, scores update on each run, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Each button here does the same job by hand. Open picks and Pull scores have their buttons in This week and Scores. Fill game log and Fill lines are in Setup and one-time tools. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.</p></details>`}
-/* Commish: Robo-Sharp check. Old vs new picks for every week with saved inputs, the switch, and a back end model scoreboard. */
-function roboPanel(){
-  const wids=Object.keys(state.weeks).sort().filter(k=>{const w=state.weeks[k];return w&&w.robo&&w.robo.last});
-  const ab=(g,sd)=>sd?esc(teamLook(sd==="home"?g.home:g.away,g,sd).abbr):"–";
-  const gm=(w,id)=>(w.games||[]).find(g=>g.id===id);
-  let rows="",cmp="";
-  for(const wid of wids){const w=state.weeks[wid];const O=botPicks(w,"old")||{sel:{}},N=botPicks(w,"new")||{sel:{}};
-    const ch=(w.games||[]).filter(g=>O.sel[g.id]!==N.sel[g.id]);const so=scoreWeek(w,O),sn=scoreWeek(w,N);
-    const fg=g=>g?esc(teamLook(g.away,g,"away").abbr)+" at "+esc(teamLook(g.home,g,"home").abbr):"–";
-    const sv=x=>{const g=x&&gm(w,x.g);return g?ab(g,x.s):"–"};
-    const E=roboEvals(w);
-    const bc={};Object.values(E).forEach(e=>{const k=roboBand(e.p)[1];bc[k]=(bc[k]||0)+1});
-    const bands="Bands: "+[["heavy","heavy"],["lean","leans"],["slight","slight"],["flip","coin flip"]].map(([k,l])=>(bc[k]||0)+" "+l).join(", ")+".";
-    rows+=`<p class="note"><b>Week ${w.week}.</b> ${bands}</p>`;
-    cmp+=`<h3 class="rh">Week ${w.week}: old vs new</h3><p class="note">${ch.length?`<b>${ch.length} side${ch.length===1?"":"s"} change.</b>`:"No sides change."} Field goal: ${fg(gm(w,O.lock))} to ${fg(gm(w,N.lock))}${O.lock===N.lock?" (same)":""}. Survivor: ${sv(O.surv)} to ${sv(N.surv)}. ${so.graded?`Points so far: old ${so.pts} (${so.w}-${so.l}), new ${sn.pts} (${sn.w}-${sn.l}).`:"No games graded yet."}${w.robo.last.note?" "+esc(w.robo.last.note):""}</p>
-      <div class="tablewrap"><table><thead><tr><th>Game</th><th class="num">Line</th><th>Old</th><th>New</th><th class="num">Agree</th><th class="num">Cover</th></tr></thead><tbody>${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const e=E[g.id],diff=O.sel[g.id]!==N.sel[g.id];
-        return `<tr${diff?' class="me"':""}><td>${fg(g)}</td><td class="num">${fmtLine(g.homeLine)}</td><td>${ab(g,O.sel[g.id])}${O.lock===g.id?" FG":""}</td><td>${diff?"<b>":""}${ab(g,N.sel[g.id])}${diff?"</b>":""}${N.lock===g.id?" FG":""}</td><td class="num">${e&&e.n?e.agree+"/"+e.n:"–"}</td><td class="num">${e?Math.round(e.p*100)+"%":"–"}</td></tr>`}).join("")}</tbody></table></div>`}
-  /* Model scoreboard: each source's side against our line, graded on final slate games. Only you see this. */
-  const sc={};const add=(k,side,c)=>{if(!side)return;const t=sc[k]||(sc[k]=[0,0]);t[side===c?0:1]++};
-  const sideOf=(x,L)=>x==null?null:x-L>0?"away":x-L<0?"home":null;
-  for(const wid of wids){const w=state.weeks[wid];const E=roboEvals(w);for(const g of w.games||[]){const c=coverSide(g,(w.results||{})[g.id]);const e=E[g.id];if(!c||!e)continue;
-    for(const [k,x] of e.models)add(k,sideOf(x,g.homeLine),c);add("Consensus",sideOf(e.cons,g.homeLine),c);add("Market move",e.ek==null||Math.abs(e.ek)<0.5?null:e.ek>0?"away":"home",c);add("Robo-Sharp (new)",e.side,c)}}
-  const keys=["FPI","SP+","VSiN","Consensus","Market move","Robo-Sharp (new)"].filter(k=>sc[k]);
-  const board=keys.length?`<div class="tablewrap"><table><thead><tr><th>Source</th><th class="num">ATS</th><th class="num">Pct</th></tr></thead><tbody>${keys.map(k=>{const t=sc[k];return `<tr><td>${k}</td><td class="num">${t[0]}-${t[1]}</td><td class="num">${t[0]+t[1]?Math.round(t[0]/(t[0]+t[1])*100)+"%":"–"}</td></tr>`}).join("")}</tbody></table></div><p class="note">Graded against our line on final slate games. About 150 games are needed before these say much.</p>`:'<p class="note">No graded games with saved inputs yet.</p>';
-  ROBO_CMP=cmp;
-  return `${secTag("robo",false)}${secHead("Robo-Sharp",roboOn()?"new model on":"new model off")}
-    <h3 class="rh">Confidence bands</h3>${rows||'<p class="note">No week has saved inputs yet.</p>'}
-    <h3 class="rh">Model scoreboard</h3>${board}<p class="note">The switch, Save inputs, and the old vs new check are in Setup and one-time tools.</p></details>`}
-let ROBO_CMP="";
 /* Commish: one-time and set-once tools, folded at the bottom, left out of Expand all. Nothing here is needed week to week. */
 function toolsPanel(){
   const A=state.auto,Lv=(A&&A.live)||{on:false,gap:10,cap:80};
   const ovs=(state.config&&state.config.teamOverrides)||{};
   return `${secTag("tools",false,"manual tools",false,"data-noall")}${secHead("Setup and one-time tools","rarely needed")}
     <p class="note">Set-once settings, backfills, and manual backups. Expand all skips this section.</p>
-    <h3 class="rh">Robo-Sharp setup</h3>
-    <div class="autobar"><label class="note"><input type="checkbox" id="roboChk" ${roboOn()?"checked":""}> Use the new Robo-Sharp (three ratings plus the market) for every week with saved inputs</label></div>
-    <p class="note">Off: every week uses the FPI line alone, as before. On: pickers see the new picks, the lean line, flip alerts, and the new Rules text. Weeks with no saved inputs stay on the old way.</p>
-    <div class="autobar"><button class="btn sm" data-act="roboFill">Save inputs for weeks with none</button></div>
-    <p class="note">An open week saves today's market lines and ratings. A locked or final week saves closing lines after the fact, so its new picks know more than Robo-Sharp could have known then.</p>
-    ${ROBO_CMP}
     ${A?`<h3 class="rh">Backfill jobs</h3><p class="note">One-time fills. The game log rechecks the last two weeks by itself each Sunday, and Fill lines stops itself once nothing is missing.</p><div class="lglist">${TOOL_JOBS.map(([j,b])=>jobRow(A,j,b)).join("")}</div>
     <h3 class="rh">Page visit runs</h3>
     <div class="autobar"><label class="note"><input type="checkbox" id="liveChk" ${Lv.on?"checked":""}> Let page visits run overdue scores and the Wednesday open</label></div>
@@ -2751,7 +2708,7 @@ function renderCommish(){
     const rs=w.results||{};
     h+=`${secTag("scores",false)}${secHead("Scores",(()=>{const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;return nf+" of "+w.games.length+" final"})())}<p class="note">Each game: away score, home score, status. ESPN scores fill in on each run${liveOn()?`, and about every ${liveGap()} minutes while games are live and someone has the site open`:""}. To enter a score yourself, set the game to In progress, Final, or Void and save. Set it back to ESPN to hand it back.</p><div class="grid2 scoreg">${[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const r=rs[g.id]||{};return `<span class="t">${g.slot} · ${esc(teamLook(g.away).abbr)} at ${esc(teamLook(g.home).abbr)}</span><input type="number" id="ra-${esc(g.id)}" placeholder="${esc(teamLook(g.away).abbr)}" aria-label="${esc(g.away)} score" value="${r.away??""}"><input type="number" id="rh-${esc(g.id)}" placeholder="${esc(teamLook(g.home).abbr)}" aria-label="${esc(g.home)} score" value="${r.home??""}"><select id="rf-${esc(g.id)}" aria-label="Game status">${(()=>{const man=r.src==="manual"||(r.void&&r.src!=="auto");const cur=!man?"auto":r.void?"void":r.final?"final":"";return [["auto","ESPN"+(r.src==="auto"&&r.status?" · "+r.status:"")],["","In progress"],["final","Final"],["void","Void"]].map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${esc(l)}</option>`).join("")})()}</select>`}).join("")}</div><div class="bar" style="margin-top:10px"><button class="btn primary" data-act="scores">Save scores</button><button class="btn" data-act="run" data-job="scores">Pull scores now</button></div></details>`;
   }
-  h+=autoPanel()+loginsPanel()+engagePanel()+roboPanel()+toolsPanel();
+  h+=autoPanel()+loginsPanel()+engagePanel()+toolsPanel();
   el.innerHTML=h;
 }
 
