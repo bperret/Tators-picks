@@ -89,7 +89,7 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 31. The "Contests still to come" section (`#contests`) holds the plan for items 1, 2, 3, 4, 10, and 31 as of Nov 4. When one ships, move its text into the live rules, and keep this section in step with any tracker change. Add Bowl and CFP rules to the Payouts section if their prizes change.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 31, 42. The "Contests still to come" section (`#contests`) holds the plan for items 1, 2, 3, 4, 10, and 31 as of Nov 4. When one ships, move its text into the live rules, and keep this section in step with any tracker change. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
@@ -130,6 +130,25 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - To settle: the lock time.
    - Placement (decided Nov 6, revised the same day): its own Army-Navy tab, not Picks or Bowl Blitz. Commissioner-only prototype complete Nov 6, approved by Benton; revisit and build it for real as the game gets closer (see Architecture). Still to build: server saved entries, the lock, ESPN halftime and final scores (or hand entry), standings, the career stat, Rules text, and opening the tab to every login.
    - Build note: the app assumes 10 game weeks, so this needs a one game path. Check how ESPN labels the week. The scores job needs ESPN's halftime score, or the commissioner enters it by hand. It must not touch the Bowl or CFP deadlines. A change needs the Rules page in the same build.
+
+39. Matchup preview. Decided Nov 6, could build today. Absorbs items 24 (model disagreement), 25 (edge alerts), 26 (record vs. ranked), and 27 (rating trends), which are removed.
+   - Each Picks game gets a link that opens a matchup tool on Teams with both teams filled in. Anyone can also pick any two teams for fun (playoff, bowl, or any what-if). Back on Picks, the next game's link refills the tool with that game.
+   - Side by side: records straight up and ATS, PPG and points allowed, schedule strength, record vs. AP-ranked teams, polls, SP+, FPI, and VSiN ratings, and rating trend across the season.
+   - Projected spread from each model: SP+ and VSiN from the ratings gap plus home field, FPI from the same ratings. Flag where the models disagree most, and where a model differs from the betting line by 3 or more points.
+   - Home field is a three way toggle: team one home, neutral, team two home. No sourced home field value is needed; it is a hypothetical tool. From a Picks link, the home team comes from the game (the second team is home; neutral site games set neutral). A new matchup starts neutral. The home field points the toggle adds still need a number.
+   - Record vs. ranked: the team card already shows a "vs AP top 25" record from the current poll. Rank at kickoff needs the game log to save ranks, with a one time refill of weeks 1 to now.
+   - Rating trend: snapshots hold SP+ only since the ratings job shipped (Nov 2), so the trend starts short and grows weekly.
+40. Week dropdown on Standings. Decided Nov 6. A dropdown, not a swipe strip, to show the full weekly table for any past week. Today only Recap reaches past weeks.
+41. Team record on the pick card. Decided Nov 6. Straight up record only, small, under the team name (for example 8-0). ATS records stay in the matchup preview (item 39) so the card stays clean.
+42. Drop worst week. Decided Nov 6. Test in 2026, keep in 2027. 2026 has no money, so the mid-season rule change is fine.
+   - Automatic. Each picker's lowest scoring week drops from the season standings once that picker has 5 weeks of picks.
+   - A missed week scores 0, so it is the week that drops. That is the main benefit: it catches up late joiners and anyone who misses a week.
+   - Conference Champion Week can never be the dropped week.
+   - The dropped week leaves everything in the season standings: points, field goals made, and tiebreaker misses. It is as if the week never happened.
+   - Weekly wins never change, whatever drops.
+   - To settle: whether weeks before a late joiner's first sheet count toward the 5 weeks, and which week drops on a tie for lowest.
+   - Needs the Rules page in the same build, and Standings must mark the dropped week.
+46. What you need: show what it takes to finish 1st, 2nd, or 3rd for the week. Cleanup, high priority (Nov 6): build it with the next change.
 
 ### Next season (2027)
 4. Survivor: ATS, fixed runs. Decided: Survivor stays against the spread in 2026 and 2027. Replaces the two skulls idea, which is dropped.
@@ -174,7 +193,9 @@ Build note for 33 and 34: one saved badge list per picker, drawn by one helper, 
    - Timing: GitHub Actions runs often come hours apart, so a lock reminder could land late. It needs a more reliable trigger. Check volume and block risk first, as with any new API use. GroupMe docs state no rate limit.
    - `recapFacts` runs in the page, so a Sunday recap post needs recap facts built on the server.
    - The app must still work for a picker who is not in the chat. The weekly rhythm stays as is.
+   - Mid-season rule changes (from the Nov 6 review): if a rule must change mid-season, the bot posts it in detail. A dynamic post that may never be used; no rule changes are planned during a season unless an unforeseen case forces one. The app shows no rule change notice.
    - To settle: the schedule itself, the reliable trigger, and Announcement Group or open chat.
+44. Season segments, low priority (Nov 6). Replaces the 4 week fresh start. Blocks aligned to the four Survivor runs, so each run has a Survivor champion and a points champion. Recognition only: a career stat, no payout share. Benton is not sure it adds enough; keep it low.
 Buy-in amount for 2027 is not set.
 
 ### Engagement review (Nov 2): Benton's calls
@@ -186,22 +207,22 @@ Separate task, to investigate:
 
 Ideas to shape later, not approved:
 19. Your season recap replaces the Recap for everyone, personal to each picker. The league-wide stats move to a new area, maybe called the Record Book. Benton's idea, wording "maybe". To settle: how it fits with the current Recap, and when in the season it runs.
-20. For 2027, to review: add to home screen prompt, web push (not verified), accomplishments, and a 4 week fresh start contest if the season race goes stale.
-24. Model disagreement: flag teams where SP+, FPI, and VSiN differ most. Data already stored. Claude's pick of this group.
-25. Edge alerts: highlight games where the model and the line differ by 3 or more points. Data already stored. Robo-Sharp's line shows today, but nothing stands out.
-26. Record vs. ranked teams: add each team's record against AP-ranked opponents to the Teams tab. Data already stored.
-27. Rating trends: show a team's SP+ rank across the season. Weekly snapshots are saved, but they only feed movement arrows today.
+20. For 2027, to review: add to home screen prompt, web push (not verified), and accomplishments. The 4 week fresh start idea is thrown out (Nov 6), replaced by item 44.
+43. Info buttons, low priority (Nov 6): replace the long note paragraphs under panels with a small info button that opens them, so pages read cleaner.
 28. Consensus model line: average VSiN with an SP+ implied line, so one source does not drive Robo-Sharp. Needs a sourced home field value. Low value.
 29. Bad beat note: mark a half-point loss on the game card. Data already stored. Low value, since Pickers stats already count bad beats.
 30. Page visit runs: after a clean Saturday with the switch on, consider a 5 minute gap and a daily cap of 160. ESPN publishes no limit, so the cap is a judgment call.
 Left out on purpose: a field goal animation, too much work for the gain.
 
+Nov 6 review of another pick em app (Splash Sports): turned down a per picker expandable standings row, a weekly results grid, following pickers, search on Standings, a picks saved sheet, past week pick distribution, what if scenarios, per game locks, a commissioner welcome note, and a schedule tab. Skipped: team logos, multi-entry, banner art, hiding picks from the commissioner.
 Thrown out for 2026: 12 (group text kit). Replaced by item 35 for 2027.
 Thrown out: 5 (upkeep share). No share of buy-ins, so the whole pot pays out.
 Do not add: daily check ins, points currency, in-app chat, more contests this season beyond Army-Navy (item 31, Benton's call Nov 4).
 
 ### Back burner
 Benton will probably never do this.
+
+45. Picks grid toggle (Nov 6): after the lock, a toggle on Picks to see one row per picker with every pick as a green or red chip. The per game columns already show who took what, and What you need covers where you differ from the leader. Only if pickers ask.
 
 NFL version (not built; decided Oct 31):
 - A toggle at the top flips the whole site between Tator's College Picks and Tator's NFL Picks. Same tabs and navigation. One login (phone, PIN, profile look shared); everything else is fully separate per sport: weeks, picks, standings, Survivor, Teams, Pickers, log, snapshots, config, automation status. No combined views.
