@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.35 | Nov 6, 6:37 AM | Army-Navy, Picks, Bowl Season | Commissioner-only Army-Navy prototype tab (final and halftime entry, checks, Before lock / Halftime / Final preview); red action dot on Picks until your sheet is saved; white "You have picked N of 10 bowls" toast | M | 137 | `f20ed86` |
 | 1.34 | Nov 6, 6:19 AM | Bowl Season | Commissioner-only prototype tab: Bowl challenge with 35 sample bowls, pick 10, field goal, tiebreaker bowl, and a Before lock / After lock / Final preview; Army-Navy placeholder | M | 145 | `0e60275` |
 | 1.33.1 | Nov 6, 6:27 AM | Sign in, Picks | Pick my own look is a full size gold button; the recap banner waits until a rookie's first save; late joiners get a Survivor bench card that explains the rules and why they sit the run out, with no pick box | S | 22 | `eb6d191` |
 | 1.33 | Nov 5, 11:26 PM | Sign in, Picks, Commish | First login walk-on: Welcome card, jersey with a random look and Shuffle (name only required, PIN change moved to Profile), three swipe rules cards with Skip, rookie step list on Picks until the first save, You're on the roster flash with Redshirt Class of 2026, First login funnel in Engagement (item 36) | M | 164 | `b68172e` |
