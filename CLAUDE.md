@@ -182,6 +182,14 @@ Ideas to shape later, not approved:
 28. Consensus model line: average VSiN with an SP+ implied line, so one source does not drive Robo-Sharp. Needs a sourced home field value. Low value.
 29. Bad beat note: mark a half-point loss on the game card. Data already stored. Low value, since Pickers stats already count bad beats.
 30. Page visit runs: after a clean Saturday with the switch on, consider a 5 minute gap and a daily cap of 160. ESPN publishes no limit, so the cap is a judgment call.
+36. First login walk-on flow. Benton, Nov 5: new pickers get stuck at the emoji step, then see a full sheet with no explanation, and close the app. Proposed, not approved. Timing not set.
+   - Today: one setup form needs a name, an emoji (big grid, More emoji, a type box), and two colors, all required (`lookErr`), plus an optional PIN change. Save drops the picker on Picks with the countdown, race panel, sheets in line, legend, 10 games, field goal, tiebreaker, and Survivor at once.
+   - Step 1, Welcome: one screen, referee voice. Three quick steps, about a minute: your jersey, the rules, your first picks.
+   - Step 2, Jersey: name is the only required field. Emoji and both colors come pre-filled at random, with a Shuffle button and a live preview of the picker's Standings row. Customize opens today's full picker. The PIN change moves to Profile only.
+   - Step 3, Rules in 20 seconds: three swipe cards (10 games against the spread with one plain example, the field goal, the Saturday 10:15 lock and tiebreaker). A Skip button.
+   - Step 4, Rookie sheet: until the first sheet is saved, a sticky checklist (Sides 0/10, Field goal, Tiebreaker, Survivor, Save) ticks off as the picker goes. The race panel and rival lines stay hidden until then. If picks are not open, show when they open and the preview slate instead.
+   - First save: a flash in referee voice, "You're on the roster." Saying "Redshirt Class of 2026" here conflicts with item 33 (badges start showing in 2027); Benton's call.
+   - Measure it: Engagement records each step reached (welcome, jersey, rules, first save), so the commissioner sees where pickers stop.
 Left out on purpose: a field goal animation, too much work for the gain.
 
 Thrown out for 2026: 12 (group text kit). Replaced by item 35 for 2027.
