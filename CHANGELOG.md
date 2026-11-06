@@ -16,6 +16,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
 | 1.34 | Nov 6, 6:19 AM | Bowl Season | Commissioner-only prototype tab: Bowl challenge with 35 sample bowls, pick 10, field goal, tiebreaker bowl, and a Before lock / After lock / Final preview; Army-Navy placeholder | M | 145 | `0e60275` |
+| 1.33.1 | Nov 6, 6:27 AM | Sign in, Picks | Pick my own look is a full size gold button; the recap banner waits until a rookie's first save; late joiners get a Survivor bench card that explains the rules and why they sit the run out, with no pick box | S | 22 | `eb6d191` |
 | 1.33 | Nov 5, 11:26 PM | Sign in, Picks, Commish | First login walk-on: Welcome card, jersey with a random look and Shuffle (name only required, PIN change moved to Profile), three swipe rules cards with Skip, rookie step list on Picks until the first save, You're on the roster flash with Redshirt Class of 2026, First login funnel in Engagement (item 36) | M | 164 | `b68172e` |
 | 1.32.1 | Nov 5, 9:04 PM | Profile | Emoji quick row shuffles on each page load (item 32) | S | 15 | `e68d80f` |
 | 1.32 | Nov 4, 9:24 PM | Standings | Season table lists only pickers with at least one game picked, including 0-0; new Pct column; tap Pts or Pct to sort, # stays the real rank | M | 54 | `354fb0e` |
