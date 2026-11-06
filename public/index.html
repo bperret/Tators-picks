@@ -501,6 +501,12 @@ td.svc.next{border:1px dashed var(--line)}
 .pchip{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:.85rem;margin-right:6px;vertical-align:-4px}
 .pchip.bot{background:#111111;box-shadow:inset 0 0 0 2px #9AA3AD}
 .talk{margin:0 0 8px;color:var(--muted);font-style:italic}
+.clsrow{margin:0 0 10px}
+.clsb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-family:var(--cond);font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;background:var(--chip);color:var(--ink);border:1px solid var(--line);vertical-align:middle}
+.clsb.rs{background:#a3201a;color:#fff;border-color:#7a1712;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+.clslist{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.clsp{display:inline-flex;align-items:center;gap:4px;font:inherit;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}
+.clsp.on{border-color:var(--turf);box-shadow:0 0 0 1px var(--turf)}
 .pchip.big{width:34px;height:34px;font-size:1.1rem;margin-right:8px;vertical-align:-7px}
 .ptag{display:inline-block;border-radius:4px;padding:1px 7px 3px;font-size:.82rem;font-weight:600}
 .who .ptag{background:var(--chip)}
@@ -955,6 +961,7 @@ function paintRules(){$("#rcards").innerHTML=RULE_CARDS().map(([ic,h,t,x],i)=>`<
 function rulesUi(){document.querySelectorAll("#rdots i").forEach((d,i)=>d.classList.toggle("on",i===RCARD));const b=$("#rulesNext");if(b)b.textContent=RCARD>=2?"Make my picks":"Next"}
 async function rulesDone(skipped){onb(skipped?"skip":"rules");ONB_HOLD=false;location.hash="#picks";await refresh()}
 const lookName=pre=>((pre==="setup"?$("#setupName"):$("#pfName"))||{value:""}).value.trim();
+document.addEventListener("click",e=>{const b=e.target.closest("[data-pk]");if(!b)return;state.profile=b.dataset.pk;renderPlayers();window.scrollTo({top:0,behavior:"smooth"})});
 document.addEventListener("click",e=>{const u=e.target.closest("[data-emuse]");if(!u)return;const pre=u.dataset.emuse;const v=$("#"+pre+"EmIn").value.trim();
   if(!isOneEmoji(v)){toast("Type or paste a single emoji.");return}
   LOOK[pre].emoji=v;document.querySelectorAll(`[data-pick="${pre}:emoji"]`).forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.val===v)));if(pre==="setup")showErr("#setupErr","");
@@ -984,7 +991,7 @@ function applyState(S){
   PLAYERS={};S.players.forEach(p=>PLAYERS[p.id]=p);ME=S.me;
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Player");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
-    uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],
+    uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],classOf:S.classOf||{},
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
   $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;
   syncDraft();
@@ -1982,6 +1989,19 @@ function ironOf(D,pid,season){const ks=D.wids.filter(k=>D.week(k).season===seaso
 function ironSeasons(D,pid){return statSeasons(D).filter(s=>{const r=ironOf(D,pid,s);return r&&r.full&&(D.done(s)||D.wids.some(k=>{const w=D.week(k);return w.season===s&&w.confChamp&&w.status==="final"}))}).length}
 function ironTag(pid){if(pid===BOT)return "";return ironOf(realStats(),pid,state.config&&state.config.season)?' <span title="Iron Man: every pick in, every week" aria-label="Iron Man">\u{1F9BE}</span>':""}
 
+/* ---------- class badges ---------- */
+/* A picker's class is the season of their first picked game (server: state.classOf). 2026 is the Redshirt class; nobody earns it later.
+   Robo-Sharp gets none. Remove keeps it; Start over deletes the picks, so the class resets. */
+function classYear(pid){if(pid===BOT)return null;return (state.classOf||{})[pid]||null}
+function classLabel(y){return y===2026?"Redshirt Class of 2026":"Class of "+y}
+function classBadge(pid){const y=classYear(pid);if(!y)return "";const rs=y===2026;
+  return `<span class="clsb${rs?" rs":""}" title="${rs?"Played in the first season, 2026":"First season: "+y}"><span aria-hidden="true">${rs?"\u{1F3C8}":"\u{1F393}"}</span>${esc(classLabel(y))}</span>`}
+/* Every class with its pickers, oldest class first. Removed pickers stay hidden here, as everywhere pickers see. */
+function classPanel(sel){const gone=new Set(removed());const by={};
+  for(const pid of state.pickedIn||[]){const y=classYear(pid);if(!y||gone.has(pid))continue;(by[y]=by[y]||[]).push(pid)}
+  const ys=Object.keys(by).map(Number).sort((a,b)=>a-b);if(!ys.length)return "";
+  return `<div class="panel"><h2>Classes</h2><p class="note">Your class is the season you made your first pick. It stays on your profile for good.</p>${ys.map(y=>`<h3 class="rh">${classBadge(by[y][0])} <span class="note">${by[y].length} picker${by[y].length===1?"":"s"}</span></h3><div class="clslist">${by[y].sort((a,b)=>nm(a).localeCompare(nm(b))).map(pid=>`<button type="button" class="clsp${pid===sel?" on":""}" data-pk="${esc(pid)}">${chip(pid,true)}${esc(nm(pid))}</button>`).join("")}</div>`).join("")}</div>`}
+
 /* ---------- standings ---------- */
 /* Share of graded picks that were right. Null until a pick is graded. Field goals count once. */
 const pickPct=r=>r.w+r.l?r.w/(r.w+r.l):null;
@@ -2273,7 +2293,7 @@ function renderPlayers(){
       const team=pick==="home"?g.home:g.away;st.teams[team]=st.teams[team]||[0,0];st.teams[team][win]++}}
   const rec=a=>a[0]+"-"+a[1];const pct=(a,b)=>a+b?Math.round(a/(a+b)*100)+"%":"–";
   const teams=Object.entries(st.teams).sort((a,b)=>(b[1][0]+b[1][1])-(a[1][0]+a[1][1])||b[1][0]-a[1][0]);
-  h+=`<div class="panel"><h2>${chip(sel,true)}${esc(nm(sel))}</h2>${talkLine(sel)}<div class="stats">
+  h+=`<div class="panel"><h2>${chip(sel,true)}${esc(nm(sel))}</h2>${classBadge(sel)?`<p class="clsrow">${classBadge(sel)}</p>`:""}${talkLine(sel)}<div class="stats">
     <div><span class="note">Against the spread</span><b>${st.w}-${st.l}</b><span class="note">${pct(st.w,st.l)}</span></div>
     <div><span class="note">Field goals</span><b>${st.lw}-${st.ll}</b></div>
     <div><span class="note">Favorites</span><b>${rec(st.fav)}</b></div>
@@ -2288,7 +2308,7 @@ function renderPlayers(){
   /* head to head */
   const h2h=ids.filter(o=>o!==sel).map(o=>({o,...h2hRec(sel,o,weeks)})).filter(x=>x.W+x.L+x.T);const rivalNow=sel!==BOT&&currentWeekId()&&state.weeks[currentWeekId()]?rivalOf(sel,currentWeekId()):null;
   h+=`<div class="panel"><h2>Head to head</h2>${h2h.length?`<p class="note">${esc(nm(sel))}'s weekly record against each picker (W-L-T).</p><div class="h2h">${h2h.map(x=>`<span>${esc(nm(x.o))}${x.o===rivalNow?' <span class="pill">Rival</span>':""}</span><b>${x.W}-${x.L}${x.T?"-"+x.T:""}</b>`).join("")}</div>`:'<p class="note">Head to head records start after a week with at least two pickers.</p>'}</div>`;
-  el.innerHTML=top+h+trendH;
+  el.innerHTML=top+h+trendH+classPanel(sel);
 }
 /* ---------- picker stats ---------- */
 /* Past picks, career wins, personal insights, and Beat the close. Every panel reads a data object D,
@@ -2357,7 +2377,7 @@ function pastPanel(D,pid,surv){const ks=[...D.wids].filter(k=>D.players(k)[pid])
     let sv="";if(p.surv){const g=w.games.find(x=>x.id===p.surv.g);if(g){const team=p.surv.s==="home"?g.home:g.away;const c=coverSide(g,rs[g.id]);sv=`Survivor: ${esc(teamLook(team,g,p.surv.s).abbr)}, ${rs[g.id]&&rs[g.id].void?"void":c?(c===p.surv.s?"survived":"out"):"not final"}.`}}
     return `<details class="wkh"${i===0?" open":""}><summary><b>Week ${w.week}${statSeasons(D).length>1?" \u00b7 "+esc(w.season):""}</b><span class="note">${s.pts} pts \u00b7 ${s.w}-${s.l} \u00b7 ${tied?"T-":""}${ordinal(rank)} of ${all.length}</span></summary><ul class="pplist">${rows}</ul>${tb||sv?`<p class="note">${tb} ${sv}</p>`:""}</details>`}).join("");
   return `<div class="panel"><h2>Past picks</h2>${body}</div>`}
-window.tpStats={seasonRows,pickPct,pctText,seasonSort,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
+window.tpStats={classYear,classLabel,classBadge,classPanel,seasonRows,pickPct,pctText,seasonSort,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
 
 function titlesPanel(){const weeks=countedWeeks(state.incTest).filter(w=>state.weeks[w].status==="final");if(!weeks.length)return "";
   const shelf=weeks.slice().reverse().map(wid=>{const win=weekWinners(wid);return win.length?`<span class="tro">🏆 ${state.weeks[wid].confChamp?"Conf Champ":"W"+state.weeks[wid].week} · ${win.map(p=>esc(first(p))).join(" & ")}</span>`:""}).join("");

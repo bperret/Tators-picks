@@ -370,6 +370,18 @@ try {
     return { me: server.pickedIn.includes(state.uid), noSides: server.pickedIn.every((x) => typeof x === "string"), zero: ids.includes("open0"), rec: zero && [zero.w, zero.l, zero.pts], tbOnly: ids.includes("tbOnly"), bot: ids.includes("__bot") || ids.some((x) => /bot|robo/i.test(x)), order, plain, pct: pctText({ w: 5, l: 3 }), none: pctText({ w: 0, l: 0 }), nullPct: pickPct({ w: 0, l: 0 }) };
   });
   check("a picker with one game in shows at 0-0; an empty sheet does not", season.me && season.noSides && season.zero && season.rec.join() === "0,0,0" && !season.tbOnly, JSON.stringify(season));
+  // Class badges: server sends each picker's first season; Redshirt for 2026; none for Robo-Sharp; removed pickers left off the Classes panel.
+  const cls = await m.evaluate(async () => {
+    const { state } = window.tpRecap; const { classYear, classBadge, classPanel } = window.tpStats;
+    const server = await (await fetch("/api/state")).json();
+    const keep = { classOf: state.classOf, pickedIn: state.pickedIn, config: state.config };
+    state.classOf = { ...state.classOf, r26: 2026, n27: 2027, gone: 2026 }; state.pickedIn = [...state.pickedIn, "r26", "n27", "gone"];
+    state.config = { ...state.config, removed: [...((state.config && state.config.removed) || []), "gone"] };
+    const out = { mine: server.classOf && server.classOf[server.me.id], rs: classBadge("r26"), std: classBadge("n27"), bot: classBadge("__bot") + (classYear("__bot") || ""), none: classBadge("nobody"), panel: classPanel("r26") };
+    Object.assign(state, keep); return out;
+  });
+  check("class badges: Redshirt 2026, Class of 2027, none for Robo-Sharp", cls.mine === 2026 && /Redshirt Class of 2026/.test(cls.rs) && /clsb rs/.test(cls.rs) && /Class of 2027/.test(cls.std) && !/ rs/.test(cls.std) && cls.bot === "" && cls.none === "", JSON.stringify({ mine: cls.mine, bot: cls.bot }));
+  check("Classes panel lists each class and hides removed pickers", /Classes/.test(cls.panel) && /data-pk="r26"/.test(cls.panel) && /data-pk="n27"/.test(cls.panel) && !/data-pk="gone"/.test(cls.panel) && cls.panel.indexOf("Redshirt") < cls.panel.indexOf("Class of 2027"));
   check("correct pick % reads 62.5%, a dash before any graded pick", season.pct === "62.5%" && season.none === "–" && season.nullPct === null, JSON.stringify(season));
   check("Pct sort: best first, more correct picks on a tie, no graded picks last", season.order === "bfaedc" && season.plain === "ca", JSON.stringify(season));
   const rankBefore = await m.locator("#v-standings .board:has(h2:text-matches('Season')) tbody tr td:first-child").allTextContents();
