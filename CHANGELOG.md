@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.35.2 | Nov 6, 6:48 AM | Rules, Picks, Commish | Consistency pass: lock says most weeks Saturday 10:15 (Conference Champion Week Friday), a Survivor run is shared by everyone alive at its end, the Survivor pick box says once a run, the Remove note says removed pickers grey out with no points | S | 10 | `08335b0` |
 | 1.35.1 | Nov 6, 6:41 AM | Commish | Start over on a removed picker (two taps): deletes picks, pick history, and engagement, clears the profile, signs them out, keeps phone and PIN so the walk-on runs again. Remove note now says Remove keeps data | S | 21 | `9a3db45` |
 | 1.35 | Nov 6, 6:37 AM | Army-Navy, Picks, Bowl Season | Commissioner-only Army-Navy prototype tab (final and halftime entry, checks, Before lock / Halftime / Final preview); red action dot on Picks until your sheet is saved; white "You have picked N of 10 bowls" toast | M | 137 | `f20ed86` |
 | 1.34 | Nov 6, 6:19 AM | Bowl Season | Commissioner-only prototype tab: Bowl challenge with 35 sample bowls, pick 10, field goal, tiebreaker bowl, and a Before lock / After lock / Final preview; Army-Navy placeholder | M | 145 | `0e60275` |
