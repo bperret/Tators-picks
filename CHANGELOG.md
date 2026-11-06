@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.38.4 | Nov 6, 12:26 PM | Commish | Decluttered: one-time and set-once tools (Robo-Sharp switch, Save inputs, old vs new, Fill game log, Fill lines, page visit settings, school letters, league name, manual backups) moved into a folded Setup and one-time tools section that Expand all skips; Automation drops its duplicate Open picks and Pull scores buttons. Nothing deleted | M | 74 | `e1eec2f` |
 | 1.38.3 | Nov 6, 11:57 AM | Picks, Commish | Tighter Robo-Sharp bands (Coin flip under 0.5 points of edge, Slight lean to 1.25, Leans to 2, Heavy lean 2 and up); band count per week in the Commish Robo-Sharp check | S | 8 | `8534869` |
 | 1.38.2 | Nov 6, 11:48 AM | Picks, Rules | Robo-Sharp confidence bands on each game: Coin flip, Slight lean, Leans, Heavy lean, from its cover chance; Rules explain them; the no-driver label is now Ratings split, market flat | S | 21 | `4165c75` |
 | 1.38.1 | Nov 6, 11:42 AM | Picks | Robo leans line names what drove the pick (ratings and market agree, market call, ratings call, or coin flip) instead of a bare ratings count | S | 22 | `0655675` |
