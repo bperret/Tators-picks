@@ -416,6 +416,9 @@ td.svc.next{border:1px dashed var(--line)}
 .survbox .note{color:#f3c9c3}
 .survbox p{margin:0}
 .survtop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.survbox.bench{background:#2b2f36;border-color:#8a929c;box-shadow:0 0 0 3px #15181c;color:#eef1f4}
+.survbox.bench .survtag{background:#8a929c;color:#111}
+.survbox.bench p{margin:0}
 .survtag{font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;background:#b3261e;color:#fff;border-radius:3px;padding:2px 8px}
 .survbox select{width:100%;font:inherit;padding:8px;border-radius:6px;border:2px solid #b3261e;background:#fff;color:#111}
 .survbox .conflict{background:#fff3cd;color:#3a2a00;border-radius:6px;padding:8px}
@@ -451,7 +454,9 @@ td.svc.next{border:1px dashed var(--line)}
 .onbn{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);font-family:var(--cond);font-weight:700}
 .onbcap{margin:12px 0 0;font-family:var(--cond);font-weight:700;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase}
 .onb .lookprev{margin-top:4px}
-.onbcustom summary{cursor:pointer;margin-top:10px;color:var(--muted)}
+.onbcustom summary{list-style:none;cursor:pointer;margin-top:10px;display:block;text-align:center;font-family:var(--cond);font-weight:700;font-size:1rem;letter-spacing:.05em;text-transform:uppercase;border-radius:6px;padding:12px 14px;background:var(--flag);color:#111;border:1px solid #c9a400}
+.onbcustom summary::-webkit-details-marker{display:none}
+.onbcustom[open] summary{margin-bottom:6px}
 .prevrow{display:flex;align-items:center;gap:10px;width:100%}
 .prevrow .rk{font-family:var(--cond);font-weight:700;color:var(--muted)}
 .prevrow .num{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)}
@@ -617,7 +622,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <p class="onbcap">How you show up on Standings</p>
       <div class="lookprev" id="setupPrev"></div>
       <button class="btn" type="button" id="onbShuffle">🎲 Shuffle my look</button>
-      <details class="onbcustom" id="setupCustom"><summary>Pick my own emoji and colors</summary><div id="setupLook"></div></details>
+      <details class="onbcustom" id="setupCustom"><summary>🎨 Pick my own look</summary><div id="setupLook"></div></details>
       <p class="autherr" id="setupErr" role="alert" hidden></p>
       <button class="btn primary" type="submit">Next: the rules</button>
     </form>
@@ -1391,7 +1396,7 @@ function render(){
     if(state.preview){$("#weekLine").textContent=`Week ${state.preview.week} preview · Picks are not open yet`;setB("Preview","plain")}
     else if(state.upcoming){$("#weekLine").textContent=`Week ${state.upcoming.week} slate drops soon.${lf?" Week "+lf.week+" is final.":""}`;setB("Slate coming","plain")}
     else{$("#weekLine").textContent=lf?`Week ${lf.week} is final. The next slate drops Tuesday.`:"The first slate drops Tuesday.";setB("Off week","plain")}}
-  if(state.view==="picks"){renderPicks();if(state.preview)$("#v-picks").insertAdjacentHTML("afterbegin",previewPanel());const ban=recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban)}
+  if(state.view==="picks"){renderPicks();if(state.preview)$("#v-picks").insertAdjacentHTML("afterbegin",previewPanel());const ban=isRookie()?"":recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban)}
   if(state.view==="picks"){const rk=$("#rookie");if(rk&&rk.parentNode.firstElementChild!==rk)rk.parentNode.prepend(rk)}
   if(state.view==="recap")renderRecap();
   if(state.view==="standings")renderStandings();
@@ -1448,7 +1453,7 @@ function rookiePanel(){if(!isRookie())return "";const w=curWeek(),wid=currentWee
     ${step(n>=open.length,++i,`Pick a side in every game (${n} of ${open.length})`,"Tap the team you think covers the spread.")}
     ${step(!!d.lock,++i,"Kick your field goal","Tap the goalpost on your surest pick. It scores 3 if it covers.")}
     ${step(d.tb!=null,++i,"Guess the tiebreaker",'Total points in the first game. <button type="button" class="linkbtn" data-jump="tb">Take me there</button>')}
-    ${sv?step(!!d.surv&&!survConflict(w,d),++i,"Make your Survivor pick",'One team against the spread. Miss and you are out. <button type="button" class="linkbtn" data-jump="surv">Take me there</button>'):""}
+    ${sv?step(!!d.surv&&!survConflict(w,d),++i,"Make your Survivor pick",'One team against the spread. Miss and you are out. <button type="button" class="linkbtn" data-jump="surv">Take me there</button>'):survBench(wid)?`<li class="bench"><span class="rkn">\u2013</span><span><b>Survivor: you sit this run out</b><br><span class="note">This run started before you joined. You're in for the next one. <button type="button" class="linkbtn" data-jump="surv">Why?</button></span></span></li>`:""}
     ${step(false,++i,"Save your picks","Tap Save picks at the bottom. You can change them until the lock.")}
   </ol></div>`}
 function renderPicks(){
@@ -1533,7 +1538,9 @@ function renderPicks(){
       <div class="tbrow"><input id="tbInput" type="number" min="0" max="200" inputmode="numeric" placeholder="\u2013" aria-label="Tiebreaker: total points" value="${d.tb??""}" ${editable?"":"disabled"}><span class="note">${tot!=null?`Final total: ${tot}.${d.tb!=null?" Your miss: "+Math.abs(d.tb-tot)+".":""}`:"Closest guess wins a tied week. No guess counts as 0."}</span></div></div>`}
   if(survivorOpen(wid)&&state.uid&&!out){
     const board=survivorBoard()||[];const me=board.find(r=>r.pid===state.uid);
-    if(me&&!me.alive)h+=`<div class="survbox"><h2>Survivor</h2><p>💀 You are out. ${survLate(me.pid)?`You missed Week ${me.out.week}, the first week of this Survivor.`:`Week ${me.out.week}: ${esc(me.out.team)}.`}</p></div>`;
+    if(survBench(wid)){const f=survivorWeeks()[0];const fw=f&&state.weeks[f]?state.weeks[f].week:null;
+      h+=`<div class="survbox bench" id="survBench"><div class="survtop"><h2>Survivor</h2><span class="survtag">On the bench this run</span></div><p><b>How it works:</b> each week you pick one team against the spread. If it covers, you stay alive. One miss and you are out. Last ones standing win the run.</p><p><b>Why you can't pick yet:</b> this run started${fw?` in Week ${fw}`:""}, before you joined. Late joiners sit the run out, so the Survivor board shows you as out for now. You're in for the next run. Good to have you.</p></div>`}
+    else if(me&&!me.alive)h+=`<div class="survbox"><h2>Survivor</h2><p>💀 You are out. ${survLate(me.pid)?`You missed Week ${me.out.week}, the first week of this Survivor.`:`Week ${me.out.week}: ${esc(me.out.team)}.`}</p></div>`;
     else{const used=survivorUsed(state.uid);const cur=d.surv?d.surv.g+"|"+d.surv.s:"";
       const opts=gs.flatMap(g=>["away","home"].map(sd=>{const team=sd==="home"?g.home:g.away;const ln=sd==="home"?g.homeLine:-g.homeLine;const L=teamLook(team,g,sd);const usedT=used.includes(canon(team));return `<option value="${esc(g.id+"|"+sd)}" ${cur===g.id+"|"+sd?"selected":""} ${usedT?"disabled":""}>${esc(L.abbr)} ${esc(team)} ${fmtLine(ln)}${usedT?" (used)":""}</option>`})).join("");
       h+=`<div class="survbox" id="survPanel"><div class="survtop"><h2>Survivor</h2><span class="survtag">One team · win or go home</span></div><p class="note">Pick one team against the spread. If it covers you stay alive. You cannot use a team twice.${used.length?" Used: "+used.map(esc).join(", ")+".":""}</p><select id="survSel" aria-label="Survivor pick" ${editable?"":"disabled"}><option value="">Pick your survivor team (each team once a season)</option>${opts}</select>${(()=>{const cg=survConflict(w,d);if(!cg)return "";const g=w.games.find(x=>x.id===cg);const st=d.surv.s,pk=d.sel[cg];const Ls=teamLook(st==="home"?g.home:g.away,g,st),Lp=teamLook(pk==="home"?g.home:g.away,g,pk);
@@ -1552,7 +1559,7 @@ function renderPicks(){
 }
 
 document.addEventListener("click",async e=>{
-  const jp=e.target.closest("[data-jump]");if(jp){const k=jp.dataset.jump;const el=k==="tb"?$("#tbPanel"):k==="surv"?$("#survPanel"):document.getElementById("g-"+k.slice(5));
+  const jp=e.target.closest("[data-jump]");if(jp){const k=jp.dataset.jump;const el=k==="tb"?$("#tbPanel"):k==="surv"?($("#survPanel")||$("#survBench")):document.getElementById("g-"+k.slice(5));
     if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),1200);if(k==="tb"){const i=$("#tbInput");if(i&&!i.disabled)setTimeout(()=>i.focus({preventScroll:true}),350)}}return}
   const s=e.target.closest(".side[data-g]");const lk=e.target.closest("[data-lock]");
   if((s||lk)&&state.draft){
@@ -1580,7 +1587,8 @@ document.addEventListener("change",async e=>{
 document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="confSel"){state.atsConf=e.target.value;renderRankings()}if(e.target.id==="statConf"){state.statConf=e.target.value;renderRankings()}if(e.target.id==="statSlate"){state.statSlate=e.target.checked;renderRankings()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
 
 /* Survivor asks for a pick only while it is open and you are still in it. */
-function survNeeded(wid){if(!survivorOpen(wid))return false;const me=(survivorBoard()||[]).find(r=>r.pid===state.uid);return !me||me.alive||!!me.pending}
+function survBench(wid){return !!state.uid&&survivorOpen(wid)&&survLate(state.uid)} /* joined after the run's first week: sits this run out */
+function survNeeded(wid){if(!survivorOpen(wid)||survBench(wid))return false;const me=(survivorBoard()||[]).find(r=>r.pid===state.uid);return !me||me.alive||!!me.pending}
 function survConflict(w,d){if(!d||!d.surv||!d.sel)return null;const p=d.sel[d.surv.g];return p&&p!==d.surv.s?d.surv.g:null}
 function missingItems(w,wid,d){const rs=w.results||{};const m=[];
   const open=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void));const left=open.filter(g=>!d.sel[g.id]).length;

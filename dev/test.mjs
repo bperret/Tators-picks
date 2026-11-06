@@ -70,6 +70,8 @@ try {
   const look1 = await c.evaluate(() => document.querySelector("#setupPrev .ptag").getAttribute("style"));
   let shuffled = false; for (let i = 0; i < 5 && !shuffled; i++) { await c.click("#onbShuffle"); shuffled = (await c.evaluate(() => document.querySelector("#setupPrev .ptag").getAttribute("style"))) !== look1; }
   check("Shuffle changes the look", shuffled);
+  const cust = await c.evaluate(() => { const a = document.querySelector("#onbShuffle").getBoundingClientRect(), b = document.querySelector("#setupCustom summary").getBoundingClientRect(); return { w: Math.round(b.width - a.width), h: Math.round(b.height - a.height), bg: getComputedStyle(document.querySelector("#setupCustom summary")).backgroundColor } });
+  check("Pick my own is a full size gold button like Shuffle", Math.abs(cust.w) <= 2 && Math.abs(cust.h) <= 4 && cust.bg === "rgb(255, 209, 0)", JSON.stringify(cust));
   await c.click("#setupForm button[type=submit]");
   check("the jersey needs only a name", (await c.textContent("#setupErr")).includes("display name") && (await c.isVisible("#setupForm")));
   await c.fill("#setupName", "Tator");
@@ -142,6 +144,7 @@ try {
   const rk0 = await m.textContent("#rookie");
   check("a rookie sees the first sheet steps at the top", rk0.includes("Your first sheet") && rk0.includes("0 of 5") && (await m.evaluate(() => document.querySelector("#v-picks").firstElementChild.id)) === "rookie", rk0);
   check("a rookie gets no Picks are live pop-up", !(await m.isVisible("#reveal")));
+  check("a rookie gets no recap banner", await m.evaluate(() => { const { state, render } = window.tpRecap; render(); return !document.querySelector("#v-picks .recapban, #v-picks [data-recapban]") && !/recap is in/i.test(document.querySelector("#v-picks").textContent) }));
   await m.screenshot({ path: "dev/test-rookie.png", fullPage: false });
   await m.evaluate(() => { const { state } = window.tpRecap; state.isOwner = false; });
   await m.evaluate(() => { const { state, revealLive } = window.tpRecap; state.pickedIn = [state.uid]; revealLive(); });
@@ -580,7 +583,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   // ---- rival, what you need, your week, Iron Man, chip, line moved: a made-up league drawn on the page ----
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   const race = await m.evaluate(() => {
-    const { state, rivalOf, raceFacts, yourWeek, ironOf, ironSeasons, realStats, survNeeded, renderPicks, missingItems, renderRecap } = window.tpRecap;
+    const { state, rivalOf, raceFacts, yourWeek, ironOf, ironSeasons, realStats, survNeeded, renderPicks, missingItems, renderRecap, render } = window.tpRecap;
     const me = state.uid; const base = Object.values(state.weeks)[0];
     const games = [1, 2, 3, 4].map((n, i) => ({ id: "x" + n, slot: n, away: "Florida", awayRank: 99, home: "Georgia", homeRank: 99, homeLine: -3.5, kickoff: new Date(Date.now() - 86400e3 + i * 1000).toISOString(), neutral: false }));
     const past = new Date(Date.now() - 864e5).toISOString(), soon = new Date(Date.now() + 864e5).toISOString();
@@ -620,8 +623,21 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     out.outNeeded = survNeeded("2026-w22"); out.msgs = missingItems(state.weeks["2026-w22"], "2026-w22", { sel: {}, lock: null, tb: null });
     renderPicks();
     out.chips = document.querySelector("#v-picks .cks").textContent; out.picks = document.querySelector("#v-picks").textContent;
+    // A picker who joins after the run's first week: bench card, no Survivor pick, a bench line in the rookie steps.
+    const was = { uid: state.uid, owner: state.isOwner, pickedIn: state.pickedIn, draft: state.draft };
+    state.uid = "newbie"; state.isOwner = false; state.pickedIn = []; state.draft = { sel: {}, lock: null, tb: null, surv: null };
+    renderPicks();
+    out.benchNeeded = survNeeded("2026-w22"); out.bench = (document.querySelector("#survBench") || {}).textContent || ""; out.benchSel = !!document.querySelector("#survSel");
+    out.benchRookie = (document.querySelector("#rookie") || {}).textContent || "";
+    const view = state.view; state.view = "picks"; render(); out.banRookie = !!document.querySelector("#v-picks .recapban");
+    state.pickedIn = ["newbie"]; render(); out.banVet = !!document.querySelector("#v-picks .recapban"); state.view = view;
+    state.pickedIn = []; renderPicks(); window.__was = was;
     return out;
   });
+  const hash0 = await m.evaluate(() => location.hash);
+  await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(250);
+  { const bb = m.locator("#survBench"); await bb.scrollIntoViewIfNeeded(); await bb.screenshot({ path: "dev/test-bench.png" }); }
+  await m.evaluate((h) => { const { state, renderPicks } = window.tpRecap; Object.assign(state, window.__was); renderPicks(); location.hash = h; }, hash0); await m.waitForTimeout(150);
   check("the leader's rival is the picker right behind", race.leaderRival === "b", JSON.stringify(race));
   check("your rival is the picker just above you", race.myRival === "b" && race.bRival === "a", JSON.stringify([race.myRival, race.bRival]));
   check("no rival before there are standings", race.noRivalFirstWeek === null);
@@ -633,6 +649,9 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("a void game does not count against Iron Man", !!race.ironVoid, JSON.stringify(race.ironVoid));
   check("a full season counts once Conference Champion Week is final", race.ironSeason === 1, String(race.ironSeason));
   check("a late joiner holds the status but not the full season", race.ironLate && !race.ironLate.full && race.ironLateSeason === 0, JSON.stringify(race.ironLate));
+  check("a late joiner gets the Survivor bench card instead of a pick", race.bench.includes("On the bench this run") && race.bench.includes("You're in for the next run") && !race.benchSel && race.benchNeeded === false, JSON.stringify([race.bench, race.benchSel, race.benchNeeded]));
+  check("the recap banner waits until a rookie's first save", race.banRookie === false && race.banVet === true, JSON.stringify([race.banRookie, race.banVet]));
+  check("a late joiner's first sheet steps say they sit Survivor out", race.benchRookie.includes("Survivor: you sit this run out") && !race.benchRookie.includes("Make your Survivor pick"), race.benchRookie);
   check("a picker who is out gets no Survivor chip or warning", race.outNeeded === false && !/Surv/.test(race.chips) && !race.msgs.some((x) => /survivor/i.test(x)), race.chips + " | " + race.msgs.join(" "));
   check("a moved line shows its tag while picks are open", /Line moved: UGA -3\.5, was -2\.5 in the preview\./.test(race.picks.replace(/−/g, "-")), race.picks.slice(0, 400));
 
