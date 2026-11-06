@@ -669,6 +669,42 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("the quick row keeps all 20 emojis in a new order on each load", qa.length === 20 && qb.length === 20 && [...qa].sort().join() === [...qb].sort().join() && qa.join() !== qb.join(), qa.join("") + " / " + qb.join(""));
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
 
+  // ---- Bowl challenge prototype ----
+  check("pickers do not see the Bowl Season tab", await m.isHidden("#bowlsTab"));
+  await m.evaluate(() => (location.hash = "#bowls")); await m.waitForTimeout(150);
+  check("a picker cannot open the Bowl Season tab", (await m.isVisible("#v-picks")) && !(await m.isVisible("#v-bowls")));
+  await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
+  check("the commissioner sees the Bowl Season tab", await c.isVisible("#bowlsTab"));
+  await c.evaluate(() => (location.hash = "#bowls")); await c.waitForSelector("#v-bowls .game");
+  check("the prototype lists 35 bowls and no Celebration Bowl", (await c.locator("#v-bowls .game").count()) === 35 && !(await c.textContent("#v-bowls")).includes("Celebration"));
+  check("the tiebreaker bowl is pinned first", (await c.locator("#v-bowls .bwlist > .game").first().getAttribute("class")).includes("tbgame"));
+  check("the Bowl Season tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);
+  check("the unfinished sheet shows the dot", (await c.getAttribute("#bowlsTab", "class") || "").includes("hot"));
+  const bwSides = () => c.locator('#v-bowls .side[data-bws="away"]');
+  await c.locator("#v-bowls .flagbtn").nth(2).click();
+  check("a field goal needs a pick first", (await c.getAttribute("#v-bowls .flagbtn >> nth=2", "aria-pressed")) === "false");
+  for (let i = 0; i < 10; i++) await bwSides().nth(i).click();
+  await bwSides().nth(10).click();
+  check("an 11th pick is blocked", (await c.locator('#v-bowls .side[aria-pressed="true"]').count()) === 10 && (await c.textContent("#bwStat")).startsWith("10 of 10"));
+  await c.locator("#v-bowls .flagbtn").nth(2).click();
+  await c.fill("#bwTb", "55");
+  check("a full sheet clears the dot", (await c.textContent("#bwStat")).includes("Sheet complete") && !((await c.getAttribute("#bowlsTab", "class")) || "").includes("hot"));
+  await c.click('[data-bwf="mine"]');
+  check("My picks shows the 10 picks", (await c.locator('#v-bowls .side[aria-pressed="true"]').count()) === 10 && (await c.locator("#v-bowls .game").count()) <= 11);
+  await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#bowls")); await c.waitForSelector("#v-bowls .game");
+  check("prototype picks survive a reload on this device", (await c.locator('#v-bowls .side[aria-pressed="true"]').count()) === 10);
+  await c.click('[data-bwph="final"]');
+  const bwFinal = await c.textContent("#v-bowls .bwt");
+  check("Final shows standings with Robo-Sharp unranked", bwFinal.includes("Robo-Sharp") && bwFinal.includes("You") && (await c.locator("#v-bowls .bwt tr", { hasText: "Robo-Sharp" }).locator("td").first().textContent()) === "—");
+  check("picks are read only after the lock", (await c.locator("#v-bowls .side:not([disabled])").count()) === 0);
+  await c.click('[data-bwph="live"]');
+  check("After lock shows some bowls not played yet", (await c.textContent("#v-bowls")).includes("Not played yet") && (await c.textContent("#v-bowls")).includes("Final:"));
+  await c.click('[data-bwct="an"]');
+  check("Army-Navy shows its placeholder", (await c.textContent("#v-bowls")).includes("Predict the final score"));
+  check("the prototype adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
+  await c.click('[data-bwct="bowl"]'); await c.click('[data-bwph="pre"]');
+  await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
+
   // ---- engagement and the page visit switch ----
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   await m.evaluate(() => (location.hash = "#rules")); await m.waitForTimeout(150);

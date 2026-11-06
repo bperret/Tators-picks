@@ -256,6 +256,21 @@ details.manual .inner{margin-top:12px}
 .gotile:hover strong{text-decoration:underline}
 .gotile:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
 @media (prefers-reduced-motion:no-preference){.gotile{transition:transform .12s}.gotile:hover{transform:translateY(-2px)}}
+#bowlsTab.hot::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--loss);margin-left:5px;vertical-align:super}
+@media (prefers-reduced-motion:no-preference){#bowlsTab.hot::after{animation:bwpulse 1.2s ease-in-out infinite}}
+@keyframes bwpulse{50%{opacity:.25;transform:scale(1.5)}}
+.bwproto{border:2px dashed var(--line);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.86rem;line-height:1.35}
+.bwcts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.bwct{text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer}
+.bwct[aria-pressed="true"]{border:2px solid var(--ink);padding:7px 9px}
+.bwct b{display:block;font-family:var(--cond);font-size:1.05rem}.bwct small{display:block;color:var(--muted);font-size:.78rem;line-height:1.25}
+.bwbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 10px}
+.bwstat{font-family:var(--cond);font-weight:700;letter-spacing:.03em;margin:0 0 6px}
+.bwlist{display:flex;flex-direction:column;gap:10px}
+.bwwho{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:.76rem;color:var(--muted);line-height:1.3}
+.bwfin{font-family:var(--cond);font-size:.9rem;color:var(--muted)}
+.bwtb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.9rem}.bwtb input{width:84px;font:inherit;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.bwt{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:12px}.bwt th,.bwt td{padding:5px 6px;border-top:1px solid var(--line);text-align:left}.bwt th{font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:.74rem;color:var(--muted)}.bwt .n{text-align:right;font-variant-numeric:tabular-nums}.bwt tr.me td{font-weight:700}
 .recapban{display:block;text-align:center;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
 .rchero h2{margin:0}
 .rchero .note{color:#e8edf2}
@@ -635,6 +650,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#playoffs" data-v="playoffs">Playoffs</a>
     <a href="#rules" data-v="rules">Rules</a>
     <a href="#profile" data-v="profile">Profile</a>
+    <a href="#bowls" data-v="bowls" id="bowlsTab" hidden>Bowl Season</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
 
@@ -807,6 +823,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   </section>
   <section class="view" id="v-profile" hidden></section>
   <section class="view" id="v-playoffs" hidden></section>
+  <section class="view" id="v-bowls" hidden></section>
   <section class="view" id="v-commish" hidden></section>
   <div id="goFoot"></div>
   </div>
@@ -950,7 +967,7 @@ function applyState(S){
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
-  $("#commishTab").hidden=!state.isOwner;
+  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;
   syncDraft();
 }
 async function refresh(quiet){
@@ -1181,17 +1198,17 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","commish"];
+const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
-function engNote(v){if(!ME||v==="commish"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engNote(v){if(!ME||v==="commish"||v==="bowls"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
 function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
 function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
   try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)engFlush(true)});
 window.addEventListener("pagehide",()=>engFlush(true));
 window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if(v==="commish"&&!state.isOwner)v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls")&&!state.isOwner)v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render();if(state.toTop){state.toTop=false;scrollTo(0,0)}}
 window.addEventListener("hashchange",route);
@@ -1283,6 +1300,81 @@ const SIG={
 };
 
 /* ---------- render ---------- */
+/* Bowl challenge prototype (item 3). Commissioner only, on the hidden Bowl Season tab. Picks save on this device only; nothing reaches the server.
+   Teams: Athlon's Nov 1 projections. Dates: ESPN's 2026-27 schedule. Lines are samples from the SP+ gap, neutral site, half-point rule. */
+const BOWL_SRC="Teams from Athlon Sports' bowl projections after Week 9 (Nov 1). Athlon listed South Carolina twice, so Kentucky fills the Liberty Bowl. Dates from ESPN's 2026-27 schedule.";
+const BOWL_LOCK="2026-12-15T22:30:00Z";
+const BOWLS=[["b01","Salute to Veterans Bowl","2026-12-15T22:30:00Z","Montgomery, Ala.","Middle Tennessee","Georgia Southern"],["b02","Frisco Football Classic","2026-12-16T02:00:00Z","Frisco, Texas","Louisiana Tech","North Texas"],["b03","Boca Raton Bowl","2026-12-18T16:00:00Z","Boca Raton, Fla.","James Madison","Memphis"],["b04","Gasparilla Bowl","2026-12-18T19:30:00Z","Tampa, Fla.","Virginia","Auburn"],["b05","Myrtle Beach Bowl","2026-12-21T16:00:00Z","Conway, S.C.","Tulane","Marshall"],["b06","Famous Idaho Potato Bowl","2026-12-21T19:30:00Z","Boise, Idaho","Toledo","North Dakota State"],["b07","Puerto Rico Bowl","2026-12-22T18:30:00Z","Bayamón, P.R.","Miami (Ohio)","Florida Atlantic"],["b08","Cure Bowl","2026-12-22T22:00:00Z","Orlando, Fla.","Jacksonville State","Western Michigan"],["b09","Independence Bowl","2026-12-23T01:30:00Z","Shreveport, La.","Texas A&M","UCF"],["b10","New Orleans Bowl","2026-12-23T19:00:00Z","New Orleans","Liberty","Louisiana"],["b11","Armed Forces Bowl","2026-12-23T22:30:00Z","Fort Worth, Texas","UTSA","Air Force"],["b12","Poinsettia Bowl","2026-12-24T00:30:00Z","San Diego","Fresno State","Washington"],["b13","Frisco Bowl","2026-12-24T02:00:00Z","Frisco, Texas","Tulsa","Delaware"],["b14","New Mexico Bowl","2026-12-24T19:30:00Z","Albuquerque, N.M.","New Mexico","Arizona State"],["b15","Hawai'i Bowl","2026-12-25T00:00:00Z","Honolulu","UNLV","Texas State"],["b16","Pinstripe Bowl","2026-12-26T17:00:00Z","New York","Pitt","Minnesota"],["b17","Fenway Bowl","2026-12-26T19:00:00Z","Boston","North Carolina","Army"],["b18","Duke's Mayo Bowl","2026-12-26T20:30:00Z","Charlotte, N.C.","Louisville","Northwestern"],["b19","68 Ventures Bowl","2026-12-26T22:30:00Z","Mobile, Ala.","Ohio","Arkansas State"],["b20","Cactus Bowl","2026-12-27T00:30:00Z","Tempe, Ariz.","Cincinnati","Michigan"],["b21","Military Bowl","2026-12-28T19:00:00Z","Annapolis, Md.","Duke","South Florida"],["b22","Holiday Bowl","2026-12-28T22:00:00Z","San Diego","Virginia Tech","Oregon State"],["b23","Birmingham Bowl","2026-12-29T19:00:00Z","Birmingham, Ala.","NC State","Mississippi State"],["b24","Pop-Tarts Bowl","2026-12-29T22:30:00Z","Orlando, Fla.","Wake Forest","Houston"],["b25","Alamo Bowl","2026-12-30T02:00:00Z","San Antonio","Texas Tech","USC"],["b26","Gator Bowl","2026-12-30T16:30:00Z","Jacksonville, Fla.","SMU","Florida"],["b27","Music City Bowl","2026-12-30T20:00:00Z","Nashville, Tenn.","Nebraska","South Carolina"],["b28","ReliaQuest Bowl","2026-12-31T17:00:00Z","Tampa, Fla.","Wisconsin","Alabama"],["b29","Sun Bowl","2026-12-31T19:00:00Z","El Paso, Texas","Clemson","Arizona"],["b30","Las Vegas Bowl","2026-12-31T20:45:00Z","Las Vegas","Oregon","Tennessee"],["b31","Texas Bowl","2027-01-01T00:30:00Z","Houston","Oklahoma State","Missouri"],["b32","Citrus Bowl","2027-01-02T17:00:00Z","Orlando, Fla.","Iowa","Ole Miss"],["b33","First Responder Bowl","2027-01-02T20:30:00Z","Dallas","Baylor","Penn State"],["b34","Liberty Bowl","2027-01-03T00:30:00Z","Memphis, Tenn.","West Virginia","Kentucky"],["b35","Arizona Bowl",null,"Tucson, Ariz.","Buffalo","Wyoming"]];
+const BW_FAKE=["Big Tuna","Coach K","Sooner Steve","Bayou Bill","Mrs. Q","The Professor","Deacon","Lefty"];
+const BW_LIVE_CUT="2026-12-27T00:00:00Z";
+function bwHash(x){let h=2166136261;for(const c of String(x)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0)/4294967296}
+function bwHalf(v){if(Math.abs(v%1)===.5)return v;const r=Math.round(v*2)/2;if(Math.abs(r%1)===.5)return r;return r<0?r-.5:r>0?r+.5:.5}
+function bwRate(k){const R=state.rankings||{},m={};((R.power&&R.power[k]&&R.power[k].teams)||[]).forEach(t=>m[canon(t.team)]=t.rating);return m}
+function bwGames(){const sp=bwRate("sp"),fpi=bwRate("fpi"),ap={};((state.rankings&&state.rankings.ap&&state.rankings.ap.teams)||[]).forEach(t=>ap[canon(t.team)]=t.rank);
+  return BOWLS.map(([id,name,kickoff,city,away,home])=>{const a=canon(away),h=canon(home);
+    /* homeLine is negative when the second team is favored, the same as weekly games. */
+    const raw=a in sp&&h in sp?sp[a]-sp[h]:Math.round((bwHash(id+"L")-.5)*56)/2;
+    const homeLine=bwHalf(raw),model=a in fpi&&h in fpi?fpi[a]-fpi[h]:raw+(bwHash(id+"M")-.5)*8;
+    return {id,name,kickoff,city,away,home,homeLine,model,awayRank:ap[a]||99,homeRank:ap[h]||99,sp:(sp[a]||0)+(sp[h]||0),total:Math.round(44+bwHash(id+"T")*18)+.5}})}
+/* Tiebreaker bowl: AP ranks added (unranked = 26), then the best single rank, then the stronger pair by SP+. */
+function bwTie(G){const k=g=>Math.min(g.awayRank,26)+Math.min(g.homeRank,26);return [...G].sort((x,y)=>k(x)-k(y)||Math.min(x.awayRank,x.homeRank)-Math.min(y.awayRank,y.homeRank)||y.sp-x.sp)[0]}
+function bwState(){const k="tp-bowlproto-"+(state.uid||"x");if(state.bw&&state.bwKey===k)return state.bw;state.bwKey=k;
+  let d=null;try{d=JSON.parse(localStorage.getItem(k))}catch(e){}state.bw=d&&d.sel?d:{sel:{},lock:null,tb:""};return state.bw}
+function bwSave(){try{localStorage.setItem(state.bwKey,JSON.stringify(state.bw))}catch(e){}}
+function bwDone(){const d=state.bw;return !!d&&Object.keys(d.sel).length===10&&!!d.lock&&d.tb!==""}
+/* Sample results: a fixed made-up final for each bowl. After lock = bowls before Dec 27 are final. */
+function bwRes(g,ph){if(ph==="pre"||(ph==="live"&&!(g.kickoff&&g.kickoff<BW_LIVE_CUT)))return null;
+  const m=Math.round(-g.homeLine+(bwHash(g.id+"R")-.5)*30),T=Math.max(Math.abs(m)+7,Math.round(g.total+(bwHash(g.id+"S")-.5)*24));
+  const a=Math.round((T-m)/2),h=a+m;return {a,h,cover:h-a+g.homeLine>0?"home":"away"}}
+function bwField(G,tb){const P=BW_FAKE.map((n,i)=>{const ids=G.map(g=>g.id).sort((x,y)=>bwHash(n+x)-bwHash(n+y)).slice(0,10),sel={};
+    ids.forEach(id=>{const g=G.find(z=>z.id===id),lean=g.model<g.homeLine?"home":"away";sel[id]=bwHash(n+id)<.55?lean:lean==="home"?"away":"home"});
+    return {id:"f"+i,name:n,sel,lock:ids[Math.floor(bwHash(n+"fg")*10)],tb:Math.round(40+bwHash(n+"tb")*35)}});
+  const d=state.bw;P.push({id:"me",name:"You",sel:d.sel,lock:d.lock,tb:+d.tb||0});
+  const edge=[...G].sort((x,y)=>Math.abs(y.model-y.homeLine)-Math.abs(x.model-x.homeLine)).slice(0,10),rs={};
+  edge.forEach(g=>rs[g.id]=g.model<g.homeLine?"home":"away");P.push({id:BOT,name:"Robo-Sharp",sel:rs,lock:edge[0].id,tb:Math.round(tb.total)});return P}
+function bwTable(P,G,ph,tb){const tr=bwRes(tb,ph);
+  const rows=P.map(p=>{let w=0,l=0,pts=0;Object.entries(p.sel).forEach(([id,sd])=>{const g=G.find(z=>z.id===id),r=g&&bwRes(g,ph);if(!r)return;if(r.cover===sd){w++;pts+=p.lock===id?3:1}else l++});
+    return {...p,w,l,pts,miss:tr?Math.abs(p.tb-(tr.a+tr.h)):null}}).sort((x,y)=>y.pts-x.pts||(x.miss==null?1e9:x.miss)-(y.miss==null?1e9:y.miss));
+  let rk=0,prev=null,n=0;
+  const body=rows.map(r=>{let shown="—";if(r.id!==BOT){n++;const key=r.pts+"|"+r.miss;if(key!==prev){rk=n;prev=key}shown=rk}
+    return `<tr class="${r.id==="me"?"me":""}"><td>${shown}</td><td>${r.id===BOT?"🤖 ":""}${esc(r.name)}</td><td class="n">${r.w}-${r.l}</td><td class="n">${r.pts}</td><td class="n">${r.miss==null?"·":r.miss}</td></tr>`}).join("");
+  return `<h3 class="rh">${ph==="final"?"Final standings":"Standings so far"}</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">W-L</th><th class="n">Pts</th><th class="n">TB off</th></tr></thead><tbody>${body}</tbody></table>
+    <p class="note">Sample pickers and made-up scores. Robo-Sharp plays unranked and cannot win. ${tr?`Tiebreaker: ${esc(tb.name)} totaled ${tr.a+tr.h}.`:"The tiebreaker bowl is not final yet."}</p>`}
+function bwCard(g,ph,P,isTb){const d=state.bw,ed=ph==="pre",r=bwRes(g,ph),mine=d.sel[g.id];
+  const day=g.kickoff?new Date(g.kickoff).toLocaleString("en-US",{timeZone:TZ,month:"short",day:"numeric"})+" · "+kick(g.kickoff):"Date TBD";
+  const side=sd=>{const team=g[sd],L=teamLook(team,g,sd),ln=fmtLine(sd==="home"?g.homeLine:-g.homeLine),rk=g[sd+"Rank"];
+    const tag=r&&r.cover===sd?(mine===sd?'<span class="cv good">You covered</span>':mine?'<span class="cv bad">Beat you</span>':'<span class="cv">Covered</span>'):"";
+    return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-bwg="${g.id}" data-bws="${sd}" aria-pressed="${mine===sd}" aria-label="${esc(team)} ${ln}" ${ed?"":"disabled"}>${tag}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+"</span>":""}</span><span class="ln">${ln}${rk<99?'<span class="rk">#'+rk+"</span>":""}</span></button>`};
+  const who=sd=>P.filter(p=>p.sel[g.id]===sd).map(p=>(p.id===BOT?"🤖 Robo":esc(p.name))+(p.lock===g.id?" (FG)":"")).join(", ")||"Nobody";
+  const tbBox=isTb&&ed?`<label class="bwtb">🎯 Total points in this bowl <input id="bwTb" type="number" inputmode="numeric" min="0" max="200" value="${esc(d.tb)}" aria-label="Tiebreaker: total points in the ${esc(g.name)}"></label>`:"";
+  return `<div class="game${isTb?" tbgame":""}">${isTb?'<div class="tbband"><span>🎯 Tiebreaker bowl</span><span>Everyone guesses</span></div>':""}<div class="gmeta"><span class="slot">${esc(g.name)}</span><span class="when">${esc(day)} · ${esc(g.city)}</span></div>
+    <div class="sides">${side("away")}${side("home")}<button class="flagbtn" data-bwlock="${g.id}" aria-pressed="${d.lock===g.id}" aria-label="Kick your field goal on this bowl: 3 points if it covers" ${ed?"":"disabled"}>${GP}<span>FG</span><span class="fl3">3 pts</span></button></div>
+    ${tbBox}${ph==="pre"?"":`<div class="bwfin">${r?`Final: ${esc(g.away)} ${r.a}, ${esc(g.home)} ${r.h}`:"Not played yet"}</div><div class="bwwho"><span>${esc(teamLook(g.away,g,"away").abbr)}: ${who("away")}</span><span>${esc(teamLook(g.home,g,"home").abbr)}: ${who("home")}</span></div>`}</div>`}
+function renderBowls(){const el=$("#v-bowls");if(!state.isOwner){el.innerHTML="";return}
+  const d=bwState(),ct=state.bwCt||"bowl",ph=state.bwPhase||"pre",G=bwGames(),tb=bwTie(G),n=Object.keys(d.sel).length;
+  const cts=`<div class="bwcts" role="group" aria-label="Contests"><button type="button" class="bwct" data-bwct="bowl" aria-pressed="${ct==="bowl"}"><b>🏟️ Bowl challenge</b><small>Pick 10 of 35 bowls · Locks Tue Dec 15</small></button><button type="button" class="bwct" data-bwct="an" aria-pressed="${ct==="an"}"><b>⚓ Army-Navy</b><small>Sat Dec 12 · Prototype next</small></button></div>`;
+  let h=`<div class="bwproto"><b>Prototype. Only you can see this tab.</b> Picks save on this device only and count for nothing. Sample teams and lines; details at the bottom.</div>${cts}`;
+  if(ct==="an"){el.innerHTML=h+`<div class="game"><h3 class="rh">Army-Navy · Sat Dec 12</h3><p>Predict the final score and the halftime score. Straight up, so the spread is for information only.</p><p class="note">Winner order: the right winner, then the closest final score, then the closest halftime score. Lock time is not set. This prototype comes next.</p></div>`;return}
+  const f=state.bwFilter||"all";
+  h+=`<div class="bwbar" role="group" aria-label="Preview">${[["pre","Before lock"],["live","After lock"],["final","Final"]].map(([k,l])=>`<button type="button" class="mbchip" data-bwph="${k}" aria-pressed="${ph===k}">${l}</button>`).join("")}</div>`;
+  if(ph==="pre"){h+=`<p class="bwstat" id="bwStat">${bwStat()}</p><div class="bwbar" role="group" aria-label="Show">${[["all","All bowls",35],["mine","My picks",n]].map(([k,l,c])=>`<button type="button" class="mbchip" data-bwf="${k}" aria-pressed="${f===k}">${l} <b>${c}</b></button>`).join("")}</div>`}
+  const P=ph==="pre"?[]:bwField(G,tb);
+  if(ph!=="pre")h+=bwTable(P,G,ph,tb);
+  const rest=G.filter(g=>g.id!==tb.id&&(ph!=="pre"||f==="all"||d.sel[g.id]));
+  h+=`<div class="bwlist">${bwCard(tb,ph,P,true)}${rest.map(g=>bwCard(g,ph,P,false)).join("")}</div>`;
+  if(ph==="pre"&&f==="mine"&&!n)h+='<p class="note">No picks yet. Switch to All bowls to choose 10.</p>';
+  h+=`<p class="note" style="margin-top:14px">${esc(BOWL_SRC)} Lines are samples from the SP+ gap at a neutral site, with the half-point rule. The red dot on the tab previews the real one: it pulses until your sheet is complete.</p>`;
+  el.innerHTML=h}
+function bwStat(){const d=state.bw,n=Object.keys(d.sel).length;return `${n} of 10 picked · ${d.lock?"Field goal set":"No field goal yet"} · ${d.tb!==""?"Tiebreaker in":"No tiebreaker yet"}${bwDone()?" · Sheet complete":""}`}
+document.addEventListener("click",e=>{if(!e.target.closest("#v-bowls"))return;const t=e.target.closest("[data-bws],[data-bwlock],[data-bwph],[data-bwf],[data-bwct]");if(!t)return;const d=bwState();
+  if(t.dataset.bwct){state.bwCt=t.dataset.bwct}
+  else if(t.dataset.bwph){state.bwPhase=t.dataset.bwph}
+  else if(t.dataset.bwf){state.bwFilter=t.dataset.bwf}
+  else if(t.dataset.bwlock){const id=t.dataset.bwlock;if(!d.sel[id]){toast("Pick a side in this bowl first.");return}d.lock=d.lock===id?null:id;bwSave()}
+  else{const id=t.dataset.bwg,sd=t.dataset.bws;if(d.sel[id]===sd){delete d.sel[id];if(d.lock===id)d.lock=null}
+    else{if(!d.sel[id]&&Object.keys(d.sel).length>=10){toast("You have 10 bowls. Tap a pick again to drop it first.");return}d.sel[id]=sd}bwSave()}
+  renderBowls();$("#bowlsTab").classList.toggle("hot",!bwDone())});
+document.addEventListener("input",e=>{if(e.target.id!=="bwTb")return;const d=bwState();d.tb=e.target.value.replace(/\D/g,"").slice(0,3);bwSave();const st=$("#bwStat");if(st)st.textContent=bwStat();$("#bowlsTab").classList.toggle("hot",!bwDone())});
 function render(){
   goFoot();
   const c=state.config,w=curWeek();
@@ -1308,6 +1400,8 @@ function render(){
   if(state.view==="survivor")renderSurvivor();
   if(state.view==="playoffs")renderBracket();
   if(state.view==="commish")renderCommish();
+  if(state.isOwner){bwState();$("#bowlsTab").classList.toggle("hot",!bwDone())}
+  if(state.view==="bowls")renderBowls();
   if(state.view==="rules")renderLog();
   if(state.view==="profile")renderProfile();
 }
@@ -1339,7 +1433,7 @@ const GO_TILES=[
   ["profile","\u{1F454}","Profile","Suit up","Your look and theme"]];
 function goTiles(cur){return `<h2 class="gohead">Around the league</h2><nav class="gotiles" aria-label="Other tabs">${GO_TILES.filter(t=>t[0]!==cur).map(([v,ic,tab,head,sub])=>`<a class="gotile" href="#${v}"><span class="goic" aria-hidden="true">${ic}</span><span><b>${tab}</b><strong>${head}</strong><small>${sub}</small></span></a>`).join("")}</nav>`}
 /* render() runs on every poll, so the footer only redraws when the tab changes. */
-function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=!v||v==="commish"?"":goTiles(v)}
+function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=!v||v==="commish"||v==="bowls"?"":goTiles(v)}
 /* Red with unsaved changes, green once a sheet is saved, plain when there is nothing to save yet. */
 function saveBtnH(){const saved=!state.dirty&&(state.sheetsIn||[]).includes(state.uid);return `<button class="btn primary${state.dirty?" unsaved":saved?" saved":""}" id="saveBtn" ${state.dirty?"":"disabled"}>${saved?"Saved":"Save picks"}</button>`}
 /* A rookie has no saved pick on any sheet yet. Until the first save, Picks leads with a plain step list. */
