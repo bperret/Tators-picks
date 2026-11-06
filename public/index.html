@@ -1329,6 +1329,12 @@ function roboEval(g,inp){
   const side=s>0?"away":s<0?"home":(L<0?"away":"home");const sg=side==="away"?1:-1;
   const agree=M.filter(x=>Math.sign(x[1]-L)===sg).length;
   return {side,s,p:normCdf(Math.abs(s)/ROBO_W.sd),agree,n:M.length,cons,mkt,ek,em,models:M}}
+/* What drove the pick, in words: both, the market alone, the ratings alone, or neither. */
+function roboWhy(g,E){const sg=E.side==="away"?1:-1;const mktWith=E.ek!=null&&Math.abs(E.ek)>=0.5&&Math.sign(E.ek)===sg;const ratWith=E.n>0&&E.agree*2>E.n;
+  if(mktWith&&ratWith)return "Ratings and market agree";
+  if(mktWith){const L=teamLook(E.side==="home"?g.home:g.away,g,E.side);return `Market call: ${L.abbr} now ${fmtLine(E.side==="home"?E.mkt:-E.mkt)}`}
+  if(ratWith)return `Ratings call: ${E.agree} of ${E.n} like it`;
+  return "Coin flip"}
 function roboSet(w,which){const R=w&&w.robo;return R&&(R[which]||R.last)}
 function roboEvals(w,which){const R=roboSet(w,which);const o={};if(!R)return o;for(const g of w.games||[]){const e=roboEval(g,R.g&&R.g[g.id]);if(e)o[g.id]=e}return o}
 /* The field goal and Survivor want a game where every rating agrees, then the best cover chance. */
@@ -1354,7 +1360,7 @@ function botSurvPick(w,used,force){const mode=force==="old"||force==="new"?force
 function roboFlips(w){if(roboMode(w)!=="new"||!w.robo.first||w.robo.first===w.robo.last)return [];
   const a=botPicks(w,"new","first"),b=botPicks(w,"new","last");if(!a||!b)return [];
   return (w.games||[]).filter(g=>a.sel[g.id]&&b.sel[g.id]&&a.sel[g.id]!==b.sel[g.id]).map(g=>({g,from:a.sel[g.id],to:b.sel[g.id]}))}
-window.tpRobo={roboEval,botPicks,roboFlips}; /* for the browser test */
+window.tpRobo={roboEval,botPicks,roboFlips,roboWhy}; /* for the browser test */
 function weekPlayers(wid,withBot){const r=state.reveals[wid];if(!r)return {};const o={};for(const [p,v] of Object.entries(r.players||{}))if(!removed().includes(p)&&p!==BOT)o[p]=v;if(withBot&&state.weeks[wid]){const b=botPicks(state.weeks[wid]);if(b)o[BOT]=b}return o}
 function survivorStart(){return state.config&&state.config.survivorStart}
 /* Survivor runs from survivorStart until config.survivorEnd, the end of the Saturday Nov 28 week in 2026. */
@@ -1706,7 +1712,7 @@ function renderPicks(){
     if(roboMode(w)==="new"){const fl=flips.find(f=>f.g.id===g.id);
       if(!(locked&&rev&&nPlayers)){const E=roboEvals(w)[g.id];const bp=botPicks(w);
         if(E){const Lb=teamLook(E.side==="home"?g.home:g.away,g,E.side);const bl=E.side==="home"?g.homeLine:-g.homeLine;
-          const why=[E.n?`${E.agree} of ${E.n} rating${E.n===1?"":"s"}`:"",E.ek==null||Math.abs(E.ek)<0.5?"market flat":Math.sign(E.ek)===Math.sign(E.s)?"market moved its way":"market moved the other way"].filter(Boolean).join(" · ");
+          const why=roboWhy(g,E);
           h+=`<div class="model lean" title="Robo-Sharp's current lean. It can change until the lock.">🤖 Robo leans <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · FG":""} <span class="note">· ${esc(why)} · final at lock</span></div>`}}
       if(fl){const Lf=teamLook(fl.from==="home"?g.home:g.away,g,fl.from),Lt=teamLook(fl.to==="home"?g.home:g.away,g,fl.to);
         h+=`<div class="roboflip" role="note">🔄 Robo flipped: ${esc(Lf.abbr)} to <b>${esc(Lt.abbr)}</b> since picks opened</div>`}}

@@ -932,6 +932,14 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
       const w = { id: "2099-w01", games: [g], robo: { v: 2, first: { g: { x1: { mkt: -7.5 } } }, last: { g: { x1: { mkt: -11 } } } } };
       return window.tpRobo.roboFlips(w).map((f) => f.from + ">" + f.to);
     });
+    const why = await c.evaluate(() => {
+      const { roboEval, roboWhy } = window.tpRobo;
+      const g = { away: "Texas", home: "Ole Miss", neutral: true, homeLine: -2.5, modelLine: -1 };
+      const mk = roboEval(g, { mkt: -6 }), rt = roboEval({ ...g, modelLine: -6 }, {}), both = roboEval({ ...g, modelLine: -6 }, { mkt: -6 }), flat = roboEval({ ...g, modelLine: -2.5 }, { mkt: -2.5 });
+      return [roboWhy(g, mk), roboWhy(g, rt), roboWhy(g, both), roboWhy(g, flat)];
+    });
+    check("Robo's card names what drove the pick", why[0].startsWith("Market call:") && why[0].includes("\u22126") || why[0].includes("-6"), why.join(" | "));
+    check("Robo's card says ratings call, both, or coin flip", why[1] === "Ratings call: 1 of 1 like it" && why[2] === "Ratings and market agree" && why[3] === "Coin flip", why.join(" | "));
     check("a market move after the open shows as a Robo flip", flip.join() === "away>home", flip.join());
     const log = await pg.query("select detail from log where action = 'Changed Robo-Sharp' order by id desc limit 1");
     check("turning it on is logged", log.rows.length === 1);
