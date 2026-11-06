@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.36.4 | Nov 6, LATER | All tabs, Commish | Wording cleanup: player becomes picker in messages and the public log (old log rows renamed too); removed leftover messages and dead code from the Claude artifact days | S | 44 | COMMIT |
 | 1.36.3 | Nov 6, 8:15 AM | Rules, Army-Navy | Fix: the Rules page showed the Iron Man icon as raw code text; removed unused styles from the old Army-Navy layout; changelog times for 1.36.0 to 1.36.2 corrected to git | S | 7 | `c5dbf71` |
 | 1.36.2 | Nov 6, 8:04 AM | Army-Navy | Entry cards centered; prototype marked complete | S | 4 | `75d3967` |
 | 1.36.1 | Nov 6, 8:00 AM | Army-Navy | Patriotic redesign: flag hero, new header order, halftime then final entry cards, Go Army and Go Navy, Salute to Service, Traditions. Bowl Blitz prototype marked done | M | 77 | `384a4a9` |

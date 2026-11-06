@@ -53,7 +53,7 @@ export default async function handler(req, res) {
         const n = p.fail_count + 1;
         if (n >= MAX_TRIES) {
           await q("update players set fail_count = 0, locked_until = now() + ($2 || ' minutes')::interval, lockouts = lockouts + 1 where id = $1", [p.id, String(PAUSE_MIN)]);
-          await addLog("Site", "Paused a login after 10 wrong PINs", p.name || p.invited || "A player");
+          await addLog("Site", "Paused a login after 10 wrong PINs", p.name || p.invited || "A picker");
           return send(res, 423, { error: `Too many wrong PINs. Try again in ${PAUSE_MIN} minutes, or text the commissioner to reset it.`, paused: true });
         }
         await q("update players set fail_count = $2 where id = $1", [p.id, n]);
@@ -75,7 +75,7 @@ export default async function handler(req, res) {
       const name = String(b.name || "").trim().slice(0, 24);
       if (!name) return fail(res, 400, "Enter a display name.");
       const taken = await one("select id from players where lower(name) = lower($1) and id <> $2", [name, me.id]);
-      if (taken) return fail(res, 409, "Another player already uses that name.");
+      if (taken) return fail(res, 409, "Another picker already uses that name.");
       if (!isOneEmoji(b.emoji)) return fail(res, 400, "Pick one emoji.");
       if (!SWATCH.includes(b.c1) || !SWATCH.includes(b.c2)) return fail(res, 400, "Pick both colors.");
       if (b.c1 === b.c2) return fail(res, 400, "Pick two different colors.");
@@ -84,7 +84,7 @@ export default async function handler(req, res) {
         await q("update players set pin_hash = $2 where id = $1", [me.id, await bcrypt.hash(String(b.newPin), 10)]);
       }
       await q("update players set name = $2, emoji = $3, c1 = $4, c2 = $5, setup_done = true where id = $1", [me.id, name, b.emoji.trim(), b.c1, b.c2]);
-      if (!me.setup_done) await addLog("Site", "A player finished first login", name);
+      if (!me.setup_done) await addLog("Site", "A picker finished first login", name);
       return send(res, 200, { ok: true });
     }
 

@@ -919,12 +919,6 @@ function liveOn(){return !!(state.config&&state.config.liveRun&&state.config.liv
 function liveGap(){return (state.config&&state.config.liveRun&&state.config.liveRun.gap)||10}
 function curWeek(){return state.weeks[currentWeekId()]||null}
 function removed(){return (state.config&&state.config.removed)||[]}
-async function resolveNames(ids){
-  const need=ids.filter(i=>i&&!(i in state.names));if(!need.length||!state.user)return;
-  need.forEach(i=>state.names[i]=null);
-  try{const ps=await state.user.profiles(need);for(const id of need){state.names[id]=(ps[id]&&ps[id].name)||"Picker "+id.slice(-4)}}catch(e){for(const id of need)state.names[id]="Player "+id.slice(-4)}
-  render();
-}
 const canon=n=>ALIAS[String(n).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"")]||n;
 const nm=id=>id===BOT?"Robo-Sharp":(state.names[id]||"Picker");
 const first=id=>id===BOT?"Robo-Sharp":nm(id).split(" ")[0];
@@ -1018,7 +1012,7 @@ function showAuth(which){
 function applyState(S){
   SERVER_OFFSET=Date.parse(S.now)-Date.now();
   PLAYERS={};S.players.forEach(p=>PLAYERS[p.id]=p);ME=S.me;
-  const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Player");
+  const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Picker");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],classOf:S.classOf||{},
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
@@ -1086,7 +1080,7 @@ document.addEventListener("submit",async e=>{
     if(!r.ok){toast(r.error);return}state.shownPin={num:r.phone,pin:r.pin,what:"added"};await refresh();renderCommish();{const pb=$("#pinbox");if(pb)pb.scrollIntoView({block:"center"})}
   }
   if(f.id==="slateForm"){
-    let week;try{week=JSON.parse($("#slateJson").value)}catch(x){toast("That is not valid JSON. Paste the slate exactly as Claude gave it.");return}
+    let week;try{week=JSON.parse($("#slateJson").value)}catch(x){toast("That is not valid JSON. Check the slate JSON and paste it again.");return}
     const r=await api("/api/admin",{action:"importWeek",week});if(!r.ok){toast(r.error);return}
     $("#slateJson").value="";toast("Slate loaded as a draft");await refresh();renderCommish();
   }
@@ -1190,7 +1184,6 @@ async function savePicks(force){
   /* The refresh skips the redraw while a field has focus, so set the button here too. */
   const sb=$("#saveBtn");if(sb){sb.disabled=true;sb.textContent="Saved";sb.classList.remove("unsaved");sb.classList.add("saved")}
 }
-async function logAction(){} /* the server writes the log */
 
 /* ---------- commissioner actions ---------- */
 async function commishAct(act,ds){
@@ -1250,7 +1243,6 @@ async function start(){
   await refresh();
 }
 
-function err(e){console.warn(e);if(e&&e.code==="revoked")toast("Your access to this page changed.")}
 function syncDraft(){
   const wid=currentWeekId();if(!wid||state.dirty)return;
   const mine=(state.myPicks&&state.myPicks.weeks&&state.myPicks.weeks[wid])||{};
@@ -1582,7 +1574,7 @@ function rookiePanel(){if(!isRookie())return "";const w=curWeek(),wid=currentWee
   </ol></div>`}
 function renderPicks(){
   const el=$("#v-picks"),w=curWeek(),wid=currentWeekId();
-  if(!state.db){el.innerHTML='<div class="panel empty">This league page needs you signed in to Claude, opened from the invite your commissioner sent.</div>';return}
+  if(!state.db){el.innerHTML="";return}
   if(!w){const lf=lastShownWeek();const up=state.upcoming;
     if(state.preview){el.innerHTML=rookiePanel()+(lf?`<p class="note"><a href="#standings">See how Week ${lf.week} ended</a></p>`:"");return}
     el.innerHTML=`<div class="panel empty"><h2>${up?"Week "+up.week+" is almost here":"Off week"}</h2><p>${up?"This week's 10 games are being set."+(up.autoOpen?" Picks open "+kick(up.opens).replace(/ \d.*$/,"")+" at 6 p.m. CT.":" Picks open soon."):"The next 10 games post Tuesday, and picks open Wednesday at 6 p.m. CT."}</p>${lf?`<p><a href="#standings">See how Week ${lf.week} ended</a></p>`:""}</div>`;return}
@@ -1604,8 +1596,6 @@ function renderPicks(){
     h+=`<p class="note sheets">Sheets in: ${ids.length} of ${all.length||ids.length}${ids.length?" · "+ids.map(p=>esc(first(p))).join(", "):""}. Picks stay hidden until the lock.</p>`}
   if(w.status==="draft")h+='<div class="note">Draft view. Only you see this until you open picks in the Commissioner tab.</div>';
   if(out)h+='<div class="panel">You are not active in the league this season. Contact the commissioner.</div>';
-  if(state.uid===null)h+='<div class="panel">Your account has no league identity on this page, so you can view but not pick.</div>';
-  if(state.canWrite===false&&!out)h+='<div class="panel">You can view the league but cannot save picks. Ask the commissioner to invite you as an editor.</div>';
   const locked=pastDeadline(w)||w.status==="final";
   const gs=[...w.games].sort(locked?lockedOrder:(a,b)=>a.slot-b.slot);
   const tg=tbGame(w);
@@ -2465,7 +2455,7 @@ function weekPicker(wid){const open=Object.values(state.weeks).filter(x=>x.id===
 function toLocalInput(ms){const d=new Date(ms);const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 function unlockForm(w){const orig=w.origDeadline&&Date.parse(w.origDeadline)>NOW()+60e3?Date.parse(w.origDeadline):NOW()+30*60e3;
   return `<div class="autobar"><label for="unlockAt" class="note">New deadline</label><input type="datetime-local" id="unlockAt" value="${toLocalInput(orig)}"><button class="btn" data-act="unlock">Unlock picks</button></div>
-  <p class="note">Unlocking hides everyone's picks again and lets players change them until the new deadline. Players already saw the picks while the week was locked. Games that already kicked off can still be picked, so set the deadline before the first kickoff you care about.${w.origDeadline?" The original deadline was "+kick(w.origDeadline)+".":""}</p>`}
+  <p class="note">Unlocking hides everyone's picks again and lets pickers change them until the new deadline. Pickers already saw the picks while the week was locked. Games that already kicked off can still be picked, so set the deadline before the first kickoff you care about.${w.origDeadline?" The original deadline was "+kick(w.origDeadline)+".":""}</p>`}
 /* Commissioner only. Pages report tabs in small batches, never on a poll. Sheet times come from saved picks. */
 const ENG_NAMES={picks:"Picks",standings:"Standings",recap:"Recap",survivor:"Survivor",players:"Pickers",rankings:"Teams",playoffs:"Playoffs",rules:"Rules",profile:"Profile"};
 function engagePanel(){const E=state.engage;if(!E||!state.logins)return "";const cw=currentWeekId();const week=state.weeks[cw];const lastRecap=recapWeeks().slice(-1)[0];const short=iso=>new Date(iso).toLocaleString("en-US",{timeZone:TZ,weekday:"short",month:"numeric",day:"numeric",hour:"numeric",minute:"2-digit"});

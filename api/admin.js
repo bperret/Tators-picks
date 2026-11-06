@@ -29,12 +29,12 @@ export default async function handler(req, res) {
         const invited = String(b.name || "").trim().slice(0, 24);
         await q("insert into players (id, phone, pin_hash, invited) values ($1, $2, $3, $4)", [newId(), phone, await bcrypt.hash(pin, 10), invited]);
         const n = (await one("select count(*)::int as n from players")).n - 1; // the commissioner is not counted
-        await addLog(BY, "Added a player", `Entry #${n}. The name stays private until they set up a profile.`);
+        await addLog(BY, "Added a picker", `Entry #${n}. The name stays private until they set up a profile.`);
         return send(res, 200, { ok: true, pin, phone });
       }
       case "resetPin": {
         const p = await one("select * from players where id = $1", [b.id]);
-        if (!p) return fail(res, 404, "Player not found.");
+        if (!p) return fail(res, 404, "Picker not found.");
         const pin = newPin();
         // Raising session_v signs the player out everywhere.
         await q("update players set pin_hash = $2, session_v = session_v + 1, fail_count = 0, locked_until = null where id = $1", [p.id, await bcrypt.hash(pin, 10)]);
@@ -43,17 +43,17 @@ export default async function handler(req, res) {
       }
       case "setRemoved": {
         const p = await one("select * from players where id = $1", [b.id]);
-        if (!p) return fail(res, 404, "Player not found.");
+        if (!p) return fail(res, 404, "Picker not found.");
         if (p.is_commish) return fail(res, 400, "The commissioner cannot be removed.");
         await q("update players set removed = $2 where id = $1", [p.id, !!b.removed]);
-        await addLog(BY, b.removed ? "Removed a player" : "Restored a player", label(p));
+        await addLog(BY, b.removed ? "Removed a picker" : "Restored a picker", label(p));
         return send(res, 200, { ok: true });
       }
       // Start over: a removed picker becomes a brand new entry with the same phone and PIN.
       // Deletes their picks, pick history, and engagement, clears the profile, and signs them out.
       case "startOver": {
         const p = await one("select * from players where id = $1", [b.id]);
-        if (!p) return fail(res, 404, "Player not found.");
+        if (!p) return fail(res, 404, "Picker not found.");
         if (p.is_commish) return fail(res, 400, "The commissioner cannot be started over.");
         if (!p.removed) return fail(res, 400, "Remove the picker first, then Start over.");
         const who = label(p);
