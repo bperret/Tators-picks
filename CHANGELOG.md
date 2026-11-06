@@ -15,9 +15,10 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
-| 1.36.2 | Nov 6, 8:10 AM | Army-Navy | Entry cards centered; prototype marked complete | S | 4 | `75d3967` |
-| 1.36.1 | Nov 6, 8:30 AM | Army-Navy | Patriotic redesign: flag hero, new header order, halftime then final entry cards, Go Army and Go Navy, Salute to Service, Traditions. Bowl Blitz prototype marked done | M | 77 | `384a4a9` |
-| 1.36.0 | Nov 6, 7:55 AM | Pickers | Class badges: Redshirt Class of 2026 or Class of 20XX under each profile name, plus a Classes section listing every class (item 33, part) | S | 51 | `90c07fa` |
+| 1.36.3 | Nov 6, LATER | Rules, Army-Navy | Fix: the Rules page showed the Iron Man icon as raw code text; removed unused styles from the old Army-Navy layout; changelog times for 1.36.0 to 1.36.2 corrected to git | S | 7 | COMMIT |
+| 1.36.2 | Nov 6, 8:04 AM | Army-Navy | Entry cards centered; prototype marked complete | S | 4 | `75d3967` |
+| 1.36.1 | Nov 6, 8:00 AM | Army-Navy | Patriotic redesign: flag hero, new header order, halftime then final entry cards, Go Army and Go Navy, Salute to Service, Traditions. Bowl Blitz prototype marked done | M | 77 | `384a4a9` |
+| 1.36.0 | Nov 6, 7:40 AM | Pickers | Class badges: Redshirt Class of 2026 or Class of 20XX under each profile name, plus a Classes section listing every class (item 33, part) | S | 51 | `90c07fa` |
 | 1.35.4 | Nov 6, 6:55 AM | Bowl Blitz | Tab renamed from Bowl Season; each bowl gets an emoji and its own name color, readable in light and dark (items 37, 38) | S | 39 | `e1fb5bb` |
 | 1.35.3 | Nov 6, 6:51 AM | Commish | Fix: Start over's first tap armed the button only until the next Commish redraw (every 30 seconds), so a slow second tap re-armed instead of wiping. The arm now lives in state for 30 seconds | S | 9 | `2e0817c` |
 | 1.35.2 | Nov 6, 6:48 AM | Rules, Picks, Commish | Consistency pass: lock says most weeks Saturday 10:15 (Conference Champion Week Friday), a Survivor run is shared by everyone alive at its end, the Survivor pick box says once a run, the Remove note says removed pickers grey out with no points | S | 10 | `08335b0` |
