@@ -681,7 +681,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Kick your field goal (FG) on one pick. If it covers, it is worth 3, the same as a real field goal.</li>
         <li>Guess the total points in game 1 for the tiebreaker.</li>
         <li>Pick one Survivor team. Each team once a run.</li>
-        <li>Everything locks Saturday at 10:15 a.m. CT. Then everyone's picks show.</li>
+        <li>Most weeks, everything locks Saturday at 10:15 a.m. CT. Then everyone's picks show.</li>
       </ol>
     </div>
     <div class="panel rules">
@@ -703,7 +703,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Pick a side in each game against the spread. A correct pick is 1 point. A wrong or missed pick is 0.</li>
         <li>Kick your field goal on one game you picked. If that pick is correct, the field goal is good and scores 3 points instead of 1. If not, it is no good and scores 0.</li>
         <li>Guess the total points in the tiebreaker game, slot 1. No guess counts as a guess of 0.</li>
-        <li>All picks lock Saturday at 10:15 a.m. Central, before the first kickoff. After the lock, the site refuses every save. The site checks its own clock, not your phone's.</li>
+        <li>Most weeks, all picks lock Saturday at 10:15 a.m. Central, before the first kickoff. Conference Champion Week locks Friday; see Contests still to come. After the lock, the site refuses every save. The site checks its own clock, not your phone's.</li>
         <li>Every save goes into your pick history with the time. After the lock, everyone can see everyone's picks and history.</li>
         <li>Nobody sees other picks until the lock.</li>
       </ul></details>
@@ -734,7 +734,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Each week, also pick one team from the slate against the spread. If it covers, you stay alive. If it does not, you are out.</li>
         <li>You cannot pick the same team twice in a run. A void game keeps you alive. A missed survivor pick puts you out.</li>
         <li>If you join late and miss the first week of a run, you are out of that run. Resurrection does not bring you back.</li>
-        <li>Survivor picks lock and reveal with your regular picks. The last picker alive wins.</li>
+        <li>Survivor picks lock and reveal with your regular picks. The last picker alive wins the run. If more than one picker is still alive when a run ends, they share it.</li>
         <li>If every remaining picker goes out in the same week, they are all resurrected and play one more week. The teams they used stay used. In a run's last week, they share the title instead.</li>
         <li>2026 has two runs. The first run ends after the Saturday, November 14 week, and everyone still alive then shares it. The second run is planned; see Contests still to come.</li>
         <li>Everyone who shares a run's title is a Co-Champion.</li>
@@ -1126,7 +1126,7 @@ function loginsPanel(){
     <details class="mbadd"${state.mbAdd?" open":""}><summary class="btn sm">+ Add picker</summary><form id="addPlayerForm" class="bar addp" novalidate><input id="apName" type="text" maxlength="24" placeholder="Nickname (only you see it)" aria-label="Nickname, only you see it"><input id="apPhone" type="tel" inputmode="tel" placeholder="Cell number" aria-label="Cell number"><button class="btn primary" type="submit">Add picker</button></form><p class="note">Adding a picker creates a 6 digit PIN. You text it to them yourself. The site sends no texts and stores PINs scrambled, so nobody can read one later.</p></details>
     <input id="mbQ" class="mbq" type="search" placeholder="Search name, nickname, or phone" aria-label="Search pickers" value="${esc(state.mbQ||"")}">
     <div id="mbBox">${mbBody()}</div>
-    <p class="note">Tap a picker for their phone, Reset PIN, and Remove. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Remove hides a picker from standings and blocks new picks, but keeps their picks and profile; Restore brings it all back. To wipe a picker, Remove them, then Start over: it deletes their picks and profile, keeps the phone and PIN, and runs the first login walk-on again.</p></details>`}
+    <p class="note">Tap a picker for their phone, Reset PIN, and Remove. Your nickname for each picker shows only here. Resetting a PIN also signs that picker out. Remove greys a picker out in Standings with no points and blocks new picks, but keeps their picks and profile saved; Restore brings it all back. To wipe a picker, Remove them, then Start over: it deletes their picks and profile, keeps the phone and PIN, and runs the first login walk-on again.</p></details>`}
 function importPanel(){
   return `${secTag("backups",false,"manual")}${secHead("Manual backups","paste a slate or rankings by hand")}<form id="slateForm" class="inner" novalidate><h2>Load a slate</h2><p class="note">Manual backup for Build from ESPN. Paste the week's slate JSON. It loads as a draft that only you can see. Review it, then tap Open picks.</p><textarea id="slateJson" rows="6" spellcheck="false" aria-label="Slate JSON" placeholder='{"id":"2026-w10","season":2026,"week":10,...}'></textarea><div class="bar"><button class="btn primary" type="submit">Load slate</button></div></form>
   <form id="rankForm" class="inner" novalidate><h2>Update rankings</h2><p class="note">Manual backup for Refresh rankings and Update ratings. Paste rankings JSON for the Teams tab. JSON with only a "power" part updates just those ratings and keeps the polls. For the r/CFB poll, select its table on poll.redditcfb.com, copy, and paste it here. A copy is saved for this week so movement shows next week.</p><textarea id="rankJson" rows="4" spellcheck="false" aria-label="Rankings JSON"></textarea><div class="bar"><button class="btn" type="submit">Update rankings</button></div></form></details>`}
@@ -1602,7 +1602,7 @@ function renderPicks(){
     else if(me&&!me.alive)h+=`<div class="survbox"><h2>Survivor</h2><p>💀 You are out. ${survLate(me.pid)?`You missed Week ${me.out.week}, the first week of this Survivor.`:`Week ${me.out.week}: ${esc(me.out.team)}.`}</p></div>`;
     else{const used=survivorUsed(state.uid);const cur=d.surv?d.surv.g+"|"+d.surv.s:"";
       const opts=gs.flatMap(g=>["away","home"].map(sd=>{const team=sd==="home"?g.home:g.away;const ln=sd==="home"?g.homeLine:-g.homeLine;const L=teamLook(team,g,sd);const usedT=used.includes(canon(team));return `<option value="${esc(g.id+"|"+sd)}" ${cur===g.id+"|"+sd?"selected":""} ${usedT?"disabled":""}>${esc(L.abbr)} ${esc(team)} ${fmtLine(ln)}${usedT?" (used)":""}</option>`})).join("");
-      h+=`<div class="survbox" id="survPanel"><div class="survtop"><h2>Survivor</h2><span class="survtag">One team · win or go home</span></div><p class="note">Pick one team against the spread. If it covers you stay alive. You cannot use a team twice.${used.length?" Used: "+used.map(esc).join(", ")+".":""}</p><select id="survSel" aria-label="Survivor pick" ${editable?"":"disabled"}><option value="">Pick your survivor team (each team once a season)</option>${opts}</select>${(()=>{const cg=survConflict(w,d);if(!cg)return "";const g=w.games.find(x=>x.id===cg);const st=d.surv.s,pk=d.sel[cg];const Ls=teamLook(st==="home"?g.home:g.away,g,st),Lp=teamLook(pk==="home"?g.home:g.away,g,pk);
+      h+=`<div class="survbox" id="survPanel"><div class="survtop"><h2>Survivor</h2><span class="survtag">One team · win or go home</span></div><p class="note">Pick one team against the spread. If it covers you stay alive. You cannot use a team twice.${used.length?" Used: "+used.map(esc).join(", ")+".":""}</p><select id="survSel" aria-label="Survivor pick" ${editable?"":"disabled"}><option value="">Pick your survivor team (each team once a run)</option>${opts}</select>${(()=>{const cg=survConflict(w,d);if(!cg)return "";const g=w.games.find(x=>x.id===cg);const st=d.surv.s,pk=d.sel[cg];const Ls=teamLook(st==="home"?g.home:g.away,g,st),Lp=teamLook(pk==="home"?g.home:g.away,g,pk);
         return `<div class="conflict" role="alert"><b>Conflict.</b> Your survivor pick is ${esc(Ls.abbr)}, but your pick in that game is ${esc(Lp.abbr)}. Only one of them can cover, so one is sure to lose. <button type="button" class="linkbtn" data-jump="game-${esc(cg)}">Go to the game</button></div>`})()}</div>`}
   }
   if(w.swaps&&w.swaps.length)h+=`<div class="swaplog">Commissioner swaps: ${w.swaps.map(s=>esc(s.out)+" replaced by "+esc(s.in)).join("; ")}</div>`;

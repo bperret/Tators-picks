@@ -61,7 +61,7 @@ Private college football ATS pick em for one league. Commissioner: Benton (bperr
 - 1 point per correct pick, one 3 point field goal (FG; stored as `lock` in pick data; goalpost icon `GP`, no emoji exists), tiebreaker = total points in game 1 (game 2 if game 1 is void; blank = 0). Void games score for nobody.
 - Conference Champion Week is the final regular season week. Its points count in the season standings and season prizes like any week. Its winner gets a Conf Champ win, a separate career stat that is not a weekly win, and 6% instead of the 1% weekly prize. It is not one of the 13 weekly prizes. A week is flagged with `confChamp: true`.
 - Weekly winner: points, then tiebreaker, else shared. Season: points, field goals made, smallest total tiebreaker misses.
-- Survivor: one team ATS a week, no repeats, a miss means out. It ends after the Saturday Nov 28 week; anyone still alive shares the title. If every remaining picker goes out in the same week, all play one more week (used teams stay used); in the last week they share instead. A lone picker is never resurrected. A picker with no sheet in a Survivor's first week is out of it, and resurrection does not bring them back (`survLate`).
+- Survivor: one team ATS a week, no team twice in a run, a miss means out. 2026 has two runs (Rules page): the first ends after the Nov 14 week, and anyone still alive shares it; the second is item 10. The app still runs one run to `config.survivorEnd` (Nov 29) until item 10 ships, so item 10 must ship before the Nov 21 week opens Wed Nov 18 or the app and the Rules page disagree. If every remaining picker goes out in the same week, all play one more week (used teams stay used); in the last week they share instead. A lone picker is never resurrected. A picker with no sheet in a Survivor's first week is out of it, and resurrection does not bring them back (`survLate`).
 - Robo-Sharp (🤖, black and silver): model side in every game, field goal on biggest edge, betting total as tiebreaker, biggest unused edge in Survivor. Shows in standings with no rank and never wins a week, trophy, Survivor, or the season; the best picker wins instead.
 - People are "pickers". Tabs: Picks, Standings, Recap, Survivor, Pickers, Teams, Playoffs, Rules, Profile, Commish, plus Bowl Season (commissioner only until the contests open). The public log never shows the commissioner's private nickname for a picker.
 - 2026 is a free test season: no buy-ins, no payouts. Weeks, standings, and titles still count. Payouts start in 2027, and the Rules page shows them as hypothetical so pickers can try scenarios and give feedback.
@@ -142,7 +142,7 @@ Rules page rule: every change that affects how the league plays, scores, or pays
 8. Ghost pickers: an unpaid tier so someone can try the league with no skin in the game and no effect on anyone else.
    - Paid members play every contest and can win payouts. The commissioner creates every ghost and gives the PIN, the same as any picker, and can flip the profile to paid. No open signups.
    - Ghosts play shadow versions of Survivor, the Bowl challenge, and the CFP bracket.
-   - A ghost's history does not carry over on going paid; they start a new paid profile. Switching back and forth loses paid history. Pickers must keep paying each year to keep their history, or they restart.
+   - A ghost's history does not carry over on going paid; they start a new paid profile. Switching back and forth loses paid history. Pickers must keep paying each year to keep their history, or they restart (the commissioner's Start over).
    - Ghosts see paid pickers, the standings, and where they would rank each week, including whether they would have won. They cannot win a week, earn accomplishments, or count in any payout.
    - Paid pickers cannot see ghosts. Ghosts cannot see each other.
    - Build note: this must be filtered on the server, not hidden on the page, since `/api/state` sends players and reveals to every login. Ghosts must stay out of standings, split bars, sheet counts, the public log, and weekly winners.
@@ -151,16 +151,16 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Every new picker after that gets a standard Class of 20XX. Nobody can earn the Redshirt after 2026.
    - Automatic from a picker's first pick. `state.pickedIn` covers all seasons, so the build must save a class year per picker. Robo-Sharp gets none.
    - Ghosts get no class badge. A ghost who goes paid starts a new paid profile (item 8), and that profile gets the class of that year.
-   - Removed pickers restart and lose their badges, Redshirt included. It is harsh but consistent with item 8. A picker who comes back gets the class of the return year.
+   - Remove alone keeps every badge: it only hides the picker, and Restore brings it all back. Start over is the restart (Commish, removed pickers only, `startOver` in `api/admin.js`): it wipes picks and profile, so the picker loses every badge, Redshirt included. Harsh but consistent with item 8. A started over picker gets the class of the year they next pick.
    - The badge starts showing in 2027. Nothing needs building in 2026, since saved picks hold the answer. Exception, Benton's call Nov 5: the first save flash already says "Welcome to the Redshirt Class of 2026" (`showRoster`).
    - The Rules page does not explain this badge.
 34. Booster badge. Decided Nov 5. Each year a picker can give $5 or more toward infrastructure and new features and get a Booster badge for that year. It is optional. The upkeep share stays thrown out: the whole pot still pays out, and a Booster gift is separate from the buy-in.
-   - Permanent: each year earned stays on the profile, with a count or year list. A removed picker restarts and loses it, the same as item 33.
+   - Permanent: each year earned stays on the profile, with a count or year list. Remove keeps it; Start over wipes it, the same as item 33.
    - Cosmetic only: no effect on picks, standings, contests, or payouts.
    - Money stays off the site. The commissioner flips the badge on by hand for a season. The app saves the season only, never an amount or a payment.
    - The Rules page explains this badge.
    - Ghosts cannot be Boosters.
-Build note for 33 and 34: one saved badge list per picker, drawn by one helper, so every spot matches Iron Man's look. Badges show on the Pickers profile, and on Standings as long as the row stays clean (Benton, Nov 5). Check the look on a phone before shipping.
+Build note for 33 and 34: one saved badge list per picker, drawn by one helper, cleared by `startOver`, so every spot matches Iron Man's look. Badges show on the Pickers profile, and on Standings as long as the row stays clean (Benton, Nov 5). Check the look on a phone before shipping.
 35. League group chat with a content schedule. Decided Nov 5, reverses the old no group chat call. For 2027, not 2026. Platform: GroupMe (Benton, Nov 5). Signal was the other option; it has no official bot API, so it would mean posting by hand.
    - Regular timed reminders on the weekly rhythm: Mon preview, Wed 6 p.m. live, Sat 10:15 a.m. lock, Sunday recap.
    - A content schedule with clear rules updates around the postseason challenges (Conference Champion Week, Army-Navy, Bowl, CFP) and season dates.
