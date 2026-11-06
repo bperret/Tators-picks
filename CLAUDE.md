@@ -91,7 +91,7 @@ Changelog rule: `CHANGELOG.md` lists everything shipped, with date, effort, and 
 
 Conflict rule: if a request conflicts with a tracker item, stop before building and check with Benton in one line: this differs from the tracker, go ahead and update the tracker, or pause and review what was discussed. Quote the tracker line. Build nothing until he answers. This is the one case where a reply may end with a question.
 
-Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 31, 42. The "Contests still to come" section (`#contests`) holds the plan for items 1, 2, 3, 4, 10, and 31 as of Nov 4. When one ships, move its text into the live rules, and keep this section in step with any tracker change. Add Bowl and CFP rules to the Payouts section if their prizes change.
+Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 31, 42, 47. The "Contests still to come" section (`#contests`) holds the plan for items 1, 2, 3, 4, 10, and 31 as of Nov 4. When one ships, move its text into the live rules, and keep this section in step with any tracker change. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
@@ -144,6 +144,21 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Weeks before a late joiner's first sheet count toward the 5 weeks (Benton, Nov 6). They score 0, so one of them is the dropped week.
    - A tie for lowest week drops the week that helps the picker most on the season tiebreakers: fewer field goals made, then the larger tiebreaker miss (Benton, Nov 6).
    - Needs the Rules page in the same build, and Standings must mark the dropped week.
+
+47. Smarter Robo-Sharp. Decided Nov 6: do all six parts. Earliest week: Week 11 (opens Wed Nov 11). Waiting on Benton's go to build.
+   - Prerequisite: freeze Robo's sheet. Today `botPicks` rebuilds it on each render, so a logic change would rewrite Weeks 9 and 10. Save `botSheet` on the week at the lock, server side; every page reads the saved sheet for locked weeks.
+   - Stale line signal: at the lock, compare the latest market line (saved pre-kickoff lines, `state.closing`) to the frozen league line. Check first that a fresh line exists near the 10:15 a.m. lock, since runs can come hours apart.
+   - Three model consensus: average the FPI game projection, the SP+ gap, and the VSiN gap, with `HFA` for SP+ and VSiN (`muProject` math). Absorbs item 28.
+   - Blend: score = 0.6 x market move + 0.4 x consensus edge, both against the league line. Starting weights, not tested.
+   - Agreement gate: count models on each side. Field goal on the best 3 of 3 game. Survivor takes a 3 of 3 game first.
+   - Cover chance: change each score to a cover chance with the live tier curve (sd 13.5) to rank field goal and Survivor. Back end only; not shown on cards.
+   - Key numbers: a small extra weight when the edge crosses 3, 7, 10, or 14.
+   - Model scoreboard: save each model's number for every pool game and grade it ATS. Back end only (no displayed Robo tracking). Retune weights after about 150 games.
+   - Survivor must respect item 10's conference lock from Nov 21.
+   - Picks card before the lock: a short lean with reasons and "final at lock" (for example "Robo leans TEX -7.5, 3 of 3 ratings, market moved its way, final at lock"). After the lock, unchanged. Robo's picks stay visible all week (not hidden like Bowl).
+   - Rules page and `talkLine` in the same build. Draft (concepts, no math): Robo-Sharp is the league's computer picker; it plays every week and cannot win anything. Its line blends three computer power ratings (SP+, FPI, VSiN). Our lines freeze Wednesday night and the market keeps moving; when the market moves away from our line, Robo takes the side our line now gives value, and it trusts the market more than the ratings. Field goal: the game it likes most where all three ratings agree. Survivor: the team most likely to cover among teams it can still use. Tiebreaker: the betting total. Its picks can change until the lock; what it shows at the lock is what it plays.
+   - Bowl Blitz Robo can use the consensus; no market signal until real bowl lines exist.
+   - Left out on purpose: team ATS records and splits, cover margin, O/U, polls, record vs ranked, pickers' consensus. The line already prices them, or they do not predict.
 
 ### Next season (2027)
 4. Survivor: ATS, fixed runs. Decided: Survivor stays against the spread in 2026 and 2027. Replaces the two skulls idea, which is dropped.
@@ -204,7 +219,6 @@ Ideas to shape later, not approved:
 19. Your season recap replaces the Recap for everyone, personal to each picker. The league-wide stats move to a new area, maybe called the Record Book. Benton's idea, wording "maybe". To settle: how it fits with the current Recap, and when in the season it runs.
 20. For 2027, to review: add to home screen prompt, web push (not verified), and accomplishments. The 4 week fresh start idea is thrown out (Nov 6), replaced by item 44.
 43. Info buttons, low priority (Nov 6): replace the long note paragraphs under panels with a small info button that opens them, so pages read cleaner.
-28. Consensus model line: average VSiN with an SP+ implied line, so one source does not drive Robo-Sharp. The Matchup view already shows an average of the three models with VSiN's home field values. Low value.
 29. Bad beat note: mark a half-point loss on the game card. Data already stored. Low value, since Pickers stats already count bad beats.
 30. Page visit runs: after a clean Saturday with the switch on, consider a 5 minute gap and a daily cap of 160. ESPN publishes no limit, so the cap is a judgment call.
 Left out on purpose: a field goal animation, too much work for the gain.
