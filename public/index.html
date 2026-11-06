@@ -261,6 +261,38 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 @media (prefers-reduced-motion:no-preference){nav.tabs a.hot::after{animation:bwpulse 1.2s ease-in-out infinite}}
 @keyframes bwpulse{50%{opacity:.25;transform:scale(1.5)}}
 .angrid{display:grid;grid-template-columns:minmax(0,1fr) 72px 72px;gap:8px;align-items:center}
+.anhero{position:relative;margin:10px 0 12px;border-radius:12px;padding:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.3);background:repeating-linear-gradient(180deg,#b22234 0 14px,#fff 14px 28px)}
+.anhero::before{content:"";position:absolute;left:0;top:0;width:42%;height:98px;background:radial-gradient(circle,#fff 1.3px,transparent 2px) 4px 4px/14px 14px,#3c3b6e}
+.anplate{position:relative}
+.anplate{background:rgba(12,22,52,.9);border:2px solid #c9a94a;border-radius:10px;padding:14px 14px 10px;color:#fff;text-align:center}
+.anplate p{margin:0 0 6px;font-size:.95rem;line-height:1.35}
+.ankick{font-family:var(--cond);font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#e6c96a;font-size:.8rem}
+.anh1{font-family:var(--cond);font-weight:800;font-size:clamp(1.3rem,7.2vw,2rem);white-space:nowrap;letter-spacing:.04em;text-transform:uppercase;margin:2px 0 4px;color:#fff;text-shadow:0 2px 0 #b22234}
+.anwhen{font-weight:700;color:#e6c96a}.anwhen span{white-space:nowrap}
+.anduel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}
+.anduel div{border-radius:8px;padding:8px;text-align:center;font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em}
+.anduel b{display:block;font-size:1.25rem}.anduel span{font-size:.85rem;font-weight:700}
+.anduel .army,.antile.army{background:#111;color:#d4bf91;border:2px solid #d4bf91}
+.anduel .navy,.antile.navy{background:#00205b;color:#d6c78f;border:2px solid #c5b783}
+.anscore{margin:0 0 12px}
+.anlbl{display:flex;align-items:center;gap:8px;font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:1rem;margin:0 0 6px}
+.anstep{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#b22234;color:#fff;font-size:.85rem}
+.antiles{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.antile{display:flex;flex-direction:column;gap:6px;border-radius:8px;padding:8px;cursor:text}
+.antn{font-family:var(--cond);font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:1rem;text-align:center}
+.antile .anbox{background:#fff;color:#111;border-color:transparent}
+.anvs{font-family:var(--cond);font-weight:700;color:var(--muted);text-transform:uppercase}
+.anstars{text-align:center;color:#b22234;letter-spacing:.5em;margin:16px 0 8px;font-size:1.1rem}
+.ansalute{border-radius:12px;padding:14px;background:linear-gradient(135deg,#0b1f4b,#3c3b6e);color:#fff;border-top:5px solid #b22234;border-bottom:5px solid #b22234}
+.ansalute h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;color:#e6c96a}
+.ansalute p{margin:0 0 10px;line-height:1.4}
+.anbr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 10px}
+.anbr span{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(230,201,106,.5);border-radius:8px;padding:6px 4px;text-align:center}
+.anbr i{font-style:normal;font-size:1.4rem}.anbr b{font-size:.82rem}.anbr small{font-size:.72rem;color:#d9dfeb}
+.anty{font-family:var(--cond);font-weight:800;text-transform:uppercase;letter-spacing:.1em;text-align:center;font-size:1.15rem;color:#fff;margin:0!important}
+.antrad{margin-top:14px}.antrad>div{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.antrad i{font-style:normal;font-size:1.4rem;flex:none;width:30px;text-align:center}.antrad b{display:block}
+.anfoot{margin-top:14px;text-align:center;font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:10px;border-radius:8px;background:#0b1f4b;color:#fff;border-top:4px solid #b22234;box-shadow:inset 0 -4px 0 #fff,inset 0 -8px 0 #b22234}
 .anh{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.76rem;color:var(--muted);text-align:center}
 .anteam{display:flex;align-items:center;gap:8px;min-width:0}.anteam .mono{grid-row:auto;flex:none}
 .anbox{width:100%;box-sizing:border-box;font:inherit;font-family:var(--cond);font-weight:700;font-size:1.3rem;text-align:center;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
@@ -1354,27 +1386,46 @@ function anTable(P,ph){const R=anResult(ph);
     const ok=(p.fa>p.fn)===(R.fin.a>R.fin.n);return {...p,hm,ok,fm:Math.abs(p.fa-R.fin.a)+Math.abs(p.fn-R.fin.n)}});
   rows.sort(R.fin?(x,y)=>(y.ok-x.ok)||x.fm-y.fm||x.hm-y.hm:(x,y)=>x.hm-y.hm);
   let rk=0,prev=null,n=0;const body=rows.map(r=>{let shown="—";if(r.id!==BOT){n++;const key=R.fin?r.ok+"|"+r.fm+"|"+r.hm:"";if(!R.fin)shown="";else{if(key!==prev){rk=n;prev=key}shown=rk}}
-    return `<tr class="${r.id==="me"?"me":""}"><td>${shown}</td><td>${r.id===BOT?"🤖 ":""}${esc(r.name)}</td><td class="n">${r.fa}-${r.fn}</td><td class="n">${r.ha}-${r.hn}</td>${R.fin?`<td class="n">${r.ok?"✓":"✗"}</td><td class="n">${r.fm}</td>`:""}<td class="n">${r.hm}</td></tr>`}).join("");
+    return `<tr class="${r.id==="me"?"me":""}"><td>${shown}</td><td>${r.id===BOT?"🤖 ":""}${esc(r.name)}</td><td class="n">${r.ha}-${r.hn}</td><td class="n">${r.fa}-${r.fn}</td>${R.fin?`<td class="n">${r.ok?"✓":"✗"}</td><td class="n">${r.fm}</td>`:""}<td class="n">${r.hm}</td></tr>`}).join("");
   return `<h3 class="rh">${R.fin?"Final standings":"At halftime"}</h3><p class="bwfin">${R.fin?`Final: Army ${R.fin.a}, Navy ${R.fin.n} · `:""}Halftime: Army ${R.half.a}, Navy ${R.half.n}</p>
-    <table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Final</th><th class="n">Half</th>${R.fin?'<th class="n">Win</th><th class="n">Off</th>':""}<th class="n">Half off</th></tr></thead><tbody>${body}</tbody></table>
+    <table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Half</th><th class="n">Final</th>${R.fin?'<th class="n">Win</th><th class="n">Off</th>':""}<th class="n">Half off</th></tr></thead><tbody>${body}</tbody></table>
     <p class="note">Scores are Army first, then Navy. Sample pickers and a made-up result. ${R.fin?"Order: the right winner, then the fewest points off the final, then the fewest off halftime. Exact ties share.":"Nobody wins at halftime. The final decides it."} Robo-Sharp plays unranked and cannot win.</p>`}
+/* Army-Navy is dressed up on purpose: flag hero, team colors, Salute to Service, and traditions. No academy or branch marks, emoji and text only. */
+const AN_BRANCH=[["\u{1FA96}","Army","1775"],["⚓","Navy","1775"],["\u{1F985}","Marine Corps","1775"],["\u{1F6DF}","Coast Guard","1790"],["✈️","Air Force","1947"],["\u{1F680}","Space Force","2019"]];
+const AN_TRAD=[["\u{1F941}","The March On","Before kickoff, the Corps of Cadets and the Brigade of Midshipmen march onto the field."],
+  ["\u{1F91D}","Prisoner Exchange","Cadets and midshipmen spending a semester at the other academy go back to their own side before the game."],
+  ["\u{1F3B6}","Sing Second","After the game, both teams stand together for both alma maters. The loser's is sung first, so the winner sings second."],
+  ["\u{1F410}","Mule vs. Goat","Army's mascot is a mule. Navy's is a goat."],
+  ["\u{1F3C6}","Commander-in-Chief's Trophy","It goes to the academy with the best record among Army, Navy, and Air Force."],
+  ["\u{1F4DC}","Since 1890","The two academies first met in 1890, at West Point."]];
 function renderAN(){const el=$("#v-armynavy");if(!state.isOwner){el.innerHTML="";return}
-  const d=anState(),ph=state.anPhase||"pre",ln=anLine(),A=teamLook("Army",null,"away"),N=teamLook("Navy",null,"home"),err=anErr(d);
-  const fav=ln<0?`Navy ${fmtLine(ln)}`:`Army ${fmtLine(-ln)}`;
+  const d=anState(),ph=state.anPhase||"pre",ln=anLine(),err=anErr(d);
+  const fav=ln<0?`Navy ${fmtLine(ln)}`:`Army ${fmtLine(-ln)}`;const time=kick(AN_KICK).replace(/^\w+ /,"");
   const box=(k,who,lbl)=>`<input class="anbox" id="an-${k}" type="number" inputmode="numeric" min="0" max="99" value="${esc(d[k])}" aria-label="${lbl} score for ${who}" ${ph==="pre"?"":"disabled"}>`;
-  const team=(L,name)=>`<span class="anteam" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}"><span class="mono" aria-hidden="true">${esc(L.abbr)}</span><b>${name}${L.emoji?" "+L.emoji:""}</b></span>`;
+  const tile=(t,k,lbl)=>`<label class="antile ${t==="Army"?"army":"navy"}"><span class="antn">${t==="Army"?"\u{1FA96}":"⚓"} ${t}</span>${box(k,t,lbl)}</label>`;
+  const card=(n,lbl,a,b)=>`<div class="anscore"><div class="anlbl"><span class="anstep">${n}</span>Expected ${lbl.toLowerCase()} score</div><div class="antiles">${tile("Army",a,lbl)}<span class="anvs" aria-hidden="true">vs</span>${tile("Navy",b,lbl)}</div></div>`;
   let h=`<div class="bwproto"><b>Prototype. Only you can see this tab.</b> Your entry saves on this device only and counts for nothing.</div>
-    <h2 class="rh">⚓ Army-Navy · Sat Dec 12 · ${esc(kick(AN_KICK).replace(/^\w+ /,""))}</h2>
-    <p class="note">East Rutherford, N.J. Straight up: the spread does not count. Spread for information: ${esc(fav)} (sample). Lock time is not set.</p>
+    <div class="anhero"><div class="anplate"><p class="ankick">★ America's Game ★</p>
+      <h2 class="anh1">\u{1FA96} Army-Navy ⚓</h2>
+      <p class="anwhen"><span>Sat Dec 12 · ${esc(time)} ·</span> <span>East Rutherford, New Jersey</span></p>
+      <p>Straight up. The spread does not matter. It is here for information only: ${esc(fav)} (sample).</p>
+      <p>Lock time is not set.</p></div></div>
+    <div class="anduel" aria-hidden="true"><div class="army"><b>Go Army</b><span>Beat Navy!</span></div><div class="navy"><b>Go Navy</b><span>Beat Army!</span></div></div>
     <div class="bwbar" role="group" aria-label="Preview">${[["pre","Before lock"],["half","Halftime"],["final","Final"]].map(([k,l])=>`<button type="button" class="mbchip" data-anph="${k}" aria-pressed="${ph===k}">${l}</button>`).join("")}</div>
-    <div class="game anform"><div class="angrid"><span></span><span class="anh">Final</span><span class="anh">Halftime</span>${team(A,"Army")}${box("fa","Army","Final")}${box("ha","Army","Halftime")}${team(N,"Navy")}${box("fn","Navy","Final")}${box("hn","Navy","Halftime")}</div>
+    <div class="game anform">${card(1,"Halftime","ha","hn")}${card(2,"Final","fa","fn")}
     <p class="anread" id="anRead">${anRead(d)}</p><p class="anerr" id="anErr" role="alert">${esc(err)}</p></div>`;
   if(ph!=="pre")h+=anTable(anField(),ph);
-  h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul><li>Enter a predicted final score and a predicted halftime score. Your final score names your winner.</li><li>Winner order: the right winner first, then the closest final score, then the closest halftime score. Closest means the fewest points off, adding the miss on each team. Exact ties share.</li><li>No season points, no weekly win, no field goal. It has its own career stat.</li></ul></div>
+  h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul><li>Enter your expected halftime score, then your expected final score. Your final score names your winner.</li><li>Winner order: the right winner first, then the closest final score, then the closest halftime score. Closest means the fewest points off, adding the miss on each team. Exact ties share.</li><li>No season points, no weekly win, no field goal. It has its own career stat.</li></ul></div>
+    <div class="anstars" aria-hidden="true">★ ★ ★ ★ ★</div>
+    <div class="ansalute"><h3>\u{1F1FA}\u{1F1F8} Salute to Service</h3><p>This game is about more than football. Every player on that field has chosen to serve. Thank you to every soldier, sailor, Marine, coast guardsman, airman, and guardian, and to the families who serve with them.</p>
+      <div class="anbr">${AN_BRANCH.map(([e,n,y])=>`<span><i aria-hidden="true">${e}</i><b>${n}</b><small>Since ${y}</small></span>`).join("")}</div>
+      <p class="anty">Thank you for your service.</p></div>
+    <div class="antrad"><h3 class="rh">\u{1F396}️ Traditions</h3>${AN_TRAD.map(([e,t,x])=>`<div><i aria-hidden="true">${e}</i><span><b>${t}</b>${x}</span></div>`).join("")}</div>
+    <div class="anfoot">\u{1F1FA}\u{1F1F8} Land of the free, because of the brave. \u{1F1FA}\u{1F1F8}</div>
     <p class="note" style="margin-top:14px">Kickoff from Navy's event page, which lists Dec 12, 3 to 7 p.m., in East Rutherford, N.J. The spread is a sample from the SP+ gap with the half-point rule. The red dot on the tab pulses until your entry is complete.</p>`;
   el.innerHTML=h}
-function anRead(d){if(!anDone())return ["fa","fn","ha","hn"].every(k=>d[k]==="")?"Enter all four scores.":"Fill in all four scores.";
-  const fa=+d.fa,fn=+d.fn,w=fa>fn?"Army":"Navy";return `Your call: ${w} wins by ${Math.abs(fa-fn)}, ${Math.max(fa,fn)}-${Math.min(fa,fn)}. Halftime ${d.ha}-${d.hn}, Army first.`}
+function anRead(d){if(!anDone())return ["fa","fn","ha","hn"].every(k=>d[k]==="")?"Enter both scores, halftime first.":"Fill in all four boxes.";
+  const fa=+d.fa,fn=+d.fn,w=fa>fn?"Army":"Navy";return `Your call: halftime Army ${d.ha}, Navy ${d.hn}. Final: ${w} wins by ${Math.abs(fa-fn)}, ${Math.max(fa,fn)}-${Math.min(fa,fn)}.`}
 document.addEventListener("click",e=>{const t=e.target.closest("#v-armynavy [data-anph]");if(!t)return;state.anPhase=t.dataset.anph;renderAN()});
 document.addEventListener("input",e=>{const m=/^an-(fa|fn|ha|hn)$/.exec(e.target.id||"");if(!m)return;const d=anState();d[m[1]]=e.target.value.replace(/\D/g,"").slice(0,2);anSave();
   $("#anRead").textContent=anRead(d);$("#anErr").textContent=anErr(d);$("#anTab").classList.toggle("hot",!anDone())});

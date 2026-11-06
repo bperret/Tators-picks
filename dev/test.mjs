@@ -745,6 +745,10 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("pickers do not see the Army-Navy tab", await m.isHidden("#anTab"));
   await c.evaluate(() => (location.hash = "#armynavy")); await c.waitForSelector("#an-fa");
   check("the Army-Navy tab has no tiles and shows the dot", (await c.locator("#goFoot .gotile").count()) === 0 && ((await c.getAttribute("#anTab", "class")) || "").includes("hot"));
+  const anTop = await c.evaluate(() => { const v = document.querySelector("#v-armynavy"); const ps = [...v.querySelectorAll(".anplate p, .anplate h2")].map((x) => x.textContent.trim()); const ids = [...v.querySelectorAll(".anbox")].map((x) => x.id); return { ps, ids, salute: !!v.querySelector(".ansalute"), trad: v.querySelectorAll(".antrad > div").length }; });
+  check("Army-Navy header: helmet, Army-Navy, anchor, then date and place, then straight up, then lock on separate lines", /^\u{1FA96} Army-Navy \u2693$/u.test(anTop.ps[1]) && anTop.ps[2].startsWith("Sat Dec 12") && anTop.ps[2].endsWith("East Rutherford, New Jersey") && anTop.ps[3].startsWith("Straight up") && anTop.ps[4] === "Lock time is not set.", JSON.stringify(anTop.ps));
+  check("Army-Navy asks halftime first, then final, Army before Navy", anTop.ids.join() === "an-ha,an-hn,an-fa,an-fn", anTop.ids.join());
+  check("Army-Navy has Salute to Service and traditions", anTop.salute && anTop.trad === 6);
   await c.fill("#an-fa", "17"); await c.fill("#an-fn", "17"); await c.fill("#an-ha", "7"); await c.fill("#an-hn", "3");
   check("a tied final is refused", (await c.textContent("#anErr")).includes("no ties"));
   await c.fill("#an-fn", "20"); await c.fill("#an-hn", "24");
