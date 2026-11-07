@@ -15,7 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
-| 1.40 | Nov 6, 10:30 PM | Standings, Pickers, Recap, Rules | Drop worst week: lowest regular week comes off the season total once 5 regular weeks are final; Current points and If it ended today views; missed weeks count a tiebreaker guess of 0 (item 42) | M | COMMIT_N | `COMMIT` |
+| 1.40 | Nov 6, 3:40 AM | Standings, Pickers, Recap, Rules | Drop worst week: lowest regular week comes off the season total once 5 regular weeks are final; Current points and If it ended today views; missed weeks count a tiebreaker guess of 0 (item 42) | M | 105 | `1d9632c` |
 | 1.39.2 | Nov 6, 6:40 PM | Picks | Bad beat tag on a lost pick that missed by 1.5 or less, matching the Pickers stat (item 29) | S | Shared, 62 | `c849bf5` |
 | 1.39.1 | Nov 6, 6:40 PM | All tabs, Commish | Info buttons: long explanatory notes fold behind a small "About this" button and stay open on redraw; status notes stay visible (item 43) | S | Shared, 62 | `c849bf5` |
 | 1.39 | Nov 6, 6:40 PM | Picks | Straight up record under each team name on the pick card (item 41) | S | Shared, 62 | `c849bf5` |
