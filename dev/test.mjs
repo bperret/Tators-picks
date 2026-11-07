@@ -474,6 +474,44 @@ try {
   check("Pickers shows career wins, tendencies, and past picks", ps.includes("Career wins") && ps.includes("Your tendencies") && ps.includes("Past picks"));
   check("past picks show the week, record, and rank", /Week 10.*\d pts/.test(ps) && ps.includes("Covered by") && ps.includes("Missed by"), ps.slice(0, 300));
   check("past picks list every game", (await m.locator("#v-players .wkh[open] .pp").count()) === 5);
+  // Drop worst week (item 42): a tiny controlled league.
+  const dw = await c.evaluate(() => {
+    const { tallySeason } = window.tpStats;
+    const mk = (k, n, cc) => ({ id: k, season: 2099, week: n, status: "final", confChamp: !!cc, games: [0, 1, 2].map((i) => ({ id: k + i, slot: i + 1, away: "A" + i, home: "H" + i, homeLine: -0.5 })), results: Object.fromEntries([0, 1, 2].map((i) => [k + i, { home: 10, away: 0, final: true, void: false }])) });
+    const sh = (k, n, fg, tb) => ({ sel: Object.fromEntries([0, 1, 2].map((i) => [k + i, i < n ? "home" : "away"])), lock: fg ? k + "0" : null, tb });
+    const W = ["w1", "w2", "w3", "w4", "w5", "w6"]; const weeks = Object.fromEntries(W.map((k, i) => [k, mk(k, i + 1, k === "w6")]));
+    const P = { w1: { a: sh("w1", 3, 1, 10), b: sh("w1", 3, 0, 10), c: sh("w1", 1, 1, 10), d: sh("w1", 2, 0, 10) }, w2: { a: sh("w2", 2, 0, 10), c: sh("w2", 3, 0, 10), d: sh("w2", 2, 0, 30) },
+      w3: { a: sh("w3", 1, 0, 10), b: sh("w3", 3, 0, 10), c: sh("w3", 3, 1, 10), d: sh("w3", 3, 1, 10) }, w4: { a: sh("w4", 3, 0, 10), b: sh("w4", 3, 0, 10), c: sh("w4", 3, 1, 10), d: sh("w4", 3, 1, 10) },
+      w5: { a: sh("w5", 3, 0, 10), b: sh("w5", 3, 0, 10), c: sh("w5", 3, 1, 10), d: sh("w5", 3, 1, 10) }, w6: { a: sh("w6", 0, 0, 10), b: sh("w6", 3, 0, 10), c: sh("w6", 3, 1, 10), d: sh("w6", 3, 1, 10) } };
+    const run = (ks) => tallySeason(ks, (k) => weeks[k], (k) => P[k], ["a", "b", "c", "d"]);
+    const four = run(W.slice(0, 4)), all = run(W); const r = (T, id) => T.rows.find((x) => x.pid === id);
+    const A4 = r(four, "a"), A = r(all, "a"), B = r(all, "b"), C = r(all, "c"), D = r(all, "d");
+    return { fourOfficial: four.official, fourCan: four.can, fourSame: A4.cpts === A4.pts, fourDrop: A4.drop, official: all.official, locked: all.locked,
+      aDrop: A.drop, aCount: A.cpts === A.pts - 1, aWL: A.w + A.l, bDrop: B.drop, bMissTb: B.wk.w2.tb, bPlayed: B.weeks, cDrop: C.drop, dDrop: D.drop };
+  });
+  check("drop worst week is a projection before 5 regular weeks are final", !dw.fourOfficial && dw.fourCan && dw.fourSame && dw.fourDrop === "w3", JSON.stringify(dw));
+  check("drop worst week counts once 5 regular weeks are final, never Conference Champion Week", dw.official && dw.locked && dw.aDrop === "w3" && dw.aCount, JSON.stringify(dw));
+  check("drop worst week keeps every game in W-L", dw.aWL === 18, JSON.stringify(dw));
+  check("a missed week scores 0 with a tiebreaker guess of 0, and it drops", dw.bDrop === "w2" && dw.bMissTb === 10 && dw.bPlayed === 5, JSON.stringify(dw));
+  check("a tie for lowest drops fewer field goals made, then the larger tiebreaker miss", dw.cDrop === "w2" && dw.dDrop === "w2", JSON.stringify(dw));
+  await m.evaluate(() => (location.hash = "#standings")); await m.waitForTimeout(300);
+  const dvw = await m.evaluate(() => { const g = document.querySelector("#v-standings .sview"); if (!g) return { none: true, rule: !!document.getElementById("dropRule") };
+    const b = g.querySelector('[data-seasonview="drop"]'); const was = b.getAttribute("aria-pressed"); if (was !== "true") b.click();
+    const tags = document.querySelectorAll("#v-standings .dropwk").length; return { tags, rule: !!document.getElementById("dropRule"), width: document.documentElement.scrollWidth }; });
+  await m.screenshot({ path: "dev/test-drop.png", fullPage: true });
+  check("Standings shows the drop worst week view and the Rules explain it", dvw.rule && (dvw.none || (dvw.tags > 0 && dvw.width <= 400)), JSON.stringify(dvw));
+  // Fake extra final weeks so the toggle shows, then restore.
+  const dv2 = await m.evaluate(() => { const { state, render } = window.tpRecap; const ks = Object.keys(state.weeks).filter((k) => state.weeks[k].status === "final" && state.reveals[k]);
+    if (!ks.length) return { skip: true }; const src = ks[0]; const W0 = state.weeks, R0 = state.reveals; state.weeks = { ...W0 }; state.reveals = { ...R0 };
+    const ids = [];
+    for (let i = 1; i <= 4; i++) { const k = src + "x" + i; ids.push(k); const w = JSON.parse(JSON.stringify(W0[src])); w.id = k; w.week = (w.week || 0) + i; state.weeks[k] = w;
+      const rv = JSON.parse(JSON.stringify(R0[src])); const pids = Object.keys(rv.players || {}); if (i === 2 && pids[0]) delete rv.players[pids[0]]; state.reveals[k] = rv; }
+    state.seasonView = "drop"; location.hash = "#standings"; render();
+    const out = { proj: document.querySelector("#v-standings .sview") ? document.querySelector("#v-standings .sview").textContent : "", tags: document.querySelectorAll("#v-standings .dropwk").length, missed: [...document.querySelectorAll("#v-standings .dropwk")].some((x) => x.textContent.includes("missed")), width: document.documentElement.scrollWidth };
+    window.__dropRestore = () => { state.weeks = W0; state.reveals = R0; state.seasonView = undefined; render(); }; return out; });
+  await m.waitForTimeout(200); await m.screenshot({ path: "dev/test-drop.png", fullPage: true });
+  await m.evaluate(() => { if (window.__dropRestore) window.__dropRestore(); });
+  check("the drop view tags each picker's dropped week, a missed week included", dv2.skip || (dv2.tags > 0 && dv2.missed && dv2.width <= 400), JSON.stringify(dv2));
   // A dummy two season league, drawn into the page by the test only.
   const full2 = await c.evaluate(() => {
     const { state } = window.tpRecap; const { careerPanel, insightPanel, closePanel, pastPanel } = window.tpStats;

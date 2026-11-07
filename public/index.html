@@ -109,6 +109,8 @@ nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-v
 .info .ib{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:inline-grid;place-items:center;font:italic 700 .72rem/1 Georgia,serif}
 .info[open]>summary{color:var(--ink)}.info>p{margin:4px 0 0}
 .board .info>summary,.board .info[open]>summary{color:var(--board-dim)}
+.sview{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.sdvb{flex:0 0 auto;width:auto;white-space:nowrap;font:inherit;font-weight:700;font-size:.8rem;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:999px;padding:4px 12px;min-height:32px;cursor:pointer}.sdvb[aria-pressed="true"]{background:var(--board-ink);color:var(--board);border-color:transparent}
+.dropwk{display:block;font-size:.72rem;font-weight:600;opacity:.8;margin-top:1px;white-space:normal;line-height:1.2}
 .side .rec{display:block;font-family:var(--cond);font-size:.74rem;font-weight:600;color:var(--muted);letter-spacing:.03em;margin-top:1px}
 .side[aria-pressed="true"] .rec{color:inherit;opacity:.85}
 .res .bb{display:inline-block;font-family:var(--cond);font-weight:700;font-size:.74rem;letter-spacing:.06em;background:#6b2a8a;color:#fff;border-radius:3px;padding:1px 6px}
@@ -781,7 +783,8 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>A postponed or cancelled game is void and scores for nobody. A field goal on a void game earns nothing.</li>
         <li>If slot 1 is void, slot 2 becomes the tiebreaker game.</li>
         <li>Weekly winner: most points, then the closest tiebreaker guess. If it is still tied, the title is shared. The weekly title has no prize in 2026. See Payouts for the plan starting in 2027.</li>
-        <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses.</li>
+        <li>Season: most total points, then most field goals made, then the smallest total of tiebreaker misses. A week you miss scores 0, with a tiebreaker guess of 0.</li>
+        <li id="dropRule">Drop your worst week: your lowest scoring regular week comes off your season total, with its points, field goals made, and tiebreaker miss. It locks after the last regular week. Conference Champion Week never drops. A missed week scores 0, so it is usually the week that drops. If two weeks tie for lowest, the one with fewer field goals made drops, then the one with the larger tiebreaker miss. Weekly titles never change, and correct pick % still counts every game you picked. Until it locks, Standings can show it as if the season ended today.</li>
         <li>Conference Champion Week is the final week of the regular season. Its points count in the season standings like any other week. Its winner earns a Conference Champion win, tracked apart from weekly wins.</li>
         <li>Army-Navy, the Bowl challenge, and the CFP bracket are separate contests. Their points do not count in the season standings. See Contests still to come.</li>
       </ul></details>
@@ -1882,8 +1885,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-rvclose]")
 function recapWeeks(){return Object.keys(state.weeks).filter(k=>state.weeks[k].status==="final"&&state.reveals[k]).sort()}
 function recapBanner(){const ws=recapWeeks();if(!ws.length)return "";const wid=ws[ws.length-1];let seen=null;try{seen=localStorage.getItem("tp-recap-seen-"+state.uid)}catch(e){}
   return seen===wid?"":`<a class="recapban" href="#recap">\u{1F4E3} The Week ${state.weeks[wid].week} recap is in. See who drew a flag.</a>`}
-function rankAfter(wids){const t={};for(const wid of wids){const ps=weekPlayers(wid);for(const [pid,p] of Object.entries(ps)){const x=t[pid]=t[pid]||{pid,pts:0};x.pts+=scoreWeek(state.weeks[wid],p).pts}}
-  const rows=Object.values(t).sort((a,b)=>b.pts-a.pts);const rk={};rows.forEach(r=>{rk[r.pid]=rows.filter(x=>x.pts>r.pts).length+1});return rk}
+function rankAfter(wids){const rows=seasonThrough(wids);const rk={};rows.forEach(r=>{rk[r.pid]=rows.filter(x=>x.pts>r.pts).length+1});return rk}
 function recapFacts(wid){
   const w=state.weeks[wid];const ps=weekPlayers(wid);const ids=Object.keys(ps);const rs=w.results||{};const out=[];
   const graded=w.games.filter(g=>coverSide(g,rs[g.id]));if(!ids.length||!graded.length)return out;
@@ -1958,6 +1960,9 @@ function recapFacts(wid){
     const up=[...mv].sort((a,b)=>b.d-a.d)[0];const dn=[...mv].sort((a,b)=>a.d-b.d).find(x=>x.d<0&&!hit.has(x.p));
     if(up&&up.d>0)add("Moving the chains",`${first(up.p)} jumped ${up.d} spot${pl(up.d)}`,`From ${ordinal(up.from)} to ${ordinal(up.to)} in the season standings.`,"good");
     if(dn&&dn.d<=-2)add("Loss of downs",`${first(dn.p)} fell ${-dn.d} spots`,`From ${ordinal(dn.from)} to ${ordinal(dn.to)}. It happens.`,"bad")}
+  /* Drop worst week: the week it starts counting */
+  if(!w.confChamp){const pr=priorWeeks(wid);const T=tallySeason([...pr,wid],k=>state.weeks[k],k=>weekPlayers(k));const was=tallySeason(pr,k=>state.weeks[k],k=>weekPlayers(k));
+    if(T.official&&!was.official)add("Film burned","Everyone's worst week is off the books","Each picker's lowest regular week no longer counts in the season standings. Check Standings to see where you landed.","")}
   return out;
 }
 function renderRecap(){
@@ -2090,8 +2095,7 @@ window.tpBracket={cfpField,brkPick,brkSwapTeams};
 
 /* ---------- rival, what you need, your week ---------- */
 function priorWeeks(wid){const w=state.weeks[wid];return countedWeeks().filter(k=>k<wid&&state.weeks[k].season===w.season)}
-function seasonThrough(wids){const t={};for(const wid of wids){const w=state.weeks[wid];for(const [pid,p] of Object.entries(weekPlayers(wid))){const s=scoreWeek(w,p);const x=t[pid]=t[pid]||{pid,pts:0,lw:0,tb:0};x.pts+=s.pts;x.lw+=s.lw;x.tb+=s.tbMiss||0}}
-  return Object.values(t).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb||a.pid.localeCompare(b.pid))}
+function seasonThrough(wids){return tallySeason(wids,k=>state.weeks[k],k=>weekPlayers(k)).rows.map(r=>({pid:r.pid,pts:r.cpts,lw:r.clw,tb:r.ctb}))}
 /* The picker just above you in the standings as the week starts, so it holds all week. The leader gets the picker right behind. */
 function rivalOf(pid,wid){if(!state.weeks[wid])return null;const rows=seasonThrough(priorWeeks(wid));if(!rows.length)return null;const i=rows.findIndex(r=>r.pid===pid);const x=i<0?rows[rows.length-1]:i===0?rows[1]:rows[i-1];return x&&x.pid!==pid?x.pid:null}
 function h2hRec(a,b,wids){let W=0,L=0,T=0;for(const wid of wids){const P=weekPlayers(wid,true);if(!P[a]||!P[b])continue;const w=state.weeks[wid];const x=scoreWeek(w,P[a]).pts,y=scoreWeek(w,P[b]).pts;if(x>y)W++;else if(x<y)L++;else T++}return {W,L,T}}
@@ -2158,15 +2162,37 @@ const pctText=r=>{const p=pickPct(r);return p==null?"–":(p*100).toFixed(1)+"%"
 /* Display order only. Rank numbers always come from points. Ties keep their standings order. */
 function seasonSort(rows){return state.seasonSort==="pct"?[...rows].sort((a,b)=>(pickPct(b)??-1)-(pickPct(a)??-1)||b.w-a.w):rows}
 /* Everyone with at least one game picked, including a sheet in a week that has not locked. */
-function seasonRows(includeTest,withBot){
-  const weeks=countedWeeks(includeTest);const inn=new Set(state.pickedIn||[]);
-  return allPlayerIds(withBot).filter(pid=>pid===BOT||inn.has(pid)).map(pid=>{const t={pid,pts:0,w:0,l:0,lw:0,ll:0,tb:0,weeks:0};
-    for(const wid of weeks){const p=pid===BOT?botPicks(state.weeks[wid]):(state.reveals[wid].players&&state.reveals[wid].players[pid]);if(!p)continue;const s=scoreWeek(state.weeks[wid],p);t.pts+=s.pts;t.w+=s.w;t.l+=s.l;t.lw+=s.lw;t.ll+=s.ll;t.tb+=s.tbMiss||0;t.weeks++}
-    return t}).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb);
+/* Drop worst week (item 42). One helper for every season total, so Standings, rivals, the recap, and season titles agree.
+   A week with no sheet scores as a blank sheet: 0 points and a tiebreaker guess of 0. Drop candidates are final regular weeks
+   (never Conference Champion Week). Lowest points drops; a tie drops fewer field goals made, then the larger tiebreaker miss, then the earlier week.
+   The drop counts in the standings once DROP_MIN regular weeks are final; before that it is a projection ("if it ended today"), shown on request.
+   W-L and Pct always count every game picked. Each row keeps all weeks (pts, lw, tb) and counted values (cpts, clw, ctb). */
+const DROP_MIN=5,BLANK_SHEET={sel:{},lock:null,tb:null};
+function tallySeason(wids,wk,pl,pids){
+  const reg=wids.filter(k=>{const w=wk(k);return w&&!w.confChamp&&w.status==="final"});
+  const official=reg.length>=DROP_MIN,can=reg.length>=2,locked=official&&wids.some(k=>wk(k)&&wk(k).confChamp);
+  const ids=pids?[...pids]:[...new Set(wids.flatMap(k=>Object.keys(pl(k)||{})))];
+  const rows=ids.map(pid=>{const t={pid,pts:0,w:0,l:0,lw:0,ll:0,tb:0,weeks:0,wk:{},drop:null};
+    for(const k of wids){const w=wk(k);const p=(pl(k)||{})[pid];const s=scoreWeek(w,p||BLANK_SHEET);const tb=s.tbMiss||0;
+      t.pts+=s.pts;t.lw+=s.lw;t.tb+=tb;if(p){t.w+=s.w;t.l+=s.l;t.ll+=s.ll;t.weeks++}t.wk[k]={pts:s.pts,lw:s.lw,tb,played:!!p}}
+    if(can){const d=[...reg].sort((a,b)=>t.wk[a].pts-t.wk[b].pts||t.wk[a].lw-t.wk[b].lw||t.wk[b].tb-t.wk[a].tb||(a<b?-1:1))[0];t.drop=d}
+    const x=t.drop?t.wk[t.drop]:{pts:0,lw:0,tb:0};t.dpts=t.pts-x.pts;t.dlw=t.lw-x.lw;t.dtb=t.tb-x.tb;
+    t.cpts=official?t.dpts:t.pts;t.clw=official?t.dlw:t.lw;t.ctb=official?t.dtb:t.tb;return t});
+  rows.sort((a,b)=>b.cpts-a.cpts||b.clw-a.clw||a.ctb-b.ctb||(a.pid<b.pid?-1:1));
+  return {rows,official,can,locked,need:Math.max(0,DROP_MIN-reg.length)};
 }
+function seasonWeeks(){const cur=state.config&&state.config.season;return countedWeeks().filter(k=>cur==null||String(state.weeks[k].season)===String(cur))}
+function seasonTally(withBot){const weeks=seasonWeeks();const inn=new Set(state.pickedIn||[]);
+  const ids=allPlayerIds(withBot).filter(pid=>pid===BOT||inn.has(pid));
+  return tallySeason(weeks,k=>state.weeks[k],k=>{const o={...((state.reveals[k]&&state.reveals[k].players)||{})};delete o[BOT];if(withBot)o[BOT]=botPicks(state.weeks[k]);return o},ids)}
+function seasonRows(includeTest,withBot){return seasonTally(withBot).rows}
 function renderStandings(){
   const el=$("#v-standings");
-  const rows=seasonRows(false,true);
+  const T=seasonTally(true);
+  /* Before the drop counts, Standings shows current points with an "If it ended today" view. Once it counts, the dropped view is the default and All weeks is the other view. */
+  const dropView=T.official?state.seasonView!=="all":T.can&&state.seasonView==="drop";
+  const rows=T.rows.map(r=>({...r,pts:dropView?r.dpts:r.pts,lw:dropView?r.dlw:r.lw,tb:dropView?r.dtb:r.tb})).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb||(a.pid<b.pid?-1:1));
+  const dropTag=r=>dropView&&r.drop?`<span class="dropwk">Drops Wk ${esc(state.weeks[r.drop].week)} \u00b7 ${r.wk[r.drop].played?r.wk[r.drop].pts+" pt"+(r.wk[r.drop].pts===1?"":"s"):"missed"}</span>`:"";
   const active=rows.filter(r=>!removed().includes(r.pid)),out=rows.filter(r=>removed().includes(r.pid));
   /* Robo-Sharp sits where its score puts it but takes no rank number, so the top league member is always #1. */
   {const hs=active.filter(r=>r.pid!==BOT);hs.forEach((r,i)=>{const p=hs[i-1];r.rk=p&&p.pts===r.pts&&p.lw===r.lw&&p.tb===r.tb?p.rk:i+1});const b=active.find(r=>r.pid===BOT);if(b)b.rk=""}
@@ -2183,9 +2209,12 @@ function renderStandings(){
   }else if(w){h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">Weekly standings appear after picks lock at ${kick(w.deadline)}.</p></div>`}
   const max=Math.max(1,...active.map(r=>r.pts));
   h+=`<div class="board"><h2>Season ${state.config?state.config.season:""}</h2>`;
+  if(T.can){const vb=(k,t)=>`<button class="sdvb" data-seasonview="${k}" aria-pressed="${(k==="drop")===dropView}">${t}</button>`;
+    h+=`<div class="sview" role="group" aria-label="Season view">${T.official?vb("drop","Worst week dropped")+vb("all","All weeks"):vb("all","Current points")+vb("drop","If it ended today")}</div>`;
+    if(dropView)h+=`<p class="note">${T.official?`Each picker's lowest regular week no longer counts.${T.locked?" Locked for the season.":""}`:`Projection: if the season ended today, each picker's lowest regular week would drop. It starts counting once ${T.need} more regular week${T.need===1?" is":"s are"} final.`} ATS and Pct still count every game.</p>`}
   const byPct=state.seasonSort==="pct";const sortBtn=(k,t,title)=>`<button class="ssort" data-seasonsort="${k}" aria-pressed="${(k==="pct")===byPct}" title="${title}">${t}</button>`;
   if(!active.length)h+='<p class="note">No picks in yet.</p>';
-  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${ironTag(r.pid)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${seasonSort(out).map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}${info("season",`Ranked by points, then field goals made, then smallest total tiebreaker miss. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.`)}`;
+  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num">${r.rk}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${ironTag(r.pid)}${dropTag(r)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${seasonSort(out).map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}${info("season",`Ranked by points, then field goals made, then smallest total tiebreaker miss. A week with no sheet scores 0 with a tiebreaker guess of 0. Drop worst week: each picker's lowest regular week comes off the season total once ${DROP_MIN} regular weeks are final, and Conference Champion Week never drops. Until then, If it ended today shows the projection. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.`)}`;
   if(active.some(r=>ironTag(r.pid)))h+='<p class="note">\u{1F9BE} Iron Man: every pick in, every week.</p>';
   {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of Robo-Sharp.</p>`}}
   h+="</div>";
@@ -2196,6 +2225,7 @@ function renderStandings(){
   el.innerHTML=h;
 }
 
+document.addEventListener("click",e=>{const b=e.target.closest("[data-seasonview]");if(!b)return;state.seasonView=b.dataset.seasonview;renderStandings()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-seasonsort]");if(!b)return;state.seasonSort=b.dataset.seasonsort;renderStandings()});
 
 /* ---------- survivor ---------- */
@@ -2549,8 +2579,8 @@ function survivorChampions(){const G=survivorGrid();if(!G||!G.weeks.length)retur
 function statWinners(D,wid){const w=D.week(wid);if(!w||w.status!=="final")return [];const ps=D.players(wid);const rows=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));if(!rows.length)return [];
   rows.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));return rows.filter(r=>r.pts===rows[0].pts&&(r.tbMiss??1e9)===(rows[0].tbMiss??1e9)).map(r=>r.pid)}
 function statSeasons(D){return [...new Set(D.wids.map(k=>D.week(k).season))]}
-function seasonChamp(D,season){const t={};for(const k of D.wids){const w=D.week(k);if(w.season!==season)continue;for(const [pid,p] of Object.entries(D.players(k))){const s=scoreWeek(w,p);const x=t[pid]=t[pid]||{pid,pts:0,lw:0,tb:0};x.pts+=s.pts;x.lw+=s.lw;x.tb+=s.tbMiss||0}}
-  const r=Object.values(t).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb);return r.length?r.filter(x=>x.pts===r[0].pts&&x.lw===r[0].lw&&x.tb===r[0].tb).map(x=>x.pid):[]}
+function seasonChamp(D,season){const ks=D.wids.filter(k=>D.week(k).season===season);const r=tallySeason(ks,D.week,D.players).rows.filter(x=>x.pid!==BOT);
+  return r.length?r.filter(x=>x.cpts===r[0].cpts&&x.clw===r[0].clw&&x.ctb===r[0].ctb).map(x=>x.pid):[]}
 function careerPanel(D,pid){const c={season:0,week:0,conf:0,surv:0,bowl:0,cfp:0,co:0};const count=(list,key)=>{if(list.includes(pid)){c[key]++;if(list.length>1)c.co++}};
   /* Conference Champion Week scores like any week for the season, but its win is its own stat, not a weekly win. */
   for(const k of D.wids)count(statWinners(D,k),D.week(k).confChamp?"conf":"week");
@@ -2596,6 +2626,9 @@ function insightPanel(D,pid){const P=statPicks(D,pid);if(!P.length)return '<div 
   if(close.n)h+=tile("Beat the close",Math.round(close.pct*100)+"%",`${close.avg>0?"+":""}${close.avg.toFixed(1)} avg`);
   return h+"</div></div>"}
 function pastPanel(D,pid,surv){const ks=[...D.wids].filter(k=>D.players(k)[pid]).reverse();if(!ks.length)return '<div class="panel"><h2>Past picks</h2><p class="note">Your past weeks show here after each lock.</p></div>';
+  /* Drop worst week for the latest season: tag the week and say whether it counts yet. */
+  const ss=statSeasons(D),cs=ss[ss.length-1];const TD=pid===BOT?null:tallySeason(D.wids.filter(k=>D.week(k).season===cs),D.week,D.players,[pid]);const dr=TD&&TD.rows[0]&&TD.rows[0].drop;
+  const dropLine=dr?`<p class="note dropnote">Drop worst week: Week ${esc(D.week(dr).week)} (${TD.rows[0].wk[dr].played?TD.rows[0].wk[dr].pts+" pts":"missed"}) ${TD.official?"no longer counts in the season total"+(TD.locked?", locked":""):"would drop if the season ended today"}.</p>`:"";
   const body=ks.map((k,i)=>{const w=D.week(k);const P=D.players(k);const p=P[pid];const rs=w.results||{};const s=scoreWeek(w,p);const all=Object.values(P).map(x=>scoreWeek(w,x).pts);const rank=all.filter(x=>x>s.pts).length+1;const tied=all.filter(x=>x===s.pts).length>1;
     const rows=[...w.games].sort((a,b)=>a.slot-b.slot).map(g=>{const pick=(p.sel||{})[g.id];const opp=pick==="home"?g.away:g.home;const r=rs[g.id];
       if(!pick)return `<li class="pp none"><span class="ppi">\u2013</span><span>No pick: ${esc(teamLook(g.away,g,"away").abbr)} at ${esc(teamLook(g.home,g,"home").abbr)}</span></li>`;
@@ -2604,9 +2637,9 @@ function pastPanel(D,pid,surv){const ks=[...D.wids].filter(k=>D.players(k)[pid])
       return `<li class="pp ${cls}"><span class="ppi">${cls==="win"?"\u2713":cls==="loss"?"\u2717":"\u2013"}</span><span><b>${esc(L.abbr)} ${line}</b> vs ${esc(teamLook(opp,g,pick==="home"?"away":"home").abbr)}${fg}<span class="note"> \u00b7 ${res}</span></span></li>`}).join("");
     const tg=tbGame(w);const tr=tg&&rs[tg.id];const tb=tr&&tr.final&&!tr.void?`Tiebreaker: guessed ${typeof p.tb==="number"?p.tb:0}, actual ${tr.home+tr.away}, off by ${s.tbMiss}.`:"";
     let sv="";if(p.surv){const g=w.games.find(x=>x.id===p.surv.g);if(g){const team=p.surv.s==="home"?g.home:g.away;const c=coverSide(g,rs[g.id]);sv=`Survivor: ${esc(teamLook(team,g,p.surv.s).abbr)}, ${rs[g.id]&&rs[g.id].void?"void":c?(c===p.surv.s?"survived":"out"):"not final"}.`}}
-    return `<details class="wkh"${i===0?" open":""}><summary><b>Week ${w.week}${statSeasons(D).length>1?" \u00b7 "+esc(w.season):""}</b><span class="note">${s.pts} pts \u00b7 ${s.w}-${s.l} \u00b7 ${tied?"T-":""}${ordinal(rank)} of ${all.length}</span></summary><ul class="pplist">${rows}</ul>${tb||sv?`<p class="note">${tb} ${sv}</p>`:""}</details>`}).join("");
-  return `<div class="panel"><h2>Past picks</h2>${body}</div>`}
-window.tpStats={classYear,classLabel,classBadge,classPanel,seasonRows,pickPct,pctText,seasonSort,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
+    return `<details class="wkh"${i===0?" open":""}><summary><b>Week ${w.week}${statSeasons(D).length>1?" \u00b7 "+esc(w.season):""}</b><span class="note">${s.pts} pts \u00b7 ${s.w}-${s.l} \u00b7 ${tied?"T-":""}${ordinal(rank)} of ${all.length}${k===dr?(TD.official?" \u00b7 dropped":" \u00b7 would drop"):""}</span></summary><ul class="pplist">${rows}</ul>${tb||sv?`<p class="note">${tb} ${sv}</p>`:""}</details>`}).join("");
+  return `<div class="panel"><h2>Past picks</h2>${dropLine}${body}</div>`}
+window.tpStats={tallySeason,classYear,classLabel,classBadge,classPanel,seasonRows,pickPct,pctText,seasonSort,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
 
 function titlesPanel(){const weeks=countedWeeks(state.incTest).filter(w=>state.weeks[w].status==="final");if(!weeks.length)return "";
   const shelf=weeks.slice().reverse().map(wid=>{const win=weekWinners(wid);return win.length?`<span class="tro">🏆 ${state.weeks[wid].confChamp?"Conf Champ":"W"+state.weeks[wid].week} · ${win.map(p=>esc(first(p))).join(" & ")}</span>`:""}).join("");
