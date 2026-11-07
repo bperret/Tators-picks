@@ -259,6 +259,7 @@ try {
   const logNow = afterUnlock.log.map((l) => l.action);
   check("lock and unlock are in the commissioner log", logNow.includes("Locked picks early") && logNow.includes("Unlocked picks"));
 
+  check("Scoreboard tab hides while picks are open", await m.$eval("#sbTab", (e) => e.hidden));
   // ---- move the deadline into the past: the server must refuse saves ----
   const past = iso(new Date(Date.now() - 60e3));
   await pg.query("update weeks set data = jsonb_set(data, '{deadline}', to_jsonb($1::text)) where id = '2026-w10'", [past]);
@@ -291,6 +292,44 @@ try {
   check("clock labels read Q3 · 8:42, Halftime, OT", live.q3 === "Q3 · 8:42" && live.half === "Halftime" && live.ot === "OT", JSON.stringify(live));
   check("status text alone still gives the clock and a tier", live.oldText === "Q3 · 10:00" && live.oldText2 === "Q3 · 4:12" && live.oldTier === "safe", JSON.stringify(live));
   check("cover tiers: safe late lead, red late deficit, toss up early", live.late === "safe" && live.lost === "red" && live.early === "toss" && live.grows, JSON.stringify(live));
+
+  // ---- Scoreboard tab (item 48) ----
+  {
+    const wk = (await pg.query("select data from weeks where id = '2026-w10'")).rows[0].data;
+    const keep = JSON.stringify(wk.results || {});
+    const ids = wk.games.map((g) => g.id);
+    const lr = (h, a, period, dclock, fin) => ({ home: h, away: a, period, dclock, clock: dclock ? +dclock.split(":")[0] * 60 + +dclock.split(":")[1] : null, status: "", final: !!fin, void: false, src: "auto", at: iso(new Date()) });
+    const res = { [ids[0]]: lr(24, 10, 4, "0:00", true), [ids[1]]: lr(14, 13, 3, "6:10") };
+    await pg.query("update weeks set data = jsonb_set(jsonb_set(data, '{results}', $1::jsonb), '{scoresAt}', to_jsonb($2::text)) where id = '2026-w10'", [JSON.stringify(res), iso(new Date())]);
+    const bg = (id, an, ar, as, hn, hr, hs, s, p, dc, l) => ({ id, k: iso(new Date()), s, c: s === "post", p, dc, tx: s === "post" ? "Final" : "", a: { n: an, r: ar, sc: as }, h: { n: hn, r: hr, sc: hs }, l, t: 50, ns: false });
+    const board = { day: "20261107", at: iso(new Date()), games: [bg("x1", "Duke", null, 14, "NC State", null, 3, "in", 2, "12:04", -3), bg("x2", "Texas", 7, 7, "Missouri", 18, 10, "in", 2, "5:20", 3.5), bg("x3", "Tulsa", null, 24, "Tulane", null, 21, "post", 4, "0:00", 3), bg("x4", "Arkansas", null, null, "Auburn", null, null, "pre", 0, "", -6.5)] };
+    await pg.query("insert into kv (key, value) values ('dayBoard', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(board)]);
+    await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
+    check("Scoreboard tab shows after the lock, first in the bar, with the live dot", await m.evaluate(() => { const t = document.querySelector("#sbTab"); return !t.hidden && t.classList.contains("hot") && t.parentNode.firstElementChild === t; }));
+    await m.evaluate(() => (location.hash = "#scoreboard")); await m.waitForSelector("#v-scoreboard .sbt");
+    const ours = await m.evaluate(() => [...document.querySelectorAll("#v-scoreboard .sbt")].map((b) => b.className + "|" + b.dataset.sbt));
+    check("Our 10 shows every slate game, live first, finals last", ours.length === ids.length && /\bin\b/.test(ours[0]) && /\bpost\b/.test(ours[ours.length - 1]), ours.join(" / "));
+    check("your picks get the gold edge and the You line", (await m.locator("#v-scoreboard .sbt.mine").count()) > 0 && (await m.locator("#v-scoreboard .sbm").count()) === ids.length);
+    await m.click('[data-sbf="all"]'); await m.waitForFunction(() => document.querySelectorAll("#v-scoreboard .sbt").length > 5, null, { timeout: 5000 });
+    const allB = await m.evaluate(() => [...document.querySelectorAll("#v-scoreboard .sbt")].map((b) => b.dataset.sbt + "|" + b.querySelector(".sbf").textContent.trim()));
+    check("All FBS adds ESPN's other games from the day board", allB.length === ids.length + 4, allB.join(" / "));
+    check("other games show who is covering from ESPN's line", allB.some((x) => x.startsWith("b:x1|") && /covering/.test(x)) && allB.some((x) => x.startsWith("b:x3|") && /Push/.test(x)), allB.join(" / "));
+    await m.click('[data-sbf="top"]'); await m.waitForTimeout(150);
+    const topB = await m.evaluate(() => [...document.querySelectorAll("#v-scoreboard .sbt")].map((b) => b.dataset.sbt));
+    check("Top 25 keeps ranked games and our games", topB.includes("b:x2") && !topB.includes("b:x1") && topB.filter((k) => k.startsWith("s:")).length === ids.length, topB.join());
+    await m.click('[data-sbf="ours"]'); await m.waitForTimeout(150);
+    const w390 = await m.evaluate(() => document.documentElement.scrollWidth);
+    check("the tile grid fits a phone with no side scroll", w390 <= 400, String(w390));
+    await m.evaluate(() => window.scrollTo(0, 0)); await m.screenshot({ path: "dev/test-board.png", fullPage: false });
+    await m.click(`[data-sbt="s:${ids[1]}"]`); await m.waitForTimeout(400);
+    check("tapping one of our games jumps to it on Picks", await m.evaluate(() => location.hash === "#picks"));
+    await m.evaluate(() => (location.hash = "#scoreboard")); await m.waitForSelector("#v-scoreboard .sbt"); await m.click('[data-sbf="all"]'); await m.waitForSelector('[data-sbt="b:x2"]');
+    await m.click('[data-sbt="b:x2"]'); await m.waitForTimeout(400);
+    check("tapping another game opens the Matchup", await m.evaluate(() => location.hash === "#rankings" && !!document.querySelector("#v-rankings .mubackp, #v-rankings select#muA, #v-rankings [id^=mu]")));
+    await m.evaluate(() => (location.hash = "#picks"));
+    await pg.query("update weeks set data = jsonb_set(data, '{results}', $1::jsonb) where id = '2026-w10'", [keep]);
+    await m.reload(); await m.waitForSelector("#app:not([hidden])");
+  }
 
   // ---- scores and final ----
   await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);

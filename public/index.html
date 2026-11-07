@@ -109,7 +109,24 @@ nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-v
 .info .ib{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:inline-grid;place-items:center;font:italic 700 .72rem/1 Georgia,serif}
 .info[open]>summary{color:var(--ink)}.info>p{margin:4px 0 0}
 .board .info>summary,.board .info[open]>summary{color:var(--board-dim)}
-.sview{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.sdvb{flex:0 0 auto;width:auto;white-space:nowrap;font:inherit;font-weight:700;font-size:.8rem;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:999px;padding:4px 12px;min-height:32px;cursor:pointer}.sdvb[aria-pressed="true"]{background:var(--board-ink);color:var(--board);border-color:transparent}
+.sview{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.sbseg{margin:6px 0 10px}.sbseg .n{opacity:.65;font-weight:600}
+.sbgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:700px){.sbgrid{grid-template-columns:repeat(3,1fr)}}@media(min-width:1000px){.sbgrid{grid-template-columns:repeat(4,1fr)}}
+.sbt{display:block;width:100%;min-width:0;text-align:left;background:var(--card);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:7px 8px 6px;font:inherit;cursor:pointer}
+.sbt.mine{border-left-color:#e0a800}.sbt:focus-visible{outline:3px solid #e0a800;outline-offset:2px}
+.sbh{display:flex;justify-content:space-between;align-items:center;gap:4px;font-family:var(--cond);font-weight:700;font-size:.76rem;letter-spacing:.02em;color:var(--muted);margin-bottom:3px;white-space:nowrap}
+.sbt.in .sbc{color:var(--loss)}.sbc .lv{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--loss);margin-right:4px;vertical-align:1px}
+.sbl{overflow:hidden;text-overflow:ellipsis}
+.sbr{display:grid;grid-template-columns:4px 1fr auto auto;align-items:center;gap:6px;font-family:var(--cond);font-weight:700;font-size:1.05rem;line-height:1.35}
+.sbr .bar{width:4px;height:17px;border-radius:2px;background:var(--tc)}.sbr .ab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbr .rk{font-size:.68rem;font-weight:600;color:var(--muted);margin-left:3px;vertical-align:2px}.sbr .em{font-size:.85rem}
+.sbr .sc{font-size:1.18rem;font-variant-numeric:tabular-nums;min-width:1.4em;text-align:right}
+.sbr.trail{opacity:.55}.sbr.pick .ab{text-decoration:underline;text-decoration-color:#e0a800;text-decoration-thickness:2px;text-underline-offset:3px}
+.sbf{margin-top:3px;font-size:.74rem;min-height:1.3em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sbf .tier{font-size:.7rem;padding:0 6px}
+.cov{font-weight:700}.cov.good{color:var(--win)}.cov.bad{color:var(--loss)}.cov.neu{color:var(--muted);font-weight:600}
+.sbm{display:flex;justify-content:space-between;gap:4px;font-size:.72rem;color:var(--muted);margin-top:2px;white-space:nowrap}.sbm b{color:var(--ink)}.sbm .gp{width:12px;height:12px;vertical-align:-2px;stroke:currentColor;fill:none;stroke-width:2.4}
+.sbt.post:not(.mine){opacity:.92}
+.sdvb{flex:0 0 auto;width:auto;white-space:nowrap;font:inherit;font-weight:700;font-size:.8rem;background:transparent;color:inherit;border:1.5px solid currentColor;border-radius:999px;padding:4px 12px;min-height:32px;cursor:pointer}.sdvb[aria-pressed="true"]{background:var(--board-ink);color:var(--board);border-color:transparent}
 .dropwk{display:block;font-size:.72rem;font-weight:600;opacity:.8;margin-top:1px;white-space:normal;line-height:1.2}
 .side .rec{display:block;font-family:var(--cond);font-size:.74rem;font-weight:600;color:var(--muted);letter-spacing:.03em;margin-top:1px}
 .side[aria-pressed="true"] .rec{color:inherit;opacity:.85}
@@ -724,6 +741,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   </header>
   <div class="refrule" aria-hidden="true"></div>
   <nav class="tabs" aria-label="Sections">
+    <a href="#scoreboard" data-v="scoreboard" id="sbTab" hidden>Scoreboard</a>
     <a href="#picks" data-v="picks" id="picksTab">Picks</a>
     <a href="#standings" data-v="standings">Standings</a>
     <a href="#recap" data-v="recap">Recap</a>
@@ -738,6 +756,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
 
+  <section class="view" id="v-scoreboard" hidden></section>
   <section class="view" id="v-picks"></section>
   <section class="view" id="v-standings" hidden></section>
   <section class="view" id="v-rankings" hidden></section>
@@ -1295,7 +1314,7 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","commish"];
+const VIEWS=["scoreboard","picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
 function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
@@ -1305,7 +1324,7 @@ function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.lengt
 document.addEventListener("visibilitychange",()=>{if(document.hidden)engFlush(true)});
 window.addEventListener("pagehide",()=>engFlush(true));
 window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy")&&!state.isOwner)v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render();if(state.toTop){state.toTop=false;scrollTo(0,0)}}
 window.addEventListener("hashchange",route);
@@ -1591,6 +1610,68 @@ document.addEventListener("click",e=>{if(!e.target.closest("#v-bowls"))return;co
     else{if(!d.sel[id]&&Object.keys(d.sel).length>=10){toast("You have 10 bowls. Tap a pick again to drop it first.");return}d.sel[id]=sd}bwSave();toast(`You have picked ${Object.keys(d.sel).length} of 10 bowls.`,"info")}
   renderBowls();$("#bowlsTab").classList.toggle("hot",!bwDone())});
 document.addEventListener("input",e=>{if(e.target.id!=="bwTb")return;const d=bwState();d.tb=e.target.value.replace(/\D/g,"").slice(0,3);bwSave();const st=$("#bwStat");if(st)st.textContent=bwStat();$("#bowlsTab").classList.toggle("hot",!bwDone())});
+/* ---------- Scoreboard tab (item 48) ----------
+   One screen of small game tiles. Our 10 reads the week itself (our half-point lines, your pick, the split).
+   Top 25 and All FBS read kv dayBoard through /api/state?part=board, a slim copy of the ESPN pull the scores job already makes,
+   fetched only while this tab is open. It refreshes as often as the scores job runs (page visit gap, 10 minutes now). */
+function boardWeek(){const w=curWeek();return w&&w.status==="locked"?w:null}
+function boardOn(){return !!(state.db&&boardWeek())}
+function boardLive(){const w=boardWeek();if(!w)return false;const rs=w.results||{};return w.games.some(g=>{const r=rs[g.id];return r&&!r.final&&!r.void})}
+async function loadBoard(){state.sbLoading=true;state.sbAt=Date.now();const d=await api("/api/state?part=board");state.sbLoading=false;
+  state.board=d.ok?{games:d.games||[],at:d.at||null,day:d.day||null}:{games:[],error:d.error||"The scoreboard did not load."};if(state.view==="scoreboard")renderBoard()}
+const SB_ORDER={in:0,pre:1,post:2};
+function sbTime(iso){try{return new Date(iso).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"})}catch(e){return ""}}
+/* A tile model from one of our games. */
+function sbFromSlate(w,g){const r=(w.results||{})[g.id];const me=weekPlayers(w.id)[state.uid]||null;const mine=me&&me.sel?me.sel[g.id]:null;
+  const st=!r?"pre":r.void||r.final?"post":"in";const gc=r?gameClock(r):null;
+  let cov=null,odds=null;if(r&&!r.void&&Number.isInteger(r.home)&&Number.isInteger(r.away)){const m=margin(g,r);cov=m>0?"home":m<0?"away":"push";if(mine&&!r.final)odds=coverOdds(g,r,mine)}
+  const sp=split(g,weekPlayers(w.id));const n=sp.away.length+sp.home.length;
+  return {key:"s:"+g.id,slate:g.id,k:g.kickoff,st,clock:st==="pre"?sbTime(g.kickoff):r.void?"Void":gc?gc.label:"Live",void:!!(r&&r.void),
+    away:{n:g.away,r:g.awayRank,sc:r?r.away:null},home:{n:g.home,r:g.homeRank,sc:r?r.home:null},hl:g.homeLine,g,
+    cov,odds,mine,fg:!!(me&&me.lock===g.id),cnt:mine?sp[mine].length:null,tot:n,ar:g.awayRank,hr:g.homeRank}}
+/* A tile model from ESPN's day board, for games not on our card. */
+function sbFromBoard(x){const r={period:x.p,dclock:x.dc,status:x.tx||""};const gc=x.s==="in"?gameClock(r):null;
+  let cov=null;if(x.s!=="pre"&&x.l!=null&&x.h.sc!=null&&x.a.sc!=null){const m=(x.h.sc-x.a.sc)+x.l;cov=m>0?"home":m<0?"away":"push"}
+  return {key:"b:"+x.id,k:x.k,st:x.s==="post"?"post":x.s==="in"?"in":"pre",clock:x.s==="pre"?sbTime(x.k):x.s==="post"?(/OT/i.test(x.tx||"")?"Final/OT":"Final"):gc?gc.label:(x.tx||"Live"),
+    away:{n:x.a.n,r:x.a.r,sc:x.a.sc},home:{n:x.h.n,r:x.h.r,sc:x.h.sc},hl:x.l,cov,ns:!!x.ns,ar:x.a.r||99,hr:x.h.r||99}}
+function sbSort(a,b){return (SB_ORDER[a.st]-SB_ORDER[b.st])||(a.void-b.void)||(Date.parse(a.k)-Date.parse(b.k))||((apr(a.ar)+apr(a.hr))-(apr(b.ar)+apr(b.hr)))}
+function sbTile(t){const aL=teamLook(t.away.n,t.g,"away"),hL=teamLook(t.home.n,t.g,"home");
+  const lead=t.st!=="pre"&&t.away.sc!=null&&t.home.sc!=null&&t.away.sc!==t.home.sc?(t.away.sc>t.home.sc?"away":"home"):null;
+  const row=(side,T,L)=>`<div class="sbr${lead&&lead!==side?" trail":""}${t.mine===side?" pick":""}" style="--tc:${L.c1}"><span class="bar" aria-hidden="true"></span><span class="ab">${esc(L.abbr)}${T.r&&T.r<=25?`<span class="rk">${T.r}</span>`:""}</span><span class="em" aria-hidden="true">${L.emoji||""}</span><b class="sc">${T.sc==null?"":T.sc}</b></div>`;
+  /* Line: from your side when you picked, else the favorite. */
+  let line="";if(t.hl!=null){const hl=t.hl;line=t.mine?`${esc((t.mine==="home"?hL:aL).abbr)} ${fmtLine(t.mine==="home"?hl:-hl)}`:hl===0?"PK":hl<0?`${esc(hL.abbr)} ${fmtLine(hl)}`:`${esc(aL.abbr)} ${fmtLine(-hl)}`}
+  let cov="";const cL=t.cov==="home"?hL:t.cov==="away"?aL:null;
+  if(t.void)cov='<span class="cov neu">Void</span>';
+  else if(t.cov==="push")cov=`<span class="cov neu">${t.st==="post"?"Push":"On the number"}</span>`;
+  else if(t.cov&&t.mine){const good=t.cov===t.mine;
+    if(t.st==="post")cov=`<span class="cov ${good?"good":"bad"}">${good?"✓ You covered":"✗ Beat you"}</span>`;
+    else{const tr=t.odds!=null?coverTier(t.odds):null;cov=tr?`<span class="tier t-${tr[1]}">${good?"✓ Covering":"✗ Not covering"} · ${Math.round(t.odds*100)}%</span>`:`<span class="cov ${good?"good":"bad"}">${good?"✓ Covering":"✗ Not covering"}</span>`}}
+  else if(cL)cov=`<span class="cov neu">${esc(cL.abbr)} ${t.st==="post"?"covered":"covering"}</span>`;
+  const you=t.slate?`<div class="sbm">${t.mine?`<span>You: <b>${esc((t.mine==="home"?hL:aL).abbr)}</b>${t.fg?` ${GP}`:""}</span><span>${t.cnt} of ${t.tot}</span>`:`<span>No pick</span><span>${t.tot} picked</span>`}</div>`:"";
+  const label=`${t.away.n} ${t.away.sc==null?"":t.away.sc}, ${t.home.n} ${t.home.sc==null?"":t.home.sc}, ${t.clock}`;
+  return `<button type="button" class="sbt ${t.st}${t.mine?" mine":""}" data-sbt="${esc(t.key)}" aria-label="${esc(label)}"><div class="sbh"><span class="sbc">${t.st==="in"?'<i class="lv" aria-hidden="true"></i>':""}${esc(t.clock)}</span><span class="sbl">${line}</span></div>${row("away",t.away,aL)}${row("home",t.home,hL)}<div class="sbf">${cov||'<span class="cov neu">&nbsp;</span>'}</div>${you}</button>`}
+function renderBoard(){const el=$("#v-scoreboard");const w=boardWeek();if(!w){el.innerHTML="";return}
+  if(!state.sbLoading&&(!state.board||Date.now()-(state.sbAt||0)>55000))loadBoard();
+  const ours=w.games.map(g=>sbFromSlate(w,g));const bySlate={};w.games.forEach(g=>{if(g.espnId)bySlate[g.espnId]=ours.find(t=>t.slate===g.id)});
+  const B=(state.board&&state.board.games)||[];const all=B.map(x=>bySlate[x.id]||sbFromBoard(x));
+  for(const t of ours)if(!all.includes(t))all.push(t); /* a slate game ESPN's board lacks still shows */
+  const top=all.filter(t=>(t.away.r&&t.away.r<=25)||(t.home.r&&t.home.r<=25)||t.slate);
+  const f=["ours","top","all"].includes(state.sbFilter)?state.sbFilter:"ours";
+  const list=(f==="ours"?ours:f==="top"?top:all).slice().sort(sbSort);
+  const live=ours.filter(t=>t.st==="in").length,fin=ours.filter(t=>t.st==="post").length;
+  const seg=`<div class="seg sbseg" role="group" aria-label="Which games">${[["ours","Our 10",ours.length],["top","Top 25",state.board?top.length:null],["all","All FBS",state.board?all.length:null]].map(([k,l,n])=>`<button class="segb" data-sbf="${k}" aria-pressed="${f===k}">${l}${n!=null&&k!=="ours"?` <span class="n">${n}</span>`:""}</button>`).join("")}</div>`;
+  const upd=w.scoresAt?`Scores updated ${new Date(w.scoresAt).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"})} CT`:"No scores yet";
+  let body;if(f!=="ours"&&!state.board)body='<p class="note">Loading the scoreboard…</p>';
+  else if(f!=="ours"&&state.board.error)body=`<p class="note">${esc(state.board.error)}</p>`;
+  else if(!list.length)body='<p class="note">No games yet. The board fills in once the scores job runs on game day.</p>';
+  else body=`<div class="sbgrid">${list.map(sbTile).join("")}</div>`;
+  el.innerHTML=`<div class="panel sbpanel"><h2>Week ${esc(w.week)} scoreboard</h2><p class="note sbstat">${live} live · ${fin} of ${ours.length} final · ${upd}</p>${seg}${body}
+    ${info("board",`Live first, then upcoming, then finals. Gold edge = your pick. The chip on your live picks is the chance your pick covers, from the score, the time left, and the line. Our 10 uses our half-point lines. Top 25 and All FBS use ESPN's line saved before kickoff, so a whole number line can push. Scores refresh about every 10 minutes. Tap one of our games to jump to it on Picks, or any other game for the Matchup.`)}</div>`}
+document.addEventListener("click",e=>{const f=e.target.closest("[data-sbf]");if(f){state.sbFilter=f.dataset.sbf;renderBoard();return}
+  const b=e.target.closest("[data-sbt]");if(!b)return;const k=b.dataset.sbt;
+  if(k.startsWith("s:")){const id=k.slice(2);location.hash="#picks";setTimeout(()=>{const c=document.getElementById("g-"+id);if(c){c.scrollIntoView({block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1200)}},80);return}
+  const x=((state.board&&state.board.games)||[]).find(g=>"b:"+g.id===k);if(x)muOpen(x.a.n,x.h.n,x.ns?"n":"h",null)});
+window.tpBoard={boardOn,sbFromBoard,sbFromSlate,sbSort}; /* for the browser test */
 function render(){
   goFoot();
   const c=state.config,w=curWeek();
@@ -1609,6 +1690,9 @@ function render(){
     else{$("#weekLine").textContent=lf?`Week ${lf.week} is final. The next slate drops Tuesday.`:"The first slate drops Tuesday.";setB("Off week","plain")}}
   if(state.view==="picks"){renderPicks();if(state.preview)$("#v-picks").insertAdjacentHTML("afterbegin",previewPanel());const ban=isRookie()?"":recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban)}
   if(state.view==="picks"){const rk=$("#rookie");if(rk&&rk.parentNode.firstElementChild!==rk)rk.parentNode.prepend(rk)}
+  /* Scoreboard tab (item 48): shows from the lock until the week goes final. The dot shows while one of our games is live. */
+  {const on=boardOn();$("#sbTab").hidden=!on;$("#sbTab").classList.toggle("hot",on&&boardLive());
+   if(state.view==="scoreboard"){if(on)renderBoard();else if(state.db){location.hash="#picks"}}}
   if(state.view==="recap")renderRecap();
   if(state.view==="standings")renderStandings();
   if(state.view==="rankings")renderRankings();
@@ -2681,7 +2765,7 @@ function unlockForm(w){const orig=w.origDeadline&&Date.parse(w.origDeadline)>NOW
   return `<div class="autobar"><label for="unlockAt" class="note">New deadline</label><input type="datetime-local" id="unlockAt" value="${toLocalInput(orig)}"><button class="btn" data-act="unlock">Unlock picks</button></div>
   ${info("unlock",`Unlocking hides everyone's picks again and lets pickers change them until the new deadline. Pickers already saw the picks while the week was locked. Games that already kicked off can still be picked, so set the deadline before the first kickoff you care about.${w.origDeadline?" The original deadline was "+kick(w.origDeadline)+".":""}`)}`}
 /* Commissioner only. Pages report tabs in small batches, never on a poll. Sheet times come from saved picks. */
-const ENG_NAMES={picks:"Picks",standings:"Standings",recap:"Recap",survivor:"Survivor",players:"Pickers",rankings:"Teams",playoffs:"Playoffs",rules:"Rules",profile:"Profile"};
+const ENG_NAMES={scoreboard:"Scoreboard",picks:"Picks",standings:"Standings",recap:"Recap",survivor:"Survivor",players:"Pickers",rankings:"Teams",playoffs:"Playoffs",rules:"Rules",profile:"Profile"};
 function engagePanel(){const E=state.engage;if(!E||!state.logins)return "";const cw=currentWeekId();const week=state.weeks[cw];const lastRecap=recapWeeks().slice(-1)[0];const short=iso=>new Date(iso).toLocaleString("en-US",{timeZone:TZ,weekday:"short",month:"numeric",day:"numeric",hour:"numeric",minute:"2-digit"});
   const rows=state.logins.filter(p=>!p.removed&&p.setupDone).map(p=>({p,e:E[p.id]||{}})).sort((a,b)=>(b.e.last||"").localeCompare(a.e.last||""));
   const total={};for(const {e} of rows)for(const [k,n] of Object.entries(e.pages||{}))total[k]=(total[k]||0)+n;
