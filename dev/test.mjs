@@ -313,6 +313,11 @@ try {
   check("result reveal fires once on this device", (await m.locator("#reveal").count()) === 0);
   await m.screenshot({ path: "dev/test-badges.png" });
   check("cover badges read from your side", tags.length === 5 && tags.every((t) => t === "You covered|cv good" || t === "Beat you|cv bad"), tags.join());
+  const bb = await m.evaluate(() => { const { state, curWeek, currentWeekId, weekPlayers, coverSide, margin } = window.tpRecap; const w = curWeek(), d = weekPlayers(currentWeekId())[state.uid] || {}, rs = w.results || {}; let want = 0, ok = true;
+    for (const g of w.games) { const r = rs[g.id], c = coverSide(g, r), pk = (d.sel || {})[g.id]; const card = document.getElementById("g-" + g.id); const has = !!(card && card.querySelector(".res .bb"));
+      const exp = !!(c && pk && pk !== c && Math.abs(margin(g, r)) <= 1.5); if (exp) want++; if (has !== exp) ok = false; }
+    return { ok, want, tags: [...document.querySelectorAll("#v-picks .res .bb")].map((x) => x.textContent) }; });
+  check("bad beat tags mark only picks that missed by 1.5 or less", bb.ok, JSON.stringify(bb));
   check("recap banner shows on Picks after a final week", (await m.locator(".recapban").count()) === 1);
   await m.click(".recapban"); await m.waitForTimeout(300);
   const rc = await m.textContent("#v-recap");
@@ -557,6 +562,11 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.evaluate(() => (location.hash = "#rankings")); await m.waitForTimeout(400);
   const segs = await m.locator("#v-rankings [data-rank]").allTextContents();
   check("Teams has Polls, Power, ATS, Matchup", segs.join(",") === "Polls,Power,ATS,Matchup", segs.join(","));
+  const rec = await m.evaluate(() => { const { state, suRec } = window.tpRecap; const R = state.rankings || {}; const t = ((R.ats && R.ats.teams) || []).find((x) => x.su) || ((R.ap && R.ap.teams) || []).find((x) => x.record); return t ? { team: t.team, want: t.su || t.record, got: suRec(t.team) } : null; });
+  check("the pick card record reads the ATS list, else the AP poll", !rec || rec.got === rec.want, JSON.stringify(rec));
+  await m.evaluate(() => { window.tpRecap.state.rankView = "polls"; window.tpRecap.render(); });
+  const inf = await m.evaluate(async () => { const d = document.querySelector('#v-rankings details.info[data-info="polls"]'); if (!d) return "missing"; const shut = !d.open; d.open = true; await new Promise((r) => setTimeout(r, 50)); window.tpRecap.render(); const d2 = document.querySelector('#v-rankings details.info[data-info="polls"]'); const kept = !!(d2 && d2.open); d2.open = false; await new Promise((r) => setTimeout(r, 50)); return shut && kept ? "ok" : JSON.stringify({ shut, kept }); });
+  check("long notes sit behind an info button that stays open on redraw", inf === "ok", inf);
   check("Polls lists teams from all three polls", (await m.locator('#v-rankings [data-steam="Tulane"]').count()) === 1 && (await m.locator("#v-rankings .g-pol[data-steam]").count()) >= 26);
   await m.click('[data-tsort="polls:rc"]'); await m.waitForTimeout(200);
   check("sorting by r/CFB puts its #1 first", (await m.getAttribute("#v-rankings .g-pol[data-steam] >> nth=0", "data-steam")) === "Georgia");
