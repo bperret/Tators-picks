@@ -109,7 +109,7 @@ nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-v
 .info .ib{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:inline-grid;place-items:center;font:italic 700 .72rem/1 Georgia,serif}
 .info[open]>summary{color:var(--ink)}.info>p{margin:4px 0 0}
 .board .info>summary,.board .info[open]>summary{color:var(--board-dim)}
-.sview{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.sbseg{margin:6px 0 10px}.sbseg .n{opacity:.65;font-weight:600}
+.sview{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.sbseg{margin:6px 0 10px}
 .sbgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(min-width:700px){.sbgrid{grid-template-columns:repeat(3,1fr)}}@media(min-width:1000px){.sbgrid{grid-template-columns:repeat(4,1fr)}}
 .sbt{display:block;width:100%;min-width:0;text-align:left;background:var(--card);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:7px 8px 6px;font:inherit;cursor:pointer}
@@ -1659,7 +1659,7 @@ function renderBoard(){const el=$("#v-scoreboard");const w=boardWeek();if(!w){el
   const f=["ours","top","all"].includes(state.sbFilter)?state.sbFilter:"ours";
   const list=(f==="ours"?ours:f==="top"?top:all).slice().sort(sbSort);
   const live=ours.filter(t=>t.st==="in").length,fin=ours.filter(t=>t.st==="post").length;
-  const seg=`<div class="seg sbseg" role="group" aria-label="Which games">${[["ours","Our 10",ours.length],["top","Top 25",state.board?top.length:null],["all","All FBS",state.board?all.length:null]].map(([k,l,n])=>`<button class="segb" data-sbf="${k}" aria-pressed="${f===k}">${l}${n!=null&&k!=="ours"?` <span class="n">${n}</span>`:""}</button>`).join("")}</div>`;
+  const seg=`<div class="seg sbseg" role="group" aria-label="Which games">${[["ours","Our 10"],["top","Top 25"],["all","All FBS"]].map(([k,l])=>`<button class="segb" data-sbf="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>`;
   const upd=w.scoresAt?`Scores updated ${new Date(w.scoresAt).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"})} CT`:"No scores yet";
   let body;if(f!=="ours"&&!state.board)body='<p class="note">Loading the scoreboard…</p>';
   else if(f!=="ours"&&state.board.error)body=`<p class="note">${esc(state.board.error)}</p>`;

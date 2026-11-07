@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.41.1 | Nov 7, 1:05 PM | Scoreboard | Filter buttons drop the game counts on Top 25 and All FBS | S | COMMIT_N | `COMMIT` |
 | 1.41 | Nov 7, 12:54 PM | Scoreboard (new), Commish Engagement | Game day Scoreboard tab: one screen tile grid, Our 10 / Top 25 / All FBS, live first, your pick and cover odds on our games, ESPN line cover on the rest; day board saved from the scores job's existing pull (item 48) | M | 153 | `697f5d7` |
 | 1.40 | Nov 6, 9:50 PM | Standings, Pickers, Recap, Rules | Drop worst week: lowest regular week comes off the season total once 5 regular weeks are final; Current points and If it ended today views; missed weeks count a tiebreaker guess of 0 (item 42) | M | 105 | `1d9632c` |
 | 1.39.2 | Nov 6, 6:40 PM | Picks | Bad beat tag on a lost pick that missed by 1.5 or less, matching the Pickers stat (item 29) | S | Shared, 62 | `c849bf5` |

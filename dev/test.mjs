@@ -316,6 +316,7 @@ try {
     check("other games show who is covering from ESPN's line", allB.some((x) => x.startsWith("b:x1|") && /covering/.test(x)) && allB.some((x) => x.startsWith("b:x3|") && /Push/.test(x)), allB.join(" / "));
     await m.click('[data-sbf="top"]'); await m.waitForTimeout(150);
     const topB = await m.evaluate(() => [...document.querySelectorAll("#v-scoreboard .sbt")].map((b) => b.dataset.sbt));
+    check("filter buttons show no game counts", await m.evaluate(() => [...document.querySelectorAll("#v-scoreboard [data-sbf]")].map((b) => b.textContent.trim()).join("|") === "Our 10|Top 25|All FBS"));
     check("Top 25 keeps ranked games and our games", topB.includes("b:x2") && !topB.includes("b:x1") && topB.filter((k) => k.startsWith("s:")).length === ids.length, topB.join());
     await m.click('[data-sbf="ours"]'); await m.waitForTimeout(150);
     const w390 = await m.evaluate(() => document.documentElement.scrollWidth);
