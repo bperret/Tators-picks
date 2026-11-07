@@ -15,9 +15,9 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
-| 1.39.2 | Nov 6, 6:40 PM | Picks | Bad beat tag on a lost pick that missed by 1.5 or less, matching the Pickers stat (item 29) | S | Shared, COMMIT_N | `COMMIT` |
-| 1.39.1 | Nov 6, 6:40 PM | All tabs, Commish | Info buttons: long explanatory notes fold behind a small "About this" button and stay open on redraw; status notes stay visible (item 43) | S | Shared, COMMIT_N | `COMMIT` |
-| 1.39 | Nov 6, 6:40 PM | Picks | Straight up record under each team name on the pick card (item 41) | S | Shared, COMMIT_N | `COMMIT` |
+| 1.39.2 | Nov 6, 6:40 PM | Picks | Bad beat tag on a lost pick that missed by 1.5 or less, matching the Pickers stat (item 29) | S | Shared, 62 | `c849bf5` |
+| 1.39.1 | Nov 6, 6:40 PM | All tabs, Commish | Info buttons: long explanatory notes fold behind a small "About this" button and stay open on redraw; status notes stay visible (item 43) | S | Shared, 62 | `c849bf5` |
+| 1.39 | Nov 6, 6:40 PM | Picks | Straight up record under each team name on the pick card (item 41) | S | Shared, 62 | `c849bf5` |
 | 1.38.5 | Nov 6, 12:40 PM | Commish, Rules | The new Robo-Sharp is permanent: the FPI-only switch, Save inputs, and the old vs new tables are gone from the app. Commish Robo-Sharp keeps the band counts and model scoreboard. Rules and its talk line show only the new model | M | 80 | `69709cd` |
 | 1.38.4 | Nov 6, 12:26 PM | Commish | Decluttered: one-time and set-once tools (Robo-Sharp switch, Save inputs, old vs new, Fill game log, Fill lines, page visit settings, school letters, league name, manual backups) moved into a folded Setup and one-time tools section that Expand all skips; Automation drops its duplicate Open picks and Pull scores buttons. Nothing deleted | M | 74 | `e1eec2f` |
 | 1.38.3 | Nov 6, 11:57 AM | Picks, Commish | Tighter Robo-Sharp bands (Coin flip under 0.5 points of edge, Slight lean to 1.25, Leans to 2, Heavy lean 2 and up); band count per week in the Commish Robo-Sharp check | S | 8 | `8534869` |
