@@ -1721,6 +1721,22 @@ function gmTop(base){const c=new Map();let best=null;for(const k of base){const 
 const gmNames=ids=>ids.map(p=>nm(p)).join(", ").replace(/\.$/,"");
 function gmGameRows(gs){return [...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");const fav=g.homeLine<0?hL:aL;
   return {away:g.away,ar:g.awayRank||"",ac:aL.c1,home:g.home,hr:g.homeRank||"",hc:hL.c1,at:g.neutral?"vs":"at",line:g.homeLine===0?"PK":`${fav.abbr} ${fmtLine(-Math.abs(g.homeLine))}`}})}
+/* One fun row per card, so posts stay fresh: leader watch, Robo-Sharp watch, lone wolf, or the league's ATS record. Each card tries its list in order and uses the first fact that has data. */
+function gmFun(it,w){const strip=x=>String(x).replace(/\.$/,"");
+  const leader=()=>{const R=seasonTally(false).rows.filter(r=>r.cpts>0);if(!R.length)return null;const top=R.filter(r=>r.cpts===R[0].cpts);
+    if(top.length>1)return ["👀","Leader watch",`${top.slice(0,3).map(r=>strip(nm(r.pid))).join(" and ")} share the lead at ${R[0].cpts} pts.`];
+    const nx=R[1];return ["👀","Leader watch",nx?`${strip(nm(R[0].pid))} leads with ${R[0].cpts} pts. ${strip(nm(nx.pid))} is ${R[0].cpts-nx.cpts} back.`:`${strip(nm(R[0].pid))} leads with ${R[0].cpts} pts.`]};
+  const robo=()=>{const R=seasonTally(true).rows;const b=R.find(r=>r.pid===BOT);const hum=R.filter(r=>r.pid!==BOT).length;if(!b||!hum)return null;const ahead=R.filter(r=>r.pid!==BOT&&r.cpts>b.cpts).length;
+    return ["🤖","Robo-Sharp watch",ahead===0?"The robot is on top of the league. Nobody has passed it yet.":`${ahead} of ${hum} pickers are ahead of the robot this season.`]};
+  const pct=()=>{const R=seasonTally(false).rows;const W=R.reduce((a,r)=>a+r.w,0),L=R.reduce((a,r)=>a+r.l,0);if(W+L<20)return null;return ["📊","League fact",`The league is ${W}-${L} against the spread this season, ${Math.round(100*W/(W+L))}%.`]};
+  const wolf=()=>{const R=state.reveals[w.id];const ps=Object.entries((R&&R.players)||{}).filter(([p])=>p!==BOT&&!removed().includes(p));if(ps.length<3)return null;
+    const by={};for(const [pid,p] of ps)for(const [gid,sd] of Object.entries(p.sel||{}))(by[gid+"|"+sd]=by[gid+"|"+sd]||[]).push(pid);
+    const solo=Object.entries(by).filter(([,a])=>a.length===1);if(!solo.length)return null;const [k,[pid]]=solo[w.week%solo.length];const [gid,sd]=k.split("|");const g=w.games.find(x=>x.id===gid);if(!g)return null;
+    return ["🐺","Lone wolf",`${strip(nm(pid))} is the only one on ${gmTeam(g,sd)} ${gmLine(g,sd)}.`]};
+  const weekRobo=()=>{const b=botPicks(w);const ps=weekPlayers(w.id);const n=Object.keys(ps).length;if(!b||!n)return null;const rs=scoreWeek(w,b);const beat=Object.values(ps).filter(p=>scoreWeek(w,p).pts>rs.pts).length;
+    return ["🤖","Robo-Sharp watch",`The robot went ${rs.w}-${rs.l} for ${rs.pts} pts. ${beat} of ${n} pickers beat it.`]};
+  const order={pv:[leader,pct],live:[leader,pct],last:[pct,robo,leader],lock:[wolf,robo],final:[weekRobo,pct]}[it.kind]||[];
+  for(const f of order){try{const r=f();if(r)return r}catch(e){}}return null}
 /* The card as plain data: kicker, title, sub, rows ({ic, label, text}; ic "GP" draws the goalpost), games, foot. Text only, no HTML. */
 function gmModel(it){
   const w=state.weeks[it.wid];const M={league:(state.config&&state.config.name)||"Tator's Picks",kick:`Week ${it.wk}`,title:"",sub:"",rows:[],games:[],foot:""};
@@ -1763,12 +1779,13 @@ function gmModel(it){
     if(T.length)row("📈","Season leaders",T.map((r,i)=>`${i+1}. ${nm(r.pid).replace(/\.$/,"")}, ${r.cpts} pt${r.cpts===1?"":"s"}`).join("\n"));
     if(f)row("📣","From the recap",strip(f.title));
     M.foot="Full recap on the Recap tab"}
+  const fn=gmFun(it,w);if(fn)M.rows.push({ic:fn[0],label:fn[1],text:fn[2],fun:true});
   return M}
 /* Plain text of the card, for a caption or a text-only post. GroupMe allows 1,000 characters. */
 function gmText(M){const L=[`🏈 ${M.league.toUpperCase()} · ${M.kick.toUpperCase()}`,M.title.toUpperCase(),M.sub,""];
   for(const r of M.rows)L.push(`${r.ic==="GP"?"🥅":r.ic} ${r.label}: ${r.text.replace(/\n/g,"; ")}`);
   if(M.games.length){L.push("","THE SLATE");for(const g of M.games)L.push(`${g.ar?g.ar+" ":""}${g.away} ${g.at} ${g.hr?g.hr+" ":""}${g.home} (${g.line})`)}
-  L.push("",M.foot);return L.join("\n").slice(0,1000)}
+  L.push("",M.foot,`🔗 ${location.origin}`);return L.join("\n").slice(0,1000)}
 /* Canvas drawing. Fixed light colors, so the image looks the same from any device theme. */
 const GM_C={turf:"#1f5d34",turf2:"#24683b",chalk:"#f4f6f2",ink:"#111a24",muted:"#56636f",line:"#d5dbe1",box:"#f2f5f7",card:"#ffffff",board:"#0b0f14",gold:"#f2c230",flag:"#ffd100"};
 const GM_F={disp:'"Graduate","Rockwell","Arial Black",serif',cond:'"Barlow Condensed","Arial Narrow",sans-serif',body:'"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif',emo:'"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'};
@@ -1797,11 +1814,11 @@ function gmDraw(ctx,M,H){const W=GM_W,cx=W/2,C=GM_C,F=GM_F;ctx.textAlign="center
   y+=16;ctx.fillStyle=C.flag;gmRound(ctx,cx-28,y,56,4,2);ctx.fill();y+=20;
   // Fact boxes: icon, label, text, all centered.
   for(const r of M.rows){ctx.font=`500 16px ${F.body}`;const ls=gmWrap(ctx,r.text,W-76);const h=14+20+4+ls.length*21+14;
-    ctx.fillStyle=C.box;gmRound(ctx,20,y,W-40,h,12);ctx.fill();ctx.strokeStyle=C.line;ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=r.fun?"#fff7d1":C.box;gmRound(ctx,20,y,W-40,h,12);ctx.fill();ctx.strokeStyle=r.fun?C.gold:C.line;ctx.lineWidth=r.fun?1.5:1;ctx.stroke();
     // Icon and label share one centered line.
     const lab=r.label.toUpperCase();ctx.font=`700 12.5px ${F.cond}`;const lw=gmTrackW(ctx,lab,1.6);const gx=cx-(20+8+lw)/2;let yy=y+14;
     if(r.ic==="GP")gmGoal(ctx,gx+10,yy,20,C.ink);else{ctx.font=`18px ${F.emo}`;ctx.fillStyle=C.ink;ctx.fillText(r.ic,gx+10,yy+17)}
-    ctx.fillStyle=C.muted;ctx.font=`700 12.5px ${F.cond}`;gmTrack(ctx,lab,gx+28+lw/2,yy+15,1.6);
+    ctx.fillStyle=r.fun?"#6b5200":C.muted;ctx.font=`700 12.5px ${F.cond}`;gmTrack(ctx,lab,gx+28+lw/2,yy+15,1.6);
     yy+=20+4;ctx.fillStyle=C.ink;ctx.font=`500 16px ${F.body}`;for(const l of ls){yy+=21;ctx.fillText(l,cx,yy)}
     y+=h+10}
   // The slate: away right of center, home left of center, the line in a scoreboard pill.

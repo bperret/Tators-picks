@@ -905,7 +905,8 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   const gmFile = await gmDl;
   check("Save or share downloads the PNG where the share sheet is not offered", !!gmFile && /^tators-picks-week\d+-.+\.png$/.test(gmFile.suggestedFilename()), gmFile ? gmFile.suggestedFilename() : "no download");
   const gmTxt = await c.getAttribute("#gmCard", "alt");
-  check("the text version names the week and stays under 1,000 characters", /WEEK \d+/.test(gmTxt) && gmTxt.length <= 1000, String(gmTxt.length));
+  check("each card carries one fun fact row", /Leader watch|Robo-Sharp watch|Lone wolf|League fact/.test(gmTxt), gmTxt.split("\n").filter((l) => / watch:| wolf:| fact:/.test(l)).join(" | "));
+  check("the text version names the week, ends with the site link, and stays under 1,000 characters", /WEEK \d+/.test(gmTxt) && gmTxt.length <= 1000 && gmTxt.includes("🔗 http"), String(gmTxt.length));
   const gmKey = await c.getAttribute('#v-groupme [data-gm="post"]:not([disabled])', "data-key").catch(() => null);
   if (gmKey) {
     await c.click('#v-groupme [data-gm="post"]'); await c.waitForTimeout(400);
