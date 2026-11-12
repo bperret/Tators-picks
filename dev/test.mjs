@@ -890,6 +890,32 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("the Army-Navy tab adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
   await c.click('[data-anph="pre"]'); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
 
+  // ---- GroupMe tab ----
+  check("pickers do not see the GroupMe tab", await m.isHidden("#gmTab"));
+  await m.evaluate(() => (location.hash = "#groupme")); await m.waitForTimeout(150);
+  check("a picker sent to GroupMe lands on Picks", await m.evaluate(() => location.hash !== "#groupme" || document.querySelector("#v-groupme").hidden || !document.querySelector("#gmCard")));
+  const gmBad = await m.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "gmPosted", key: "live:2026-w11" }) }).then((r) => r.status));
+  check("a picker cannot mark a GroupMe post", gmBad === 403, String(gmBad));
+  await m.evaluate(() => (location.hash = "#picks"));
+  await c.evaluate(() => (location.hash = "#groupme")); await c.waitForSelector("#gmCard");
+  const gm1 = await c.evaluate(() => ({ title: document.querySelector("#gmCard h2").textContent, rows: document.querySelectorAll("#v-groupme .gmq li").length, cur: (document.querySelector('#v-groupme .gmq [aria-current="true"]') || {}).textContent || "", tiles: document.querySelectorAll("#goFoot .gotile").length }));
+  check("GroupMe shows a card, the week's posts, and no tiles", gm1.title.length > 0 && gm1.rows >= 1 && gm1.tiles === 0, JSON.stringify(gm1));
+  const gmKey = await c.getAttribute('#v-groupme [data-gm="post"]:not([disabled])', "data-key").catch(() => null);
+  if (gmKey) {
+    await c.click('#v-groupme [data-gm="post"]'); await c.waitForTimeout(400);
+    const gmS = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
+    check("Posted saves on the server and moves on", !!(gmS.groupme && gmS.groupme.posted[gmKey]) && (await c.getAttribute(`#v-groupme [data-gmsel="${gmKey}"]`, "aria-current")) !== "true", gmKey);
+    check("the posted row says Posted", (await c.textContent(`#v-groupme [data-gmsel="${gmKey}"]`)).includes("Posted"));
+    await c.click(`#v-groupme [data-gmsel="${gmKey}"]`); await c.click('#v-groupme [data-gm="undo"]'); await c.waitForTimeout(400);
+    const gmU = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
+    check("Undo posted clears the mark", !gmU.groupme.posted[gmKey]);
+  } else check("GroupMe has a ready post to mark", false, gm1.cur);
+  const gmBadKey = await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "gmPosted", key: "x:<b>" }) }).then((r) => r.status));
+  check("GroupMe refuses an unknown post key", gmBadKey === 400, String(gmBadKey));
+  check("pickers never receive GroupMe marks", !(await m.evaluate(() => fetch("/api/state").then((r) => r.json()))).groupme);
+  check("the GroupMe tab adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
+  await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
+
   // ---- engagement and the page visit switch ----
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   await m.evaluate(() => (location.hash = "#rules")); await m.waitForTimeout(150);

@@ -327,6 +327,39 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 :root[data-theme="dark"]{--bc-red:#FF8A80;--bc-orange:#FDBA74;--bc-gold:#FACC15;--bc-green:#6EE7B7;--bc-teal:#5EEAD4;--bc-blue:#93C5FD;--bc-purple:#D8B4FE;--bc-pink:#F9A8D4;--bc-brown:#D6A77A;--bc-slate:#CBD5E1}
 .gmeta .slot.bwname{color:var(--bc)}
 .bwproto{border:2px dashed var(--line);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.86rem;line-height:1.35}
+.gmwrap{max-width:440px;margin:0 auto}
+.gmcard{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;color:var(--ink)}
+.gmtop{background:repeating-linear-gradient(90deg,var(--turf) 0 40px,var(--turf2) 40px 80px);color:var(--chalk);padding:14px 16px 12px;text-align:center}
+.gmbrand{font-family:var(--display);font-size:1.6rem;line-height:1.1;margin-top:2px}
+.gmstripe{height:8px;background:repeating-linear-gradient(90deg,var(--stripe-a) 0 10px,var(--stripe-b) 10px 20px)}
+.gmhead{padding:14px 16px 6px;text-align:center}
+.gmkick{font-family:var(--cond);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.85rem;color:var(--muted)}
+.gmhead h2{font-family:var(--display);font-weight:400;font-size:1.7rem;margin:2px 0 4px;line-height:1.1}
+.gmhead p{margin:0;font-family:var(--cond);font-weight:700;font-size:1.1rem;letter-spacing:.03em}
+.gmrows{padding:8px 14px;display:flex;flex-direction:column;gap:8px}
+.gmrow{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.gmic{font-size:1.2rem;line-height:1.3;text-align:center}
+.gmic .gp{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;vertical-align:middle}
+.gmrow b{display:block;font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:.82rem;color:var(--muted)}
+.gmrow span{font-size:.98rem;line-height:1.3}
+.gmgames{list-style:none;margin:0;padding:4px 14px 10px;display:flex;flex-direction:column}
+.gmgames li{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:5px 0;font-size:.92rem}
+.gmgames li:last-child{border-bottom:0}
+.gmt{border-left:4px solid var(--tc);padding-left:5px;font-weight:600}
+.gmt i{font-style:normal;font-weight:700;color:var(--muted);font-size:.78rem;margin-right:3px}
+.gmat{color:var(--muted);margin:0 5px;font-size:.82rem}
+.gmln{font-family:var(--cond);font-weight:700;font-size:1rem;white-space:nowrap}
+.gmfoot{background:var(--board);color:var(--board-ink);font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:10px 14px;font-size:.95rem}
+.gmbar{display:flex;gap:8px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
+.gmpost{background:var(--turf);color:var(--chalk);border-color:var(--turf);min-height:48px;min-width:60%;font-size:1.15rem}
+.gmpost:disabled{opacity:.5;cursor:default}
+.gmdone{text-align:center;align-items:center;padding:16px}
+.gmnote{text-align:center;color:var(--muted);font-size:.86rem;margin:4px 0 10px}
+.gmq{list-style:none;padding:0;margin:14px 0 10px;display:flex;flex-direction:column;gap:4px}
+.gmq button{width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:8px;font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left}
+.gmq button[aria-current="true"]{box-shadow:0 0 0 2px var(--flag)}
+.gmq .st{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.st.done{background:var(--turf);color:var(--chalk)}.st.ready{background:var(--flag);color:var(--flag-ink)}.st.later{color:var(--muted);border:1px solid var(--line)}.st.skip{color:var(--muted);text-decoration:line-through}
 .bwcts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .bwct{text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer}
 .bwct[aria-pressed="true"]{border:2px solid var(--ink);padding:7px 9px}
@@ -753,6 +786,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#profile" data-v="profile">Profile</a>
     <a href="#bowls" data-v="bowls" id="bowlsTab" hidden>Bowl Blitz</a>
     <a href="#armynavy" data-v="armynavy" id="anTab" hidden>Army-Navy</a>
+    <a href="#groupme" data-v="groupme" id="gmTab" hidden>GroupMe</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
 
@@ -935,6 +969,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   <section class="view" id="v-playoffs" hidden></section>
   <section class="view" id="v-bowls" hidden></section>
   <section class="view" id="v-armynavy" hidden></section>
+  <section class="view" id="v-groupme" hidden></section>
   <section class="view" id="v-commish" hidden></section>
   <div id="goFoot"></div>
   </div>
@@ -1079,8 +1114,8 @@ function applyState(S){
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Picker");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],classOf:S.classOf||{},
-    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[]});
-  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;
+    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[],groupme:S.groupme||{posted:{}}});
+  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#gmTab").hidden=!state.isOwner;
   syncDraft();
 }
 async function refresh(quiet){
@@ -1314,17 +1349,17 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["scoreboard","picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","commish"];
+const VIEWS=["scoreboard","picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","groupme","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
-function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
 function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
 function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
   try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)engFlush(true)});
 window.addEventListener("pagehide",()=>engFlush(true));
 window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render();if(state.toTop){state.toTop=false;scrollTo(0,0)}}
 window.addEventListener("hashchange",route);
@@ -1672,6 +1707,99 @@ document.addEventListener("click",e=>{const f=e.target.closest("[data-sbf]");if(
   if(k.startsWith("s:")){const id=k.slice(2);location.hash="#picks";setTimeout(()=>{const c=document.getElementById("g-"+id);if(c){c.scrollIntoView({block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1200)}},80);return}
   const x=((state.board&&state.board.games)||[]).find(g=>"b:"+g.id===k);if(x)muOpen(x.a.n,x.h.n,x.ns?"n":"h",null)});
 window.tpBoard={boardOn,sbFromBoard,sbFromSlate,sbSort}; /* for the browser test */
+/* GroupMe tab (commissioner only). One screenshot-ready announcement at a time on the weekly rhythm: Preview, Picks live, Last call, Locked, Final and recap.
+   Posted marks save on the server in kv groupme (admin action gmPosted), so every device agrees. Posting is by hand: screenshot the card, post it, tap Posted. */
+const GM_KINDS={pv:["Preview","Mon"],live:["Picks live","Wed 6 PM"],last:["Last call","Sat morning"],lock:["Locked","Sat 10:15 AM"],final:["Final and recap","Sunday"]};
+function gmPosted(){return (state.groupme&&state.groupme.posted)||{}}
+function gmWid(n){return `${new Date(NOW()).getFullYear()}-w${String(n).padStart(2,"0")}`}
+function gmQueue(){
+  const w=curWeek(),P=state.preview,posted=gmPosted(),out=[];
+  const add=(kind,wid,wk,ready,stale)=>{const key=`${kind}:${wid}`;out.push({key,kind,wid,wk,ready:!!ready&&!stale,stale:!!stale,at:posted[key]||null,label:GM_KINDS[kind][0],when:GM_KINDS[kind][1]})};
+  if(w&&w.status!=="draft"){const eff=w.status==="open"&&pastDeadline(w)?"locked":w.status;
+    add("pv",w.id,w.week,false,true);
+    add("live",w.id,w.week,eff==="open",eff!=="open");
+    add("last",w.id,w.week,eff==="open",eff!=="open");
+    add("lock",w.id,w.week,eff==="locked",eff==="final");
+    add("final",w.id,w.week,eff==="final",false)}
+  if(P&&!(w&&w.status!=="draft"&&w.week===P.week)){const wid=w&&w.status==="draft"&&w.week===P.week?w.id:gmWid(P.week);add("pv",wid,P.week,true,false)}
+  return out}
+function gmNext(){const Q=gmQueue();return Q.find(x=>x.ready&&!x.at)||Q.find(x=>!x.stale&&!x.at)||{ready:false}}
+/* Facts the cards share. Counts only before the lock, never sides. */
+function gmActive(){return (state.logins||[]).filter(a=>!a.removed)}
+function gmAlive(wid){if(!survivorOpen(wid))return null;const sb=survivorBoard();return sb?sb.filter(r=>r.pid!==BOT&&r.alive):null}
+/* Run 1 of 2026 ends after the Nov 14 week (Rules). The app still runs one run to config.survivorEnd until item 10 ships; replace this then. */
+function gmRunLast(w){return survivorFinalWeek(w.id)||String(w.origDeadline||w.deadline||"").slice(0,10)==="2026-11-14"}
+function gmLine(g,side){return fmtLine(side==="home"?g.homeLine:-g.homeLine)}
+function gmTeam(g,side){return side==="home"?g.home:g.away}
+function gmGames(gs){return `<ul class="gmgames">${[...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");
+  const fav=g.homeLine<0?hL:aL;const ln=g.homeLine===0?"PK":fmtLine(-Math.abs(g.homeLine));const rk=r=>r?`<i>${r}</i>`:"";
+  return `<li><span><span class="gmt" style="--tc:${aL.c1}">${rk(g.awayRank)}${esc(g.away)}</span><span class="gmat">${g.neutral?"vs":"at"}</span><span class="gmt" style="--tc:${hL.c1}">${rk(g.homeRank)}${esc(g.home)}</span></span><b class="gmln">${g.homeLine===0?"PK":esc(fav.abbr)+" "+ln}</b></li>`}).join("")}</ul>`}
+function gmRow(ic,label,text){return `<div class="gmrow"><span class="gmic" aria-hidden="true">${ic}</span><div><b>${esc(label)}</b><span>${text}</span></div></div>`}
+function gmTop(n,base){const c=new Map();let best=null;for(const k of base){const v=(c.get(k.id)||{...k,n:0});v.n++;c.set(k.id,v);if(!best||v.n>best.n)best=v}return best&&best.n>0?best:null}
+function gmCard(it){
+  const lg=(state.config&&state.config.name)||"Tator's Picks";let kick_="",title="",sub="",rows="",games="",foot="";
+  const w=state.weeks[it.wid];
+  if(it.kind==="pv"){const P=state.preview&&state.preview.week===it.wk?state.preview:null;const gs=P?P.games:(w?w.games:[]);
+    kick_=`Week ${it.wk}`;title="Slate preview";sub=P&&P.autoOpen===false?"Picks open soon":"Picks open Wed 6 PM CT";
+    rows=gmRow("📋","What this is","The likely 10 games and today's lines. Lines can move until picks open.");games=gmGames(gs);foot="Start your homework"}
+  else if(it.kind==="live"){const tg=tbGame(w);const al=gmAlive(w.id);
+    kick_=`Week ${it.wk}`;title="Picks are live";sub=`Lock: ${esc(kick(w.deadline))}`;
+    rows=gmRow(GP,"Field goal","One pick worth 3 points.")+(tg?gmRow("🎯","Tiebreaker",`Total points in ${esc(tg.away)} at ${esc(tg.home)}.`):"")
+      +(al?gmRow("💀","Survivor",gmRunLast(w)?`Last week of this run. ${al.length} still alive. Survive and you share it.`:`${al.length} still alive. One team against the spread.`):"")
+      +gmRow("🤖","Robo-Sharp","Its leans are posted. Beat the robot.");
+    games=gmGames(w.games);foot="Lines are final. Get your picks in."}
+  else if(it.kind==="last"){const act=gmActive(),ids=new Set(act.map(a=>a.id));const inn=(state.sheetsIn||[]).filter(id=>ids.has(id)).length;const al=gmAlive(w.id);
+    kick_=`Week ${it.wk}`;title="Last call";sub=`Lock: ${esc(kick(w.deadline))}`;
+    rows=gmRow("📝","Sheets in",`${inn} of ${act.length}. ${pastDeadline(w)?"Picks are locked.":esc(countdownText(w))+"."}`)
+      +(al?gmRow("💀","Survivor",`${al.length} still alive. Don't forget your Survivor pick.`):"")
+      +gmRow("⚠️","No sheet","Scores 0 points with a tiebreaker guess of 0.");
+    foot="Get your picks in"}
+  else if(it.kind==="lock"){const R=state.reveals[w.id];const ps=Object.entries((R&&R.players)||{}).filter(([p])=>p!==BOT&&!removed().includes(p)).map(([,v])=>v);
+    const G=id=>w.games.find(g=>g.id===id);
+    const sides=ps.flatMap(p=>Object.entries(p.sel||{}).map(([gid,s])=>({id:gid+s,g:G(gid),s}))).filter(x=>x.g);
+    const fgs=ps.filter(p=>p.lock&&(p.sel||{})[p.lock]).map(p=>({id:p.lock+p.sel[p.lock],g:G(p.lock),s:p.sel[p.lock]})).filter(x=>x.g);
+    const sv=ps.filter(p=>p.surv).map(p=>({id:p.surv.g+p.surv.s,g:G(p.surv.g),s:p.surv.s})).filter(x=>x.g);
+    const say=x=>`${esc(gmTeam(x.g,x.s))} ${gmLine(x.g,x.s)}`;
+    const top=gmTop(0,sides),tf=gmTop(0,fgs),ts=gmTop(0,sv);const b=botPicks(w);const bg=b&&b.lock&&G(b.lock);
+    const k1=w.games.map(g=>Date.parse(g.kickoff)).filter(Number.isFinite).sort((a,b)=>a-b)[0];
+    kick_=`Week ${it.wk}`;title="Picks are locked";sub=`${ps.length} sheet${ps.length===1?"":"s"} in. Every pick is public now.`;
+    rows=(top?gmRow("📊","Most picked side",`${say(top)}: ${top.n} of ${ps.length}`):"")
+      +(tf?gmRow(GP,"Most popular field goal",`${say(tf)}: ${tf.n} of ${ps.length}`):"")
+      +(ts?gmRow("💀","Top Survivor pick",`${say(ts)}: ${ts.n} of ${sv.length}`):"")
+      +(bg?gmRow("🤖","Robo-Sharp's field goal",say({g:bg,s:b.sel[b.lock]})):"");
+    foot=k1&&k1>NOW()?`First kickoff ${esc(kick(new Date(k1).toISOString()))}. Scoreboard is live.`:"Games are on. Scoreboard is live."}
+  else if(it.kind==="final"){const win=weekWinners(w.id);const ps=weekPlayers(w.id);const sc=win.length?scoreWeek(w,ps[win[0]]):null;
+    const fg=Object.values(ps).filter(p=>scoreWeek(w,p).lw>0).length;const al=gmAlive(w.id);const T=seasonTally(false).rows.slice(0,3);
+    const f=(recapFacts(w.id)||[])[0];const strip=s=>String(s||"").replace(/<[^>]*>/g,"");
+    kick_=`Week ${it.wk}`;title="Final";sub="The recap is live in the app.";
+    rows=(win.length?gmRow("🏆",win.length>1?"Weekly winners":"Weekly winner",`${win.map(p=>esc(nm(p))).join(", ")}, ${sc.pts} point${sc.pts===1?"":"s"}`):"")
+      +gmRow(GP,"Field goals made",`${fg} of ${Object.keys(ps).length}`)
+      +(al?gmRow("💀","Survivor",gmRunLast(w)?(al.length?`Run over. Sharing it: ${al.map(r=>esc(nm(r.pid))).join(", ").replace(/\.$/,"")}.`:"Run over. Nobody survived."):`${al.length} still alive.`):"")
+      +(T.length?gmRow("📈","Season leaders",T.map((r,i)=>`${i+1}. ${esc(nm(r.pid))}, ${r.cpts} pts`).join("<br>")):"")
+      +(f?gmRow("📣","From the recap",esc(strip(f.title))):"");
+    foot="Full recap on the Recap tab"}
+  return `<div class="gmcard" id="gmCard"><div class="gmtop"><div class="yard">College football · ATS</div><div class="gmbrand">${esc(lg)}</div></div><div class="gmstripe" aria-hidden="true"></div>
+    <div class="gmhead"><span class="gmkick">${esc(kick_)}</span><h2>${esc(title)}</h2><p>${sub}</p></div><div class="gmrows">${rows}</div>${games}<div class="gmfoot">${foot}</div></div>`}
+function renderGM(){const el=$("#v-groupme");if(!state.isOwner){el.innerHTML="";return}
+  const Q=gmQueue(),nx=gmNext();
+  const it=Q.find(x=>x.key===state.gmSel)||(nx.key?nx:null);
+  const st=x=>x.at?`<span class="st done">Posted ${esc(kick(x.at).replace(/ CT$/,""))}</span>`:x.ready?`<span class="st ready">Ready</span>`:x.stale?`<span class="st skip">Skipped</span>`:`<span class="st later">${esc(x.when)}</span>`;
+  let h=`<div class="gmwrap"><p class="gmnote">Screenshot the card, post it in GroupMe, then tap Posted. Only you can see this tab.</p>`;
+  const list=()=>`<ol class="gmq" aria-label="This week's posts">${Q.map(x=>`<li><button type="button" data-gmsel="${esc(x.key)}" aria-current="${!!it&&x.key===it.key}"><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</button></li>`).join("")}</ol>`;
+  if(!it){h+=`<div class="game gmdone"><b>All caught up.</b><span>The next post shows up here when it is due: the preview Monday, then picks live Wednesday at 6 PM.</span></div>${list()}</div>`;el.innerHTML=h;return}
+  h+=gmCard(it);
+  const can=it.ready||it.stale;
+  h+=`<div class="gmbar">${it.at?`<button type="button" class="btn" data-gm="undo" data-key="${esc(it.key)}">Undo posted</button>`:`<button type="button" class="btn gmpost" data-gm="post" data-key="${esc(it.key)}" ${can?"":"disabled"}>Posted</button>`}</div>`;
+  if(!it.at&&!can)h+=`<p class="gmnote">Not ready yet. Best posted ${esc(it.when)}.</p>`;
+  if(!it.at&&it.stale)h+=`<p class="gmnote">This post's moment has passed. Tap Posted only if you posted it.</p>`;
+  h+=list();
+  h+=info("gmhow",`The tab follows the weekly rhythm: Preview Monday, Picks live Wednesday at 6 PM, Last call Saturday morning, Locked at 10:15 AM, and Final and recap once every game is final. The next post that is ready shows first. Tap any row to see that card again. Posted marks save on the server, so your phone and computer agree. Counts update on each refresh, so screenshot right before you post. Nothing here shows a picker's sides before the lock.`)+`</div>`;
+  el.innerHTML=h}
+document.addEventListener("click",async e=>{const s=e.target.closest("#v-groupme [data-gmsel]");if(s){state.gmSel=s.dataset.gmsel;renderGM();window.scrollTo(0,0);return}
+  const b=e.target.closest("#v-groupme [data-gm]");if(!b||b.disabled)return;b.disabled=true;
+  const undo=b.dataset.gm==="undo";const r=await api("/api/admin",{action:"gmPosted",key:b.dataset.key,undo});
+  if(r&&r.ok){state.groupme={...(state.groupme||{}),posted:r.posted||{}};state.gmSel=undo?b.dataset.key:null;renderGM();$("#gmTab").classList.toggle("hot",!!gmNext().ready);window.scrollTo(0,0);toast(undo?"Marked not posted.":"Posted. The next one is ready below.","info")}
+  else{b.disabled=false;toast((r&&r.error)||"Could not save. Try again.")}});
 function render(){
   goFoot();
   const c=state.config,w=curWeek();
@@ -1705,6 +1833,8 @@ function render(){
   $("#picksTab").classList.toggle("hot",!!(state.db&&w&&w.status==="open"&&!(state.sheetsIn||[]).includes(state.uid)));
   if(state.view==="bowls")renderBowls();
   if(state.view==="armynavy")renderAN();
+  if(state.isOwner){$("#gmTab").classList.toggle("hot",!!gmNext().ready)}
+  if(state.view==="groupme")renderGM();
   if(state.view==="rules"){renderLog()}
   if(state.view==="profile")renderProfile();
 }
@@ -1736,7 +1866,7 @@ const GO_TILES=[
   ["profile","\u{1F454}","Profile","Suit up","Your look and theme"]];
 function goTiles(cur){return `<h2 class="gohead">Around the league</h2><nav class="gotiles" aria-label="Other tabs">${GO_TILES.filter(t=>t[0]!==cur).map(([v,ic,tab,head,sub])=>`<a class="gotile" href="#${v}"><span class="goic" aria-hidden="true">${ic}</span><span><b>${tab}</b><strong>${head}</strong><small>${sub}</small></span></a>`).join("")}</nav>`}
 /* render() runs on every poll, so the footer only redraws when the tab changes. */
-function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=!v||["commish","bowls","armynavy"].includes(v)?"":goTiles(v)}
+function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=!v||["commish","bowls","armynavy","groupme"].includes(v)?"":goTiles(v)}
 /* Red with unsaved changes, green once a sheet is saved, plain when there is nothing to save yet. */
 function saveBtnH(){const saved=!state.dirty&&(state.sheetsIn||[]).includes(state.uid);return `<button class="btn primary${state.dirty?" unsaved":saved?" saved":""}" id="saveBtn" ${state.dirty?"":"disabled"}>${saved?"Saved":"Save picks"}</button>`}
 /* A rookie has no saved pick on any sheet yet. Until the first save, Picks leads with a plain step list. */

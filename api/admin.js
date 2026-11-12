@@ -234,6 +234,19 @@ export default async function handler(req, res) {
         }
         return fail(res, 400, "Nothing to change.");
       }
+      case "gmPosted": {
+        // GroupMe tab: mark an announcement posted, or undo it. Private to the commissioner, so no public log entry.
+        const key = String(b.key || "");
+        if (!/^(pv|live|last|lock|final):\d{4}-w\d{1,2}$/.test(key)) return fail(res, 400, "Unknown post.");
+        const gm = await getKv("groupme", { posted: {} });
+        gm.posted = gm.posted || {};
+        if (b.undo) delete gm.posted[key];
+        else gm.posted[key] = new Date().toISOString();
+        // Keep the newest 80 marks so the row stays small.
+        gm.posted = Object.fromEntries(Object.entries(gm.posted).sort((x, y) => (x[1] < y[1] ? 1 : -1)).slice(0, 80));
+        await setKv("groupme", gm);
+        return send(res, 200, { ok: true, posted: gm.posted });
+      }
       case "config": {
         const cfg = await getConfig();
         if (typeof b.name === "string" && b.name.trim()) cfg.name = b.name.trim().slice(0, 40);
