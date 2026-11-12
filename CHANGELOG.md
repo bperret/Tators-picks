@@ -120,6 +120,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Date | Change | Commit |
 |---|---|---|
+| Nov 11 | Tracker: dopamine review items 49 to 60 (sealed sheet reveal, field goal moment, the belt, near miss line, rank arrows, Humans vs Robo-Sharp, Awards Night, hot hand, week phase card, Ring of Honor, Letterman years, Report to camp); item 44 kept for 2027; Roadmap section with build order | `55b2416` |
 | Nov 6 | Tracker: item 47, smarter Robo-Sharp (freeze its sheet, market signal, three model consensus, agreement gate, cover chance, key numbers, model scoreboard, plain Rules text); absorbs item 28 | `c10e522` |
 | Nov 6 | Tracker: item 42 settled (late joiner weeks count toward 5; a tie for lowest drops the week that helps most); items 24 to 27 absorbed into the Matchup view | Shared with 1.37 |
 | Nov 6 | Tracker: items 39 to 46 from the review of another pick em app (matchup preview absorbs 24 to 27, drop worst week tested in 2026, segments replace the fresh start); rule change posts move to the GroupMe plan | `4984cdb` |
