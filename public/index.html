@@ -1603,7 +1603,7 @@ function anRead(d){if(!anDone())return ["fa","fn","ha","hn"].every(k=>d[k]==="")
   const fa=+d.fa,fn=+d.fn,w=fa>fn?"Army":"Navy";return `Your call: halftime Army ${d.ha}, Navy ${d.hn}. Final: ${w} wins by ${Math.abs(fa-fn)}, ${Math.max(fa,fn)}-${Math.min(fa,fn)}.`}
 document.addEventListener("click",e=>{const t=e.target.closest("#v-armynavy [data-anph]");if(!t)return;state.anPhase=t.dataset.anph;renderAN()});
 document.addEventListener("input",e=>{const m=/^an-(fa|fn|ha|hn)$/.exec(e.target.id||"");if(!m)return;const d=anState();d[m[1]]=e.target.value.replace(/\D/g,"").slice(0,2);anSave();
-  $("#anRead").textContent=anRead(d);$("#anErr").textContent=anErr(d);$("#anTab").classList.toggle("hot",!anDone())});
+  $("#anRead").textContent=anRead(d);$("#anErr").textContent=anErr(d);$("#anTab").classList.toggle("hot",PROTO_DOT&&!anDone())});
 /* Bowl challenge prototype (item 3). Commissioner only, on the hidden Bowl Blitz tab. Picks save on this device only; nothing reaches the server.
    Teams: Athlon's Nov 1 projections. Dates: ESPN's 2026-27 schedule. Lines are samples from the SP+ gap, neutral site, half-point rule. */
 const BOWL_SRC="Teams from Athlon Sports' bowl projections after Week 9 (Nov 1). Athlon listed South Carolina twice, so Kentucky fills the Liberty Bowl. Dates from ESPN's 2026-27 schedule.";
@@ -1677,8 +1677,8 @@ document.addEventListener("click",e=>{if(!e.target.closest("#v-bowls"))return;co
   else if(t.dataset.bwlock){const id=t.dataset.bwlock;if(!d.sel[id]){toast("Pick a side in this bowl first.");return}d.lock=d.lock===id?null:id;bwSave()}
   else{const id=t.dataset.bwg,sd=t.dataset.bws;if(d.sel[id]===sd){delete d.sel[id];if(d.lock===id)d.lock=null}
     else{if(!d.sel[id]&&Object.keys(d.sel).length>=10){toast("You have 10 bowls. Tap a pick again to drop it first.");return}d.sel[id]=sd}bwSave();toast(`You have picked ${Object.keys(d.sel).length} of 10 bowls.`,"info")}
-  renderBowls();$("#bowlsTab").classList.toggle("hot",!bwDone())});
-document.addEventListener("input",e=>{if(e.target.id!=="bwTb")return;const d=bwState();d.tb=e.target.value.replace(/\D/g,"").slice(0,3);bwSave();const st=$("#bwStat");if(st)st.textContent=bwStat();$("#bowlsTab").classList.toggle("hot",!bwDone())});
+  renderBowls();$("#bowlsTab").classList.toggle("hot",PROTO_DOT&&!bwDone())});
+document.addEventListener("input",e=>{if(e.target.id!=="bwTb")return;const d=bwState();d.tb=e.target.value.replace(/\D/g,"").slice(0,3);bwSave();const st=$("#bwStat");if(st)st.textContent=bwStat();$("#bowlsTab").classList.toggle("hot",PROTO_DOT&&!bwDone())});
 /* ---------- Scoreboard tab (item 48) ----------
    One screen of small game tiles. Our 10 reads the week itself (our half-point lines, your pick, the split).
    Top 25 and All FBS read kv dayBoard through /api/state?part=board, a slim copy of the ESPN pull the scores job already makes,
@@ -1764,6 +1764,13 @@ function gmQueue(){
     add("final",w.id,w.week,eff==="final",false)}
   if(P&&!(w&&w.status!=="draft"&&w.week===P.week)){const wid=w&&w.status==="draft"&&w.week===P.week?w.id:gmWid(P.week);add("pv",wid,P.week,true,false)}
   return out}
+/* Prototype tabs (Bowl Blitz, Army-Navy) get no action dot for now (Benton, Nov 12). Set true to bring it back. */
+const PROTO_DOT=false;
+/* GroupMe dot: only on a posting day (Central time), only while a post that belongs to today is ready and not marked Posted.
+   Wed: Picks live. Sat: Last call, then Locked once the lock passes. Sun: Final and recap. The optional Monday Preview never lights it. */
+const GM_DAY={live:3,last:6,lock:6,final:0};
+function gmDue(now=NOW()){const d=new Date(now).toLocaleString("en-US",{timeZone:TZ,weekday:"short"});const dow=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(d);
+  return gmQueue().some(x=>x.ready&&!x.at&&GM_DAY[x.kind]===dow)}
 function gmNext(){const Q=gmQueue();return Q.find(x=>x.ready&&!x.at)||Q.find(x=>!x.stale&&!x.at)||{ready:false}}
 /* Facts the cards share. Counts only before the lock, never sides. */
 function gmActive(){return (state.logins||[]).filter(a=>!a.removed)}
@@ -1936,7 +1943,7 @@ document.addEventListener("click",e=>{const s=e.target.closest("#v-groupme [data
   if(k==="copyurl"){const t=location.origin;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Site link copied.","info"),()=>toast("Could not copy. The link is "+t));return}
   gmMark(b)});
 async function gmMark(b){b.disabled=true;const undo=b.dataset.gm==="undo";const r=await api("/api/admin",{action:"gmPosted",key:b.dataset.key,undo});
-  if(r&&r.ok){state.groupme={...(state.groupme||{}),posted:r.posted||{}};state.gmSel=undo?b.dataset.key:null;renderGM();$("#gmTab").classList.toggle("hot",!!gmNext().ready);window.scrollTo(0,0);toast(undo?"Marked not posted.":"Posted. The next one is ready below.","info")}
+  if(r&&r.ok){state.groupme={...(state.groupme||{}),posted:r.posted||{}};state.gmSel=undo?b.dataset.key:null;renderGM();$("#gmTab").classList.toggle("hot",gmDue());window.scrollTo(0,0);toast(undo?"Marked not posted.":"Posted. The next one is ready below.","info")}
   else{b.disabled=false;toast((r&&r.error)||"Could not save. Try again.")}}
 function render(){
   goFoot();
@@ -1966,12 +1973,12 @@ function render(){
   if(state.view==="survivor")renderSurvivor();
   if(state.view==="playoffs")renderBracket();
   if(state.view==="commish")renderCommish();
-  if(state.isOwner){bwState();$("#bowlsTab").classList.toggle("hot",!bwDone());anState();$("#anTab").classList.toggle("hot",!anDone())}
+  if(state.isOwner){bwState();$("#bowlsTab").classList.toggle("hot",PROTO_DOT&&!bwDone());anState();$("#anTab").classList.toggle("hot",PROTO_DOT&&!anDone())}
   /* Picks gets the action dot while a week is open and this login has no saved sheet. */
   $("#picksTab").classList.toggle("hot",!!(state.db&&w&&w.status==="open"&&!(state.sheetsIn||[]).includes(state.uid)));
   if(state.view==="bowls")renderBowls();
   if(state.view==="armynavy")renderAN();
-  if(state.isOwner){$("#gmTab").classList.toggle("hot",!!gmNext().ready)}
+  if(state.isOwner){$("#gmTab").classList.toggle("hot",gmDue())}
   if(state.view==="groupme")renderGM();
   if(state.view==="rules"){renderLog()}
   if(state.view==="profile")renderProfile();
@@ -2372,7 +2379,7 @@ function renderRecap(){
   h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
   el.innerHTML=h;
 }
-window.tpRecap={weekFacts,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
+window.tpRecap={weekFacts,gmDue,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */

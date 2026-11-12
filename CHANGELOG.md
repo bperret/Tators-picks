@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.44.3 | Nov 12, TIME | Tabs, GroupMe | Bowl Blitz and Army-Navy lose their red dot for now; the GroupMe dot shows only on a posting day (Wed, Sat, Sun) while that day's post is ready and not marked Posted | S | LINES | `PENDING` |
 | 1.44.2 | Nov 12, 1:17 PM | Everywhere, Survivor | Full picker names everywhere (pick columns, recap, rival lines, GroupMe cards); Survivor picks by week runs oldest to newest, left to right | S | 11 | `58fae0f` |
 | 1.44.1 | Nov 12, 12:12 AM | GroupMe | Best time to post on each card (Preview Mon 12:15 PM optional, Picks live Wed 8:30 PM, Last call Sat 8:15 AM, Locked Sat 10:20 AM, Final Sun 12:15 PM) with the reason; queue rows show the best time; Posting times note with times to avoid | S | 19 | `0940a20` |
 | 1.44 | Nov 12, 12:05 AM | Picks, Standings, Recap, Survivor, Pickers, GroupMe | Cleanup batch: "Picks Lock On" and a full width status bar; rival 👿, belt, and Sheets in (full names) notices in one look and height; legend moved under the games. Standings: awards column (belt for the winner, 🤏 for second), marks column on the season table, whole number Pct, Weekly titles by picker, chips on Beat the bot, removed pickers hidden from pickers, brighter Survivor box. Recap: colored Your week tiles and two rotating personal facts. Survivor header emojis. Classes fold closed. GroupMe Copy text is now Copy URL | M | 162 | `8274cf8` |

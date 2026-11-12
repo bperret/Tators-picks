@@ -890,7 +890,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("every bowl has an emoji and its own name color", await c.evaluate(() => { const n = [...document.querySelectorAll("#v-bowls .bwname")]; return n.length === 35 && n.every((x) => /^\S+ /.test(x.textContent) && x.style.getPropertyValue("--bc").startsWith("var(--bc-")) && new Set(n.map((x) => getComputedStyle(x).color)).size >= 8 }));
   check("the tiebreaker bowl is pinned first", (await c.locator("#v-bowls .bwlist > .game").first().getAttribute("class")).includes("tbgame"));
   check("the Bowl Blitz tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);
-  check("the unfinished sheet shows the dot", (await c.getAttribute("#bowlsTab", "class") || "").includes("hot"));
+  check("the unfinished sheet shows no dot while the prototype dot is off", !(await c.getAttribute("#bowlsTab", "class") || "").includes("hot"));
   const bwSides = () => c.locator('#v-bowls .side[data-bws="away"]');
   await c.locator("#v-bowls .flagbtn").nth(2).click();
   check("a field goal needs a pick first", (await c.getAttribute("#v-bowls .flagbtn >> nth=2", "aria-pressed")) === "false");
@@ -920,7 +920,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   // ---- Army-Navy prototype ----
   check("pickers do not see the Army-Navy tab", await m.isHidden("#anTab"));
   await c.evaluate(() => (location.hash = "#armynavy")); await c.waitForSelector("#an-fa");
-  check("the Army-Navy tab has no tiles and shows the dot", (await c.locator("#goFoot .gotile").count()) === 0 && ((await c.getAttribute("#anTab", "class")) || "").includes("hot"));
+  check("the Army-Navy tab has no tiles and no dot while the prototype dot is off", (await c.locator("#goFoot .gotile").count()) === 0 && !((await c.getAttribute("#anTab", "class")) || "").includes("hot"));
   const anTop = await c.evaluate(() => { const v = document.querySelector("#v-armynavy"); const ps = [...v.querySelectorAll(".anplate p, .anplate h2")].map((x) => x.textContent.trim()); const ids = [...v.querySelectorAll(".anbox")].map((x) => x.id); return { ps, ids, salute: !!v.querySelector(".ansalute"), trad: v.querySelectorAll(".antrad > div").length }; });
   check("Army-Navy header: helmet, Army-Navy, anchor, then date and place, then straight up, then lock on separate lines", /^\u{1FA96} Army-Navy \u2693$/u.test(anTop.ps[1]) && anTop.ps[2].startsWith("Sat Dec 12") && anTop.ps[2].endsWith("East Rutherford, New Jersey") && anTop.ps[3].startsWith("Straight up") && anTop.ps[4] === "Lock time is not set.", JSON.stringify(anTop.ps));
   check("Army-Navy asks halftime first, then final, Army before Navy", anTop.ids.join() === "an-ha,an-hn,an-fa,an-fn", anTop.ids.join());
@@ -953,6 +953,11 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("GroupMe draws the card as a 1179 px image (iPhone width), the week's posts, and no tiles", gm1.title.length > 0 && gm1.w === 1179 && gm1.rows >= 1 && gm1.tiles === 0, JSON.stringify(gm1));
   const gmDl = c.waitForEvent("download", { timeout: 5000 }).catch(() => null);
   check("GroupMe shows the best time to post the card and the timing notes", /Best time to post: (Mon 12:15 PM|Wed 8:30 PM|Sat 8:15 AM|Sat 10:20 AM|Sun 12:15 PM)/.test(await c.textContent("#v-groupme")) && /Posting times\./.test(await c.textContent("#v-groupme")));
+  { const dots = await c.evaluate(() => ({ bw: document.querySelector("#bowlsTab").classList.contains("hot"), an: document.querySelector("#anTab").classList.contains("hot"),
+      tue: window.tpRecap.gmDue(Date.parse("2026-11-10T18:00:00Z")), thu: window.tpRecap.gmDue(Date.parse("2026-11-12T18:00:00Z")),
+      days: [0, 1, 2, 3, 4, 5, 6].map((i) => window.tpRecap.gmDue(Date.parse("2026-11-15T18:00:00Z") + i * 864e5)) }));
+    check("Bowl Blitz and Army-Navy have no action dot for now", !dots.bw && !dots.an, JSON.stringify(dots));
+    check("GroupMe dot never shows on a day with no post (Tue, Thu, Mon, Fri)", !dots.tue && !dots.thu && !dots.days[1] && !dots.days[2] && !dots.days[4] && !dots.days[5], JSON.stringify(dots)); }
   check("GroupMe has Copy URL in place of Copy text", (await c.textContent('#v-groupme [data-gm="copyurl"]')) === "Copy URL" && !(await c.$('#v-groupme [data-gm="copytxt"]')));
   await c.click('#v-groupme [data-gm="share"]');
   const gmFile = await gmDl;
