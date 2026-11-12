@@ -952,6 +952,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   const gm1 = await c.evaluate(() => ({ title: document.querySelector("#gmCard").alt.split("\n")[1] || "", w: document.querySelector("#gmCard").naturalWidth, rows: document.querySelectorAll("#v-groupme .gmq li").length, cur: (document.querySelector('#v-groupme .gmq [aria-current="true"]') || {}).textContent || "", tiles: document.querySelectorAll("#goFoot .gotile").length }));
   check("GroupMe draws the card as a 1179 px image (iPhone width), the week's posts, and no tiles", gm1.title.length > 0 && gm1.w === 1179 && gm1.rows >= 1 && gm1.tiles === 0, JSON.stringify(gm1));
   const gmDl = c.waitForEvent("download", { timeout: 5000 }).catch(() => null);
+  check("GroupMe shows the best time to post the card and the timing notes", /Best time to post: (Mon 12:15 PM|Wed 8:30 PM|Sat 8:15 AM|Sat 10:20 AM|Sun 12:15 PM)/.test(await c.textContent("#v-groupme")) && /Posting times\./.test(await c.textContent("#v-groupme")));
   check("GroupMe has Copy URL in place of Copy text", (await c.textContent('#v-groupme [data-gm="copyurl"]')) === "Copy URL" && !(await c.$('#v-groupme [data-gm="copytxt"]')));
   await c.click('#v-groupme [data-gm="share"]');
   const gmFile = await gmDl;
