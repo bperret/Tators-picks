@@ -88,7 +88,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .field{position:relative;border-radius:10px;overflow:hidden;color:var(--chalk);padding:18px 16px 16px;
   background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(244,246,242,.55) calc(10% - 2px) 10%),repeating-linear-gradient(90deg,var(--turf) 0 10%,var(--turf2) 10% 20%)}
 .field::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:repeating-linear-gradient(90deg,rgba(244,246,242,.7) 0 2px,transparent 2px 2%)}
-.field-row{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
+.field-row{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:center;gap:12px}
+.field-row .badge{display:block;width:100%;text-align:center;box-sizing:border-box}
 .yard{font-family:var(--cond);font-weight:600;font-size:.8rem;letter-spacing:.2em;opacity:.85;text-transform:uppercase}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(2.5rem,11vw,3.6rem);line-height:1;margin:6px 0 0;letter-spacing:.02em;text-shadow:3px 3px 0 var(--flag),6px 6px 0 rgba(0,0,0,.45);text-wrap:balance}
 .sub{font-family:var(--cond);font-size:1rem;letter-spacing:.03em;margin-top:6px;color:var(--chalk);opacity:.92}
@@ -131,7 +132,10 @@ nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-v
 .side .rec{display:block;font-family:var(--cond);font-size:.74rem;font-weight:600;color:var(--muted);letter-spacing:.03em;margin-top:1px}
 .side[aria-pressed="true"] .rec{color:inherit;opacity:.85}
 .res .bb{display:inline-block;font-family:var(--cond);font-weight:700;font-size:.74rem;letter-spacing:.06em;background:#6b2a8a;color:#fff;border-radius:3px;padding:1px 6px}
-.race{padding:10px 12px}.race p{margin:2px 0;font-size:.95rem}
+.notices{display:grid;grid-auto-rows:1fr;gap:8px}
+.notices .notice{margin:0}
+.notice{display:flex;align-items:center;gap:10px;min-height:52px;box-sizing:border-box;margin:8px 0;padding:8px 12px;border-radius:8px;background:var(--card);border:1px solid var(--line);font-size:.93rem;line-height:1.3}
+.notice .nic{flex:none;width:26px;text-align:center;font-size:1.25rem;line-height:1}
 .lnmv{margin:4px 0 0}
 .ywnote{margin:8px 0 0}
 .stats .sub{display:block;font-size:.78rem;color:var(--muted)}
@@ -201,7 +205,7 @@ th,td{padding:7px 6px;border-bottom:1px solid var(--board-line);text-align:left;
 th{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--board-dim);font-weight:600}
 td{color:var(--board-ink)}
 @media (max-width:420px){th,td{padding:7px 4px}table{font-size:.95rem}td.pn{max-width:5.6em}.yd{max-width:100%}th{letter-spacing:.05em}}
-@media (max-width:380px){th,td{padding:7px 2px}}
+@media (max-width:380px){th,td{padding:7px 2px}table{font-size:.9rem}td.pn{max-width:4.6em}}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 td.num{text-shadow:0 0 6px rgba(242,194,48,.35)}
 tr.me td{background:rgba(242,194,48,.12)}
@@ -406,12 +410,19 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 /* The belt, hot hand, rank moves, near miss (items 51, 56, 53, 52) */
 .belt{width:26px;height:14px;vertical-align:-2px}
 .beltic .belt{width:22px;height:12px}
-.beltline{display:flex;align-items:center;gap:8px;margin:8px 0;padding:6px 10px;border-radius:8px;background:rgba(224,177,58,.14);border:1px solid rgba(224,177,58,.55);font-size:.92rem}
-.beltline .belt{flex:none}
+.notice .nic .belt{width:26px;height:14px;vertical-align:middle}
 .hot{white-space:nowrap;font-size:.9em}
-.marks{display:block;font-size:.8rem;line-height:1.25;margin-top:1px;white-space:nowrap}.marks>span:first-child{margin-left:0}
+.marks{display:inline-flex;align-items:center;gap:2px;font-size:.85rem;line-height:1.25;white-space:nowrap}
+th.aw,td.aw{min-width:3.6em;padding-left:2px;padding-right:2px;white-space:nowrap}
+@media (max-width:420px){th.aw,td.aw{min-width:0;padding-left:1px;padding-right:1px}td.aw .marks{font-size:.72rem;gap:1px;flex-wrap:wrap;justify-content:center;max-width:2.9em;row-gap:0}td.aw .marks .belt{width:18px;height:10px}td.pn{max-width:5em;white-space:normal;overflow-wrap:anywhere;line-height:1.2}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .rkc{white-space:nowrap}.mv{font-style:normal;font-size:.7rem;font-weight:700;margin-left:3px}.mv.up{color:var(--win)}.mv.dn{color:var(--loss)}.mv.new{color:var(--muted)}
 .ywnear{margin:8px 0 0;font-weight:600}
+.yw .ywt{border-left:4px solid var(--line)}.yw .ywt.rec{border-left-color:#e0a800}.yw .ywt.best{border-left-color:var(--win)}.yw .ywt.worst{border-left-color:var(--loss)}.yw .ywt.up{border-left-color:var(--win)}.yw .ywt.down{border-left-color:var(--loss)}.yw .ywt.rank{border-left-color:#3b82f6}
+.yw .ywt.best b,.yw .ywt.up b{color:var(--win)}.yw .ywt.worst b,.yw .ywt.down b{color:var(--loss)}
+.ywfact{display:flex;align-items:center;gap:10px;margin:8px 0 0;padding:8px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);border-left:4px solid #3b82f6;font-size:.93rem;line-height:1.3}
+.ywfact.good{border-left-color:var(--win)}.ywfact.bad{border-left-color:var(--loss)}
+.ywfact .nic{flex:none;width:24px;text-align:center;font-size:1.2rem;line-height:1}
 .stwk{margin-bottom:8px}
 @media (prefers-reduced-motion:reduce){#reveal .rvflash,.rvcard,.gflash-w,.gflash-l{animation:none}}
 .sig{width:18px;height:18px;vertical-align:-4px;margin-right:3px;fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linecap:round}
@@ -477,7 +488,8 @@ table.plain td{color:var(--ink)} table.plain th{color:var(--muted)} table.plain 
 .ck{font-family:var(--cond);font-weight:700;font-size:.85rem;letter-spacing:.04em;border-radius:4px;padding:2px 7px;white-space:nowrap}
 .ck.ok{background:var(--chip);color:var(--muted)}
 .ck.no{background:var(--flag);color:var(--flag-ink)}
-.svhead h2{margin-bottom:8px}
+.svhead h2{margin-bottom:2px}
+.svtag{margin:0 0 10px;font-family:var(--cond);letter-spacing:.04em;color:var(--board-dim)}
 .svhead{text-align:center}
 .svstats{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
 .svstats div{display:flex;flex-direction:column;align-items:center}
@@ -515,7 +527,7 @@ td.svc.next{border:1px dashed var(--line)}
 .svkey .svc.void{background:var(--chip)}
 .game.mq{border-left:5px solid #c9a227}
 .game.tl{border-left:5px solid #2a8c8c}
-.legend{display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;margin:0}
+.legend{display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;margin:10px 0 0}
 .legend span{white-space:nowrap}
 .lg{display:inline-block;width:14px;height:10px;border-radius:2px}
 .lg.mq{background:#c9a227}.lg.tl{background:#2a8c8c}
@@ -626,6 +638,8 @@ td.svc.next{border:1px dashed var(--line)}
 .clsb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-family:var(--cond);font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;background:var(--chip);color:var(--ink);border:1px solid var(--line);vertical-align:middle}
 .clsb.rs{background:#a3201a;color:#fff;border-color:#7a1712;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
 .clslist{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.clsgrp>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;min-height:36px}.clsgrp>summary::-webkit-details-marker{display:none}
+.clsgrp>summary::after{content:"\25B8";margin-left:auto;color:var(--muted);transition:transform .15s}.clsgrp[open]>summary::after{transform:rotate(90deg)}
 .clsp{display:inline-flex;align-items:center;gap:4px;font:inherit;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}
 .clsp.on{border-color:var(--turf);box-shadow:0 0 0 1px var(--turf)}
 .pchip.big{width:34px;height:34px;font-size:1.1rem;margin-right:8px;vertical-align:-7px}
@@ -695,8 +709,15 @@ textarea{font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;font-siz
 .rules summary,#logPanel summary{cursor:pointer;list-style-position:outside}
 .rules summary.rh{margin:8px 0}
 .howto ol{margin:6px 0 0;padding-left:22px;color:var(--board-ink);font-size:1rem;line-height:1.45}
-.trophies{display:flex;flex-wrap:wrap;gap:8px}
-.tro{display:flex;align-items:center;gap:6px;background:var(--chip);border-radius:6px;padding:6px 10px}
+.titles{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.titles li{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--chip);border-radius:6px;padding:6px 10px}
+.titles .tbelt .belt{width:26px;height:14px;vertical-align:middle}.titles .tw{color:var(--muted);font-size:.9rem;margin-left:auto}
+.svmini .svcount{display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 8px}
+.svmini .svcount span{font-family:var(--cond);font-weight:700;font-size:1.05rem;letter-spacing:.03em;border-radius:999px;padding:3px 12px}
+.svmini .svalive{background:rgba(28,122,69,.15);color:var(--win);border:1px solid rgba(28,122,69,.45)}
+.svmini .svdead{background:rgba(179,38,30,.12);color:var(--loss);border:1px solid rgba(179,38,30,.4)}
+.svmini .svlist{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.svmini .svp{display:inline-flex;align-items:center;gap:4px;background:var(--chip);border-left:3px solid var(--win);border-radius:6px;padding:3px 8px;font-weight:600;font-size:.9rem}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
 .stats>div{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
 .stats b{font-family:var(--cond);font-size:1.4rem;font-variant-numeric:tabular-nums}
@@ -1887,12 +1908,12 @@ function renderGM(){const el=$("#v-groupme");if(!state.isOwner){el.innerHTML="";
   const M=gmModel(it),sig=it.key+"|"+JSON.stringify(M),have=state.gmImg&&state.gmImg.sig===sig;state.gmText=gmText(M);
   h+=`<figure class="gmfig"><img id="gmCard" class="gmimg${have?"":" wait"}" data-sig="${esc(sig)}" alt="${esc(state.gmText)}" ${have?`src="${state.gmImg.url}"`:""}></figure>`;
   const can=it.ready||it.stale;
-  h+=`<div class="gmtools" role="group" aria-label="Get the card"><button type="button" class="btn gmsave" data-gm="share">Save or share image</button><button type="button" class="btn" data-gm="copyimg">Copy image</button><button type="button" class="btn" data-gm="copytxt">Copy text</button></div>`;
+  h+=`<div class="gmtools" role="group" aria-label="Get the card"><button type="button" class="btn gmsave" data-gm="share">Save or share image</button><button type="button" class="btn" data-gm="copyimg">Copy image</button><button type="button" class="btn" data-gm="copyurl">Copy URL</button></div>`;
   h+=`<div class="gmbar">${it.at?`<button type="button" class="btn" data-gm="undo" data-key="${esc(it.key)}">Undo posted</button>`:`<button type="button" class="btn gmpost" data-gm="post" data-key="${esc(it.key)}" ${can?"":"disabled"}>Posted</button>`}</div>`;
   if(!it.at&&!can)h+=`<p class="gmnote">Not ready yet. Best posted ${esc(it.when)}.</p>`;
   if(!it.at&&it.stale)h+=`<p class="gmnote">This post's moment has passed. Tap Posted only if you posted it.</p>`;
   h+=list();
-  h+=info("gmhow",`The tab follows the weekly rhythm: Preview Monday, Picks live Wednesday at 6 PM, Last call Saturday morning, Locked at 10:15 AM, and Final and recap once every game is final. The next post that is ready shows first. Tap any row to see that card again. Save or share opens your phone's share sheet, where you can save to Photos or send straight to GroupMe; on a computer it downloads the image. Copy text gives a plain version under GroupMe's 1,000 character limit. Posted marks save on the server, so your phone and computer agree. Counts update on each refresh, so save the card right before you post. Nothing here shows a picker's sides before the lock.`)+`</div>`;
+  h+=info("gmhow",`The tab follows the weekly rhythm: Preview Monday, Picks live Wednesday at 6 PM, Last call Saturday morning, Locked at 10:15 AM, and Final and recap once every game is final. The next post that is ready shows first. Tap any row to see that card again. Save or share opens your phone's share sheet, where you can save to Photos or send straight to GroupMe; on a computer it downloads the image. Copy URL copies the site link, to paste with the image. Posted marks save on the server, so your phone and computer agree. Counts update on each refresh, so save the card right before you post. Nothing here shows a picker's sides before the lock.`)+`</div>`;
   el.innerHTML=h;if(!have)gmPaint(M,sig)}
 function gmDownload(B){const a=document.createElement("a");a.href=B.url;a.download=B.name;document.body.appendChild(a);a.click();a.remove();toast("Image saved to your downloads.","info")}
 /* Share and copy run straight from the tap, with no await first, because phones only allow them inside a tap. */
@@ -1902,7 +1923,7 @@ document.addEventListener("click",e=>{const s=e.target.closest("#v-groupme [data
   if(k==="share"){const f=new File([B.blob],B.name,{type:"image/png"});
     if(navigator.canShare&&navigator.share&&navigator.canShare({files:[f]}))navigator.share({files:[f]}).catch(err=>{if(!err||err.name!=="AbortError")gmDownload(B)});else gmDownload(B);return}
   if(k==="copyimg"){if(navigator.clipboard&&window.ClipboardItem)navigator.clipboard.write([new ClipboardItem({"image/png":B.blob})]).then(()=>toast("Image copied. Paste it in GroupMe.","info"),()=>toast("This browser cannot copy images. Use Save or share."));else toast("This browser cannot copy images. Use Save or share.");return}
-  if(k==="copytxt"){const t=state.gmText||"";(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Text copied.","info"),()=>toast("Could not copy. Long press the card instead."));return}
+  if(k==="copyurl"){const t=location.origin;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Site link copied.","info"),()=>toast("Could not copy. The link is "+t));return}
   gmMark(b)});
 async function gmMark(b){b.disabled=true;const undo=b.dataset.gm==="undo";const r=await api("/api/admin",{action:"gmPosted",key:b.dataset.key,undo});
   if(r&&r.ok){state.groupme={...(state.groupme||{}),posted:r.posted||{}};state.gmSel=undo?b.dataset.key:null;renderGM();$("#gmTab").classList.toggle("hot",!!gmNext().ready);window.scrollTo(0,0);toast(undo?"Marked not posted.":"Posted. The next one is ready below.","info")}
@@ -1915,7 +1936,7 @@ function render(){
   if(w){
     const rs=w.results||{};const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;
     const win=weekWinners(w.id);
-    const line={draft:`Week ${w.week} · Draft, only you can see it`,open:`Week ${w.week} · Picks lock ${kick(w.deadline)}`,locked:`Week ${w.week} · Locked · ${nf} of ${w.games.length} final`,final:`Week ${w.week} · Final${win.length?" · "+(win.length>1?"Winners: ":"Winner: ")+win.map(nm).join(", "):""}`}[w.status];
+    const line={draft:`Week ${w.week} · Draft, only you can see it`,open:`Week ${w.week} · Picks Lock On ${kick(w.deadline)}`,locked:`Week ${w.week} · Locked · ${nf} of ${w.games.length} final`,final:`Week ${w.week} · Final${win.length?" · "+(win.length>1?"Winners: ":"Winner: ")+win.map(nm).join(", "):""}`}[w.status];
     $("#weekLine").textContent=line||`Week ${w.week}`;
     const labels={draft:"Slate draft",open:"Picks open",locked:"Picks locked",final:"Final"};
     setB((labels[w.status]||w.status),{open:"open",final:"final",draft:"plain"}[w.status]);
@@ -2010,10 +2031,13 @@ function renderPicks(){
     const nf=w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)).length;
     h+=`<div class="countdown strip"><span>You <b>${me.pts}</b> pts</span><span>${me.w}-${me.l}</span><span>${nf}/${w.games.length} final</span><span>${ties?"T-":""}${ordinal(place)}</span></div>`}
   const rookie=isRookie();
-  if(rookie)h+=rookiePanel();else h+=racePanel(wid);
-  if(!rookie&&w.status!=="draft")h+=beltLine();
+  /* Notices share one grid, so every row takes the height of the tallest. */
+  let nt="";
+  if(rookie)h+=rookiePanel();else nt+=racePanel(wid);
+  if(!rookie&&w.status!=="draft")nt+=beltLine();
   if(w.status==="open"&&!pastDeadline(w)){const ids=(state.sheetsIn||[]).filter(p=>!removed().includes(p));const all=Object.keys(PLAYERS).filter(p=>!removed().includes(p)&&PLAYERS[p].setupDone);
-    h+=`<p class="note sheets">Sheets in: ${ids.length} of ${all.length||ids.length}${ids.length?" · "+ids.map(p=>esc(first(p))).join(", "):""}. Picks stay hidden until the lock.</p>`}
+    nt+=notice("📝",`<b>Sheets in: ${ids.length} of ${all.length||ids.length}</b>${ids.length?" · "+ids.map(p=>esc(nm(p))).join(", "):""}`,"sheets")}
+  if(nt)h+=`<div class="notices">${nt}</div>`;
   if(w.status==="draft")h+='<div class="note">Draft view. Only you see this until you open picks in the Commissioner tab.</div>';
   if(out)h+='<div class="panel">You are not active in the league this season. Contact the commissioner.</div>';
   const locked=pastDeadline(w)||w.status==="final";
@@ -2023,7 +2047,6 @@ function renderPicks(){
   const gs=[...w.games].sort(locked?lockedOrder:(a,b)=>a.slot-b.slot);
   const tg=tbGame(w);
   const flag=GP;
-  h+=`<p class="note legend"><span><i class="lg mq"></i> 1 to 5: top AP matchups</span><span><i class="lg tl"></i> 6 to 10: tightest lines</span>${locked?"<span>In kickoff order</span>":""}</p>`;
   if(locked){const ats=w.games.map(g=>rs[g.id]&&rs[g.id].at).filter(Boolean).sort();const up=w.scoresAt||ats[ats.length-1];
     if(up&&w.games.some(g=>rs[g.id]&&!rs[g.id].final&&!rs[g.id].void))h+=`<p class="note updated">Scores updated ${esc(new Date(up).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}))} CT. ${liveOn()?`They refresh about every ${liveGap()} minutes while games are live and someone has the site open.`:"They refresh when the schedule runs, which can be hours apart."}</p>`}
   for(const g of gs){
@@ -2077,6 +2100,7 @@ function renderPicks(){
     }
     h+="</div>";
   }
+  h+=`<p class="note legend"><span><i class="lg mq"></i> 1 to 5: top AP matchups</span><span><i class="lg tl"></i> 6 to 10: tightest lines</span>${locked?"<span>In kickoff order</span>":""}</p>`;
   if(tg){const r=rs[tg.id];const LA=teamLook(tg.away,tg,"away"),LH=teamLook(tg.home,tg,"home");const tot=r&&r.final&&!r.void?r.home+r.away:null;
     h+=`<div class="board tbpanel" id="tbPanel"><div class="tbtop"><h2>Tiebreaker</h2><button type="button" class="linkbtn tblink" data-jump="game-${esc(tg.id)}">Go to the game \u2191</button></div>
       <p class="tbq">Guess the total points scored in <b>${esc(LA.abbr)} ${LA.emoji||""} vs ${esc(LH.abbr)} ${LH.emoji||""}</b>, ${kick(tg.kickoff)}.</p>
@@ -2338,7 +2362,7 @@ function renderRecap(){
   h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
   el.innerHTML=h;
 }
-window.tpRecap={state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
+window.tpRecap={weekFacts,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */
@@ -2475,7 +2499,9 @@ function raceFacts(wid){const w=state.weeks[wid],me=state.uid,rs=w.results||{};c
       out.rival=w.status!=="final"?`Your rival ${first(riv)}: ${R}. You: ${S.pts}.`:S.pts>R?`You beat your rival ${first(riv)}, ${S.pts} to ${R}.`:S.pts<R?`Your rival ${first(riv)} beat you, ${R} to ${S.pts}.`:`You and your rival ${first(riv)} tied at ${R}.`}}
   return out}
 function racePanel(wid){const w=state.weeks[wid];if(!state.uid||!w||w.status==="draft"||removed().includes(state.uid))return "";const F=raceFacts(wid);if(!F.need&&!F.rival)return "";
-  return `<div class="panel race">${F.need?`<p><b>What you need:</b> ${esc(F.need)}</p>`:""}${F.rival?`<p>${esc(F.rival)}</p>`:""}</div>`}
+  return `${F.need?notice("🧮",`<b>What you need:</b> ${esc(F.need)}`):""}${F.rival?notice("👿",esc(F.rival),"rivalln"):""}`}
+/* Notices on Picks: one look for the rival, belt, and sheets lines, an icon on the left and the same height. */
+function notice(ic,html,cls){return `<p class="notice${cls?" "+cls:""}"><span class="nic" aria-hidden="true">${ic}</span><span>${html}</span></p>`}
 function yourWeek(wid){const w=state.weeks[wid],me=state.uid,ps=weekPlayers(wid),mine=ps[me];if(!mine)return null;const rs=w.results||{};
   const rows=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));const S=rows.find(r=>r.pid===me);
   const graded=w.games.map(g=>{const c=coverSide(g,rs[g.id]);const pick=(mine.sel||{})[g.id];if(!c||!pick)return null;return {g,pick,won:pick===c,by:Math.abs(margin(g,rs[g.id])),with:split(g,ps)[pick].length,fg:mine.lock===g.id}}).filter(Boolean);
@@ -2487,9 +2513,54 @@ function yourWeek(wid){const w=state.weeks[wid],me=state.uid,ps=weekPlayers(wid)
   return {pts:S.pts,w:S.w,l:S.l,place:rows.filter(r=>r.pts>S.pts).length+1,tied:rows.filter(r=>r.pts===S.pts).length>1,best,worst,was:rk(prior),now:rk([...prior,wid]),rival:raceFacts(wid).rival,of:rows.length}}
 function yourWeekPanel(wid){const Y=yourWeek(wid);if(!Y)return "";
   const pk=x=>{const L=teamLook(x.pick==="home"?x.g.home:x.g.away,x.g,x.pick);return `${L.abbr} ${fmtLine(x.pick==="home"?x.g.homeLine:-x.g.homeLine)}`};
-  const tile=(t,v,n)=>`<div><span class="note">${t}</span><b>${esc(v)}</b>${n?`<span class="sub">${esc(n)}</span>`:""}</div>`;
   const move=Y.now==null?"":Y.was==null?`New at ${ordinal(Y.now)}`:Y.now<Y.was?`Up ${Y.was-Y.now} to ${ordinal(Y.now)}`:Y.now>Y.was?`Down ${Y.now-Y.was} to ${ordinal(Y.now)}`:`Held ${ordinal(Y.now)}`;
-  return `<div class="panel yw"><h2>Your week</h2><div class="stats">${tile("Record",Y.w+"-"+Y.l,Y.pts+" point"+(Y.pts===1?"":"s")+", "+(Y.tied?"T-":"")+ordinal(Y.place)+" of "+Y.of)}${tile("Best pick",Y.best?pk(Y.best):"None",Y.best?(Y.best.with===1?"You alone":Y.best.with+" of "+Y.of+" took it")+(Y.best.fg?", field goal":""):"")}${tile("Worst beat",Y.worst?pk(Y.worst):"None",Y.worst?"Missed by "+Y.worst.by+(Y.worst.fg?", field goal":""):"")}${tile("Season rank",move||"None")}</div>${nearMiss(wid).map(t=>`<p class="ywnear">${esc(t)}</p>`).join("")}${Y.rival?`<p class="note ywnote">${esc(Y.rival)}</p>`:""}</div>`}
+  const tile=(c,ic,t,v,n)=>`<div class="ywt ${c}"><span class="note"><span aria-hidden="true">${ic}</span> ${t}</span><b>${esc(v)}</b>${n?`<span class="sub">${esc(n)}</span>`:""}</div>`;
+  const up=Y.now!=null&&Y.was!=null&&Y.now<Y.was,down=Y.now!=null&&Y.was!=null&&Y.now>Y.was;
+  return `<div class="panel yw"><h2>\u{1F4CB} Your week</h2><div class="stats">${tile("rec","\u{1F3C8}","Record",Y.w+"-"+Y.l,Y.pts+" point"+(Y.pts===1?"":"s")+", "+(Y.tied?"T-":"")+ordinal(Y.place)+" of "+Y.of)}${tile("best","\u{2705}","Best pick",Y.best?pk(Y.best):"None",Y.best?(Y.best.with===1?"You alone":Y.best.with+" of "+Y.of+" took it")+(Y.best.fg?", field goal":""):"")}${tile("worst","\u{1F494}","Worst beat",Y.worst?pk(Y.worst):"None",Y.worst?"Missed by "+Y.worst.by+(Y.worst.fg?", field goal":""):"")}${tile(up?"up":down?"down":"rank",up?"\u{1F4C8}":down?"\u{1F4C9}":"\u{1F4CA}","Season rank",move||"None")}</div>${nearMiss(wid).map(t=>`<p class="ywnear"><span aria-hidden="true">\u{1F62C}</span> ${esc(t)}</p>`).join("")}${weekFacts(wid).map(f=>`<p class="ywfact ${f.c}"><span class="nic" aria-hidden="true">${f.ic}</span><span>${esc(f.t)}</span></p>`).join("")}</div>`}
+/* Personal facts for Your week: every fact that applies gets a weight, plus a jitter seeded by picker and week, and the top two show.
+   The jitter keeps the same facts from leading every week. The rival line is one fact in the pool. Add facts here to grow it. */
+function factSeed(str){let h=2166136261;for(const ch of str){h^=ch.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function weekFacts(wid,limit=2){const w=state.weeks[wid],me=state.uid;if(!w||w.status!=="final"||!me)return [];const ps=weekPlayers(wid),mine=ps[me];if(!mine)return [];
+  const rs=w.results||{},S=scoreWeek(w,mine),wk=w.confChamp?"Conference Champion Week":"Week "+w.week,F=[];
+  const add=(k,wt,ic,t,c)=>F.push({k,wt:wt+(factSeed(me+"|"+wid+"|"+k)%25),ic,t,c:c||"neu"});
+  const look=(g,s)=>teamLook(s==="home"?g.home:g.away,g,s).abbr;const pk=(g,s)=>`${look(g,s)} ${fmtLine(s==="home"?g.homeLine:-g.homeLine)}`;
+  const graded=w.games.map(g=>{const c=coverSide(g,rs[g.id]);const s=(mine.sel||{})[g.id];if(!c||!s)return null;const sp=split(g,ps);return {g,s,won:s===c,with:sp[s].length,vs:sp[s==="home"?"away":"home"].length,by:Math.abs(margin(g,rs[g.id]))}}).filter(Boolean);
+  const hum=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));const n=hum.length;
+  /* Rival */
+  {const R=raceFacts(wid).rival;if(R){const beat=/^You beat/.test(R);add("rival",beat?55:35,"\u{1F47F}",R,beat?"good":/beat you/.test(R)?"bad":"neu")}}
+  /* Robo-Sharp */
+  {const b=botPicks(w);if(b){const B=scoreWeek(w,b).pts;add("bot",S.pts>B?50:30,"\u{1F916}",S.pts>B?`You beat Robo-Sharp, ${S.pts} to ${B}.`:S.pts<B?`Robo-Sharp got you this week, ${B} to ${S.pts}.`:`Dead even with Robo-Sharp at ${B}.`,S.pts>B?"good":S.pts<B?"bad":"neu")}}
+  /* Best or worst week this season */
+  {const prev=priorWeeks(wid).map(k=>{const p=weekPlayers(k)[me];return p?scoreWeek(state.weeks[k],p).pts:null}).filter(x=>x!=null);
+    if(prev.length&&S.pts>Math.max(...prev))add("best",80,"\u{1F680}",`${S.pts} points is your best week of the season.`,"good");
+    else if(prev.length>=2&&S.pts<Math.min(...prev))add("low",30,"\u{1F9CA}",`${S.pts} points is your lowest week yet. Shake it off.`,"bad")}
+  /* Lone wolf */
+  {const lw=graded.filter(x=>x.with===1&&n>=3);const hit=lw.filter(x=>x.won);if(hit.length)add("wolf",85,"\u{1F43A}",hit.length>1?`Lone wolf twice: you alone hit ${hit.map(x=>pk(x.g,x.s)).join(" and ")}.`:`Lone wolf: you were the only one on ${pk(hit[0].g,hit[0].s)}, and it covered.`,"good");
+    else if(lw.length)add("wolfx",25,"\u{1F43A}",`You went alone on ${pk(lw[0].g,lw[0].s)}. The pack was right this time.`,"bad")}
+  /* Against the crowd */
+  {const c=graded.filter(x=>x.vs>x.with&&n>=3);if(c.length>=2){const won=c.filter(x=>x.won).length;add("crowd",won*2>c.length?60:40,"\u{1F9ED}",`You faded the crowd ${c.length} times and went ${won}-${c.length-won}.`,won*2>c.length?"good":won*2<c.length?"bad":"neu")}}
+  /* Underdogs */
+  {const d=graded.filter(x=>x.s==="home"?x.g.homeLine>0:x.g.homeLine<0);if(d.length>=3){const won=d.filter(x=>x.won).length;add("dogs",won>=d.length-1?55:30,"\u{1F436}",`Your underdogs went ${won}-${d.length-won}.`,won*2>d.length?"good":won*2<d.length?"bad":"neu")}}
+  /* Sweeps of the top AP games or the tight lines */
+  {const top=graded.filter(x=>x.g.slot<=5),tl=graded.filter(x=>x.g.slot>5);
+    if(top.length>=4&&top.every(x=>x.won))add("sweepA",75,"\u{1F3DF}\u{FE0F}",`Clean sweep of the top AP games: ${top.length}-0.`,"good");
+    if(tl.length>=4&&tl.every(x=>x.won))add("sweepT",75,"\u{2696}\u{FE0F}",`You ran the table on the tight lines: ${tl.length}-0.`,"good");
+    if(top.length>=4&&top.every(x=>!x.won))add("sweepAx",30,"\u{1F62C}",`The top AP games went 0-${top.length} for you.`,"bad")}
+  /* Biggest cover */
+  {const big=graded.filter(x=>x.won).sort((a,b)=>b.by-a.by)[0];if(big&&big.by>=14)add("big",35,"\u{1F4A5}",`${pk(big.g,big.s)} cleared the number by ${big.by}. Never in doubt.`,"good")}
+  /* Field goal */
+  {const fgs=[];for(const k of [...priorWeeks(wid),wid].reverse()){const p=weekPlayers(k)[me];const x=p&&scoreWeek(state.weeks[k],p);if(!x||!x.lw)break;fgs.push(k)}
+    if(fgs.length>=2)add("fg",70,"\u{1F945}",`Your field goal is good ${fgs.length} weeks running. Automatic.`,"good");
+    else if(S.ll&&S.w>=7)add("fgx",30,"\u{1F945}",`${S.w} correct and the field goal still went wide.`,"bad")}
+  /* Tiebreaker */
+  {const ms=hum.filter(x=>x.tbMiss!=null).map(x=>x.tbMiss);if(S.tbMiss!=null&&ms.length>=3&&S.tbMiss===Math.min(...ms))add("tb",65,"\u{1F3AF}",S.tbMiss===0?"Your tiebreaker guess was exact. Nailed it.":`Closest tiebreaker guess in the league, off by ${S.tbMiss}.`,"good")}
+  /* League average */
+  {if(n>=3){const avg=hum.reduce((a,x)=>a+x.pts,0)/n;const d=Math.round((S.pts-avg)*10)/10;if(Math.abs(d)>=1.5)add("avg",28,"\u{1F4CA}",d>0?`${d} points above the league average of ${Math.round(avg*10)/10}.`:`${-d} points under the league average of ${Math.round(avg*10)/10}.`,d>0?"good":"bad")}}
+  /* Matched the winner */
+  {const win=weekWinners(wid);if(win.length&&!win.includes(me)){const W=ps[win[0]];const same=w.games.filter(g=>(mine.sel||{})[g.id]&&(mine.sel||{})[g.id]===(W.sel||{})[g.id]).length;if(same>=7)add("mirror",32,"\u{1FA9E}",`You matched ${first(win[0])}, the winner, on ${same} of ${w.games.length} picks.`,"neu")}}
+  /* Survivor */
+  {if(mine.surv){const g=w.games.find(x=>x.id===mine.surv.g);const c=g&&coverSide(g,rs[g.id]);if(c)add("surv",c===mine.surv.s?40:60,c===mine.surv.s?"\u{1F7E2}":"\u{1F480}",c===mine.surv.s?`Survivor pick ${pk(g,mine.surv.s)} covered. Still breathing.`:`Survivor pick ${pk(g,mine.surv.s)} did not cover. Your run is over.`,c===mine.surv.s?"good":"bad")}}
+  F.sort((a,b)=>b.wt-a.wt);return F.slice(0,limit)}
 /* Near miss lines (item 52): how close you came to the top score, or to a hot week. Final weeks only. */
 function nearMiss(wid){const w=state.weeks[wid];if(!w||w.status!=="final")return [];const me=state.uid,ps=weekPlayers(wid),mine=ps[me];if(!mine)return [];
   const rs=w.results||{},S=scoreWeek(w,mine),win=weekWinners(wid),out=[];const wk=w.confChamp?"Conference Champion Week":"Week "+w.week;
@@ -2519,7 +2590,7 @@ function beltOf(){const f=finalSeasonWeeks();const wid=f[f.length-1];if(!wid)ret
 function beltTag(pid){const b=beltOf();if(!b||!b.pids.includes(pid))return "";const t=`Holds the belt: ${b.cc?"Conference Champion Week":"Week "+b.week} winner`;return ` <span class="beltic" title="${t}" aria-label="${t}">${BELT}</span>`}
 function beltLine(){const b=beltOf();if(!b)return "";const wk=b.cc?"Conference Champion Week":"Week "+b.week;const me=b.pids.includes(state.uid);
   const who=b.pids.length>1?b.pids.map(p=>esc(first(p))).join(" and ")+" share":me?"You hold":esc(nm(b.pids[0]))+" holds";
-  return `<p class="beltline">${BELT}<span>${who} the belt as the ${wk} winner.${me?" Defend it this week.":" Win the week to take it."}</span></p>`}
+  return notice(BELT,`${who} the belt as the ${wk} winner.${me?" Defend it this week.":" Win the week to take it."}`,"beltline")}
 /* Hot hand: a hot week is HOT_MIN or more correct picks in a final week. Two or more straight hot weeks is a heater.
    A hot week shows until the next week goes final; a heater shows while the streak holds. A missed week ends it. Robo-Sharp gets neither. */
 const HOT_MIN=7;
@@ -2533,7 +2604,7 @@ function rankMoves(ids){const ws=seasonWeeks();if(ws.length<2)return {};const pl
   const rank=list=>{const t=tallySeason(list,k=>state.weeks[k],pl,ids).rows;const o={};t.forEach((r,i)=>{const p=t[i-1];r.rk=p&&p.cpts===r.cpts&&p.clw===r.clw&&p.ctb===r.ctb?p.rk:i+1;o[r.pid]={rk:r.rk,weeks:r.weeks}});return o};
   const a=rank(ws.slice(0,-1)),b=rank(ws);const out={};for(const p of ids)if(a[p]&&b[p])out[p]=a[p].weeks?a[p].rk-b[p].rk:"new";return out}
 /* Iron Man, the belt, and hot hand sit on their own small line under the name, so a long name cannot cut them off. */
-function marksH(pid){const t=ironTag(pid)+beltTag(pid)+hotTag(pid);return t?`<span class="marks">${t}</span>`:""}
+function marksH(pid){const t=ironTag(pid)+beltTag(pid)+hotTag(pid);return t?`<span class="marks">${t.trim()}</span>`:""}
 function moveTag(m){return m==="new"?'<i class="mv new">new</i>':m>0?`<i class="mv up" aria-label="up ${m}">▲${m}</i>`:m<0?`<i class="mv dn" aria-label="down ${-m}">▼${-m}</i>`:""}
 
 /* ---------- class badges ---------- */
@@ -2547,12 +2618,14 @@ function classBadge(pid){const y=classYear(pid);if(!y)return "";const rs=y===202
 function classPanel(sel){const gone=new Set(removed());const by={};
   for(const pid of state.pickedIn||[]){const y=classYear(pid);if(!y||gone.has(pid))continue;(by[y]=by[y]||[]).push(pid)}
   const ys=Object.keys(by).map(Number).sort((a,b)=>a-b);if(!ys.length)return "";
-  return `<div class="panel"><h2>Classes</h2><p class="note">Your class is the season you made your first pick. It stays on your profile for good.</p>${ys.map(y=>`<h3 class="rh">${classBadge(by[y][0])} <span class="note">${by[y].length} picker${by[y].length===1?"":"s"}</span></h3><div class="clslist">${by[y].sort((a,b)=>nm(a).localeCompare(nm(b))).map(pid=>`<button type="button" class="clsp${pid===sel?" on":""}" data-pk="${esc(pid)}">${chip(pid,true)}${esc(nm(pid))}</button>`).join("")}</div>`).join("")}</div>`}
+  return `<div class="panel"><h2>Classes</h2><p class="note">Your class is the season you made your first pick. It stays on your profile for good.</p>${ys.map(y=>`<details class="clsgrp"${state.clsOpen&&state.clsOpen[y]?" open":""} data-cls="${y}"><summary class="rh">${classBadge(by[y][0])} <span class="note">${by[y].length} picker${by[y].length===1?"":"s"}</span></summary><div class="clslist">${by[y].sort((a,b)=>nm(a).localeCompare(nm(b))).map(pid=>`<button type="button" class="clsp${pid===sel?" on":""}" data-pk="${esc(pid)}">${chip(pid,true)}${esc(nm(pid))}</button>`).join("")}</div></details>`).join("")}</div>`}
+/* Classes start folded; an opened class stays open across redraws (in memory, not saved). */
+document.addEventListener("toggle",e=>{const d=e.target;if(!d.classList||!d.classList.contains("clsgrp"))return;state.clsOpen=state.clsOpen||{};state.clsOpen[d.dataset.cls]=d.open},true);
 
 /* ---------- standings ---------- */
 /* Share of graded picks that were right. Null until a pick is graded. Field goals count once. */
 const pickPct=r=>r.w+r.l?r.w/(r.w+r.l):null;
-const pctText=r=>{const p=pickPct(r);return p==null?"–":(p*100).toFixed(1)+"%"};
+const pctText=r=>{const p=pickPct(r);return p==null?"–":Math.round(p*100)+"%"};
 /* Display order only. Rank numbers always come from points. Ties keep their standings order. */
 function seasonSort(rows){return state.seasonSort==="pct"?[...rows].sort((a,b)=>(pickPct(b)??-1)-(pickPct(a)??-1)||b.w-a.w):rows}
 /* Everyone with at least one game picked, including a sheet in a week that has not locked. */
@@ -2598,12 +2671,15 @@ function renderStandings(){
   if(rev&&stWeeks.length>1){if(state.stWeek&&stWeeks.includes(state.stWeek)&&state.stWeek!==wid){wid=state.stWeek;w=state.weeks[wid];rev=state.reveals[wid]}
     h+=`<div class="bar stwk"><label for="stWeekSel" class="note">Week</label><select id="stWeekSel">${stWeeks.slice().reverse().map(k=>{const x=state.weeks[k];return `<option value="${esc(k)}" ${k===wid?"selected":""}>${x.confChamp?"Conference Champion Week":"Week "+esc(x.week)}${x.status==="final"?"":" (in progress)"}</option>`}).join("")}</select></div>`}
   if(w&&rev){
-    const wk=Object.entries(weekPlayers(wid,true)).map(([pid,p])=>({pid,...scoreWeek(w,p)}));
+    const wk=Object.entries(weekPlayers(wid,true)).map(([pid,p])=>({pid,...scoreWeek(w,p)})).filter(r=>state.isOwner||!removed().includes(r.pid));
     wk.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));
     const allFinal=w.status==="final";const win=weekWinners(wid);
+    /* Awards column: the belt for the week's winner, the pinch for second (the next best score and tiebreaker; ties share). */
+    const rest=win.length?wk.filter(r=>r.pid!==BOT&&!win.includes(r.pid)&&!removed().includes(r.pid)):[];const sec=rest[0]?rest.filter(r=>r.pts===rest[0].pts&&(r.tbMiss??1e9)===(rest[0].tbMiss??1e9)).map(r=>r.pid):[];
+    const award=pid=>win.includes(pid)?`<span class="beltic" title="Weekly winner" aria-label="Weekly winner">${BELT}</span>`:sec.includes(pid)?'<span title="Second, so close" aria-label="Second place">\u{1F90F}</span>':"";
     const nGames=(w.games||[]).filter(g=>!(w.results&&w.results[g.id]&&w.results[g.id].void)).length;
     h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">${allFinal?"Final.":"Provisional: "+(wk[0]?wk[0].graded:0)+" of "+nGames+" games graded."}${win.length?(w.confChamp?(win.length>1?" Shared Conference Champion Week: ":" Conference Champion Week winner: "):win.length>1?" Shared weekly title: ":" Weekly winner: ")+win.map(nm).map(esc).join(", ").replace(/\.?$/,"."):""}</p>
-    <div class="tablewrap"><table><thead><tr><th>Picker</th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${wk.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${win.includes(r.pid)?" 🏆":""}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw?"Hit":r.ll?"Miss":"–"}</td><td class="num">${r.pid===BOT&&!(botPicks(w)||{}).tb?"–":r.tbMiss??"–"}</td></tr>`).join("")}</tbody></table></div><p class="note">ATS = correct picks against the spread. TB = how far off the tiebreaker guess was. Lower is better.</p></div>`;
+    <div class="tablewrap"><table><thead><tr><th>Picker</th><th class="aw"><span class="sr">Awards</span></th><th class="num">Pts</th><th class="num">ATS</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${wk.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}${removed().includes(r.pid)?" out":""}"><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}</td><td class="aw">${award(r.pid)}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${r.lw?"Hit":r.ll?"Miss":"–"}</td><td class="num">${r.pid===BOT&&!(botPicks(w)||{}).tb?"–":r.tbMiss??"–"}</td></tr>`).join("")}</tbody></table></div><p class="note">${win.length?BELT+" Weekly winner. \u{1F90F} Second, so close. ":""}ATS = correct picks against the spread. TB = how far off the tiebreaker guess was. Lower is better.</p></div>`;
   }else if(w){h+=`<div class="board"><h2>Week ${w.week}</h2><p class="note">Weekly standings appear after picks lock at ${kick(w.deadline)}.</p></div>`}
   const max=Math.max(1,...active.map(r=>r.pts));
   /* Rank arrows (item 53) show only in the default view, the one the ranks count in. */
@@ -2614,14 +2690,15 @@ function renderStandings(){
     if(dropView)h+=`<p class="note">${T.official?`Each picker's lowest regular week no longer counts.${T.locked?" Locked for the season.":""}`:`Projection: if the season ended today, each picker's lowest regular week would drop. It starts counting once ${T.need} more regular week${T.need===1?" is":"s are"} final.`} ATS and Pct still count every game.</p>`}
   const byPct=state.seasonSort==="pct";const sortBtn=(k,t,title)=>`<button class="ssort" data-seasonsort="${k}" aria-pressed="${(k==="pct")===byPct}" title="${title}">${t}</button>`;
   if(!active.length)h+='<p class="note">No picks in yet.</p>';
-  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num rkc">${r.rk}${showMv&&r.pid!==BOT?moveTag(mv[r.pid]):""}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${marksH(r.pid)}${dropTag(r)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${seasonSort(out).map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}${info("season",`Ranked by points, then field goals made, then smallest total tiebreaker miss. A week with no sheet scores 0 with a tiebreaker guess of 0. Drop worst week: each picker's lowest regular week comes off the season total once ${DROP_MIN} regular weeks are final, and Conference Champion Week never drops. Until then, If it ended today shows the projection. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.`)}`;
+  else h+=`<div class="tablewrap"><table><thead><tr><th>#</th><th>Picker</th><th class="aw"><span class="sr">Marks</span></th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num rkc">${r.rk}${showMv&&r.pid!==BOT?moveTag(mv[r.pid]):""}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="aw">${marksH(r.pid)}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${(state.isOwner?seasonSort(out):[]).map(r=>`<tr class="out"><td></td><td>${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}</td><td class="aw"></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}${info("season",`Ranked by points, then field goals made, then smallest total tiebreaker miss. A week with no sheet scores 0 with a tiebreaker guess of 0. Drop worst week: each picker's lowest regular week comes off the season total once ${DROP_MIN} regular weeks are final, and Conference Champion Week never drops. Until then, If it ended today shows the projection. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.`)}`;
   {const keys=[];if(active.some(r=>ironTag(r.pid)))keys.push("\u{1F9BE} Iron Man: every pick in, every week.");if(active.some(r=>beltTag(r.pid)))keys.push(BELT+" The belt: last week's winner.");if(active.some(r=>hotTag(r.pid)))keys.push(`\u{1F525} Hot week: ${HOT_MIN} or more correct. \u{1F525}\u00d7N: a heater, N straight hot weeks.`);if(showMv&&Object.keys(mv).length)keys.push("\u25B2\u25BC Places moved since the latest week began.");if(keys.length)h+=`<p class="note keys">${keys.join(" ")}</p>`}
   {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of Robo-Sharp.</p>`}}
   h+="</div>";
   h+=titlesPanel()+beatBotPanel()+closePanel(realStats());
   const sb=survivorBoard();
   if(sb&&sb.length){const hum=sb.filter(r=>r.pid!==BOT),alive=hum.filter(r=>r.alive);
-    h+=`<div class="panel surv"><h2>Survivor</h2><p>${alive.length} of ${hum.length} still alive${alive.length&&alive.length<=4?": "+alive.map(r=>esc(nm(r.pid))).join(", "):""}.</p><p class="note"><a href="#survivor">See the full Survivor board</a></p></div>`}
+    const outN=hum.length-alive.length;
+    h+=`<div class="panel surv svmini"><h2>\u{1F480} Survivor</h2><div class="svcount"><span class="svalive">\u{1F7E2} <b>${alive.length}</b> alive</span><span class="svdead">\u{1F480} <b>${outN}</b> out</span></div>${alive.length&&alive.length<=12?`<div class="svlist">${alive.map(r=>`<span class="svp">${chip(r.pid)}${esc(nm(r.pid))}</span>`).join("")}</div>`:""}${!alive.length&&hum.length?'<p class="note">Nobody is left standing.</p>':""}<p class="note"><a href="#survivor">See the full Survivor board →</a></p></div>`}
   el.innerHTML=h;
 }
 
@@ -2653,7 +2730,7 @@ function renderSurvivor(){
   const el=$("#v-survivor");const G=survivorGrid();
   if(!G){el.innerHTML='<div class="panel empty">Survivor has not started yet.</div>';return}
   const {weeks}=G;const all=G.rows;const rows=all.filter(r=>r.pid!==BOT);const alive=rows.filter(r=>r.alive);const cw=currentWeekId();const curOpen=!state.reveals[cw];
-  let h=`<div class="board svhead"><h2>Survivor</h2><div class="svstats"><div><b>${alive.length}</b><span>alive</span></div><div><b>${rows.length-alive.length}</b><span>out</span></div><div><b>${weeks.length}</b><span>week${weeks.length===1?"":"s"} played</span></div></div>`;
+  let h=`<div class="board svhead"><h2>\u{1F480} Survivor \u{1F480}</h2><p class="svtag">One team a week. One miss and you're out. \u{2620}\u{FE0F}</p><div class="svstats"><div><b>\u{1F7E2} ${alive.length}</b><span>alive</span></div><div><b>\u{1FAA6} ${rows.length-alive.length}</b><span>out</span></div><div><b>\u{1F5D3}\u{FE0F} ${weeks.length}</b><span>week${weeks.length===1?"":"s"} played</span></div></div>`;
   const lastW=weeks.length&&state.weeks[weeks[weeks.length-1]];const settled=lastW&&lastW.status==="final";const over=settled&&survivorFinalWeek(lastW.id);
   if(!rows.length)h+='<p class="note">Pickers appear here after their first week locks.</p>';
   else if(alive.length===1&&weeks.length)h+=settled?`<p class="svwin">🏆 ${esc(nm(alive[0].pid))} wins Survivor.</p>`:`<p class="svwin">Only ${esc(nm(alive[0].pid))} is still alive.</p>`;
@@ -3043,13 +3120,15 @@ function pastPanel(D,pid,surv){const ks=[...D.wids].filter(k=>D.players(k)[pid])
 window.tpStats={tallySeason,classYear,classLabel,classBadge,classPanel,seasonRows,pickPct,pctText,seasonSort,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
 
 function titlesPanel(){const weeks=countedWeeks(state.incTest).filter(w=>state.weeks[w].status==="final");if(!weeks.length)return "";
-  const shelf=weeks.slice().reverse().map(wid=>{const win=weekWinners(wid);return win.length?`<span class="tro">🏆 ${state.weeks[wid].confChamp?"Conf Champ":"W"+state.weeks[wid].week} · ${win.map(p=>esc(first(p))).join(" & ")}</span>`:""}).join("");
-  const n={};for(const wid of weeks.filter(k=>!state.weeks[k].confChamp))for(const p of weekWinners(wid))n[p]=(n[p]||0)+1;const lead=Object.entries(n).sort((a,b)=>b[1]-a[1]);
-  return `<div class="panel"><h2>Weekly titles</h2><div class="trophies">${shelf}</div>${lead.length?`<p class="note">Most titles: ${lead.slice(0,3).map(([p,k])=>esc(nm(p))+" "+k).join(", ")}.</p>`:""}</div>`}
+  /* One line per picker with every week they won, most titles first. The belt marks a weekly title. */
+  const by={};for(const wid of weeks)for(const p of weekWinners(wid)){if(!state.isOwner&&removed().includes(p))continue;(by[p]=by[p]||[]).push(wid)}
+  const lab=wid=>state.weeks[wid].confChamp?"Conf Champ":"Week "+state.weeks[wid].week;const nw=a=>a.filter(k=>!state.weeks[k].confChamp).length;
+  const rows=Object.entries(by).sort((a,b)=>nw(b[1])-nw(a[1])||b[1].length-a[1].length||nm(a[0]).localeCompare(nm(b[0])));if(!rows.length)return "";
+  return `<div class="panel"><h2>Weekly titles</h2><ul class="titles">${rows.map(([p,ws])=>`<li><span class="tbelt" aria-hidden="true">${BELT}</span>${chip(p)}<b>${esc(nm(p))}</b><span class="tw">${ws.map(lab).map(esc).join(", ")}</span></li>`).join("")}</ul></div>`}
 function beatBotPanel(){const weeks=countedWeeks(state.incTest);const ids=allPlayerIds(false).filter(p=>!removed().includes(p));
   const ms=ids.map(p=>({p,...modelStats(p,weeks)})).filter(x=>x.agree[0]+x.agree[1]+x.fade[0]+x.fade[1]);if(!ms.length)return "";
   const pc=a=>a[0]+a[1]?Math.round(a[0]/(a[0]+a[1])*100)+"%":"\u2013";
-  return `<div class="panel"><h2>Beat the bot</h2><p class="note">Agree = you took Robo-Sharp's side. Fade = you took the other side. Each shows your record and win rate.</p><div class="tablewrap"><table class="plain"><thead><tr><th>Picker</th><th class="num">Agree</th><th class="num">Win %</th><th class="num">Fade</th><th class="num">Win %</th></tr></thead><tbody>${ms.map(x=>`<tr><td class="pn">${esc(nm(x.p))}</td><td class="num">${x.agree[0]}-${x.agree[1]}</td><td class="num">${pc(x.agree)}</td><td class="num">${x.fade[0]}-${x.fade[1]}</td><td class="num">${pc(x.fade)}</td></tr>`).join("")}</tbody></table></div></div>`}
+  return `<div class="panel"><h2>Beat the bot</h2><p class="note">Agree = you took Robo-Sharp's side. Fade = you took the other side. Each shows your record and win rate.</p><div class="tablewrap"><table class="plain"><thead><tr><th>Picker</th><th class="num">Agree</th><th class="num">Win %</th><th class="num">Fade</th><th class="num">Win %</th></tr></thead><tbody>${ms.map(x=>`<tr><td class="pn">${chip(x.p)}${esc(nm(x.p))}</td><td class="num">${x.agree[0]}-${x.agree[1]}</td><td class="num">${pc(x.agree)}</td><td class="num">${x.fade[0]}-${x.fade[1]}</td><td class="num">${pc(x.fade)}</td></tr>`).join("")}</tbody></table></div></div>`}
 function trendChart(weeks,ids,sel){
   if(weeks.length<2)return '<p class="note">The chart starts after two weeks. Each line shows one picker\'s season rank after each week.</p>';
   const ranks={};ids.forEach(p=>ranks[p]=[]);const cum={};ids.forEach(p=>cum[p]={pts:0,lw:0,tb:0});

@@ -480,7 +480,7 @@ try {
   });
   check("class badges: Redshirt 2026, Class of 2027, none for Robo-Sharp", cls.mine === 2026 && /Redshirt Class of 2026/.test(cls.rs) && /clsb rs/.test(cls.rs) && /Class of 2027/.test(cls.std) && !/ rs/.test(cls.std) && cls.bot === "" && cls.none === "", JSON.stringify({ mine: cls.mine, bot: cls.bot }));
   check("Classes panel lists each class and hides removed pickers", /Classes/.test(cls.panel) && /data-pk="r26"/.test(cls.panel) && /data-pk="n27"/.test(cls.panel) && !/data-pk="gone"/.test(cls.panel) && cls.panel.indexOf("Redshirt") < cls.panel.indexOf("Class of 2027"));
-  check("correct pick % reads 62.5%, a dash before any graded pick", season.pct === "62.5%" && season.none === "–" && season.nullPct === null, JSON.stringify(season));
+  check("correct pick % rounds to a whole number, a dash before any graded pick", season.pct === "63%" && season.none === "–" && season.nullPct === null, JSON.stringify(season));
   check("Pct sort: best first, more correct picks on a tie, no graded picks last", season.order === "bfaedc" && season.plain === "ca", JSON.stringify(season));
   const rankBefore = await m.locator("#v-standings .board:has(h2:text-matches('Season')) tbody tr td:first-child").allTextContents();
   await m.click("[data-seasonsort=pct]");
@@ -492,8 +492,8 @@ try {
   for (const width of [360, 390]) {
     await m.setViewportSize({ width, height: 740 });
     const fit = await m.evaluate(() => { const box = [...document.querySelectorAll("#v-standings .board")].find((b) => /Season/.test(b.querySelector("h2").textContent)).querySelector(".tablewrap");
-      box.querySelectorAll("tbody tr").forEach((tr) => { const c = tr.children; c[1].lastChild.textContent = "Christopher Montgomery"; ["112", "78-52", "60.0%", "14-6", "123"].forEach((t, i) => (c[i + 2].textContent = t)); });
-      return { sw: box.scrollWidth, cw: box.clientWidth }; });
+      box.querySelectorAll("tbody tr").forEach((tr) => { const c = tr.children; c[1].lastChild.textContent = "Christopher Montgomery"; c[2].innerHTML = '<span class="marks">\u{1F9BE}\u{1F525}\u00d73<span class="beltic"><svg class="belt" viewBox="0 0 34 18"></svg></span></span>'; ["112", "78-52", "60%", "14-6", "123"].forEach((t, i) => (c[i + 3].textContent = t)); });
+      return { sw: box.scrollWidth, cw: box.clientWidth, cells: [...box.querySelector("tbody tr").children].map((x) => Math.round(x.getBoundingClientRect().width)), head: [...box.querySelectorAll("thead th")].map((x) => Math.round(x.getBoundingClientRect().width)) }; });
     check(`season table fits a ${width} wide phone`, fit.sw <= fit.cw, JSON.stringify(fit));
   }
   await m.setViewportSize(vp);
@@ -790,6 +790,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     state.weeks["2026-w21"].status = "final";
     out.yw = (({ w, l, pts, place, was, now, rival, best, worst }) => ({ w, l, pts, place, was, now, rival, best: best && best.g.id, worst: worst && worst.g.id }))(yourWeek("2026-w21"));
     state.recapWeek = "2026-w21"; renderRecap(); out.recap = document.querySelector("#v-recap .yw").textContent;
+    out.facts = window.tpRecap.weekFacts("2026-w21").map((f) => f.t); out.allFacts = window.tpRecap.weekFacts("2026-w21", 99).map((f) => f.k); out.factRows = document.querySelectorAll("#v-recap .yw .ywfact").length;
     const D = realStats();
     out.ironMe = ironOf(D, me, 2026); out.ironC = ironOf(D, "c", 2026);
     state.weeks["2026-w20"].results.x2 = { void: true, away: 0, home: 0, final: false };
@@ -807,6 +808,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     out.outNeeded = survNeeded("2026-w22"); out.msgs = missingItems(state.weeks["2026-w22"], "2026-w22", { sel: {}, lock: null, tb: null });
     renderPicks();
     out.chips = document.querySelector("#v-picks .cks").textContent; out.picks = document.querySelector("#v-picks").textContent;
+    out.notices = [...document.querySelectorAll("#v-picks .notice")].map((n) => [n.querySelector(".nic").textContent || "svg", Math.round(n.getBoundingClientRect().height)]);
     // A picker who joins after the run's first week: bench card, no Survivor pick, a bench line in the rookie steps.
     const was = { uid: state.uid, owner: state.isOwner, pickedIn: state.pickedIn, draft: state.draft };
     state.uid = "newbie"; state.isOwner = false; state.pickedIn = []; state.draft = { sel: {}, lock: null, tb: null, surv: null };
@@ -821,12 +823,16 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   const hash0 = await m.evaluate(() => location.hash);
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(250);
   { const bb = m.locator("#survBench"); await bb.scrollIntoViewIfNeeded(); await bb.screenshot({ path: "dev/test-bench.png" }); }
+  check("Picks notices share one look and height: rival, belt, sheets in", race.notices.length >= 3 && race.notices.some((n) => n[0] === "\u{1F47F}") && race.notices.some((n) => n[0] === "\u{1F4DD}") && new Set(race.notices.map((n) => n[1])).size === 1, JSON.stringify(race.notices));
+  await m.evaluate(() => { const { state, renderPicks } = window.tpRecap; const keep = { ...window.__was }; Object.assign(state, keep); renderPicks(); document.querySelector("#v-picks .notices").scrollIntoView(); window.scrollBy(0, -20); });
+  await m.waitForTimeout(150); await m.screenshot({ path: "dev/test-notices.png" });
   await m.evaluate((h) => { const { state, renderPicks } = window.tpRecap; Object.assign(state, window.__was); renderPicks(); location.hash = h; }, hash0); await m.waitForTimeout(150);
   check("the leader's rival is the picker right behind", race.leaderRival === "b", JSON.stringify(race));
   check("your rival is the picker just above you", race.myRival === "b" && race.bRival === "a", JSON.stringify([race.myRival, race.bRival]));
   check("no rival before there are standings", race.noRivalFirstWeek === null);
   check("What you need reads the live week", /back of the lead with 2 games left\. You are tied for 2nd\..* You can still score up to \d+ points?\./.test(race.locked.need) && /^Your rival .*: \d+\. You: \d+\.$/.test(race.locked.rival), JSON.stringify(race.locked));
   check("Your week has record, best pick, worst beat, and rank move", race.yw.w === 1 && race.yw.l === 3 && race.yw.best === "x3" && race.yw.was != null && race.yw.now != null && !!race.yw.worst, JSON.stringify(race.yw));
+  check("Your week shows up to two personal facts, picked from the pool", race.facts.length === 2 && race.factRows === 2 && race.allFacts.includes("wolf") && race.allFacts.includes("crowd") && race.allFacts.includes("rival") && /Lone wolf/.test(race.facts[0]), JSON.stringify([race.facts, race.allFacts]));
   check("Your week shows at the top of the Recap", /Your week/.test(race.recap) && /Best pick/.test(race.recap) && /Worst beat/.test(race.recap) && /Season rank/.test(race.recap), race.recap);
   check("Iron Man holds with every pick in", race.ironMe && race.ironMe.weeks === 2 && race.ironMe.full, JSON.stringify(race.ironMe));
   check("a missed game ends Iron Man", race.ironC === null);
@@ -946,6 +952,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   const gm1 = await c.evaluate(() => ({ title: document.querySelector("#gmCard").alt.split("\n")[1] || "", w: document.querySelector("#gmCard").naturalWidth, rows: document.querySelectorAll("#v-groupme .gmq li").length, cur: (document.querySelector('#v-groupme .gmq [aria-current="true"]') || {}).textContent || "", tiles: document.querySelectorAll("#goFoot .gotile").length }));
   check("GroupMe draws the card as a 1179 px image (iPhone width), the week's posts, and no tiles", gm1.title.length > 0 && gm1.w === 1179 && gm1.rows >= 1 && gm1.tiles === 0, JSON.stringify(gm1));
   const gmDl = c.waitForEvent("download", { timeout: 5000 }).catch(() => null);
+  check("GroupMe has Copy URL in place of Copy text", (await c.textContent('#v-groupme [data-gm="copyurl"]')) === "Copy URL" && !(await c.$('#v-groupme [data-gm="copytxt"]')));
   await c.click('#v-groupme [data-gm="share"]');
   const gmFile = await gmDl;
   check("Save or share downloads the PNG where the share sheet is not offered", !!gmFile && /^tators-picks-week\d+-.+\.png$/.test(gmFile.suggestedFilename()), gmFile ? gmFile.suggestedFilename() : "no download");
