@@ -346,8 +346,17 @@ try {
   await c.click('[data-act="final"]'); await c.waitForTimeout(400);
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   const tags = await m.$$eval("#v-picks .side .cv", (e) => e.map((x) => x.textContent + "|" + x.className));
-  check("result reveal shows the games that went final", (await m.locator("#reveal .rvlist li").count()) === 5, await m.locator("#reveal").textContent().catch(() => "none"));
-  await m.waitForTimeout(900); await m.screenshot({ path: "dev/test-reveal.png" });
+  check("a final week opens as a sealed sheet with one card per pick", (await m.locator("#reveal.sealed .seal").count()) === 5, await m.locator("#reveal").textContent().catch(() => "none"));
+  const fgSeal = await m.evaluate(() => { const b = document.querySelector("#reveal .seal.fg"); return b ? { last: b === [...document.querySelectorAll("#reveal .seal")].pop(), off: b.disabled } : null; });
+  check("the field goal card is last and waits for the rest", !fgSeal || (fgSeal.last && fgSeal.off), JSON.stringify(fgSeal));
+  await m.waitForTimeout(900); await m.screenshot({ path: "dev/test-sealed.png" });
+  await m.click("#reveal .seal:not(.fg)"); await m.waitForTimeout(100);
+  check("tapping a card flips it to the result", (await m.locator("#reveal .seal.flipped").count()) === 1 && /Covered|Missed/.test(await m.textContent("#reveal .seal.flipped")));
+  await m.click("[data-sealall]"); await m.waitForTimeout(1100);
+  const sealEnd = await m.evaluate(() => ({ n: document.querySelectorAll("#reveal .seal.flipped").length, sum: document.querySelector("#sealSum").textContent, cls: document.querySelector("#reveal").className, head: document.querySelector("#sealHead").textContent }));
+  check("Flip all turns every card and shows the week total", sealEnd.n === 5 && /Week 10: \d+ points?, \d+-\d+\./.test(sealEnd.sum), JSON.stringify(sealEnd));
+  check("the field goal gets its own moment", !fgSeal || (/fggood|fgno/.test(sealEnd.cls) && /It\u2019s good! \+3|No good\./.test(sealEnd.head)), JSON.stringify(sealEnd));
+  await m.screenshot({ path: "dev/test-reveal.png" });
   await m.click("[data-rvclose]");
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   check("result reveal fires once on this device", (await m.locator("#reveal").count()) === 0);
@@ -372,10 +381,11 @@ try {
     const run = (won, fg) => { showReveal(w, {}, [{ g, won, fg, by: 3.5, txt: "UGA -10.5" }]); const e = document.querySelector("#reveal"); return e.className + "|" + e.querySelector("h2").textContent; };
     out.win = run(true, false); out.loss = run(false, false); out.fg = run(true, true); document.querySelector("#reveal").remove(); return out;
   });
-  check("single game reveal wording", single.win === "win|You covered!" && single.loss === "loss|Bummer, you didn\u2019t cover." && single.fg === "win|Field goal is good!", JSON.stringify(single));
+  check("single game reveal wording", single.win === "win|You covered!" && single.loss === "loss|Bummer, you didn\u2019t cover." && single.fg === "win fggood|It\u2019s good! +3", JSON.stringify(single));
   await m.evaluate(() => localStorage.removeItem(window.tpRecap.seenKey()));
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
-  check("first visit after a week closes stays quiet", (await m.locator("#reveal").count()) === 0);
+  check("first visit after a week closes opens the sealed sheet", (await m.locator("#reveal.sealed").count()) === 1);
+  await m.click("#reveal [data-rvclose]");
   // A full league: 14 pickers over two weeks, drawn on the page with made-up picks.
   const full = await m.evaluate(() => {
     const { state, recapFacts, renderRecap, currentWeekId } = window.tpRecap;
@@ -409,6 +419,41 @@ try {
   const st = await m.textContent("#v-standings");
   check("standings show the week", st.includes("Week 10") && st.includes("Mike T."));
   check("Robo-Sharp plays", st.includes("Robo-Sharp"));
+  // The belt, hot hand, rank arrows, near miss, and the week dropdown (items 51, 56, 53, 52, 40), drawn on the page with three made-up weeks.
+  const pz = await m.evaluate(() => {
+    const T = window.tpRecap; const { state } = T;
+    const keep = { weeks: state.weeks, reveals: state.reveals, config: state.config, roster: state.roster, pickedIn: state.pickedIn, uid: state.uid, names: { ...state.names }, stWeek: state.stWeek };
+    const games = Array.from({ length: 10 }, (_, i) => ({ id: "q" + i, slot: i + 1, away: "Away" + i, home: "Home" + i, homeLine: -0.5 }));
+    const res = Object.fromEntries(games.map((g) => [g.id, { home: 20, away: 10, final: true, void: false }]));
+    const sheet = (k, tb) => ({ sel: Object.fromEntries(games.map((g, i) => [g.id, i < k ? "home" : "away"])), lock: null, tb });
+    const wk = (n) => ({ id: "2026-x" + n, season: 2026, week: n, status: "final", deadline: "2026-11-0" + n + "T16:15:00Z", games, results: res });
+    const plan = { 1: [8, 5, 7], 2: [7, 9, 6], 3: [7, 2, 7] };
+    state.weeks = {}; state.reveals = {};
+    for (const n of [1, 2, 3]) { const w = wk(n); state.weeks[w.id] = w; const [a, b, c] = plan[n]; state.reveals[w.id] = { players: { hA: sheet(a, 30), hB: sheet(b, 30), hC: sheet(c, 40) }, excluded: [] }; }
+    state.config = { ...keep.config, season: 2026, removed: [] }; state.roster = ["hA", "hB", "hC"]; state.pickedIn = ["hA", "hB", "hC"];
+    Object.assign(state.names, { hA: "Al Able", hB: "Bo Baker", hC: "Cy Cole" });
+    const out = { belt: T.beltOf(), hotA: T.hotOf("hA"), hotB: T.hotOf("hB"), hotC: T.hotOf("hC"), moves: T.rankMoves(["hA", "hB", "hC"]) };
+    state.uid = "hC"; out.nearC3 = T.nearMiss("2026-x3"); out.nearC2 = T.nearMiss("2026-x2"); state.uid = "hA"; out.nearA3 = T.nearMiss("2026-x3");
+    state.stWeek = undefined; location.hash = "#standings"; T.renderStandings();
+    const v = document.querySelector("#v-standings"); out.opts = [...v.querySelectorAll("#stWeekSel option")].map((o) => o.textContent);
+    const row = (n) => [...v.querySelectorAll("tbody tr")].filter((tr) => tr.textContent.includes(n)).pop();
+    out.rowA = row("Al Able").innerHTML; out.rowC = row("Cy Cole").textContent; out.rowB = row("Bo Baker").textContent;
+    out.width = document.documentElement.scrollWidth;
+    const sel = v.querySelector("#stWeekSel"); sel.value = "2026-x1"; sel.dispatchEvent(new Event("change", { bubbles: true }));
+    out.picked = document.querySelector("#v-standings .board h2").textContent;
+    window.__payRestore = () => { Object.assign(state, keep); T.render(); };
+    return out;
+  });
+  check("the belt goes to the latest week's winner, on the tiebreaker", pz.belt && pz.belt.pids.join() === "hA" && pz.belt.week === 3, JSON.stringify(pz.belt));
+  check("hot hand: 7 or more is hot, two or more straight is a heater, a cold week ends it", pz.hotA && pz.hotA.n === 3 && !pz.hotB && pz.hotC && pz.hotC.n === 1, JSON.stringify([pz.hotA, pz.hotB, pz.hotC]));
+  check("rank arrows count places moved since the latest week began", pz.moves.hA === 0 && pz.moves.hC === 1 && pz.moves.hB === -1, JSON.stringify(pz.moves));
+  check("near miss: a tiebreaker loss and one short of a hot week", /Tied for the top score in Week 3/.test(pz.nearC3.join()) && /hot week/.test(pz.nearC2.join()) && pz.nearA3.length === 0, JSON.stringify([pz.nearC3, pz.nearC2, pz.nearA3]));
+  check("season table shows the belt, the heater, and the arrows", /beltic/.test(pz.rowA) && /\u00d73/.test(pz.rowA) && /\u25B21/.test(pz.rowC) && /\u25BC1/.test(pz.rowB), JSON.stringify([pz.rowC, pz.rowB]));
+  check("week dropdown lists the season's weeks and shows the one picked", pz.opts.join() === "Week 3,Week 2,Week 1" && pz.picked === "Week 1", JSON.stringify([pz.opts, pz.picked]));
+  check("standings with the new marks have no sideways scroll", pz.width <= 390, String(pz.width));
+  await m.evaluate(() => { window.tpRecap.renderStandings(); }); await m.waitForTimeout(100);
+  await m.screenshot({ path: "dev/test-payoffs.png", fullPage: true });
+  await m.evaluate(() => window.__payRestore());
   // Season table: who shows, correct pick %, and the sort.
   const season = await m.evaluate(async () => {
     const { state } = window.tpRecap; const { seasonRows, pickPct, pctText, seasonSort } = window.tpStats;
