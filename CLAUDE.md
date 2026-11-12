@@ -181,6 +181,12 @@ From the Nov 11 dopamine review (Benton's calls Nov 11). Goal: make the payoffs 
 54. Humans vs Robo-Sharp. Approved, lower priority. A season team score: the league's combined ATS record against Robo-Sharp's, so every correct pick helps, even from last place. Recognition only.
 55. Awards Night. Approved; build while working on the postseason, ready before the title game Jan 25. One season finale page: season champion, Survivor winners, contest winners, and superlatives from the whole season (for example most lone wolves, worst beats, Robo-Sharp beaters, Iron Man). To settle: how it relates to item 19's personal season recap, and the superlative list.
 
+From the Nov 12 full app review (Benton's calls Nov 12: good ideas, logged as future plans; no go to build yet, timing not set).
+61. Database backup. A copy of the league's data outside Neon, so a bad write or a lost Neon project does not end the records. Today there is no export: Manual backups in Commish only loads slates and rankings. Plan: one export taken by hand now, then a weekly automatic export, and one restore drill into a Neon branch to prove it works. This is the first concrete answer to item 21.
+62. Wrong PIN counter. `api/auth.js` reads the fail count, checks the PIN, then writes the count plus one, so wrong guesses that arrive at the same moment can count as one. Make it one statement (`update players set fail_count = fail_count + 1 ... returning fail_count`) and decide from the returned number. Same build: a PIN change in Profile signs out the picker's other devices (raise `session_v`), as Reset PIN already does.
+63. Score edits against the scores job. A commissioner score edit and the scores job each read the whole week, change it, and write it back. The jobs hold the database lock (`takeLock`); the commissioner actions in `api/admin.js` do not, so a hand score saved during a scores run can be overwritten. Fix: the week-writing commissioner actions take the same lock, or the scores job reads the week again just before it saves.
+Not tracker items: a second scheduler beside GitHub Actions (review item A4; Benton asked what it means, not decided), and two-factor login on GitHub, Vercel, and Neon (A5; Benton handles it himself).
+
 ### Next season (2027)
 4. Survivor: ATS, fixed runs. Decided: Survivor stays against the spread in 2026 and 2027. Replaces the two skulls idea, which is dropped.
    - Conference lock is being tested in the 2026 second run (item 10). Decide after that run whether it stays for 2027.
