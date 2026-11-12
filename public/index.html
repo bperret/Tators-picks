@@ -213,7 +213,7 @@ tr.out td{color:var(--board-dim);text-decoration:line-through;text-shadow:none}
 .whocols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .wc{border-top:3px solid var(--tc);padding-top:4px;display:flex;flex-wrap:wrap;gap:2px 10px;align-content:flex-start;font-size:.86rem;line-height:1.5;min-width:0}
 .wch{flex-basis:100%;font-family:var(--cond);font-weight:700;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.wn{white-space:nowrap}
+.wn{white-space:normal;overflow-wrap:anywhere}
 .wn.me{font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .wn.fg{color:var(--ink);font-weight:600}
 .wn.fg .gp{width:13px;height:13px;vertical-align:-2px;margin-right:2px;stroke:#c9a227;stroke-width:2.6;fill:none}
@@ -1054,7 +1054,7 @@ function curWeek(){return state.weeks[currentWeekId()]||null}
 function removed(){return (state.config&&state.config.removed)||[]}
 const canon=n=>ALIAS[String(n).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"")]||n;
 const nm=id=>id===BOT?"Robo-Sharp":(state.names[id]||"Picker");
-const first=id=>id===BOT?"Robo-Sharp":nm(id).split(" ")[0];
+const first=id=>id===BOT?"Robo-Sharp":nm(id); /* Full names everywhere (Benton, Nov 12); kept as a helper so callers stay the same. */
 
 /* ---------- app layer: talks to the Tator's Picks server ---------- */
 let SERVER_OFFSET=0,PLAYERS={},ME=null,POLL=null;
@@ -2753,8 +2753,9 @@ function renderSurvivor(){
   if(weeks.length){const counts=weeks.map(wid=>rows.filter(r=>{const c=r.cells[wid];return c&&(c.rev||(c.st!=="gone"&&c.st!=="miss"&&c.st!=="loss"))}).length);const start=rows.length;
     h+=`<div class="panel"><h2>Still standing after each week</h2><div class="svbars">${[start,...counts].map((n,i)=>`<div class="svbar"><span class="svn">${n}</span><span class="svb" style="height:${start?Math.max(4,n/start*80):4}px"></span><span class="note">${i===0?"Start":"W"+state.weeks[weeks[i-1]].week}</span></div>`).join("")}</div></div>`}
   /* grid */
-  const wks=weeks.slice().reverse();
-  const head=(curOpen&&survivorOpen(cw)?`<th class="num">W${state.weeks[cw]?state.weeks[cw].week:""}</th>`:"")+wks.map(wid=>`<th class="num">W${state.weeks[wid].week}</th>`).join("");
+  /* Oldest week on the left, the open week at the right end (Benton, Nov 12). */
+  const wks=weeks.slice();
+  const head=wks.map(wid=>`<th class="num">W${state.weeks[wid].week}</th>`).join("")+(curOpen&&survivorOpen(cw)?`<th class="num">W${state.weeks[cw]?state.weeks[cw].week:""}</th>`:"");
   const cell=(c)=>{if(!c)return '<td></td>';if(c.st==="gone")return '<td class="svc gone" aria-label="out"></td>';if(c.st==="miss")return `<td class="svc loss"><span class="svt">No pick</span>${c.rev?'<span class="svl">Resurrected</span>':""}</td>`;
     const L=teamLook(c.team,c.g,c.side);const lab={win:"Covered",loss:"Lost",void:"Void",pending:"Pending"}[c.st];
     return `<td class="svc ${c.st}" title="${esc(c.team)} ${fmtLine(c.line)}: ${lab}${c.mg!=null?" by "+Math.abs(c.mg):""}"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">${fmtLine(c.line)}${c.mg!=null&&c.st!=="void"?" \u00b7 "+(c.mg>0?"covered by "+c.mg:c.mg<0?"missed by "+Math.abs(c.mg):"push"):""}${c.rev?" \u00b7 resurrected":""}</span></td>`};
@@ -2762,7 +2763,7 @@ function renderSurvivor(){
   const curCell=pid=>{if(!(curOpen&&survivorOpen(cw)))return "";const r=rows.find(x=>x.pid===pid);if(r&&!r.alive)return '<td class="svc gone"></td>';
     if(pid===state.uid){if(!myCur)return '<td class="svc next"><span class="svt">Not picked</span></td>';const w=state.weeks[cw];const g=w&&w.games.find(x=>x.id===myCur.g);if(!g)return '<td class="svc next"></td>';const team=myCur.s==="home"?g.home:g.away;const L=teamLook(team,g,myCur.s);return `<td class="svc next"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">Your pick</span></td>`}
     return '<td class="svc next"><span class="svl">Hidden until the lock</span></td>'};
-  h+=`<div class="panel"><h2>Picks by week</h2>${info("survgrid",`Newest week first. Each cell shows the team, its line, and how far it covered or missed. Picks stay hidden until the weekly lock. Robo-Sharp 🤖 plays but cannot win.`)}<div class="tablewrap"><table class="svtab"><thead><tr><th>Picker</th><th>Status</th>${head}</tr></thead><tbody>${all.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.alive?"":" svout"}"><td class="svp">${typeof chip==="function"?chip(r.pid):""}${esc(nm(r.pid))}</td><td>${r.alive?'<span class="svs alive">Alive</span>':'<span class="svs out">💀 Out W'+r.outWeek+'</span>'}</td>${curCell(r.pid)}${wks.map(wid=>cell(r.cells[wid])).join("")}</tr>`).join("")}</tbody></table></div>
+  h+=`<div class="panel"><h2>Picks by week</h2>${info("survgrid",`Oldest week on the left, newest on the right. Each cell shows the team, its line, and how far it covered or missed. Picks stay hidden until the weekly lock. Robo-Sharp 🤖 plays but cannot win.`)}<div class="tablewrap"><table class="svtab"><thead><tr><th>Picker</th><th>Status</th>${head}</tr></thead><tbody>${all.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.alive?"":" svout"}"><td class="svp">${typeof chip==="function"?chip(r.pid):""}${esc(nm(r.pid))}</td><td>${r.alive?'<span class="svs alive">Alive</span>':'<span class="svs out">💀 Out W'+r.outWeek+'</span>'}</td>${wks.map(wid=>cell(r.cells[wid])).join("")}${curCell(r.pid)}</tr>`).join("")}</tbody></table></div>
   <div class="svkey"><span class="svc win"><span class="svt">Covered</span></span><span class="svc loss"><span class="svt">Lost</span></span><span class="svc pending"><span class="svt">Pending</span></span><span class="svc void"><span class="svt">Void, still alive</span></span></div></div>`;
   /* teams left for me */
   const me=rows.find(r=>r.pid===state.uid);
