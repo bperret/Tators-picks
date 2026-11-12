@@ -988,6 +988,8 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const gmU = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
     check("Undo posted clears the mark", !gmU.groupme.posted[gmKey]);
     await c.click(`#v-groupme [data-gmsel="${gmKey}"]`);
+    check("GroupMe has one About this note", (await c.locator("#v-groupme details.info").count()) === 1);
+    { const sk = c.locator('#v-groupme [data-gm="skip"]'); await sk.scrollIntoViewIfNeeded(); await c.evaluate(() => window.scrollBy(0, -220)); await c.screenshot({ path: "dev/test-gmskip.png" }); }
     check("a gray Skipped button sits under Posted", await c.evaluate(() => { const p = document.querySelector('#v-groupme [data-gm="post"]'), s = document.querySelector('#v-groupme [data-gm="skip"]'); return !!p && !!s && s.textContent === "Skipped" && s.getBoundingClientRect().top > p.getBoundingClientRect().bottom - 1; }));
     await c.click('#v-groupme [data-gm="skip"]'); await c.waitForTimeout(400);
     const gmK = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
