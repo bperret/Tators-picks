@@ -899,11 +899,24 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.evaluate(() => (location.hash = "#picks"));
   await c.evaluate(() => (location.hash = "#groupme")); await c.waitForSelector("#gmCard[src]");
   const gm1 = await c.evaluate(() => ({ title: document.querySelector("#gmCard").alt.split("\n")[1] || "", w: document.querySelector("#gmCard").naturalWidth, rows: document.querySelectorAll("#v-groupme .gmq li").length, cur: (document.querySelector('#v-groupme .gmq [aria-current="true"]') || {}).textContent || "", tiles: document.querySelectorAll("#goFoot .gotile").length }));
-  check("GroupMe draws the card as a 1080 px image, the week's posts, and no tiles", gm1.title.length > 0 && gm1.w === 1080 && gm1.rows >= 1 && gm1.tiles === 0, JSON.stringify(gm1));
+  check("GroupMe draws the card as a 1179 px image (iPhone width), the week's posts, and no tiles", gm1.title.length > 0 && gm1.w === 1179 && gm1.rows >= 1 && gm1.tiles === 0, JSON.stringify(gm1));
   const gmDl = c.waitForEvent("download", { timeout: 5000 }).catch(() => null);
   await c.click('#v-groupme [data-gm="share"]');
   const gmFile = await gmDl;
   check("Save or share downloads the PNG where the share sheet is not offered", !!gmFile && /^tators-picks-week\d+-.+\.png$/.test(gmFile.suggestedFilename()), gmFile ? gmFile.suggestedFilename() : "no download");
+  const gmFit = [];
+  for (const k of ["live", "last", "lock", "final", "pv"]) { const sel = await c.$(`#v-groupme [data-gmsel^="${k}:"]`); if (!sel) continue; await sel.click();
+    await c.waitForFunction(() => { const i = document.querySelector("#gmCard"); return i && i.src && !i.classList.contains("wait") && i.complete && i.naturalWidth; }, null, { timeout: 5000 }).catch(() => {});
+    gmFit.push([k, await c.evaluate(() => { const i = document.querySelector("#gmCard"); return +(i.naturalHeight / i.naturalWidth).toFixed(3); })]); }
+  const gmWorst = await c.evaluate(() => { const { gmDraw, GM_W, GM_MAXH } = window.tpGM; const cv = document.createElement("canvas");
+    const games = Array.from({ length: 10 }, (_, i) => ({ away: "Mississippi State", ar: 21 + i % 4, ac: "#660000", home: "North Carolina State", hr: 12, hc: "#cc0000", at: "at", line: "NCST −10.5" }));
+    const rows = [["🎯", "Tiebreaker", "Total points in Mississippi State at North Carolina State."], ["💀", "Survivor", "Last week of this run. 12 still alive. Survive and you share it."], ["👀", "Leader watch", "Christopher B leads with 23 pts. Jonathan W is 2 back.", 1]].map(([ic, label, text, fun]) => ({ ic, label, text, fun: !!fun }));
+    const h = gmDraw(cv.getContext("2d"), { league: "Tator's Picks", kick: "Week 11", title: "Picks are live", sub: "Lock: Sat 10:15 AM CT", rows, games, foot: "Lines are final. Get your picks in." }, 0);
+    return { h: Math.ceil(h), max: GM_MAXH, w: GM_W }; });
+  check("a full 10 game Picks live card still fits an iPhone screen", gmWorst.h <= gmWorst.max, JSON.stringify(gmWorst));
+  check("every card fits an iPhone screen (9 by 19.5)", gmFit.length >= 4 && gmFit.every(([, r]) => r <= 19.5 / 9), JSON.stringify(gmFit));
+  await c.evaluate(() => { const b = document.querySelector('#v-groupme .gmq [data-gmsel^="final:"]'); if (b) b.click(); });
+  await c.waitForFunction(() => { const i = document.querySelector("#gmCard"); return i && i.src && !i.classList.contains("wait"); }, null, { timeout: 5000 }).catch(() => {});
   const gmTxt = await c.getAttribute("#gmCard", "alt");
   check("each card carries one fun fact row", /Leader watch|Robo-Sharp watch|Lone wolf|League fact/.test(gmTxt), gmTxt.split("\n").filter((l) => / watch:| wolf:| fact:/.test(l)).join(" | "));
   check("the text version names the week, ends with the site link, and stays under 1,000 characters", /WEEK \d+/.test(gmTxt) && gmTxt.length <= 1000 && gmTxt.includes("🔗 http"), String(gmTxt.length));

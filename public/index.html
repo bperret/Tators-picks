@@ -329,18 +329,18 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .bwproto{border:2px dashed var(--line);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.86rem;line-height:1.35}
 .gmwrap{max-width:440px;margin:0 auto;text-align:center}
 .gmh{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:4px 0 2px}
-.gmfig{margin:0 auto;max-width:400px}
+.gmfig{margin:0 auto;max-width:440px}
 .gmimg{display:block;width:100%;height:auto;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.18),0 0 0 1px var(--line);background:#fff;-webkit-touch-callout:default}
 .gmimg.wait{min-height:520px;background:repeating-linear-gradient(90deg,var(--turf) 0 40px,var(--turf2) 40px 80px) top/100% 92px no-repeat,#fff}
-.gmtools{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:400px;margin:12px auto 0}
+.gmtools{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:440px;margin:12px auto 0}
 .gmtools .btn{min-height:44px;padding:6px 4px;font-size:.95rem}
 .gmtools .gmsave{grid-column:1/-1;min-height:50px;font-size:1.1rem;background:var(--flag);color:var(--flag-ink);border-color:var(--flag)}
-.gmbar{display:flex;gap:8px;justify-content:center;margin:10px auto 6px;max-width:400px}
+.gmbar{display:flex;gap:8px;justify-content:center;margin:10px auto 6px;max-width:440px}
 .gmpost{background:var(--turf);color:var(--chalk);border-color:var(--turf);min-height:52px;width:100%;font-size:1.2rem}
 .gmpost:disabled{opacity:.5;cursor:default}
 .gmdone{text-align:center;align-items:center;padding:16px}
 .gmnote{text-align:center;color:var(--muted);font-size:.86rem;margin:4px 0 10px}
-.gmq{list-style:none;padding:0;margin:16px auto 10px;max-width:400px;display:flex;flex-direction:column;gap:4px}
+.gmq{list-style:none;padding:0;margin:16px auto 10px;max-width:440px;display:flex;flex-direction:column;gap:4px}
 .gmq button{width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:8px;font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left}
 .gmq button[aria-current="true"]{box-shadow:0 0 0 2px var(--flag)}
 .gmq .st{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:2px 8px;white-space:nowrap}
@@ -1746,10 +1746,8 @@ function gmModel(it){
     row("📋","What this is","The likely 10 games and today's lines. Lines can move until picks open.");M.games=gmGameRows(P?P.games:(w?w.games:[]));M.foot="Start your homework"}
   else if(it.kind==="live"){const tg=tbGame(w);const al=gmAlive(w.id);
     M.title="Picks are live";M.sub=`Lock: ${kick(w.deadline)}`;
-    row("GP","Field goal","One pick worth 3 points.");
     if(tg)row("🎯","Tiebreaker",`Total points in ${tg.away} at ${tg.home}.`);
     if(al)row("💀","Survivor",gmRunLast(w)?`Last week of this run. ${al.length} still alive. Survive and you share it.`:`${al.length} still alive. One team against the spread.`);
-    row("🤖","Robo-Sharp","Its leans are posted. Beat the robot.");
     M.games=gmGameRows(w.games);M.foot="Lines are final. Get your picks in."}
   else if(it.kind==="last"){const act=gmActive(),ids=new Set(act.map(a=>a.id));const inn=(state.sheetsIn||[]).filter(id=>ids.has(id)).length;const al=gmAlive(w.id);
     M.title="Last call";M.sub=`Lock: ${kick(w.deadline)}`;
@@ -1789,7 +1787,8 @@ function gmText(M){const L=[`🏈 ${M.league.toUpperCase()} · ${M.kick.toUpperC
 /* Canvas drawing. Fixed light colors, so the image looks the same from any device theme. */
 const GM_C={turf:"#1f5d34",turf2:"#24683b",chalk:"#f4f6f2",ink:"#111a24",muted:"#56636f",line:"#d5dbe1",box:"#f2f5f7",card:"#ffffff",board:"#0b0f14",gold:"#f2c230",flag:"#ffd100"};
 const GM_F={disp:'"Graduate","Rockwell","Arial Black",serif',cond:'"Barlow Condensed","Arial Narrow",sans-serif',body:'"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif',emo:'"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'};
-const GM_W=400,GM_S=2.7;
+/* 440 points wide, exported at 1179 px (current iPhone screen width). Cards aim to fit the 9 by 19.5 iPhone screen: GM_MAXH. */
+const GM_W=440,GM_S=1179/440,GM_MAXH=Math.floor(GM_W*19.5/9);
 function gmWrap(ctx,text,max){const out=[];for(const para of String(text).split("\n")){let cur="";for(const wd of para.split(/\s+/).filter(Boolean)){const t=cur?cur+" "+wd:wd;if(!cur||ctx.measureText(t).width<=max)cur=t;else{out.push(cur);cur=wd}}out.push(cur)}return out}
 function gmTrack(ctx,text,cx,y,sp){const ch=[...text];const ws=ch.map(c=>ctx.measureText(c).width);const tot=ws.reduce((a,b)=>a+b,0)+sp*(ch.length-1);let x=cx-tot/2;const al=ctx.textAlign;ctx.textAlign="left";ch.forEach((c,i)=>{ctx.fillText(c,x,y);x+=ws[i]+sp});ctx.textAlign=al;return tot}
 function gmTrackW(ctx,text,sp){const ch=[...text];return ch.reduce((a,c)=>a+ctx.measureText(c).width,0)+sp*(ch.length-1)}
@@ -1801,45 +1800,48 @@ function gmGoal(ctx,cx,y,size,color){const k=size/24;ctx.save();ctx.translate(cx
 function gmDraw(ctx,M,H){const W=GM_W,cx=W/2,C=GM_C,F=GM_F;ctx.textAlign="center";ctx.textBaseline="alphabetic";
   if(H){ctx.fillStyle=C.card;ctx.fillRect(0,0,W,H)}
   // Turf header with mowing stripes and yard lines.
-  for(let x=0,i=0;x<W;x+=40,i++){ctx.fillStyle=i%2?C.turf2:C.turf;ctx.fillRect(x,0,40,92)}
-  ctx.fillStyle="rgba(255,255,255,.14)";for(let x=20;x<W;x+=80)ctx.fillRect(x,0,1.5,92);
-  ctx.fillStyle=C.chalk;ctx.globalAlpha=.88;ctx.font=`600 12px ${F.cond}`;gmTrack(ctx,"COLLEGE FOOTBALL · ATS",cx,30,2.6);ctx.globalAlpha=1;
-  ctx.fillText(gmFit(ctx,M.league,W-40,31,400,F.disp,20),cx,70);
+  for(let x=0,i=0;x<W;x+=40,i++){ctx.fillStyle=i%2?C.turf2:C.turf;ctx.fillRect(x,0,40,86)}
+  ctx.fillStyle="rgba(255,255,255,.14)";for(let x=20;x<W;x+=80)ctx.fillRect(x,0,1.5,86);
+  ctx.fillStyle=C.chalk;ctx.globalAlpha=.88;ctx.font=`600 12px ${F.cond}`;gmTrack(ctx,"COLLEGE FOOTBALL · ATS",cx,28,2.6);ctx.globalAlpha=1;
+  ctx.fillText(gmFit(ctx,M.league,W-40,31,400,F.disp,20),cx,66);
   // Referee stripe.
-  for(let x=0,i=0;x<W;x+=10,i++){ctx.fillStyle=i%2?"#f4f4f4":"#111111";ctx.fillRect(x,92,10,8)}
-  let y=100+32;
+  for(let x=0,i=0;x<W;x+=10,i++){ctx.fillStyle=i%2?"#f4f4f4":"#111111";ctx.fillRect(x,86,10,8)}
+  let y=94+28;
   ctx.fillStyle=C.muted;ctx.font=`700 13px ${F.cond}`;gmTrack(ctx,M.kick.toUpperCase(),cx,y,2.4);
-  ctx.fillStyle=C.ink;ctx.font=`400 30px ${F.disp}`;for(const l of gmWrap(ctx,M.title,W-48)){y+=38;ctx.fillText(l,cx,y)}
+  ctx.fillStyle=C.ink;ctx.font=`400 30px ${F.disp}`;for(const l of gmWrap(ctx,M.title,W-48)){y+=36;ctx.fillText(l,cx,y)}
   ctx.font=`700 18px ${F.cond}`;for(const l of gmWrap(ctx,M.sub,W-56)){y+=25;ctx.fillText(l,cx,y)}
-  y+=16;ctx.fillStyle=C.flag;gmRound(ctx,cx-28,y,56,4,2);ctx.fill();y+=20;
+  y+=13;ctx.fillStyle=C.flag;gmRound(ctx,cx-28,y,56,4,2);ctx.fill();y+=16;
   // Fact boxes: icon, label, text, all centered.
-  for(const r of M.rows){ctx.font=`500 16px ${F.body}`;const ls=gmWrap(ctx,r.text,W-76);const h=14+20+4+ls.length*21+14;
+  for(const r of M.rows){ctx.font=`500 16px ${F.body}`;const ls=gmWrap(ctx,r.text,W-76);const h=11+20+2+ls.length*21+11;
     ctx.fillStyle=r.fun?"#fff7d1":C.box;gmRound(ctx,20,y,W-40,h,12);ctx.fill();ctx.strokeStyle=r.fun?C.gold:C.line;ctx.lineWidth=r.fun?1.5:1;ctx.stroke();
     // Icon and label share one centered line.
-    const lab=r.label.toUpperCase();ctx.font=`700 12.5px ${F.cond}`;const lw=gmTrackW(ctx,lab,1.6);const gx=cx-(20+8+lw)/2;let yy=y+14;
+    const lab=r.label.toUpperCase();ctx.font=`700 12.5px ${F.cond}`;const lw=gmTrackW(ctx,lab,1.6);const gx=cx-(20+8+lw)/2;let yy=y+11;
     if(r.ic==="GP")gmGoal(ctx,gx+10,yy,20,C.ink);else{ctx.font=`18px ${F.emo}`;ctx.fillStyle=C.ink;ctx.fillText(r.ic,gx+10,yy+17)}
     ctx.fillStyle=r.fun?"#6b5200":C.muted;ctx.font=`700 12.5px ${F.cond}`;gmTrack(ctx,lab,gx+28+lw/2,yy+15,1.6);
-    yy+=20+4;ctx.fillStyle=C.ink;ctx.font=`500 16px ${F.body}`;for(const l of ls){yy+=21;ctx.fillText(l,cx,yy)}
-    y+=h+10}
-  // The slate: away right of center, home left of center, the line in a scoreboard pill.
-  if(M.games.length){y+=10;ctx.fillStyle=C.muted;ctx.font=`700 13px ${F.cond}`;const tw=gmTrack(ctx,"THE SLATE",cx,y,2.4);
-    ctx.fillStyle=C.line;ctx.fillRect(24,y-5,cx-tw/2-36,1.5);ctx.fillRect(cx+tw/2+12,y-5,cx-tw/2-36,1.5);y+=8;
-    const half=cx-30;
-    M.games.forEach((g,i)=>{const ny=y+24;
-      const side=(name,rk,col,dir)=>{const nameT=gmFit(ctx,name,half-(rk?22:0)-14,15.5,600,F.body,11);const nf=ctx.font;const nw=ctx.measureText(nameT).width;
-        ctx.font=`700 12px ${F.cond}`;const rw=rk?ctx.measureText(String(rk)).width+4:0;const tot=10+rw+nw;const x0=dir<0?cx-18-tot:cx+18;
-        ctx.fillStyle=col;ctx.beginPath();ctx.arc(x0+4,ny-5,4,0,7);ctx.fill();ctx.textAlign="left";
-        if(rk){ctx.fillStyle=C.muted;ctx.fillText(String(rk),x0+10,ny)}ctx.font=nf;ctx.fillStyle=C.ink;ctx.fillText(nameT,x0+10+rw,ny);ctx.textAlign="center"};
-      side(g.away,g.ar,g.ac,-1);side(g.home,g.hr,g.hc,1);
-      ctx.fillStyle=C.muted;ctx.font=`600 13px ${F.cond}`;ctx.fillText(g.at,cx,ny);
-      ctx.font=`700 14px ${F.cond}`;const pw=ctx.measureText(g.line).width+20;ctx.fillStyle=C.board;gmRound(ctx,cx-pw/2,ny+8,pw,20,10);ctx.fill();ctx.fillStyle=C.gold;ctx.fillText(g.line,cx,ny+23);
-      y+=58;if(i<M.games.length-1){ctx.fillStyle=C.line;ctx.fillRect(40,y-3,W-80,1)}});
-    y+=2}
+    yy+=20+2;ctx.fillStyle=C.ink;ctx.font=`500 16px ${F.body}`;for(const l of ls){yy+=21;ctx.fillText(l,cx,yy)}
+    y+=h+8}
+  // The slate: a two column grid of game tiles, like the Scoreboard tab. Away on top, "at" and home below, the line in a scoreboard pill.
+  if(M.games.length){y+=8;ctx.fillStyle=C.muted;ctx.font=`700 13px ${F.cond}`;const tw=gmTrack(ctx,"THE SLATE",cx,y+4,2.4);
+    ctx.fillStyle=C.line;ctx.fillRect(24,y-1,cx-tw/2-36,1.5);ctx.fillRect(cx+tw/2+12,y-1,cx-tw/2-36,1.5);y+=14;
+    const gap=6,tw2=(W-40-gap)/2,th=60;
+    const team=(tx,ny,name,rk,col,pre)=>{const max=tw2-20-(rk?20:0)-(pre?20:0);const nameT=gmFit(ctx,name,max,14.5,600,F.body,10.5);const nf=ctx.font;const nw=ctx.measureText(nameT).width;
+      ctx.font=`600 11.5px ${F.cond}`;const pw=pre?ctx.measureText(pre).width+5:0;ctx.font=`700 11.5px ${F.cond}`;const rw=rk?ctx.measureText(String(rk)).width+3:0;
+      const tot=pw+10+rw+nw;let x=tx-tot/2;ctx.textAlign="left";
+      if(pre){ctx.fillStyle=C.muted;ctx.font=`600 11.5px ${F.cond}`;ctx.fillText(pre,x,ny);x+=pw}
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(x+3.5,ny-4.5,3.5,0,7);ctx.fill();x+=10;
+      if(rk){ctx.fillStyle=C.muted;ctx.font=`700 11.5px ${F.cond}`;ctx.fillText(String(rk),x,ny);x+=rw}
+      ctx.font=nf;ctx.fillStyle=C.ink;ctx.fillText(nameT,x,ny);ctx.textAlign="center"};
+    M.games.forEach((g,i)=>{const col=i%2,row=Math.floor(i/2);const tx=20+col*(tw2+gap),ty=y+row*(th+gap),mx=tx+tw2/2;
+      ctx.fillStyle=C.box;gmRound(ctx,tx,ty,tw2,th,10);ctx.fill();ctx.strokeStyle=C.line;ctx.lineWidth=1;ctx.stroke();
+      team(mx,ty+18,g.away,g.ar,g.ac,"");team(mx,ty+34,g.home,g.hr,g.hc,g.at);
+      ctx.font=`700 13px ${F.cond}`;const pw=ctx.measureText(g.line).width+18;ctx.fillStyle=C.board;gmRound(ctx,mx-pw/2,ty+39,pw,17,8.5);ctx.fill();ctx.fillStyle=C.gold;ctx.fillText(g.line,mx,ty+51.5)});
+    const rows=Math.ceil(M.games.length/2);y+=rows*th+(rows-1)*gap}
   y+=12;
   // Scoreboard footer.
   ctx.font=`700 17px ${F.cond}`;const fl=gmWrap(ctx,M.foot.toUpperCase(),W-48);const fh=20+fl.length*22+10;ctx.fillStyle=C.board;ctx.fillRect(0,y,W,fh);
   ctx.fillStyle=C.gold;fl.forEach((l,i)=>ctx.fillText(l,cx,y+34+i*22-6));
   return y+fh}
+window.tpGM={gmDraw,GM_W,GM_MAXH}; /* for the browser test */
 async function gmPaint(M,sig){
   try{await Promise.all([`400 30px "Graduate"`,`700 18px "Barlow Condensed"`,`600 12px "Barlow Condensed"`,`500 16px "Barlow"`,`600 15px "Barlow"`].map(f=>document.fonts&&document.fonts.load(f))).catch(()=>{})}catch(e){}
   const scratch=document.createElement("canvas");scratch.width=10;scratch.height=10;const H=Math.ceil(gmDraw(scratch.getContext("2d"),M,0));

@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.42.3 | Nov 11, PENDING | GroupMe | Cards sized for iPhone: 1179 px wide, each fits the 9 by 19.5 screen; the slate becomes a two column tile grid; tighter spacing; Picks live drops the field goal reminder row | S | 83 | `PENDING` |
 | 1.42.2 | Nov 11, 8:42 PM | GroupMe | One fun fact row per card in a gold box (Leader watch, league ATS record, Lone wolf, Robo-Sharp watch); Copy text ends with the site link | S | 26 | `0538fec` |
 | 1.42.1 | Nov 11, 8:07 PM | GroupMe | The card is now a 1080 px image drawn in the app's look, fully centered, with Save or share image (phone share sheet: save to Photos or send to GroupMe), Copy image, and Copy text; icon and label share a line so cards are shorter | M | 226 | `f3ae978` |
 | 1.42 | Nov 11, 7:33 PM | GroupMe (new), Commish | Commissioner-only GroupMe tab: one screenshot-ready announcement card at a time (Preview, Picks live, Last call, Locked, Final and recap) with live facts; Posted saves on the server and brings up the next post; Undo posted; week list to revisit any card (item 35, part) | M | 183 | `ba5890b` |
