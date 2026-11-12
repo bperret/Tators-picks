@@ -15,7 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
-| 1.42.1 | Nov 11, PENDING | GroupMe | The card is now a 1080 px image drawn in the app's look, fully centered, with Save or share image (phone share sheet: save to Photos or send to GroupMe), Copy image, and Copy text; icon and label share a line so cards are shorter | M | 226 | `PENDING` |
+| 1.42.1 | Nov 11, 8:07 PM | GroupMe | The card is now a 1080 px image drawn in the app's look, fully centered, with Save or share image (phone share sheet: save to Photos or send to GroupMe), Copy image, and Copy text; icon and label share a line so cards are shorter | M | 226 | `f3ae978` |
 | 1.42 | Nov 11, 7:33 PM | GroupMe (new), Commish | Commissioner-only GroupMe tab: one screenshot-ready announcement card at a time (Preview, Picks live, Last call, Locked, Final and recap) with live facts; Posted saves on the server and brings up the next post; Undo posted; week list to revisit any card (item 35, part) | M | 183 | `ba5890b` |
 | 1.41.1 | Nov 7, 1:05 PM | Scoreboard | Filter buttons drop the game counts on Top 25 and All FBS | S | 5 | `ec00c86` |
 | 1.41 | Nov 7, 12:54 PM | Scoreboard (new), Commish Engagement | Game day Scoreboard tab: one screen tile grid, Our 10 / Top 25 / All FBS, live first, your pick and cover odds on our games, ESPN line cover on the rest; day board saved from the scores job's existing pull (item 48) | M | 153 | `697f5d7` |
