@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.44.6 | Nov 12, TIME | Site | Site icon: the gold ring football badge for browser tabs, bookmarks, and the iPhone home screen | S | LINES | `PENDING` |
 | 1.44.5 | Nov 12, 1:38 PM | GroupMe | Passed and Skipped are one status ("Skipped"); the two About this notes merged into one | S | 8 | `6e7f10d` |
 | 1.44.4 | Nov 12, 1:35 PM | GroupMe | Gray Skipped button under Posted: marks a post done without posting, moves the queue on, clears the dot, Undo skipped to reverse. Unmarked posts whose moment passed now read "Passed" | S | 32 | `e1e6216` |
 | 1.44.3 | Nov 12, 1:27 PM | Tabs, GroupMe | Bowl Blitz and Army-Navy lose their red dot for now; the GroupMe dot shows only on a posting day (Wed, Sat, Sun) while that day's post is ready and not marked Posted | S | 30 | `28f76be` |

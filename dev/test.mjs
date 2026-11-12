@@ -958,6 +958,8 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
       days: [0, 1, 2, 3, 4, 5, 6].map((i) => window.tpRecap.gmDue(Date.parse("2026-11-15T18:00:00Z") + i * 864e5)) }));
     check("Bowl Blitz and Army-Navy have no action dot for now", !dots.bw && !dots.an, JSON.stringify(dots));
     check("GroupMe dot never shows on a day with no post (Tue, Thu, Mon, Fri)", !dots.tue && !dots.thu && !dots.days[1] && !dots.days[2] && !dots.days[4] && !dots.days[5], JSON.stringify(dots)); }
+  { const ic = await c.evaluate(async () => { const hrefs = [...document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]')].map((l) => l.getAttribute("href")); const ok = await Promise.all(hrefs.map((h) => fetch(h).then((r) => r.ok))); return { hrefs, ok }; });
+    check("site icons are linked and load (tab, bookmark, iPhone home screen)", ic.hrefs.length === 3 && ic.ok.every(Boolean), JSON.stringify(ic)); }
   check("GroupMe has Copy URL in place of Copy text", (await c.textContent('#v-groupme [data-gm="copyurl"]')) === "Copy URL" && !(await c.$('#v-groupme [data-gm="copytxt"]')));
   await c.click('#v-groupme [data-gm="share"]');
   const gmFile = await gmDl;
