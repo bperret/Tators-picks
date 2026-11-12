@@ -327,35 +327,20 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 :root[data-theme="dark"]{--bc-red:#FF8A80;--bc-orange:#FDBA74;--bc-gold:#FACC15;--bc-green:#6EE7B7;--bc-teal:#5EEAD4;--bc-blue:#93C5FD;--bc-purple:#D8B4FE;--bc-pink:#F9A8D4;--bc-brown:#D6A77A;--bc-slate:#CBD5E1}
 .gmeta .slot.bwname{color:var(--bc)}
 .bwproto{border:2px dashed var(--line);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.86rem;line-height:1.35}
-.gmwrap{max-width:440px;margin:0 auto}
-.gmcard{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;color:var(--ink)}
-.gmtop{background:repeating-linear-gradient(90deg,var(--turf) 0 40px,var(--turf2) 40px 80px);color:var(--chalk);padding:14px 16px 12px;text-align:center}
-.gmbrand{font-family:var(--display);font-size:1.6rem;line-height:1.1;margin-top:2px}
-.gmstripe{height:8px;background:repeating-linear-gradient(90deg,var(--stripe-a) 0 10px,var(--stripe-b) 10px 20px)}
-.gmhead{padding:14px 16px 6px;text-align:center}
-.gmkick{font-family:var(--cond);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.85rem;color:var(--muted)}
-.gmhead h2{font-family:var(--display);font-weight:400;font-size:1.7rem;margin:2px 0 4px;line-height:1.1}
-.gmhead p{margin:0;font-family:var(--cond);font-weight:700;font-size:1.1rem;letter-spacing:.03em}
-.gmrows{padding:8px 14px;display:flex;flex-direction:column;gap:8px}
-.gmrow{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
-.gmic{font-size:1.2rem;line-height:1.3;text-align:center}
-.gmic .gp{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;vertical-align:middle}
-.gmrow b{display:block;font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:.82rem;color:var(--muted)}
-.gmrow span{font-size:.98rem;line-height:1.3}
-.gmgames{list-style:none;margin:0;padding:4px 14px 10px;display:flex;flex-direction:column}
-.gmgames li{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:5px 0;font-size:.92rem}
-.gmgames li:last-child{border-bottom:0}
-.gmt{border-left:4px solid var(--tc);padding-left:5px;font-weight:600}
-.gmt i{font-style:normal;font-weight:700;color:var(--muted);font-size:.78rem;margin-right:3px}
-.gmat{color:var(--muted);margin:0 5px;font-size:.82rem}
-.gmln{font-family:var(--cond);font-weight:700;font-size:1rem;white-space:nowrap}
-.gmfoot{background:var(--board);color:var(--board-ink);font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:10px 14px;font-size:.95rem}
-.gmbar{display:flex;gap:8px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
-.gmpost{background:var(--turf);color:var(--chalk);border-color:var(--turf);min-height:48px;min-width:60%;font-size:1.15rem}
+.gmwrap{max-width:440px;margin:0 auto;text-align:center}
+.gmh{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:4px 0 2px}
+.gmfig{margin:0 auto;max-width:400px}
+.gmimg{display:block;width:100%;height:auto;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.18),0 0 0 1px var(--line);background:#fff;-webkit-touch-callout:default}
+.gmimg.wait{min-height:520px;background:repeating-linear-gradient(90deg,var(--turf) 0 40px,var(--turf2) 40px 80px) top/100% 92px no-repeat,#fff}
+.gmtools{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:400px;margin:12px auto 0}
+.gmtools .btn{min-height:44px;padding:6px 4px;font-size:.95rem}
+.gmtools .gmsave{grid-column:1/-1;min-height:50px;font-size:1.1rem;background:var(--flag);color:var(--flag-ink);border-color:var(--flag)}
+.gmbar{display:flex;gap:8px;justify-content:center;margin:10px auto 6px;max-width:400px}
+.gmpost{background:var(--turf);color:var(--chalk);border-color:var(--turf);min-height:52px;width:100%;font-size:1.2rem}
 .gmpost:disabled{opacity:.5;cursor:default}
 .gmdone{text-align:center;align-items:center;padding:16px}
 .gmnote{text-align:center;color:var(--muted);font-size:.86rem;margin:4px 0 10px}
-.gmq{list-style:none;padding:0;margin:14px 0 10px;display:flex;flex-direction:column;gap:4px}
+.gmq{list-style:none;padding:0;margin:16px auto 10px;max-width:400px;display:flex;flex-direction:column;gap:4px}
 .gmq button{width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:8px;font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left}
 .gmq button[aria-current="true"]{box-shadow:0 0 0 2px var(--flag)}
 .gmq .st{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:2px 8px;white-space:nowrap}
@@ -1707,8 +1692,9 @@ document.addEventListener("click",e=>{const f=e.target.closest("[data-sbf]");if(
   if(k.startsWith("s:")){const id=k.slice(2);location.hash="#picks";setTimeout(()=>{const c=document.getElementById("g-"+id);if(c){c.scrollIntoView({block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1200)}},80);return}
   const x=((state.board&&state.board.games)||[]).find(g=>"b:"+g.id===k);if(x)muOpen(x.a.n,x.h.n,x.ns?"n":"h",null)});
 window.tpBoard={boardOn,sbFromBoard,sbFromSlate,sbSort}; /* for the browser test */
-/* GroupMe tab (commissioner only). One screenshot-ready announcement at a time on the weekly rhythm: Preview, Picks live, Last call, Locked, Final and recap.
-   Posted marks save on the server in kv groupme (admin action gmPosted), so every device agrees. Posting is by hand: screenshot the card, post it, tap Posted. */
+/* GroupMe tab (commissioner only). One announcement at a time on the weekly rhythm: Preview, Picks live, Last call, Locked, Final and recap.
+   Each card is drawn on a canvas as a 1080 px PNG (gmDraw), so the screen shows exactly the image that gets saved, shared, or copied.
+   Posted marks save on the server in kv groupme (admin action gmPosted), so every device agrees. */
 const GM_KINDS={pv:["Preview","Mon"],live:["Picks live","Wed 6 PM"],last:["Last call","Sat morning"],lock:["Locked","Sat 10:15 AM"],final:["Final and recap","Sunday"]};
 function gmPosted(){return (state.groupme&&state.groupme.posted)||{}}
 function gmWid(n){return `${new Date(NOW()).getFullYear()}-w${String(n).padStart(2,"0")}`}
@@ -1731,75 +1717,151 @@ function gmAlive(wid){if(!survivorOpen(wid))return null;const sb=survivorBoard()
 function gmRunLast(w){return survivorFinalWeek(w.id)||String(w.origDeadline||w.deadline||"").slice(0,10)==="2026-11-14"}
 function gmLine(g,side){return fmtLine(side==="home"?g.homeLine:-g.homeLine)}
 function gmTeam(g,side){return side==="home"?g.home:g.away}
-function gmGames(gs){return `<ul class="gmgames">${[...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");
-  const fav=g.homeLine<0?hL:aL;const ln=g.homeLine===0?"PK":fmtLine(-Math.abs(g.homeLine));const rk=r=>r?`<i>${r}</i>`:"";
-  return `<li><span><span class="gmt" style="--tc:${aL.c1}">${rk(g.awayRank)}${esc(g.away)}</span><span class="gmat">${g.neutral?"vs":"at"}</span><span class="gmt" style="--tc:${hL.c1}">${rk(g.homeRank)}${esc(g.home)}</span></span><b class="gmln">${g.homeLine===0?"PK":esc(fav.abbr)+" "+ln}</b></li>`}).join("")}</ul>`}
-function gmRow(ic,label,text){return `<div class="gmrow"><span class="gmic" aria-hidden="true">${ic}</span><div><b>${esc(label)}</b><span>${text}</span></div></div>`}
-function gmTop(n,base){const c=new Map();let best=null;for(const k of base){const v=(c.get(k.id)||{...k,n:0});v.n++;c.set(k.id,v);if(!best||v.n>best.n)best=v}return best&&best.n>0?best:null}
-function gmCard(it){
-  const lg=(state.config&&state.config.name)||"Tator's Picks";let kick_="",title="",sub="",rows="",games="",foot="";
-  const w=state.weeks[it.wid];
-  if(it.kind==="pv"){const P=state.preview&&state.preview.week===it.wk?state.preview:null;const gs=P?P.games:(w?w.games:[]);
-    kick_=`Week ${it.wk}`;title="Slate preview";sub=P&&P.autoOpen===false?"Picks open soon":"Picks open Wed 6 PM CT";
-    rows=gmRow("📋","What this is","The likely 10 games and today's lines. Lines can move until picks open.");games=gmGames(gs);foot="Start your homework"}
+function gmTop(base){const c=new Map();let best=null;for(const k of base){const v=(c.get(k.id)||{...k,n:0});v.n++;c.set(k.id,v);if(!best||v.n>best.n)best=v}return best}
+const gmNames=ids=>ids.map(p=>nm(p)).join(", ").replace(/\.$/,"");
+function gmGameRows(gs){return [...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");const fav=g.homeLine<0?hL:aL;
+  return {away:g.away,ar:g.awayRank||"",ac:aL.c1,home:g.home,hr:g.homeRank||"",hc:hL.c1,at:g.neutral?"vs":"at",line:g.homeLine===0?"PK":`${fav.abbr} ${fmtLine(-Math.abs(g.homeLine))}`}})}
+/* The card as plain data: kicker, title, sub, rows ({ic, label, text}; ic "GP" draws the goalpost), games, foot. Text only, no HTML. */
+function gmModel(it){
+  const w=state.weeks[it.wid];const M={league:(state.config&&state.config.name)||"Tator's Picks",kick:`Week ${it.wk}`,title:"",sub:"",rows:[],games:[],foot:""};
+  const row=(ic,label,text)=>M.rows.push({ic,label,text});
+  if(it.kind==="pv"){const P=state.preview&&state.preview.week===it.wk?state.preview:null;
+    M.title="Slate preview";M.sub=P&&P.autoOpen===false?"Picks open soon":"Picks open Wed 6 PM CT";
+    row("📋","What this is","The likely 10 games and today's lines. Lines can move until picks open.");M.games=gmGameRows(P?P.games:(w?w.games:[]));M.foot="Start your homework"}
   else if(it.kind==="live"){const tg=tbGame(w);const al=gmAlive(w.id);
-    kick_=`Week ${it.wk}`;title="Picks are live";sub=`Lock: ${esc(kick(w.deadline))}`;
-    rows=gmRow(GP,"Field goal","One pick worth 3 points.")+(tg?gmRow("🎯","Tiebreaker",`Total points in ${esc(tg.away)} at ${esc(tg.home)}.`):"")
-      +(al?gmRow("💀","Survivor",gmRunLast(w)?`Last week of this run. ${al.length} still alive. Survive and you share it.`:`${al.length} still alive. One team against the spread.`):"")
-      +gmRow("🤖","Robo-Sharp","Its leans are posted. Beat the robot.");
-    games=gmGames(w.games);foot="Lines are final. Get your picks in."}
+    M.title="Picks are live";M.sub=`Lock: ${kick(w.deadline)}`;
+    row("GP","Field goal","One pick worth 3 points.");
+    if(tg)row("🎯","Tiebreaker",`Total points in ${tg.away} at ${tg.home}.`);
+    if(al)row("💀","Survivor",gmRunLast(w)?`Last week of this run. ${al.length} still alive. Survive and you share it.`:`${al.length} still alive. One team against the spread.`);
+    row("🤖","Robo-Sharp","Its leans are posted. Beat the robot.");
+    M.games=gmGameRows(w.games);M.foot="Lines are final. Get your picks in."}
   else if(it.kind==="last"){const act=gmActive(),ids=new Set(act.map(a=>a.id));const inn=(state.sheetsIn||[]).filter(id=>ids.has(id)).length;const al=gmAlive(w.id);
-    kick_=`Week ${it.wk}`;title="Last call";sub=`Lock: ${esc(kick(w.deadline))}`;
-    rows=gmRow("📝","Sheets in",`${inn} of ${act.length}. ${pastDeadline(w)?"Picks are locked.":esc(countdownText(w))+"."}`)
-      +(al?gmRow("💀","Survivor",`${al.length} still alive. Don't forget your Survivor pick.`):"")
-      +gmRow("⚠️","No sheet","Scores 0 points with a tiebreaker guess of 0.");
-    foot="Get your picks in"}
+    M.title="Last call";M.sub=`Lock: ${kick(w.deadline)}`;
+    row("📝","Sheets in",`${inn} of ${act.length}. ${pastDeadline(w)?"Picks are locked.":countdownText(w)+"."}`);
+    if(al)row("💀","Survivor",`${al.length} still alive. Don't forget your Survivor pick.`);
+    row("⚠️","No sheet","Scores 0 points with a tiebreaker guess of 0.");M.foot="Get your picks in"}
   else if(it.kind==="lock"){const R=state.reveals[w.id];const ps=Object.entries((R&&R.players)||{}).filter(([p])=>p!==BOT&&!removed().includes(p)).map(([,v])=>v);
-    const G=id=>w.games.find(g=>g.id===id);
+    const G=id=>w.games.find(g=>g.id===id);const say=x=>`${gmTeam(x.g,x.s)} ${gmLine(x.g,x.s)}`;
     const sides=ps.flatMap(p=>Object.entries(p.sel||{}).map(([gid,s])=>({id:gid+s,g:G(gid),s}))).filter(x=>x.g);
     const fgs=ps.filter(p=>p.lock&&(p.sel||{})[p.lock]).map(p=>({id:p.lock+p.sel[p.lock],g:G(p.lock),s:p.sel[p.lock]})).filter(x=>x.g);
     const sv=ps.filter(p=>p.surv).map(p=>({id:p.surv.g+p.surv.s,g:G(p.surv.g),s:p.surv.s})).filter(x=>x.g);
-    const say=x=>`${esc(gmTeam(x.g,x.s))} ${gmLine(x.g,x.s)}`;
-    const top=gmTop(0,sides),tf=gmTop(0,fgs),ts=gmTop(0,sv);const b=botPicks(w);const bg=b&&b.lock&&G(b.lock);
-    const k1=w.games.map(g=>Date.parse(g.kickoff)).filter(Number.isFinite).sort((a,b)=>a-b)[0];
-    kick_=`Week ${it.wk}`;title="Picks are locked";sub=`${ps.length} sheet${ps.length===1?"":"s"} in. Every pick is public now.`;
-    rows=(top?gmRow("📊","Most picked side",`${say(top)}: ${top.n} of ${ps.length}`):"")
-      +(tf?gmRow(GP,"Most popular field goal",`${say(tf)}: ${tf.n} of ${ps.length}`):"")
-      +(ts?gmRow("💀","Top Survivor pick",`${say(ts)}: ${ts.n} of ${sv.length}`):"")
-      +(bg?gmRow("🤖","Robo-Sharp's field goal",say({g:bg,s:b.sel[b.lock]})):"");
-    foot=k1&&k1>NOW()?`First kickoff ${esc(kick(new Date(k1).toISOString()))}. Scoreboard is live.`:"Games are on. Scoreboard is live."}
+    const top=gmTop(sides),tf=gmTop(fgs),ts=gmTop(sv);const b=botPicks(w);const bg=b&&b.lock&&G(b.lock);
+    const k1=w.games.map(g=>Date.parse(g.kickoff)).filter(Number.isFinite).sort((x,y)=>x-y)[0];
+    M.title="Picks are locked";M.sub=`${ps.length} sheet${ps.length===1?"":"s"} in. Every pick is public now.`;
+    if(top)row("📊","Most picked side",`${say(top)}: ${top.n} of ${ps.length}`);
+    if(tf)row("GP","Most popular field goal",`${say(tf)}: ${tf.n} of ${ps.length}`);
+    if(ts)row("💀","Top Survivor pick",`${say(ts)}: ${ts.n} of ${sv.length}`);
+    if(bg)row("🤖","Robo-Sharp's field goal",say({g:bg,s:b.sel[b.lock]}));
+    M.foot=k1&&k1>NOW()?`First kickoff ${kick(new Date(k1).toISOString())}. Scoreboard is live.`:"Games are on. Scoreboard is live."}
   else if(it.kind==="final"){const win=weekWinners(w.id);const ps=weekPlayers(w.id);const sc=win.length?scoreWeek(w,ps[win[0]]):null;
     const fg=Object.values(ps).filter(p=>scoreWeek(w,p).lw>0).length;const al=gmAlive(w.id);const T=seasonTally(false).rows.slice(0,3);
     const f=(recapFacts(w.id)||[])[0];const strip=s=>String(s||"").replace(/<[^>]*>/g,"");
-    kick_=`Week ${it.wk}`;title="Final";sub="The recap is live in the app.";
-    rows=(win.length?gmRow("🏆",win.length>1?"Weekly winners":"Weekly winner",`${win.map(p=>esc(nm(p))).join(", ")}, ${sc.pts} point${sc.pts===1?"":"s"}`):"")
-      +gmRow(GP,"Field goals made",`${fg} of ${Object.keys(ps).length}`)
-      +(al?gmRow("💀","Survivor",gmRunLast(w)?(al.length?`Run over. Sharing it: ${al.map(r=>esc(nm(r.pid))).join(", ").replace(/\.$/,"")}.`:"Run over. Nobody survived."):`${al.length} still alive.`):"")
-      +(T.length?gmRow("📈","Season leaders",T.map((r,i)=>`${i+1}. ${esc(nm(r.pid))}, ${r.cpts} pts`).join("<br>")):"")
-      +(f?gmRow("📣","From the recap",esc(strip(f.title))):"");
-    foot="Full recap on the Recap tab"}
-  return `<div class="gmcard" id="gmCard"><div class="gmtop"><div class="yard">College football · ATS</div><div class="gmbrand">${esc(lg)}</div></div><div class="gmstripe" aria-hidden="true"></div>
-    <div class="gmhead"><span class="gmkick">${esc(kick_)}</span><h2>${esc(title)}</h2><p>${sub}</p></div><div class="gmrows">${rows}</div>${games}<div class="gmfoot">${foot}</div></div>`}
+    M.title="Final";M.sub="The recap is live in the app.";
+    if(win.length)row("🏆",win.length>1?"Weekly winners":"Weekly winner",`${gmNames(win)}, ${sc.pts} point${sc.pts===1?"":"s"}`);
+    row("GP","Field goals made",`${fg} of ${Object.keys(ps).length}`);
+    if(al)row("💀","Survivor",gmRunLast(w)?(al.length?`Run over. Sharing it: ${gmNames(al.map(r=>r.pid))}.`:"Run over. Nobody survived."):`${al.length} still alive.`);
+    if(T.length)row("📈","Season leaders",T.map((r,i)=>`${i+1}. ${nm(r.pid).replace(/\.$/,"")}, ${r.cpts} pt${r.cpts===1?"":"s"}`).join("\n"));
+    if(f)row("📣","From the recap",strip(f.title));
+    M.foot="Full recap on the Recap tab"}
+  return M}
+/* Plain text of the card, for a caption or a text-only post. GroupMe allows 1,000 characters. */
+function gmText(M){const L=[`🏈 ${M.league.toUpperCase()} · ${M.kick.toUpperCase()}`,M.title.toUpperCase(),M.sub,""];
+  for(const r of M.rows)L.push(`${r.ic==="GP"?"🥅":r.ic} ${r.label}: ${r.text.replace(/\n/g,"; ")}`);
+  if(M.games.length){L.push("","THE SLATE");for(const g of M.games)L.push(`${g.ar?g.ar+" ":""}${g.away} ${g.at} ${g.hr?g.hr+" ":""}${g.home} (${g.line})`)}
+  L.push("",M.foot);return L.join("\n").slice(0,1000)}
+/* Canvas drawing. Fixed light colors, so the image looks the same from any device theme. */
+const GM_C={turf:"#1f5d34",turf2:"#24683b",chalk:"#f4f6f2",ink:"#111a24",muted:"#56636f",line:"#d5dbe1",box:"#f2f5f7",card:"#ffffff",board:"#0b0f14",gold:"#f2c230",flag:"#ffd100"};
+const GM_F={disp:'"Graduate","Rockwell","Arial Black",serif',cond:'"Barlow Condensed","Arial Narrow",sans-serif',body:'"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif',emo:'"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'};
+const GM_W=400,GM_S=2.7;
+function gmWrap(ctx,text,max){const out=[];for(const para of String(text).split("\n")){let cur="";for(const wd of para.split(/\s+/).filter(Boolean)){const t=cur?cur+" "+wd:wd;if(!cur||ctx.measureText(t).width<=max)cur=t;else{out.push(cur);cur=wd}}out.push(cur)}return out}
+function gmTrack(ctx,text,cx,y,sp){const ch=[...text];const ws=ch.map(c=>ctx.measureText(c).width);const tot=ws.reduce((a,b)=>a+b,0)+sp*(ch.length-1);let x=cx-tot/2;const al=ctx.textAlign;ctx.textAlign="left";ch.forEach((c,i)=>{ctx.fillText(c,x,y);x+=ws[i]+sp});ctx.textAlign=al;return tot}
+function gmTrackW(ctx,text,sp){const ch=[...text];return ch.reduce((a,c)=>a+ctx.measureText(c).width,0)+sp*(ch.length-1)}
+function gmRound(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function gmFit(ctx,text,max,size,weight,fam,min){let s=size;ctx.font=`${weight} ${s}px ${fam}`;while(s>min&&ctx.measureText(text).width>max){s-=0.5;ctx.font=`${weight} ${s}px ${fam}`}
+  let t=text;if(ctx.measureText(t).width>max){while(t.length>1&&ctx.measureText(t+"…").width>max)t=t.slice(0,-1);t+="…"}return t}
+function gmGoal(ctx,cx,y,size,color){const k=size/24;ctx.save();ctx.translate(cx-12*k,y);ctx.scale(k,k);ctx.strokeStyle=color;ctx.lineWidth=2.4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(12,23);ctx.lineTo(12,13);ctx.moveTo(3,13);ctx.lineTo(21,13);ctx.moveTo(3,13);ctx.lineTo(3,1.5);ctx.moveTo(21,13);ctx.lineTo(21,1.5);ctx.stroke();ctx.restore()}
+/* Draws the card and returns its height. Called twice: once to measure, once to paint. */
+function gmDraw(ctx,M,H){const W=GM_W,cx=W/2,C=GM_C,F=GM_F;ctx.textAlign="center";ctx.textBaseline="alphabetic";
+  if(H){ctx.fillStyle=C.card;ctx.fillRect(0,0,W,H)}
+  // Turf header with mowing stripes and yard lines.
+  for(let x=0,i=0;x<W;x+=40,i++){ctx.fillStyle=i%2?C.turf2:C.turf;ctx.fillRect(x,0,40,92)}
+  ctx.fillStyle="rgba(255,255,255,.14)";for(let x=20;x<W;x+=80)ctx.fillRect(x,0,1.5,92);
+  ctx.fillStyle=C.chalk;ctx.globalAlpha=.88;ctx.font=`600 12px ${F.cond}`;gmTrack(ctx,"COLLEGE FOOTBALL · ATS",cx,30,2.6);ctx.globalAlpha=1;
+  ctx.fillText(gmFit(ctx,M.league,W-40,31,400,F.disp,20),cx,70);
+  // Referee stripe.
+  for(let x=0,i=0;x<W;x+=10,i++){ctx.fillStyle=i%2?"#f4f4f4":"#111111";ctx.fillRect(x,92,10,8)}
+  let y=100+32;
+  ctx.fillStyle=C.muted;ctx.font=`700 13px ${F.cond}`;gmTrack(ctx,M.kick.toUpperCase(),cx,y,2.4);
+  ctx.fillStyle=C.ink;ctx.font=`400 30px ${F.disp}`;for(const l of gmWrap(ctx,M.title,W-48)){y+=38;ctx.fillText(l,cx,y)}
+  ctx.font=`700 18px ${F.cond}`;for(const l of gmWrap(ctx,M.sub,W-56)){y+=25;ctx.fillText(l,cx,y)}
+  y+=16;ctx.fillStyle=C.flag;gmRound(ctx,cx-28,y,56,4,2);ctx.fill();y+=20;
+  // Fact boxes: icon, label, text, all centered.
+  for(const r of M.rows){ctx.font=`500 16px ${F.body}`;const ls=gmWrap(ctx,r.text,W-76);const h=14+20+4+ls.length*21+14;
+    ctx.fillStyle=C.box;gmRound(ctx,20,y,W-40,h,12);ctx.fill();ctx.strokeStyle=C.line;ctx.lineWidth=1;ctx.stroke();
+    // Icon and label share one centered line.
+    const lab=r.label.toUpperCase();ctx.font=`700 12.5px ${F.cond}`;const lw=gmTrackW(ctx,lab,1.6);const gx=cx-(20+8+lw)/2;let yy=y+14;
+    if(r.ic==="GP")gmGoal(ctx,gx+10,yy,20,C.ink);else{ctx.font=`18px ${F.emo}`;ctx.fillStyle=C.ink;ctx.fillText(r.ic,gx+10,yy+17)}
+    ctx.fillStyle=C.muted;ctx.font=`700 12.5px ${F.cond}`;gmTrack(ctx,lab,gx+28+lw/2,yy+15,1.6);
+    yy+=20+4;ctx.fillStyle=C.ink;ctx.font=`500 16px ${F.body}`;for(const l of ls){yy+=21;ctx.fillText(l,cx,yy)}
+    y+=h+10}
+  // The slate: away right of center, home left of center, the line in a scoreboard pill.
+  if(M.games.length){y+=10;ctx.fillStyle=C.muted;ctx.font=`700 13px ${F.cond}`;const tw=gmTrack(ctx,"THE SLATE",cx,y,2.4);
+    ctx.fillStyle=C.line;ctx.fillRect(24,y-5,cx-tw/2-36,1.5);ctx.fillRect(cx+tw/2+12,y-5,cx-tw/2-36,1.5);y+=8;
+    const half=cx-30;
+    M.games.forEach((g,i)=>{const ny=y+24;
+      const side=(name,rk,col,dir)=>{const nameT=gmFit(ctx,name,half-(rk?22:0)-14,15.5,600,F.body,11);const nf=ctx.font;const nw=ctx.measureText(nameT).width;
+        ctx.font=`700 12px ${F.cond}`;const rw=rk?ctx.measureText(String(rk)).width+4:0;const tot=10+rw+nw;const x0=dir<0?cx-18-tot:cx+18;
+        ctx.fillStyle=col;ctx.beginPath();ctx.arc(x0+4,ny-5,4,0,7);ctx.fill();ctx.textAlign="left";
+        if(rk){ctx.fillStyle=C.muted;ctx.fillText(String(rk),x0+10,ny)}ctx.font=nf;ctx.fillStyle=C.ink;ctx.fillText(nameT,x0+10+rw,ny);ctx.textAlign="center"};
+      side(g.away,g.ar,g.ac,-1);side(g.home,g.hr,g.hc,1);
+      ctx.fillStyle=C.muted;ctx.font=`600 13px ${F.cond}`;ctx.fillText(g.at,cx,ny);
+      ctx.font=`700 14px ${F.cond}`;const pw=ctx.measureText(g.line).width+20;ctx.fillStyle=C.board;gmRound(ctx,cx-pw/2,ny+8,pw,20,10);ctx.fill();ctx.fillStyle=C.gold;ctx.fillText(g.line,cx,ny+23);
+      y+=58;if(i<M.games.length-1){ctx.fillStyle=C.line;ctx.fillRect(40,y-3,W-80,1)}});
+    y+=2}
+  y+=12;
+  // Scoreboard footer.
+  ctx.font=`700 17px ${F.cond}`;const fl=gmWrap(ctx,M.foot.toUpperCase(),W-48);const fh=20+fl.length*22+10;ctx.fillStyle=C.board;ctx.fillRect(0,y,W,fh);
+  ctx.fillStyle=C.gold;fl.forEach((l,i)=>ctx.fillText(l,cx,y+34+i*22-6));
+  return y+fh}
+async function gmPaint(M,sig){
+  try{await Promise.all([`400 30px "Graduate"`,`700 18px "Barlow Condensed"`,`600 12px "Barlow Condensed"`,`500 16px "Barlow"`,`600 15px "Barlow"`].map(f=>document.fonts&&document.fonts.load(f))).catch(()=>{})}catch(e){}
+  const scratch=document.createElement("canvas");scratch.width=10;scratch.height=10;const H=Math.ceil(gmDraw(scratch.getContext("2d"),M,0));
+  const cv=document.createElement("canvas");cv.width=Math.round(GM_W*GM_S);cv.height=Math.round(H*GM_S);const ctx=cv.getContext("2d");ctx.scale(GM_S,GM_S);gmDraw(ctx,M,H);
+  const blob=await new Promise(r=>cv.toBlob(r,"image/png"));if(!blob)return;
+  if(state.gmImg&&state.gmImg.url)URL.revokeObjectURL(state.gmImg.url);
+  const name=`tators-picks-${M.kick.toLowerCase().replace(/\s+/g,"")}-${M.title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/-$/,"")}.png`;
+  state.gmImg={sig,blob,url:URL.createObjectURL(blob),name,w:cv.width};
+  const img=$("#gmCard");if(img&&img.dataset.sig===sig){img.src=state.gmImg.url;img.classList.remove("wait")}}
 function renderGM(){const el=$("#v-groupme");if(!state.isOwner){el.innerHTML="";return}
   const Q=gmQueue(),nx=gmNext();
   const it=Q.find(x=>x.key===state.gmSel)||(nx.key?nx:null);
   const st=x=>x.at?`<span class="st done">Posted ${esc(kick(x.at).replace(/ CT$/,""))}</span>`:x.ready?`<span class="st ready">Ready</span>`:x.stale?`<span class="st skip">Skipped</span>`:`<span class="st later">${esc(x.when)}</span>`;
-  let h=`<div class="gmwrap"><p class="gmnote">Screenshot the card, post it in GroupMe, then tap Posted. Only you can see this tab.</p>`;
   const list=()=>`<ol class="gmq" aria-label="This week's posts">${Q.map(x=>`<li><button type="button" data-gmsel="${esc(x.key)}" aria-current="${!!it&&x.key===it.key}"><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</button></li>`).join("")}</ol>`;
+  let h=`<div class="gmwrap"><h2 class="gmh">GroupMe posts</h2><p class="gmnote">Save or copy the card, post it in GroupMe, then tap Posted. Only you can see this tab.</p>`;
   if(!it){h+=`<div class="game gmdone"><b>All caught up.</b><span>The next post shows up here when it is due: the preview Monday, then picks live Wednesday at 6 PM.</span></div>${list()}</div>`;el.innerHTML=h;return}
-  h+=gmCard(it);
+  const M=gmModel(it),sig=it.key+"|"+JSON.stringify(M),have=state.gmImg&&state.gmImg.sig===sig;state.gmText=gmText(M);
+  h+=`<figure class="gmfig"><img id="gmCard" class="gmimg${have?"":" wait"}" data-sig="${esc(sig)}" alt="${esc(state.gmText)}" ${have?`src="${state.gmImg.url}"`:""}></figure>`;
   const can=it.ready||it.stale;
+  h+=`<div class="gmtools" role="group" aria-label="Get the card"><button type="button" class="btn gmsave" data-gm="share">Save or share image</button><button type="button" class="btn" data-gm="copyimg">Copy image</button><button type="button" class="btn" data-gm="copytxt">Copy text</button></div>`;
   h+=`<div class="gmbar">${it.at?`<button type="button" class="btn" data-gm="undo" data-key="${esc(it.key)}">Undo posted</button>`:`<button type="button" class="btn gmpost" data-gm="post" data-key="${esc(it.key)}" ${can?"":"disabled"}>Posted</button>`}</div>`;
   if(!it.at&&!can)h+=`<p class="gmnote">Not ready yet. Best posted ${esc(it.when)}.</p>`;
   if(!it.at&&it.stale)h+=`<p class="gmnote">This post's moment has passed. Tap Posted only if you posted it.</p>`;
   h+=list();
-  h+=info("gmhow",`The tab follows the weekly rhythm: Preview Monday, Picks live Wednesday at 6 PM, Last call Saturday morning, Locked at 10:15 AM, and Final and recap once every game is final. The next post that is ready shows first. Tap any row to see that card again. Posted marks save on the server, so your phone and computer agree. Counts update on each refresh, so screenshot right before you post. Nothing here shows a picker's sides before the lock.`)+`</div>`;
-  el.innerHTML=h}
-document.addEventListener("click",async e=>{const s=e.target.closest("#v-groupme [data-gmsel]");if(s){state.gmSel=s.dataset.gmsel;renderGM();window.scrollTo(0,0);return}
-  const b=e.target.closest("#v-groupme [data-gm]");if(!b||b.disabled)return;b.disabled=true;
-  const undo=b.dataset.gm==="undo";const r=await api("/api/admin",{action:"gmPosted",key:b.dataset.key,undo});
+  h+=info("gmhow",`The tab follows the weekly rhythm: Preview Monday, Picks live Wednesday at 6 PM, Last call Saturday morning, Locked at 10:15 AM, and Final and recap once every game is final. The next post that is ready shows first. Tap any row to see that card again. Save or share opens your phone's share sheet, where you can save to Photos or send straight to GroupMe; on a computer it downloads the image. Copy text gives a plain version under GroupMe's 1,000 character limit. Posted marks save on the server, so your phone and computer agree. Counts update on each refresh, so save the card right before you post. Nothing here shows a picker's sides before the lock.`)+`</div>`;
+  el.innerHTML=h;if(!have)gmPaint(M,sig)}
+function gmDownload(B){const a=document.createElement("a");a.href=B.url;a.download=B.name;document.body.appendChild(a);a.click();a.remove();toast("Image saved to your downloads.","info")}
+/* Share and copy run straight from the tap, with no await first, because phones only allow them inside a tap. */
+document.addEventListener("click",e=>{const s=e.target.closest("#v-groupme [data-gmsel]");if(s){state.gmSel=s.dataset.gmsel;renderGM();window.scrollTo(0,0);return}
+  const b=e.target.closest("#v-groupme [data-gm]");if(!b||b.disabled)return;const k=b.dataset.gm,B=state.gmImg;
+  if(k==="share"||k==="copyimg"){if(!B||!B.blob||$("#gmCard").dataset.sig!==B.sig){toast("The image is still drawing. Try again in a second.");return}}
+  if(k==="share"){const f=new File([B.blob],B.name,{type:"image/png"});
+    if(navigator.canShare&&navigator.share&&navigator.canShare({files:[f]}))navigator.share({files:[f]}).catch(err=>{if(!err||err.name!=="AbortError")gmDownload(B)});else gmDownload(B);return}
+  if(k==="copyimg"){if(navigator.clipboard&&window.ClipboardItem)navigator.clipboard.write([new ClipboardItem({"image/png":B.blob})]).then(()=>toast("Image copied. Paste it in GroupMe.","info"),()=>toast("This browser cannot copy images. Use Save or share."));else toast("This browser cannot copy images. Use Save or share.");return}
+  if(k==="copytxt"){const t=state.gmText||"";(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Text copied.","info"),()=>toast("Could not copy. Long press the card instead."));return}
+  gmMark(b)});
+async function gmMark(b){b.disabled=true;const undo=b.dataset.gm==="undo";const r=await api("/api/admin",{action:"gmPosted",key:b.dataset.key,undo});
   if(r&&r.ok){state.groupme={...(state.groupme||{}),posted:r.posted||{}};state.gmSel=undo?b.dataset.key:null;renderGM();$("#gmTab").classList.toggle("hot",!!gmNext().ready);window.scrollTo(0,0);toast(undo?"Marked not posted.":"Posted. The next one is ready below.","info")}
-  else{b.disabled=false;toast((r&&r.error)||"Could not save. Try again.")}});
+  else{b.disabled=false;toast((r&&r.error)||"Could not save. Try again.")}}
 function render(){
   goFoot();
   const c=state.config,w=curWeek();

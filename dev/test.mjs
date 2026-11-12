@@ -897,9 +897,15 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   const gmBad = await m.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "gmPosted", key: "live:2026-w11" }) }).then((r) => r.status));
   check("a picker cannot mark a GroupMe post", gmBad === 403, String(gmBad));
   await m.evaluate(() => (location.hash = "#picks"));
-  await c.evaluate(() => (location.hash = "#groupme")); await c.waitForSelector("#gmCard");
-  const gm1 = await c.evaluate(() => ({ title: document.querySelector("#gmCard h2").textContent, rows: document.querySelectorAll("#v-groupme .gmq li").length, cur: (document.querySelector('#v-groupme .gmq [aria-current="true"]') || {}).textContent || "", tiles: document.querySelectorAll("#goFoot .gotile").length }));
-  check("GroupMe shows a card, the week's posts, and no tiles", gm1.title.length > 0 && gm1.rows >= 1 && gm1.tiles === 0, JSON.stringify(gm1));
+  await c.evaluate(() => (location.hash = "#groupme")); await c.waitForSelector("#gmCard[src]");
+  const gm1 = await c.evaluate(() => ({ title: document.querySelector("#gmCard").alt.split("\n")[1] || "", w: document.querySelector("#gmCard").naturalWidth, rows: document.querySelectorAll("#v-groupme .gmq li").length, cur: (document.querySelector('#v-groupme .gmq [aria-current="true"]') || {}).textContent || "", tiles: document.querySelectorAll("#goFoot .gotile").length }));
+  check("GroupMe draws the card as a 1080 px image, the week's posts, and no tiles", gm1.title.length > 0 && gm1.w === 1080 && gm1.rows >= 1 && gm1.tiles === 0, JSON.stringify(gm1));
+  const gmDl = c.waitForEvent("download", { timeout: 5000 }).catch(() => null);
+  await c.click('#v-groupme [data-gm="share"]');
+  const gmFile = await gmDl;
+  check("Save or share downloads the PNG where the share sheet is not offered", !!gmFile && /^tators-picks-week\d+-.+\.png$/.test(gmFile.suggestedFilename()), gmFile ? gmFile.suggestedFilename() : "no download");
+  const gmTxt = await c.getAttribute("#gmCard", "alt");
+  check("the text version names the week and stays under 1,000 characters", /WEEK \d+/.test(gmTxt) && gmTxt.length <= 1000, String(gmTxt.length));
   const gmKey = await c.getAttribute('#v-groupme [data-gm="post"]:not([disabled])', "data-key").catch(() => null);
   if (gmKey) {
     await c.click('#v-groupme [data-gm="post"]'); await c.waitForTimeout(400);
