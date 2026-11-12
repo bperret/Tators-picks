@@ -102,6 +102,16 @@ Conflict rule: if a request conflicts with a tracker item, stop before building 
 
 Rules page rule: every change that affects how the league plays, scores, or pays must update the Rules page in the same build. No such item is done until the Rules text matches. Items that need it: 1, 2, 3, 4, 8, 10, 31. The "Contests still to come" section (`#contests`) holds the plan for items 1, 2, 3, 4, 10, and 31 as of Nov 4. When one ships, move its text into the live rules, and keep this section in step with any tracker change. Add Bowl and CFP rules to the Payouts section if their prizes change.
 
+### Roadmap (Nov 11)
+Build order across the tracker. Item details are below; this only sets the order. Benton still gives the go for each build.
+1. Before Wed Nov 18 (hard date): 10, with 47's Survivor part.
+2. Rest of the regular season, payoff polish from the Nov 11 dopamine review: 50 (field goal moment), 49 (sealed sheet reveal), 51 (the belt), 53 (rank arrows), 52 (near miss line). Then 40.
+3. Before Fri Dec 4: 1 (Conference Champion Week).
+4. Postseason, in deadline order: 31 (Army-Navy, Dec 12), 3 (Bowl Blitz, lock Dec 15), 2 (CFP bracket, lock Dec 18), plus 47's Bowl part. 55 (Awards Night) is built alongside, ready before the title game Jan 25.
+5. Lower priority, any time: 54 (Humans vs Robo-Sharp), 47's scoreboard and retune parts.
+6. 2027 preseason (before the August opener): 60 (Report to camp), 59 (Letterman years), 33 and 34 (badge list), 8 (ghosts), 4 (Survivor runs), 35 (GroupMe bot), 56 (hot hand), 44 (segments), 57 (week phase card, tentative), 58 (Ring of Honor, bottom of the list).
+7. Not scheduled: 21 (investigate), 19, 20, 30 (shape later), back burner.
+
 ### This season and postseason (target, not started)
 1. Conference Champion Week: the final week of the regular challenge. 2026: all 10 title games, 5 on Fri Dec 4 and 5 on Sat Dec 5.
    - Lock before the first Friday kickoff (about 6 p.m. CT), one lock for the week. The normal slate rule and the Saturday 10:15 a.m. lock do not apply.
@@ -148,6 +158,15 @@ Rules page rule: every change that affects how the league plays, scores, or pays
    - Bowl Blitz Robo (`bwGames`) still uses FPI alone; switch it to the consensus when the real contest is built. No market signal until real bowl lines exist.
    - Model scoreboard grades slate games only. Saving pool games too would grow the sample faster; not built.
    - Retune `ROBO_W` after about 150 graded games. A weight change must not rewrite old weeks: add a new mode for new weeks.
+
+From the Nov 11 dopamine review (Benton's calls Nov 11). Goal: make the payoffs hit harder and give people a reason to look forward to next year.
+49. Sealed sheet reveal. Approved for 2026. A picker who has not seen a week's results opens Picks to their sheet face down. Tap to flip each pick. The field goal flips last. This replaces today's rule that a first visit after a week closed stays quiet (`revealFinals`), since that rule gives the Sunday checker no reveal. Live watchers keep the per-game reveal as games go final. Per login, per device, like `tp-seen-finals-<uid>`.
+50. Field goal moment. Approved for 2026. When a picker's field goal game goes final, it gets its own flash and color ("It's good" or "No good", with the 3 points), live or in the sealed reveal. A text and color flash using the existing flash, not the field goal animation left out on purpose.
+51. The belt. Approved for 2026. Last week's winner (shared winners all get it) shows a belt icon on Standings, on Picks, and on their jersey until the next week goes final. Robo-Sharp never holds it.
+52. Near miss line. Approved for 2026. Your week on the Recap adds a line when you came close: for example, "Half a point from winning Week 11" or "One point from 8". The existing bad beat tag and stats stay as they are.
+53. Rank arrows on Standings. Approved for 2026. ▲ or ▼ with places moved since the last final week, per picker, like `tMv` on Teams. Uses `seasonThrough` and `rankAfter` so it matches the recap.
+54. Humans vs Robo-Sharp. Approved, lower priority. A season team score: the league's combined ATS record against Robo-Sharp's, so every correct pick helps, even from last place. Recognition only.
+55. Awards Night. Approved; build while working on the postseason, ready before the title game Jan 25. One season finale page: season champion, Survivor winners, contest winners, and superlatives from the whole season (for example most lone wolves, worst beats, Robo-Sharp beaters, Iron Man). To settle: how it relates to item 19's personal season recap, and the superlative list.
 
 ### Next season (2027)
 4. Survivor: ATS, fixed runs. Decided: Survivor stays against the spread in 2026 and 2027. Replaces the two skulls idea, which is dropped.
@@ -199,7 +218,12 @@ Build note for 33 and 34: one saved badge list per picker, drawn by one helper, 
    - Extra cards for 2027 (parked Nov 11): season standings top 10, upset of the week, Robo-Sharp vs the field.
    - Postseason cards (Conference Champion Week, Bowl Blitz, CFP, Army-Navy) and their dates: not decided yet (Benton, Nov 11).
    - To settle: the reliable trigger, and Announcement Group or open chat for the bot.
-44. Season segments, low priority (Nov 6). Replaces the 4 week fresh start. Blocks aligned to the four Survivor runs, so each run has a Survivor champion and a points champion. Recognition only: a career stat, no payout share. Benton is not sure it adds enough; keep it low.
+44. Season segments, low priority (Nov 6). Replaces the 4 week fresh start. Blocks aligned to the four Survivor runs, so each run has a Survivor champion and a points champion. Recognition only: a career stat, no payout share. Benton is not sure it adds enough; keep it low. Nov 11 review: keep it in the 2027 plan, since it targets mid-season drop off.
+56. Hot hand flag. Approved for 2027. 🔥 on Standings and Pickers for a performance streak, not attendance: for example 8 or more correct in a week, or 3 straight weeks at 6 or more. Thresholds to settle.
+57. Week phase card. Tentative for 2027 (Benton not sure). One card at the top of Picks that changes with the week: Monday preview, Wednesday picks open with sheets in, Saturday before kickoff your leverage (sides where you differ from the leader and your rival), game day live sweat, Sunday your result. It would absorb the stacked panels on Picks (preview, race, flip alert, recap banner).
+58. Ring of Honor. Approved for 2027, bottom of the list. Permanent champion banners at the top of Standings and on Rules, starting with the 2026 champion.
+59. Letterman years. Approved for 2027. The class badge gains a star for each season played, so the badge records loyalty. Part of the one badge list for 33 and 34. Start over wipes it, the same as other badges.
+60. Report to camp. Approved for 2027. Two onboarding paths: the walk-on for new pickers (shipped, item 36) and a new returning picker path on the first login of each season. Returning path: re-sign, restyle the jersey, see last season's line, and a countdown to the Week 1 lock. Pairs with the first real buy-in. Must not show to a ghost as a returning paid picker (item 8).
 Buy-in amount for 2027 is not set.
 
 ### Engagement review (Nov 2): Benton's calls
@@ -217,6 +241,7 @@ Left out on purpose: a field goal animation, too much work for the gain.
 
 Nov 6 review of another pick em app (Splash Sports): turned down a per picker expandable standings row, a weekly results grid, following pickers, search on Standings, a picks saved sheet, past week pick distribution, what if scenarios, per game locks, a commissioner welcome note, and a schedule tab. Skipped: team logos, multi-entry, banner art, hiding picks from the commissioner.
 Thrown out for 2026: 12 (group text kit). Replaced by item 35 for 2027.
+Thrown out Nov 11 (dopamine review): a shareable "My week" card for pickers (people post if they want to), and a preseason prediction settled at season end.
 Thrown out: 5 (upkeep share). No share of buy-ins, so the whole pot pays out.
 Do not add: daily check ins, points currency, in-app chat, more contests this season beyond Army-Navy (item 31, Benton's call Nov 4).
 
