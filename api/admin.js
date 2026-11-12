@@ -240,12 +240,15 @@ export default async function handler(req, res) {
         if (!/^(pv|live|last|lock|final):\d{4}-w\d{1,2}$/.test(key)) return fail(res, 400, "Unknown post.");
         const gm = await getKv("groupme", { posted: {} });
         gm.posted = gm.posted || {};
-        if (b.undo) delete gm.posted[key];
-        else gm.posted[key] = new Date().toISOString();
+        gm.skipped = gm.skipped || {};
+        // Skip marks the post done without posting it (gray Skipped); it shares the posted time list so the queue moves on.
+        if (b.undo) { delete gm.posted[key]; delete gm.skipped[key]; }
+        else { gm.posted[key] = new Date().toISOString(); if (b.skip) gm.skipped[key] = true; else delete gm.skipped[key]; }
         // Keep the newest 80 marks so the row stays small.
         gm.posted = Object.fromEntries(Object.entries(gm.posted).sort((x, y) => (x[1] < y[1] ? 1 : -1)).slice(0, 80));
+        gm.skipped = Object.fromEntries(Object.keys(gm.skipped).filter((k) => gm.posted[k]).map((k) => [k, true]));
         await setKv("groupme", gm);
-        return send(res, 200, { ok: true, posted: gm.posted });
+        return send(res, 200, { ok: true, posted: gm.posted, skipped: gm.skipped });
       }
       case "config": {
         const cfg = await getConfig();

@@ -987,6 +987,14 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     await c.click(`#v-groupme [data-gmsel="${gmKey}"]`); await c.click('#v-groupme [data-gm="undo"]'); await c.waitForTimeout(400);
     const gmU = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
     check("Undo posted clears the mark", !gmU.groupme.posted[gmKey]);
+    await c.click(`#v-groupme [data-gmsel="${gmKey}"]`);
+    check("a gray Skipped button sits under Posted", await c.evaluate(() => { const p = document.querySelector('#v-groupme [data-gm="post"]'), s = document.querySelector('#v-groupme [data-gm="skip"]'); return !!p && !!s && s.textContent === "Skipped" && s.getBoundingClientRect().top > p.getBoundingClientRect().bottom - 1; }));
+    await c.click('#v-groupme [data-gm="skip"]'); await c.waitForTimeout(400);
+    const gmK = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
+    check("Skipped saves on the server, moves on, and the row says Skipped", !!(gmK.groupme.posted[gmKey] && gmK.groupme.skipped && gmK.groupme.skipped[gmKey]) && (await c.textContent(`#v-groupme [data-gmsel="${gmKey}"]`)).includes("Skipped"));
+    await c.click(`#v-groupme [data-gmsel="${gmKey}"]`); await c.click('#v-groupme [data-gm="undo"]'); await c.waitForTimeout(400);
+    const gmK2 = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
+    check("Undo skipped clears both marks", !gmK2.groupme.posted[gmKey] && !(gmK2.groupme.skipped || {})[gmKey]);
   } else check("GroupMe has a ready post to mark", false, gm1.cur);
   const gmBadKey = await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "gmPosted", key: "x:<b>" }) }).then((r) => r.status));
   check("GroupMe refuses an unknown post key", gmBadKey === 400, String(gmBadKey));
