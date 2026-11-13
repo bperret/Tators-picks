@@ -1114,6 +1114,8 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await c.setViewportSize({ width: 1400, height: 900 }); await c.waitForTimeout(100);
   check("a wide screen shows the two sided bracket", (await c.isVisible(".brkwide")) && !(await c.isVisible(".brknarrow")));
   check("the wide bracket has no sideways page scroll", (await c.evaluate(() => document.documentElement.scrollWidth)) <= 1400);
+  const tabFit = await c.evaluate(() => { const n = document.querySelector("nav.tabs"); n.scrollTo({ left: 0, behavior: "instant" }); const a = [...n.querySelectorAll("a")].filter((x) => !x.hidden); const nb = n.getBoundingClientRect(), f = a[0].getBoundingClientRect(); n.scrollTo({ left: n.scrollWidth, behavior: "instant" }); const l = a[a.length - 1].getBoundingClientRect(); return { over: n.scrollWidth > n.clientWidth, first: f.left >= nb.left - 1, last: l.right <= nb.right + 1 }; });
+  check("on a wide screen the commissioner's tab bar reaches its first and last tab", tabFit.first && tabFit.last, JSON.stringify(tabFit));
   await c.setViewportSize({ width: 390, height: 844 });
   // ---- Remove keeps data; Start over wipes it and runs the walk-on again ----
   const mid2 = (await m.evaluate(() => fetch("/api/state").then((r) => r.json()))).me.id;

@@ -117,7 +117,7 @@ nav.tabs::-webkit-scrollbar{display:none}
 .tabarr span{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--card);font-size:1rem}
 @media (prefers-reduced-motion:no-preference){.tabarr.r span{animation:tabnudge 1.6s ease-in-out 2}}
 @keyframes tabnudge{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
-@media (min-width:1000px){nav.tabs{justify-content:center}}
+@media (min-width:1000px){nav.tabs::before,nav.tabs::after{content:"";flex:1 0 0}}
 nav.tabs a{flex:none;font-family:var(--cond);font-weight:700;font-size:1.1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-decoration:none;padding:6px 9px;border-bottom:3px solid transparent;white-space:nowrap}
 nav.tabs a[aria-current="page"]{color:var(--ink);border-image:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px) 1}
 nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
