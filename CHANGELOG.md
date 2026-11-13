@@ -15,7 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
-| 1.46 | Nov 12, 7:10 PM | Commish | Demo tab, commissioner only: plays features with made up data. First demos: sealed sheet (big week, rough week, replay my latest final week) and the live result card (field goal final, two finals) | M | 95 | PENDING |
+| 1.46 | Nov 12, 7:10 PM | Commish | Demo tab, commissioner only: plays features with made up data. First demos: sealed sheet (big week, rough week, replay my latest final week) and the live result card (field goal final, two finals) | M | 95 | `38c11a8` |
 | 1.45 | Nov 12, 6:55 PM | Phone layout | Screen review fixes: one row tab bar, game 1 on the first Picks screen (natural height notices, Sheets in under the games, recap link in the countdown bar), tiles on Picks only, full names plus emoji chips under each game with All names, two line Standings tables on phones, You line on Standings, one season rank rule for Recap and Your week (fixes conflicting ranks), Survivor grid opens at the newest week, tiebreaker box reads as a field, earned career tiles only, top six teams with Show all | M | 158 | `5ba6813` |
 | 1.44.6 | Nov 12, 4:01 PM | Site | Site icon: the gold ring football badge for browser tabs, bookmarks, and the iPhone home screen | S | 6 | `2a6dd6f` |
 | 1.44.5 | Nov 12, 1:38 PM | GroupMe | Passed and Skipped are one status ("Skipped"); the two About this notes merged into one | S | 8 | `6e7f10d` |
