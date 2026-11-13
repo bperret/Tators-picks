@@ -268,7 +268,7 @@ try {
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
   check("week shows locked", (await m.textContent("#statusBadge")).toLowerCase().includes("locked"));
   check("picks revealed after the lock", (await m.locator(".cbar").count()) > 0);
-  check("Robo-Sharp shows in the pick lists after the lock", (await m.locator(".whocols .wn.bot").count()) === 5);
+  check("Robo-Sharp shows in the pick lists after the lock", (await m.locator(".whocols .wn.bot, .whocols .wcp[aria-label='Robo-Sharp']").count()) === 5);
   check("Robo-Sharp model line hides after the lock", (await m.locator(".game .model").count()) === 0);
   const order = await m.evaluate(() => [...document.querySelectorAll("#v-picks .game")].map((e) => e.id));
   check("same kickoff: better AP game first", order.join() === "g-g4,g-g1,g-g3,g-g2,g-g5", order.join());
@@ -367,8 +367,8 @@ try {
       const exp = !!(c && pk && pk !== c && Math.abs(margin(g, r)) <= 1.5); if (exp) want++; if (has !== exp) ok = false; }
     return { ok, want, tags: [...document.querySelectorAll("#v-picks .res .bb")].map((x) => x.textContent) }; });
   check("bad beat tags mark only picks that missed by 1.5 or less", bb.ok, JSON.stringify(bb));
-  check("recap banner shows on Picks after a final week", (await m.locator(".recapban").count()) === 1);
-  await m.click(".recapban"); await m.waitForTimeout(300);
+  check("recap banner shows on Picks after a final week", (await m.locator(".recapban, .cdrecap").count()) === 1);
+  await m.click(".recapban, .cdrecap"); await m.waitForTimeout(300);
   const rc = await m.textContent("#v-recap");
   check("recap shows the week and its winner", rc.includes("Week 10 recap") && rc.includes("Won the week"), rc.slice(0, 200));
   check("recap has fun facts", (await m.locator(".rccard").count()) >= 4, String(await m.locator(".rccard").count()));
@@ -414,7 +414,7 @@ try {
   await m.waitForTimeout(100); await m.screenshot({ path: "dev/test-recap-full.png", fullPage: true });
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.waitForTimeout(300);
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(200);
-  check("recap banner clears once read", (await m.locator(".recapban").count()) === 0);
+  check("recap banner clears once read", (await m.locator(".recapban, .cdrecap").count()) === 0);
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#standings")); await m.waitForTimeout(300);
   const st = await m.textContent("#v-standings");
   check("standings show the week", st.includes("Week 10") && st.includes("Mike T."));
@@ -627,7 +627,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("stats have no undefined or NaN", !/undefined|NaN|null/.test(full2.text));
   check("Robo-Sharp is in Beat the close with no rank", full2.rob === "", full2.rob);
   check("career counts season, Bowl, and CFP wins", /Bowl wins1/.test(full2.bowl), full2.bowl);
-  { const num = (t, l) => +(t.match(new RegExp(l + "(\\d+)")) || [])[1];
+  { const num = (t, l) => { const m = t.match(new RegExp(l + "(\\d+)")); return m ? +m[1] : 0; };
     check("Conference Champion Week wins count apart from weekly wins", num(full2.after, "Weekly wins") === num(full2.before, "Weekly wins") - 1 && num(full2.after, "Conf Champ wins") === num(full2.before, "Conf Champ wins") + 1, full2.before + " | " + full2.after); }
   check("a shared win is a Co-Champion credit", /Co-Champion[1-9]/.test(full2.co), full2.co);
   check("stats have no sideways scroll on a phone", full2.width <= 390, String(full2.width));
@@ -809,21 +809,22 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     renderPicks();
     out.chips = document.querySelector("#v-picks .cks").textContent; out.picks = document.querySelector("#v-picks").textContent;
     out.notices = [...document.querySelectorAll("#v-picks .notice")].map((n) => [n.querySelector(".nic").textContent || "svg", Math.round(n.getBoundingClientRect().height)]);
+    { const sh = document.querySelector("#v-picks .notice.sheets"), cards = document.querySelectorAll("#v-picks .game"); out.sheetsAfterGames = !!(sh && cards.length && (cards[cards.length - 1].compareDocumentPosition(sh) & Node.DOCUMENT_POSITION_FOLLOWING)); }
     // A picker who joins after the run's first week: bench card, no Survivor pick, a bench line in the rookie steps.
     const was = { uid: state.uid, owner: state.isOwner, pickedIn: state.pickedIn, draft: state.draft };
     state.uid = "newbie"; state.isOwner = false; state.pickedIn = []; state.draft = { sel: {}, lock: null, tb: null, surv: null };
     renderPicks();
     out.benchNeeded = survNeeded("2026-w22"); out.bench = (document.querySelector("#survBench") || {}).textContent || ""; out.benchSel = !!document.querySelector("#survSel");
     out.benchRookie = (document.querySelector("#rookie") || {}).textContent || "";
-    const view = state.view; state.view = "picks"; render(); out.banRookie = !!document.querySelector("#v-picks .recapban");
-    state.pickedIn = ["newbie"]; render(); out.banVet = !!document.querySelector("#v-picks .recapban"); state.view = view;
+    const view = state.view; state.view = "picks"; render(); out.banRookie = !!document.querySelector("#v-picks .recapban, #v-picks .cdrecap");
+    state.pickedIn = ["newbie"]; render(); out.banVet = !!document.querySelector("#v-picks .recapban, #v-picks .cdrecap"); state.view = view;
     state.pickedIn = []; renderPicks(); window.__was = was;
     return out;
   });
   const hash0 = await m.evaluate(() => location.hash);
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(250);
   { const bb = m.locator("#survBench"); await bb.scrollIntoViewIfNeeded(); await bb.screenshot({ path: "dev/test-bench.png" }); }
-  check("Picks notices share one look and height: rival, belt, sheets in", race.notices.length >= 3 && race.notices.some((n) => n[0] === "\u{1F47F}") && race.notices.some((n) => n[0] === "\u{1F4DD}") && new Set(race.notices.map((n) => n[1])).size === 1, JSON.stringify(race.notices));
+  check("Picks notices share one look: rival, belt, and sheets in, with sheets in under the games", race.notices.length >= 3 && race.notices.some((n) => n[0] === "\u{1F47F}") && race.notices.some((n) => n[0] === "\u{1F4DD}") && race.sheetsAfterGames, JSON.stringify(race.notices) + " after games: " + race.sheetsAfterGames);
   await m.evaluate(() => { const { state, renderPicks } = window.tpRecap; const keep = { ...window.__was }; Object.assign(state, keep); renderPicks(); document.querySelector("#v-picks .notices").scrollIntoView(); window.scrollBy(0, -20); });
   await m.waitForTimeout(150); await m.screenshot({ path: "dev/test-notices.png" });
   await m.evaluate((h) => { const { state, renderPicks } = window.tpRecap; Object.assign(state, window.__was); renderPicks(); location.hash = h; }, hash0); await m.waitForTimeout(150);
@@ -845,7 +846,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("a picker who is out gets no Survivor chip or warning", race.outNeeded === false && !/Surv/.test(race.chips) && !race.msgs.some((x) => /survivor/i.test(x)), race.chips + " | " + race.msgs.join(" "));
   check("a moved line shows its tag while picks are open", /Line moved: UGA -3\.5, was -2\.5 in the preview\./.test(race.picks.replace(/−/g, "-")), race.picks.slice(0, 400));
 
-  // ---- tab tiles at the bottom of every tab ----
+  // ---- tab tiles: on Picks only since Nov 12 (V10) ----
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#picks")); await m.waitForSelector("#goFoot .gotile");
   const tabs = await m.$$eval("nav.tabs a", (a) => a.filter((x) => !x.hidden).map((x) => x.getAttribute("href")));
   check("pickers have 9 tabs and no Commish", tabs.length === 9 && !tabs.includes("#commish"), JSON.stringify(tabs));
@@ -853,16 +854,17 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   for (const t of tabs) {
     await m.evaluate((h) => (location.hash = h), t); await m.waitForTimeout(80);
     const got = await m.$$eval("#goFoot .gotile", (a) => a.map((x) => x.getAttribute("href")));
-    if (got.length !== 8 || got.includes(t) || !tabs.filter((x) => x !== t).every((x) => got.includes(x))) tileMiss.push(t + ":" + got.join(","));
+    const want = t === "#picks" ? 8 : 0;
+    if (got.length !== want || got.includes(t) || (want && !tabs.filter((x) => x !== t).every((x) => got.includes(x)))) tileMiss.push(t + ":" + got.join(","));
   }
-  check("every tab links to all the other tabs", tileMiss.length === 0, tileMiss.join(" | "));
+  check("Picks links to all the other tabs, and no other tab has tiles", tileMiss.length === 0, tileMiss.join(" | "));
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
   check("the tiles sit below the sheet and are not warnings", await m.evaluate(() => { const t = document.querySelector(".gotiles"), b = document.querySelector(".savebar"); return !t.closest(".warn,.savebar") && (!b || !!(b.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING)) }));
   check("the tiles add no sideways scroll on a phone", (await m.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
   await m.locator(".gotile[href='#rules']").scrollIntoViewIfNeeded(); await m.click(".gotile[href='#rules']"); await m.waitForTimeout(150);
   check("a tile opens its tab at the top of the page", (await m.isVisible("#v-rules")) && (await m.evaluate(() => scrollY)) === 0);
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
-  await c.evaluate(() => (location.hash = "#standings")); await c.waitForSelector("#goFoot .gotile");
+  await c.evaluate(() => (location.hash = "#picks")); await c.waitForSelector("#goFoot .gotile");
   check("the commissioner's tiles never link to Commish", !(await c.locator("#goFoot .gotile[href='#commish']").count()));
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(150);
   check("the Commish tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);
