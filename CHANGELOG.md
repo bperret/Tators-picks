@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.47.1 | Nov 13, 2:53 PM | Desktop layout | Tab bar fix: on wide screens the commissioner's tabs no longer cut off the first tabs (Picks, Standings, Recap); the bar scrolls from its first tab to its last | S | 3 | `4429aaa` |
 | 1.47 | Nov 12, 8:05 PM | Phone layout | Tab bar: thicker, bordered card bar with round arrow buttons that show when more tabs sit off either edge; tap to scroll | S | 30 | `16a13f3` |
 | 1.46 | Nov 12, 7:10 PM | Commish | Demo tab, commissioner only: plays features with made up data. First demos: sealed sheet (big week, rough week, replay my latest final week) and the live result card (field goal final, two finals) | M | 95 | `38c11a8` |
 | 1.45 | Nov 12, 6:55 PM | Phone layout | Screen review fixes: one row tab bar, game 1 on the first Picks screen (natural height notices, Sheets in under the games, recap link in the countdown bar), tiles on Picks only, full names plus emoji chips under each game with All names, two line Standings tables on phones, You line on Standings, one season rank rule for Recap and Your week (fixes conflicting ranks), Survivor grid opens at the newest week, tiebreaker box reads as a field, earned career tiles only, top six teams with Show all | M | 158 | `5ba6813` |
