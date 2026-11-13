@@ -455,6 +455,10 @@ th.aw,td.aw{min-width:3.6em;padding-left:2px;padding-right:2px;white-space:nowra
   table.stk tr.me{background:rgba(242,194,48,.12)}
   table.stk .yd{max-width:100%}
 }
+.demorow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.demorow:first-of-type{border-top:0}
+.demorow p{margin:2px 0 0}
+.demorow .btn{flex:none}
 .youline{font-family:var(--cond);font-weight:700;font-size:1.08rem;letter-spacing:.03em;margin:0 0 10px;padding:8px 12px;border-radius:6px;background:var(--card);border:1px solid var(--line);color:var(--ink)}
 .rkc{white-space:nowrap}.mv{font-style:normal;font-size:.7rem;font-weight:700;margin-left:3px}.mv.up{color:var(--win)}.mv.dn{color:var(--loss)}.mv.new{color:var(--muted)}
 .ywnear{margin:8px 0 0;font-weight:600}
@@ -868,6 +872,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#bowls" data-v="bowls" id="bowlsTab" hidden>Bowl Blitz</a>
     <a href="#armynavy" data-v="armynavy" id="anTab" hidden>Army-Navy</a>
     <a href="#groupme" data-v="groupme" id="gmTab" hidden>GroupMe</a>
+    <a href="#demo" data-v="demo" id="demoTab" hidden>Demo</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
 
@@ -1051,6 +1056,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   <section class="view" id="v-bowls" hidden></section>
   <section class="view" id="v-armynavy" hidden></section>
   <section class="view" id="v-groupme" hidden></section>
+  <section class="view" id="v-demo" hidden></section>
   <section class="view" id="v-commish" hidden></section>
   <div id="goFoot"></div>
   </div>
@@ -1196,7 +1202,7 @@ function applyState(S){
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],classOf:S.classOf||{},
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[],groupme:S.groupme||{posted:{}}});
-  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#gmTab").hidden=!state.isOwner;
+  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#gmTab").hidden=!state.isOwner;$("#demoTab").hidden=!state.isOwner;
   syncDraft();
 }
 async function refresh(quiet){
@@ -1430,10 +1436,10 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["scoreboard","picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","groupme","commish"];
+const VIEWS=["scoreboard","picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","groupme","demo","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
-function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v==="demo"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
 function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
 function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
   try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
@@ -1446,7 +1452,7 @@ function tabsIntoView(){const n=document.querySelector("nav.tabs"),a=n&&n.queryS
   if(n.scrollWidth>n.clientWidth){const l=a.offsetLeft-n.offsetLeft,r=l+a.offsetWidth;if(l<n.scrollLeft+8||r>n.scrollLeft+n.clientWidth-28)n.scrollLeft=Math.max(0,l-(n.clientWidth-a.offsetWidth)/2)}tabsEdge()}
 document.addEventListener("scroll",e=>{if(e.target&&e.target.matches&&e.target.matches("nav.tabs"))tabsEdge()},true);
 window.addEventListener("resize",tabsEdge);
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v==="demo")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   tabsIntoView();
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render();if(state.toTop){state.toTop=false;scrollTo(0,0)}}
@@ -2035,6 +2041,7 @@ function render(){
   if(state.view==="armynavy")renderAN();
   if(state.isOwner){$("#gmTab").classList.toggle("hot",gmDue())}
   if(state.view==="groupme")renderGM();
+  if(state.view==="demo")renderDemo();
   if(state.view==="rules"){renderLog()}
   if(state.view==="profile")renderProfile();
 }
@@ -2281,6 +2288,50 @@ function revealFinals(){
   /* Sealed sheet (item 49): catching up on a final week, or on four or more results at once, opens the picks face down to flip. Live watchers keep the per-game card. */
   if((w.status==="final"&&items.length>=2)||items.length>=4)showSealed(w,mine,items);else showReveal(w,mine,items);
 }
+/* ---------- Demo tab (Nov 12): commissioner only, a place to try features with made up data. ----------
+   Nothing here saves, touches a week, or reaches a picker. Add a demo by adding an entry to DEMOS. */
+const DEMO_TEAMS=[["Alabama","Auburn"],["Georgia","Tennessee"],["Ohio State","Michigan"],["Texas","Oklahoma"],["Oregon","Washington"],["LSU","Ole Miss"],["Notre Dame","USC"],["Miami","Florida State"],["Penn State","Iowa"],["Texas A&M","Missouri"]];
+/* A made up final week: wins is a list of true or false by slot, fg is the field goal slot, fgWon its result. */
+function demoWeek(wins,fg,fgWon,opt={}){
+  const games=DEMO_TEAMS.map(([h,a],i)=>({id:"demo-g"+(i+1),slot:i+1,home:h,away:a,homeLine:-(3.5+i%4*3),homeRank:i+1,awayRank:99,kickoff:new Date(NOW()-86400e3).toISOString()}));
+  const results={},sel={};
+  games.forEach((g,i)=>{const won=i+1===fg?fgWon:wins[i];const need=-g.homeLine;const m=won?need+1+(i%3)*3:need-1-(i%2)*4;
+    const away=14+(i*3)%17;results[g.id]={away,home:Math.max(0,Math.round(away+m)),final:true,void:false,src:"demo"};sel[g.id]="home"});
+  const w={id:"demo-week",week:opt.week||14,season:2026,status:"final",games,results,demo:true,demoWin:!!opt.win};
+  const mine={sel,lock:fg?"demo-g"+fg:null,tb:48};
+  return {w,mine,items:revealItems(w,mine,games)};
+}
+/* The same flip items revealFinals builds, for any list of games. */
+function revealItems(w,mine,games){const rs=w.results||{};const items=[];
+  for(const g of games){const c=coverSide(g,rs[g.id]);const pick=(mine.sel||{})[g.id];if(!c||!pick)continue;
+    const won=pick===c;const by=Math.abs(margin(g,rs[g.id]));const team=pick==="home"?g.home:g.away;
+    items.push({g,won,by,fg:mine.lock===g.id,txt:`${teamLook(team,g,pick).abbr} ${fmtLine(pick==="home"?g.homeLine:-g.homeLine)}`})}
+  return items}
+const DEMOS=[
+  {key:"seal-good",group:"Sealed sheet (item 49)",title:"Big week",
+   about:"What a picker sees on the first visit after a week goes final: picks face down, tap to flip, field goal last. This one is 8 of 10, field goal good, a hot week, and the belt.",
+   run:()=>{const d=demoWeek([1,1,1,0,1,1,1,0,1,1].map(Boolean),3,true,{win:true});showSealed(d.w,d.mine,d.items)}},
+  {key:"seal-rough",group:"Sealed sheet (item 49)",title:"Rough week",
+   about:"Same reveal on a bad week: 3 of 10 and the field goal is no good.",
+   run:()=>{const d=demoWeek([0,1,0,0,0,0,1,1,0,0].map(Boolean),5,false);showSealed(d.w,d.mine,d.items)}},
+  {key:"seal-real",group:"Sealed sheet (item 49)",title:"Replay my latest final week",
+   about:"Your own picks and results from the latest final week, as the reveal would show them. Nothing is marked seen.",
+   run:()=>{const w=lastShownWeek();const mine=w&&weekPlayers(w.id)[state.uid];
+     if(!w||!mine){toast("No final week with your picks yet.");return}
+     const rs=w.results||{};const items=revealItems(w,mine,w.games.filter(g=>rs[g.id]&&(rs[g.id].final||rs[g.id].void)));
+     if(!items.length){toast("No graded picks in that week yet.");return}showSealed(w,mine,items)}},
+  {key:"live-fg",group:"Live result card",title:"Field goal goes final",
+   about:"A picker with the site open when their field goal game goes final. The card closes itself after 6 seconds.",
+   run:()=>{const d=demoWeek(Array(10).fill(true),2,true);showReveal({...d.w,status:"open"},d.mine,d.items.filter(x=>x.fg))}},
+  {key:"live-miss",group:"Live result card",title:"Two games go final, one miss",
+   about:"Two results land on the same refresh: one cover, one miss.",
+   run:()=>{const d=demoWeek([1,0,1,1,1,1,1,1,1,1].map(Boolean),0,false);showReveal({...d.w,status:"open"},d.mine,d.items.slice(0,2))}}
+];
+function renderDemo(){const el=$("#v-demo");if(!el)return;
+  const groups=[...new Set(DEMOS.map(d=>d.group))];
+  el.innerHTML=`<div class="panel"><h2>Demo</h2><p class="note">Commissioner only. Each button plays a feature with made up data, the way a picker would see it. Nothing saves, nothing counts, and no picker sees this tab.</p></div>`+
+    groups.map(gp=>`<div class="panel"><h2>${esc(gp)}</h2>${DEMOS.filter(d=>d.group===gp).map(d=>`<div class="demorow"><div><b>${esc(d.title)}</b><p class="note">${esc(d.about)}</p></div><button type="button" class="btn" data-demo="${d.key}">Play</button></div>`).join("")}</div>`).join("")}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-demo]");if(!b||!state.isOwner)return;const d=DEMOS.find(x=>x.key===b.dataset.demo);if(d)d.run()});
 /* Sealed sheet reveal (item 49). Your picks face down; tap each to flip. The field goal flips last and gets its own moment (item 50). */
 let SEAL=null;
 function showSealed(w,mine,items){
@@ -2305,7 +2356,7 @@ function sealFlip(i){if(!SEAL||SEAL.done.has(i))return;const x=SEAL.order[i];con
   if(n===N){const a=document.querySelector("[data-sealall]");if(a)a.remove()}}
 function sealFinal(){const {w,mine}=SEAL;const S=scoreWeek(w,mine);const wk=w.confChamp?"Conference Champion Week":"Week "+w.week;
   let t=`${wk}: ${S.pts} point${S.pts===1?"":"s"}, ${S.w}-${S.l}.`;
-  if(w.status==="final"){if(weekWinners(w.id).includes(state.uid))t+=w.confChamp?" You won Conference Champion Week.":" You won the week. The belt is yours.";
+  if(w.status==="final"){if(w.demo?w.demoWin:weekWinners(w.id).includes(state.uid))t+=w.confChamp?" You won Conference Champion Week.":" You won the week. The belt is yours.";
     if(S.w>=HOT_MIN)t+=" \u{1F525} Hot week."}
   return t}
 /* Field goal moment (item 50): its own flash and color. */

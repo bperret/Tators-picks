@@ -869,6 +869,31 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(150);
   check("the Commish tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);
 
+  // ---- Demo tab (commissioner only) ----
+  check("pickers never see the Demo tab", !(await m.isVisible("#demoTab")));
+  await m.evaluate(() => (location.hash = "#demo")); await m.waitForTimeout(150);
+  check("a picker sent to #demo lands on Picks", (await m.isVisible("#v-picks")) && !(await m.isVisible("#v-demo")));
+  await m.evaluate(() => (location.hash = "#picks"));
+  check("the commissioner sees the Demo tab", await c.isVisible("#demoTab"));
+  await c.evaluate(() => (location.hash = "#demo")); await c.waitForSelector("#v-demo [data-demo]");
+  check("the Demo tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);
+  await c.click('[data-demo="seal-good"]'); await c.waitForSelector("#reveal.sealed");
+  check("the big week demo opens the sealed sheet with 10 picks, field goal last", (await c.locator("#reveal .seal").count()) === 10 && (await c.locator("#reveal .seal").last().getAttribute("class")).includes("fg"));
+  await c.click("[data-sealall]"); await c.waitForTimeout(1600);
+  { const sum = await c.textContent("#sealSum"); check("the big week demo ends 8-2 with the belt and a hot week", /8-2/.test(sum) && /belt/.test(sum) && /Hot week/.test(sum), sum); }
+  check("the field goal moment shows on the demo", /good/i.test(await c.textContent("#sealHead")));
+  await c.click("[data-rvclose]"); await c.waitForTimeout(150);
+  await c.click('[data-demo="seal-rough"]'); await c.waitForSelector("#reveal.sealed"); await c.click("[data-sealall]"); await c.waitForTimeout(1600);
+  { const sum = await c.textContent("#sealSum"); check("the rough week demo ends 3-7 with no belt", /3-7/.test(sum) && !/belt/.test(sum), sum); }
+  await c.click("[data-rvclose]"); await c.waitForTimeout(150);
+  await c.click('[data-demo="live-fg"]'); await c.waitForSelector("#reveal");
+  check("the live field goal demo shows the field goal card", /good/i.test(await c.textContent("#reveal h2")));
+  await c.click("[data-rvclose]"); await c.waitForTimeout(150);
+  await c.click('[data-demo="seal-real"]'); await c.waitForTimeout(300);
+  check("replay my week opens the reveal or explains why not", (await c.locator("#reveal").count()) === 1 || /No (final week|graded)/.test(await c.textContent("body")));
+  if (await c.locator("#reveal [data-rvclose]").count()) await c.click("#reveal [data-rvclose]");
+  await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(150);
+
   // ---- emoji quick row ----
   const quickRow = async () => { await m.evaluate(() => (location.hash = "#profile")); await m.waitForSelector("#v-profile .emgrid"); return (await m.$$eval("#v-profile .emgrid", (g) => [...g[0].children].map((b) => b.textContent.trim()))); };
   const qa = await quickRow();
