@@ -105,11 +105,20 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(2.5rem,11vw,3.6rem
 .badge.open{background:var(--flag);color:var(--flag-ink);border-color:var(--flag-ink)}
 .refrule{height:8px;margin:12px 0 0;border-radius:2px;background:repeating-linear-gradient(90deg,var(--stripe-a) 0 10px,var(--stripe-b) 10px 20px);box-shadow:0 0 0 1px var(--line)}
 /* One row that scrolls sideways (Nov 12, V1): every tab stays, and the pinned bar costs one line on a phone, not three or four. */
-nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;justify-content:flex-start;gap:2px;margin:6px 0 14px;padding:4px 4px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+/* Tab bar (Nov 12): one row that scrolls sideways, in a bordered bar with arrow buttons that show when more tabs sit off either edge. */
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:6px 0 14px;background:var(--bg);padding-top:2px}
+.tabbar-in{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+nav.tabs{display:flex;justify-content:flex-start;gap:2px;padding:7px 6px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;scroll-behavior:smooth}
 nav.tabs::-webkit-scrollbar{display:none}
-nav.tabs.atend{-webkit-mask-image:none;mask-image:none}
-@media (min-width:1000px){nav.tabs{justify-content:center;-webkit-mask-image:none;mask-image:none}}
-nav.tabs a{flex:none;font-family:var(--cond);font-weight:700;font-size:1.05rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-decoration:none;padding:6px 9px;border-bottom:3px solid transparent;white-space:nowrap}
+.tabarr{position:absolute;top:0;bottom:0;width:38px;display:flex;align-items:center;border:0;padding:0;margin:0;cursor:pointer;color:var(--ink);font-size:1.5rem;font-weight:700;line-height:1;z-index:2}
+.tabarr[hidden]{display:none}
+.tabarr.r{right:0;justify-content:flex-end;padding-right:6px;border-radius:0 10px 10px 0;background:linear-gradient(90deg,transparent,var(--card) 45%)}
+.tabarr.l{left:0;justify-content:flex-start;padding-left:6px;border-radius:10px 0 0 10px;background:linear-gradient(270deg,transparent,var(--card) 45%)}
+.tabarr span{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--card);font-size:1rem}
+@media (prefers-reduced-motion:no-preference){.tabarr.r span{animation:tabnudge 1.6s ease-in-out 2}}
+@keyframes tabnudge{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+@media (min-width:1000px){nav.tabs{justify-content:center}}
+nav.tabs a{flex:none;font-family:var(--cond);font-weight:700;font-size:1.1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-decoration:none;padding:6px 9px;border-bottom:3px solid transparent;white-space:nowrap}
 nav.tabs a[aria-current="page"]{color:var(--ink);border-image:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px) 1}
 nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
 .view{display:flex;flex-direction:column;gap:12px}
@@ -858,6 +867,8 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     </div>
   </header>
   <div class="refrule" aria-hidden="true"></div>
+  <div class="tabbar"><div class="tabbar-in">
+  <button type="button" class="tabarr l" data-tabarr="-1" aria-label="Earlier tabs" hidden><span aria-hidden="true">‹</span></button>
   <nav class="tabs" aria-label="Sections">
     <a href="#scoreboard" data-v="scoreboard" id="sbTab" hidden>Scoreboard</a>
     <a href="#picks" data-v="picks" id="picksTab">Picks</a>
@@ -875,6 +886,8 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#demo" data-v="demo" id="demoTab" hidden>Demo</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
   </nav>
+  <button type="button" class="tabarr r" data-tabarr="1" aria-label="More tabs" hidden><span aria-hidden="true">›</span></button>
+  </div></div>
 
   <section class="view" id="v-scoreboard" hidden></section>
   <section class="view" id="v-picks"></section>
@@ -1202,7 +1215,7 @@ function applyState(S){
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],classOf:S.classOf||{},
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[],groupme:S.groupme||{posted:{}}});
-  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#gmTab").hidden=!state.isOwner;$("#demoTab").hidden=!state.isOwner;
+  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#gmTab").hidden=!state.isOwner;$("#demoTab").hidden=!state.isOwner;requestAnimationFrame(tabsEdge);
   syncDraft();
 }
 async function refresh(quiet){
@@ -1447,9 +1460,11 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden)engFlush(tr
 window.addEventListener("pagehide",()=>engFlush(true));
 window.tpEng={flush:()=>engFlush(true)}; /* for the browser test */
 /* Keep the current tab in sight in the one row tab bar, and drop the fade once the row is scrolled to its end. */
-function tabsEdge(){const n=document.querySelector("nav.tabs");if(n)n.classList.toggle("atend",n.scrollLeft+n.clientWidth>=n.scrollWidth-4)}
+function tabsEdge(){const n=document.querySelector("nav.tabs");if(!n)return;const more=n.scrollWidth>n.clientWidth+4;
+  const l=document.querySelector(".tabarr.l"),r=document.querySelector(".tabarr.r");if(l)l.hidden=!more||n.scrollLeft<=4;if(r)r.hidden=!more||n.scrollLeft+n.clientWidth>=n.scrollWidth-4}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-tabarr]");if(!b)return;const n=document.querySelector("nav.tabs");if(n)n.scrollBy({left:+b.dataset.tabarr*Math.round(n.clientWidth*.7),behavior:"smooth"})});
 function tabsIntoView(){const n=document.querySelector("nav.tabs"),a=n&&n.querySelector("a[aria-current=page]");if(!n||!a)return;
-  if(n.scrollWidth>n.clientWidth){const l=a.offsetLeft-n.offsetLeft,r=l+a.offsetWidth;if(l<n.scrollLeft+8||r>n.scrollLeft+n.clientWidth-28)n.scrollLeft=Math.max(0,l-(n.clientWidth-a.offsetWidth)/2)}tabsEdge()}
+  if(n.scrollWidth>n.clientWidth){const l=a.offsetLeft-n.offsetLeft,r=l+a.offsetWidth;if(l<n.scrollLeft+44||r>n.scrollLeft+n.clientWidth-44)n.scrollLeft=Math.max(0,l-(n.clientWidth-a.offsetWidth)/2)}tabsEdge()}
 document.addEventListener("scroll",e=>{if(e.target&&e.target.matches&&e.target.matches("nav.tabs"))tabsEdge()},true);
 window.addEventListener("resize",tabsEdge);
 function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v==="demo")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
