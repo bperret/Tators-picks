@@ -285,6 +285,16 @@ try {
   check("clock moves even when the score does not", wk.results.e105.period === 4 && wk.results.e105.dclock === "2:05" && wk.results.e105.home === 14, JSON.stringify(wk.results.e105));
   let a2 = await getKv("auto", {});
   check("postponed game flagged", a2.flags.some((f) => f.key === "dead:2026-w11:e108"));
+  {
+    // A game pushed to Sunday keeps its slot and takes ESPN's new kickoff.
+    const mv = slateGames.find((g) => g[0] === 108), was = mv[3];
+    mv[3] = "2026-11-08T12:00:00-06:00";
+    await tick({ now: CT("2026-11-07T13:50:00-06:00") });
+    const g108 = (await getWeek("2026-w11")).games.find((g) => g.id === "e108");
+    check("a moved kickoff follows ESPN", Date.parse(g108.kickoff) === Date.parse("2026-11-08T12:00:00-06:00"), g108.kickoff);
+    mv[3] = was;
+    await tick({ now: CT("2026-11-07T13:55:00-06:00") });
+  }
 
   failScoreboard = true;
   out = await tick({ now: CT("2026-11-07T14:10:00-06:00") });
