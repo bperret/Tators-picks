@@ -1001,6 +1001,20 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const h = gmDraw(cv.getContext("2d"), { league: "Tator's Picks", kick: "Week 11", title: "Picks are live", sub: "Lock: Sat 10:15 AM CT", rows, games, foot: "Lines are final. Get your picks in." }, 0);
     return { h: Math.ceil(h), max: GM_MAXH, w: GM_W }; });
   check("a full 10 game Picks live card still fits an iPhone screen", gmWorst.h <= gmWorst.max, JSON.stringify(gmWorst));
+  // ---- Final card (Nov 15): colored rows, confetti, Survivor wording ----
+  const gmFinal = await c.evaluate(() => { const { gmDraw, GM_MAXH } = window.tpGM; const cv = document.createElement("canvas");
+    const rows = [["🏆", "Weekly winner", "Christopher Montgomery takes the belt with 10 points! 🥇", "gold"], ["GP", "Field goals", "9 of 16 split the uprights! 🙌", "green"],
+      ["👑", "Survivor champion", "Christopher Montgomery outlasted everyone and wins Survivor outright! 💀🏆", "purple"], ["🔥", "Hot week", "Christopher Montgomery, Jonathan Williamson, Sarah Beth went 7+ against the spread! 🔥", "red"],
+      ["📈", "Season leaders", "🥇 Christopher Montgomery, 40 pts\n🥈 Jonathan Williamson, 38 pts\n🥉 Sarah Beth, 37 pts", "blue"], ["👀", "Leader watch", "Christopher Montgomery leads with 40 pts. Jonathan Williamson is 2 back.", null, 1]]
+      .map(([ic, label, text, tone, fun]) => ({ ic, label, text, tone, fun: !!fun }));
+    const h = gmDraw(cv.getContext("2d"), { league: "Tator's Picks", kick: "Week 11 · Final", title: "That's a wrap!", sub: "📣 The recap is live in the app! 📣", rows, games: [], foot: "Full recap on the Recap tab! 👉", confetti: true }, 0);
+    return { h: Math.ceil(h), max: GM_MAXH }; });
+  check("a full Final card with every row still fits an iPhone screen", gmFinal.h <= gmFinal.max, JSON.stringify(gmFinal));
+  const gmSurv = await c.evaluate(() => { const G = window.tpGM; const ids = G.gmIds(); const L = (n, last) => G.gmSurvLine(ids.slice(0, n), last).slice(1, 3).join(": ");
+    return { one: L(1, true), two: ids.length > 1 ? L(2, true) : "skip", mid: L(1, false), none: L(0, true) }; });
+  check("a lone survivor wins Survivor outright, never 'sharing'", !gmSurv || (/outright/.test(gmSurv.one) && !/shar/i.test(gmSurv.one)), JSON.stringify(gmSurv));
+  check("two or more survivors share it as co-champions", !gmSurv || gmSurv.two === "skip" || (/co-champions/i.test(gmSurv.two) && /share/.test(gmSurv.two)), JSON.stringify(gmSurv));
+  check("mid-run Survivor names the last one standing, and an empty run says nobody made it", /last one standing/.test(gmSurv.mid) && /Nobody/.test(gmSurv.none), JSON.stringify(gmSurv));
   check("every card fits an iPhone screen (9 by 19.5)", gmFit.length >= 4 && gmFit.every(([, r]) => r <= 19.5 / 9), JSON.stringify(gmFit));
   await c.evaluate(() => { const b = document.querySelector('#v-groupme .gmq [data-gmsel^="final:"]'); if (b) b.click(); });
   await c.waitForFunction(() => { const i = document.querySelector("#gmCard"); return i && i.src && !i.classList.contains("wait"); }, null, { timeout: 5000 }).catch(() => {});

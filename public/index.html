@@ -1853,10 +1853,18 @@ function gmActive(){return (state.logins||[]).filter(a=>!a.removed)}
 function gmAlive(wid){if(!survivorOpen(wid))return null;const sb=survivorBoard();return sb?sb.filter(r=>r.pid!==BOT&&r.alive):null}
 /* Run 1 of 2026 ends after the Nov 14 week (Rules). The app still runs one run to config.survivorEnd until item 10 ships; replace this then. */
 function gmRunLast(w){return survivorFinalWeek(w.id)||String(w.origDeadline||w.deadline||"").slice(0,10)==="2026-11-14"}
+/* The Final card's Survivor row. One survivor wins outright; two or more share as co-champions (Nov 15: Matt O won Run 1 outright, the card said "sharing"). */
+function gmSurvLine(ids,last){const n=gmAnd(ids);
+  if(last){if(ids.length===1)return ["👑","Survivor champion",`${n} outlasted everyone and wins Survivor outright! 💀🏆`,"purple"];
+    if(ids.length>1)return ["👑","Survivor co-champions",`${n} made it through and share Survivor! 🤝💀`,"purple"];
+    return ["🪦","Survivor","Nobody made it out alive! 💀","red"]}
+  return ["💀","Survivor",ids.length===1?`${n} is the last one standing! 👀`:`${ids.length} still alive! Who blinks next? 👀`,"purple"]}
 function gmLine(g,side){return fmtLine(side==="home"?g.homeLine:-g.homeLine)}
 function gmTeam(g,side){return side==="home"?g.home:g.away}
 function gmTop(base){const c=new Map();let best=null;for(const k of base){const v=(c.get(k.id)||{...k,n:0});v.n++;c.set(k.id,v);if(!best||v.n>best.n)best=v}return best}
 const gmNames=ids=>ids.map(p=>nm(p)).join(", ").replace(/\.$/,"");
+/* "A and B", "A, B, and C" for the Final card lines. */
+const gmAnd=ids=>{const n=ids.map(p=>nm(p).replace(/\.$/,""));return n.length<3?n.join(" and "):n.slice(0,-1).join(", ")+", and "+n[n.length-1]};
 function gmGameRows(gs){return [...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");const fav=g.homeLine<0?hL:aL;
   return {away:g.away,ar:g.awayRank||"",ac:aL.c1,home:g.home,hr:g.homeRank||"",hc:hL.c1,at:g.neutral?"vs":"at",line:g.homeLine===0?"PK":`${fav.abbr} ${fmtLine(-Math.abs(g.homeLine))}`}})}
 /* One fun row per card, so posts stay fresh: leader watch, Robo-Sharp watch, lone wolf, or the league's ATS record. Each card tries its list in order and uses the first fact that has data. */
@@ -1878,7 +1886,7 @@ function gmFun(it,w){const strip=x=>String(x).replace(/\.$/,"");
 /* The card as plain data: kicker, title, sub, rows ({ic, label, text}; ic "GP" draws the goalpost), games, foot. Text only, no HTML. */
 function gmModel(it){
   const w=state.weeks[it.wid];const M={league:(state.config&&state.config.name)||"Tator's Picks",kick:`Week ${it.wk}`,title:"",sub:"",rows:[],games:[],foot:""};
-  const row=(ic,label,text)=>M.rows.push({ic,label,text});
+  const row=(ic,label,text,tone)=>M.rows.push({ic,label,text,tone});
   if(it.kind==="pv"){const P=state.preview&&state.preview.week===it.wk?state.preview:null;
     M.title="Slate preview";M.sub=P&&P.autoOpen===false?"Picks open soon":"Picks open Wed 6 PM CT";
     row("📋","What this is","The likely 10 games and today's lines. Lines can move until picks open.");M.games=gmGameRows(P?P.games:(w?w.games:[]));M.foot="Start your homework"}
@@ -1906,15 +1914,21 @@ function gmModel(it){
     if(bg)row("🤖","Robo-Sharp's field goal",say({g:bg,s:b.sel[b.lock]}));
     M.foot=k1&&k1>NOW()?`First kickoff ${kick(new Date(k1).toISOString())}. Scoreboard is live.`:"Games are on. Scoreboard is live."}
   else if(it.kind==="final"){const win=weekWinners(w.id);const ps=weekPlayers(w.id);const sc=win.length?scoreWeek(w,ps[win[0]]):null;
-    const fg=Object.values(ps).filter(p=>scoreWeek(w,p).lw>0).length;const al=gmAlive(w.id);const T=seasonTally(false).rows.slice(0,3);
+    const live=Object.entries(ps).filter(([p])=>p!==BOT&&!removed().includes(p));
+    const fg=live.filter(([,p])=>scoreWeek(w,p).lw>0).length;const al=gmAlive(w.id);const T=seasonTally(false).rows.slice(0,3);
+    const hot=live.filter(([,p])=>scoreWeek(w,p).w>=HOT_MIN).map(([pid])=>pid);
     const f=(recapFacts(w.id)||[])[0];const strip=s=>String(s||"").replace(/<[^>]*>/g,"");
-    M.title="Final";M.sub="The recap is live in the app.";
-    if(win.length)row("🏆",win.length>1?"Weekly winners":"Weekly winner",`${gmNames(win)}, ${sc.pts} point${sc.pts===1?"":"s"}`);
-    row("GP","Field goals made",`${fg} of ${Object.keys(ps).length}`);
-    if(al)row("💀","Survivor",gmRunLast(w)?(al.length?`Run over. Sharing it: ${gmNames(al.map(r=>r.pid))}.`:"Run over. Nobody survived."):`${al.length} still alive.`);
-    if(T.length)row("📈","Season leaders",T.map((r,i)=>`${i+1}. ${nm(r.pid).replace(/\.$/,"")}, ${r.cpts} pt${r.cpts===1?"":"s"}`).join("\n"));
-    if(f)row("📣","From the recap",strip(f.title));
-    M.foot="Full recap on the Recap tab"}
+    /* Final card with some pizzazz (Nov 15, Benton): colored boxes, confetti, exclamations. */
+    M.kick=`Week ${it.wk} · Final`;M.title="That's a wrap!";M.sub="📣 The recap is live in the app! 📣";M.confetti=true;
+    if(win.length)row("🏆",win.length>1?"Weekly co-winners":"Weekly winner",win.length>1?`${gmAnd(win)} split the belt with ${sc.pts} points each! 🤝`:`${gmNames(win)} takes the belt with ${sc.pts} point${sc.pts===1?"":"s"}! 🥇`,"gold");
+    row("GP","Field goals",fg?`${fg} of ${live.length} split the uprights! 🙌`:`0 of ${live.length}. Wide right all day! 😬`,fg?"green":"red");
+    /* Survivor: one survivor wins it outright; two or more share; the run's last week names the champ. */
+    if(al)row(...gmSurvLine(al.map(r=>r.pid),gmRunLast(w)));
+    if(hot.length)row("🔥","Hot week",`${gmAnd(hot)} went ${HOT_MIN}+ against the spread! 🔥`,"red");
+    if(T.length)row("📈","Season leaders",T.map((r,i)=>`${["🥇","🥈","🥉"][i]} ${nm(r.pid).replace(/\.$/,"")}, ${r.cpts} pt${r.cpts===1?"":"s"}`).join("\n"),"blue");
+    /* Six fact rows plus the fun row is the most that fits an iPhone screen, so the recap line drops on a crowded week. */
+    if(f&&M.rows.length<6)row("📣","From the recap",strip(f.title));
+    M.foot="Full recap on the Recap tab! 👉"}
   const fn=gmFun(it,w);if(fn)M.rows.push({ic:fn[0],label:fn[1],text:fn[2],fun:true});
   return M}
 /* Plain text of the card, for a caption or a text-only post. GroupMe allows 1,000 characters. */
@@ -1924,6 +1938,9 @@ function gmText(M){const L=[`🏈 ${M.league.toUpperCase()} · ${M.kick.toUpperC
   L.push("",M.foot,`🔗 ${location.origin}`);return L.join("\n").slice(0,1000)}
 /* Canvas drawing. Fixed light colors, so the image looks the same from any device theme. */
 const GM_C={turf:"#1f5d34",turf2:"#24683b",chalk:"#f4f6f2",ink:"#111a24",muted:"#56636f",line:"#d5dbe1",box:"#f2f5f7",card:"#ffffff",board:"#0b0f14",gold:"#f2c230",flag:"#ffd100"};
+/* Colored fact boxes: fill, border, and label color, each label 4.5:1 or better on its fill. */
+const GM_TONE={fun:{fill:"#fff7d1",line:"#f2c230",lab:"#6b5200"},gold:{fill:"#fff4c7",line:"#d9a400",lab:"#6b5200"},green:{fill:"#e2f4e7",line:"#2e8b4f",lab:"#1d5a33"},
+  red:{fill:"#fde8e4",line:"#d0432f",lab:"#8a2617"},blue:{fill:"#e5eefc",line:"#2f6fd0",lab:"#1c4688"},purple:{fill:"#efe6fb",line:"#7a45cc",lab:"#4a2687"}};
 const GM_F={disp:'"Graduate","Rockwell","Arial Black",serif',cond:'"Barlow Condensed","Arial Narrow",sans-serif',body:'"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif',emo:'"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'};
 /* 440 points wide, exported at 1179 px (current iPhone screen width). Cards aim to fit the 9 by 19.5 iPhone screen: GM_MAXH. */
 const GM_W=440,GM_S=1179/440,GM_MAXH=Math.floor(GM_W*19.5/9);
@@ -1935,6 +1952,10 @@ function gmFit(ctx,text,max,size,weight,fam,min){let s=size;ctx.font=`${weight} 
   let t=text;if(ctx.measureText(t).width>max){while(t.length>1&&ctx.measureText(t+"…").width>max)t=t.slice(0,-1);t+="…"}return t}
 function gmGoal(ctx,cx,y,size,color){const k=size/24;ctx.save();ctx.translate(cx-12*k,y);ctx.scale(k,k);ctx.strokeStyle=color;ctx.lineWidth=2.4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(12,23);ctx.lineTo(12,13);ctx.moveTo(3,13);ctx.lineTo(21,13);ctx.moveTo(3,13);ctx.lineTo(3,1.5);ctx.moveTo(21,13);ctx.lineTo(21,1.5);ctx.stroke();ctx.restore()}
 /* Draws the card and returns its height. Called twice: once to measure, once to paint. */
+/* Confetti in the side margins of the title area, seeded so the same card draws the same image. */
+function gmConfetti(ctx,W,y0,y1){const cols=["#f2c230","#d0432f","#2e8b4f","#2f6fd0","#7a45cc","#e8590c"];let sd=7;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;
+  for(let i=0;i<34;i++){const left=i%2===0;const x=left?8+rnd()*62:W-70+rnd()*62;const y=y0+rnd()*(y1-y0);const a=rnd()*Math.PI;
+    ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle=cols[i%cols.length];if(i%3===0){ctx.beginPath();ctx.arc(0,0,2.6,0,7);ctx.fill()}else ctx.fillRect(-4,-1.6,8,3.2);ctx.restore()}}
 function gmDraw(ctx,M,H){const W=GM_W,cx=W/2,C=GM_C,F=GM_F;ctx.textAlign="center";ctx.textBaseline="alphabetic";
   if(H){ctx.fillStyle=C.card;ctx.fillRect(0,0,W,H)}
   // Turf header with mowing stripes and yard lines.
@@ -1945,17 +1966,20 @@ function gmDraw(ctx,M,H){const W=GM_W,cx=W/2,C=GM_C,F=GM_F;ctx.textAlign="center
   // Referee stripe.
   for(let x=0,i=0;x<W;x+=10,i++){ctx.fillStyle=i%2?"#f4f4f4":"#111111";ctx.fillRect(x,86,10,8)}
   let y=94+28;
+  if(M.confetti)gmConfetti(ctx,W,98,210);
   ctx.fillStyle=C.muted;ctx.font=`700 13px ${F.cond}`;gmTrack(ctx,M.kick.toUpperCase(),cx,y,2.4);
   ctx.fillStyle=C.ink;ctx.font=`400 30px ${F.disp}`;for(const l of gmWrap(ctx,M.title,W-48)){y+=36;ctx.fillText(l,cx,y)}
   ctx.font=`700 18px ${F.cond}`;for(const l of gmWrap(ctx,M.sub,W-56)){y+=25;ctx.fillText(l,cx,y)}
   y+=13;ctx.fillStyle=C.flag;gmRound(ctx,cx-28,y,56,4,2);ctx.fill();y+=16;
   // Fact boxes: icon, label, text, all centered.
   for(const r of M.rows){ctx.font=`500 16px ${F.body}`;const ls=gmWrap(ctx,r.text,W-76);const h=11+20+2+ls.length*21+11;
-    ctx.fillStyle=r.fun?"#fff7d1":C.box;gmRound(ctx,20,y,W-40,h,12);ctx.fill();ctx.strokeStyle=r.fun?C.gold:C.line;ctx.lineWidth=r.fun?1.5:1;ctx.stroke();
+    const tn=r.fun?GM_TONE.fun:GM_TONE[r.tone]||null;
+    ctx.fillStyle=tn?tn.fill:C.box;gmRound(ctx,20,y,W-40,h,12);ctx.fill();ctx.strokeStyle=tn?tn.line:C.line;ctx.lineWidth=tn?(r.tone?2:1.5):1;ctx.stroke();
+    if(r.tone&&tn){ctx.save();gmRound(ctx,20,y,W-40,h,12);ctx.clip();ctx.fillStyle=tn.line;ctx.fillRect(20,y,6,h);ctx.restore()}
     // Icon and label share one centered line.
     const lab=r.label.toUpperCase();ctx.font=`700 12.5px ${F.cond}`;const lw=gmTrackW(ctx,lab,1.6);const gx=cx-(20+8+lw)/2;let yy=y+11;
     if(r.ic==="GP")gmGoal(ctx,gx+10,yy,20,C.ink);else{ctx.font=`18px ${F.emo}`;ctx.fillStyle=C.ink;ctx.fillText(r.ic,gx+10,yy+17)}
-    ctx.fillStyle=r.fun?"#6b5200":C.muted;ctx.font=`700 12.5px ${F.cond}`;gmTrack(ctx,lab,gx+28+lw/2,yy+15,1.6);
+    ctx.fillStyle=tn?tn.lab:C.muted;ctx.font=`700 12.5px ${F.cond}`;gmTrack(ctx,lab,gx+28+lw/2,yy+15,1.6);
     yy+=20+2;ctx.fillStyle=C.ink;ctx.font=`500 16px ${F.body}`;for(const l of ls){yy+=21;ctx.fillText(l,cx,yy)}
     y+=h+8}
   // The slate: a two column grid of game tiles, like the Scoreboard tab. Away on top, "at" and home below, the line in a scoreboard pill.
@@ -1979,14 +2003,14 @@ function gmDraw(ctx,M,H){const W=GM_W,cx=W/2,C=GM_C,F=GM_F;ctx.textAlign="center
   ctx.font=`700 17px ${F.cond}`;const fl=gmWrap(ctx,M.foot.toUpperCase(),W-48);const fh=20+fl.length*22+10;ctx.fillStyle=C.board;ctx.fillRect(0,y,W,fh);
   ctx.fillStyle=C.gold;fl.forEach((l,i)=>ctx.fillText(l,cx,y+34+i*22-6));
   return y+fh}
-window.tpGM={gmDraw,GM_W,GM_MAXH}; /* for the browser test */
+window.tpGM={gmDraw,GM_W,GM_MAXH,gmModel,gmSurvLine,gmIds:()=>Object.keys(PLAYERS).filter(p=>p!==BOT),weekIds:()=>Object.keys(state.weeks).sort(),wk:id=>state.weeks[id]&&state.weeks[id].week}; /* for the browser test */
 async function gmPaint(M,sig){
   try{await Promise.all([`400 30px "Graduate"`,`700 18px "Barlow Condensed"`,`600 12px "Barlow Condensed"`,`500 16px "Barlow"`,`600 15px "Barlow"`].map(f=>document.fonts&&document.fonts.load(f))).catch(()=>{})}catch(e){}
   const scratch=document.createElement("canvas");scratch.width=10;scratch.height=10;const H=Math.ceil(gmDraw(scratch.getContext("2d"),M,0));
   const cv=document.createElement("canvas");cv.width=Math.round(GM_W*GM_S);cv.height=Math.round(H*GM_S);const ctx=cv.getContext("2d");ctx.scale(GM_S,GM_S);gmDraw(ctx,M,H);
   const blob=await new Promise(r=>cv.toBlob(r,"image/png"));if(!blob)return;
   if(state.gmImg&&state.gmImg.url)URL.revokeObjectURL(state.gmImg.url);
-  const name=`tators-picks-${M.kick.toLowerCase().replace(/\s+/g,"")}-${M.title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/-$/,"")}.png`;
+  const name=`tators-picks-${M.kick.toLowerCase().split("·")[0].replace(/[^a-z0-9]+/g,"")}-${M.title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/-$/,"")}.png`;
   state.gmImg={sig,blob,url:URL.createObjectURL(blob),name,w:cv.width};
   const img=$("#gmCard");if(img&&img.dataset.sig===sig){img.src=state.gmImg.url;img.classList.remove("wait")}}
 function gmTimes(){return info("gmhow",`<b>How it works.</b> The tab follows the weekly rhythm: Preview Monday, Picks live Wednesday at 6 PM, Last call Saturday morning, Locked at 10:15 AM, and Final and recap once every game is final. The next post that is ready shows first. Tap any row to see that card again. Save or share opens your phone's share sheet, where you can save to Photos or send straight to GroupMe; on a computer it downloads the image. Copy URL copies the site link, to paste with the image. Posted and Skipped marks save on the server, so your phone and computer agree. Counts update on each refresh, so save the card right before you post. Nothing here shows a picker's sides before the lock. A post you skip, or one whose moment passes with no mark, shows as Skipped.<br><br><b>Posting times.</b> ${Object.entries(GM_BEST).filter(([k])=>k!=="pv").map(([k,b])=>`${esc(GM_KINDS[k][0])}: ${esc(b[0])}.`).join(" ")} Preview is optional, Mon 12:15 PM. <b>Avoid:</b> weekdays 8 AM to 6 PM outside lunch (buried under work), Saturday afternoon and evening (game day trash talk buries it), and after 10 PM (it competes with everything overnight). <b>Stay consistent:</b> the same times every week matter more than the perfect minute, and a steady rhythm keeps people from muting Announcements. After 3 or 4 weeks, check which posts get the most likes and adjust.`)}

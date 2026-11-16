@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.48 | Nov 15, 7:55 PM | GroupMe | Final card: fixed the Survivor line (a lone survivor now wins outright, not "sharing it"; two or more are co-champions); more pizzazz: "That's a wrap!", confetti, colored fact boxes, a Hot week row, medals on season leaders, exclamations | M | 60 | PENDING |
 | 1.47.2 | Nov 14, 11:52 AM | Automation | Moved kickoffs: the scores job now takes ESPN's kickoff time for a slate game that was delayed or pushed to another day, so the times, the kickoff order, and page visit score pulls stay right; the game stays on the slate and the public log notes the change | S | 9 | `8d25af7` |
 | 1.47.1 | Nov 13, 2:53 PM | Desktop layout | Tab bar fix: on wide screens the commissioner's tabs no longer cut off the first tabs (Picks, Standings, Recap); the bar scrolls from its first tab to its last | S | 3 | `4429aaa` |
 | 1.47 | Nov 12, 8:05 PM | Phone layout | Tab bar: thicker, bordered card bar with round arrow buttons that show when more tabs sit off either edge; tap to scroll | S | 30 | `16a13f3` |
