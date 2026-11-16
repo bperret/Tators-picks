@@ -4,7 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
 import { setFetcher, SITE, CORE, FITT, halfPoint } from "../lib/espn.js";
 import { tick, runJob, autoView, chooseGames, dueJobs, liveDue } from "../lib/auto.js";
-import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, closingLines, buildState } from "../lib/league.js";
+import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, survivorRunOf, survivorCheck, RUNS_2026, confMap, confOf, closingLines, buildState } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 import { redditPage, pastedTable } from "./reddit-fixture.mjs";
 import { parseRedditText } from "../lib/polls.js";
@@ -120,9 +120,24 @@ setFetcher(async (url) => {
 });
 
 try {
-  const endCfg = { survivorEnd: "2026-11-29T06:00:00Z" };
-  check("server: Survivor stays open for the Nov 28 week", !survivorClosed({ deadline: "2026-11-28T16:15:00Z" }, endCfg));
-  check("server: Survivor is closed for Conference Champion week", survivorClosed({ deadline: "2026-12-04T23:00:00Z" }, endCfg));
+  const endCfg = { survivorStart: "2026-w10", survivorEnd: "2026-11-29T06:00:00Z" };
+  check("server: with no runs saved, one team run lasts to survivorEnd", !survivorClosed({ id: "2026-w14", deadline: "2026-11-28T16:15:00Z" }, endCfg) && survivorClosed({ id: "2026-w15", deadline: "2026-12-04T23:00:00Z" }, endCfg));
+  const runCfg = { survivorStart: "2026-w10", survivorRuns: RUNS_2026 };
+  const runOf = (id, d) => (survivorRunOf({ id, deadline: d }, runCfg) || { n: 0 }).n;
+  check("server: 2026 runs: Nov 14 is Run 1; Nov 21, Nov 28, and Conference Champion Week are Run 2; bowls are closed",
+    runOf("2026-w12", "2026-11-14T16:15:00Z") === 1 && runOf("2026-w13", "2026-11-21T16:15:00Z") === 2 && runOf("2026-w14", "2026-11-28T16:15:00Z") === 2 && runOf("2026-w15", "2026-12-05T00:00:00Z") === 2 && runOf("2026-w16", "2026-12-15T23:00:00Z") === 0);
+  check("server: Run 1 is the no-repeat rule and Run 2 is the conference lock", RUNS_2026[0].rule === "team" && RUNS_2026[1].rule === "conf");
+  check("server: a week before survivorStart has no run", runOf("2026-w09", "2026-11-14T16:15:00Z") === 0);
+  { const m = confMap({ ats: { teams: [{ team: "Georgia", conf: "SEC" }, { team: "Notre Dame", conf: "Independent" }, { team: "UConn", conf: "FBS Independents" }] } });
+    check("server: conference groups: SEC by name, all independents as one, an unknown team on its own", confOf("Georgia", m) === "SEC" && confOf("Notre Dame", m) === "Independents" && confOf("UConn", m) === "Independents" && confOf("Sacramento State", m).startsWith("team:")); }
+  { const map = confMap({ ats: { teams: [["Georgia", "SEC"], ["Alabama", "SEC"], ["Texas", "SEC"], ["LSU", "SEC"], ["Ohio State", "Big Ten"], ["Michigan", "Big Ten"], ["Notre Dame", "Independent"], ["Navy", "AAC"]].map(([team, conf]) => ({ team, conf })) } });
+    const games = [{ id: "g1", home: "Alabama", away: "Georgia" }, { id: "g2", home: "Ohio State", away: "Michigan" }, { id: "g3", home: "Notre Dame", away: "Navy" }];
+    const chk = (team, burned, extra = {}) => survivorCheck({ rule: "conf", team, games, burned: new Set(burned), map, ...extra });
+    check("server: conference lock refuses any team from a burned conference", /burned the SEC/.test(chk("Alabama", ["SEC"]) || "") && chk("Ohio State", ["SEC"]) === null);
+    check("server: only the picked team's conference burns, so the other side of a nonconference game stays open", chk("Navy", ["Independents"]) === null && /Independents/.test(chk("Notre Dame", ["Independents"]) || ""));
+    check("server: free pick when every team on the slate is from a burned conference", chk("Georgia", ["SEC", "Big Ten", "Independents", "AAC"]) === null);
+    check("server: a void game does not count as a legal option", chk("Georgia", ["SEC", "Big Ten"], { voids: new Set(["g3"]) }) === null && /SEC/.test(chk("Georgia", ["SEC", "Big Ten"]) || ""));
+    check("server: Run 1 keeps the no-repeat team rule", /already used Georgia/.test(survivorCheck({ rule: "team", team: "Georgia", games, usedTeams: ["Georgia"] }) || "") && survivorCheck({ rule: "team", team: "Alabama", games, usedTeams: ["Georgia"] }) === null); }
   const cl = closingLines([{ games: [{ id: "e1", kickoff: "2026-11-07T18:00:00Z" }, { id: "e2", kickoff: "2026-11-07T18:00:00Z" }, { id: "e3", kickoff: "2026-11-07T23:00:00Z" }, { id: "g4", kickoff: "2026-11-07T18:00:00Z" }, { id: "e5", kickoff: "2026-11-07T18:00:00Z" }] }],
     { lines: { 1: -7, 2: 3.5, 3: -1.5, 4: -2.5 } }, { games: { 5: { l: -10.5 } } }, Date.parse("2026-11-07T20:00:00Z"));
   check("closing lines use the half point rule, the game log, and only started games", cl.e1 === -7.5 && cl.e2 === 3.5 && cl.e3 === undefined && cl.g4 === undefined && cl.e5 === -10.5, JSON.stringify(cl));

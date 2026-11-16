@@ -538,6 +538,71 @@ try {
   check("no Survivor after the Nov 28 week", sv.open14 === false && sv.open13 === true, JSON.stringify(sv));
   check("a lone picker is not resurrected", sv.lone === 0, JSON.stringify(sv));
   check("a late joiner is out and stays out through a resurrection", sv.lateRev === "2026-w11" && sv.lateAlive === "x,y" && sv.lateOut === 11 && sv.lateGrid === false, JSON.stringify(sv));
+  // ---- Survivor runs and the Run 2 conference lock (item 10, Nov 15) ----
+  const r2 = await m.evaluate(() => {
+    const S = window.tpSurv, { state } = window.tpRecap;
+    const saved = { weeks: state.weeks, reveals: state.reveals, config: state.config, roster: state.roster, rankings: state.rankings, uid: state.uid, draft: state.draft, myPicks: state.myPicks, svRun: state.svRun };
+    const out = {};
+    try {
+      state.rankings = { ...(saved.rankings || {}), ats: { teams: [["Georgia", "SEC"], ["Alabama", "SEC"], ["Ohio State", "Big Ten"], ["Michigan", "Big Ten"], ["Notre Dame", "Independent"], ["Navy", "AAC"]].map(([team, conf]) => ({ team, conf })) } };
+      state.config = { ...saved.config, survivorStart: "2026-w12", currentWeek: "2026-w14", survivorRuns: [{ n: 1, from: null, to: "2026-11-15T06:00:00Z", rule: "team" }, { n: 2, from: "2026-11-15T06:00:00Z", to: "2026-12-06T06:00:00Z", rule: "conf" }] };
+      state.roster = ["x", "y", "z"];
+      const G = [{ id: "a", away: "Georgia", home: "Alabama", homeLine: 1.5, modelLine: 6.5, slot: 1 }, { id: "b", away: "Michigan", home: "Ohio State", homeLine: -1.5, modelLine: -4.5, slot: 2 }, { id: "c", away: "Navy", home: "Notre Dame", homeLine: -1.5, modelLine: 1.5, slot: 3 }];
+      // Every game: away wins by 10, so the away side covers.
+      const fin = { a: { away: 20, home: 10, final: true }, b: { away: 20, home: 10, final: true }, c: { away: 20, home: 10, final: true } };
+      const wk = (id, week, d, status) => ({ id, week, season: 2026, status, deadline: d, games: G, results: status === "final" ? fin : {} });
+      state.weeks = { "2026-w12": wk("2026-w12", 12, "2026-11-14T16:15:00Z", "final"), "2026-w13": wk("2026-w13", 13, "2026-11-21T16:15:00Z", "final"), "2026-w14": wk("2026-w14", 14, "2026-11-28T16:15:00Z", "open") };
+      const P = (g, s) => ({ sel: {}, surv: { g, s } });
+      // Run 1 (w12): x takes Georgia (covers), y takes Alabama (out), z takes Ohio State (out). x wins Run 1 outright.
+      // Run 2 (w13): x takes Georgia again (allowed, new run) and burns the SEC; y is back in and takes Michigan; z has no sheet, so z sits out Run 2.
+      state.reveals = { "2026-w12": { players: { x: P("a", "away"), y: P("a", "home"), z: P("b", "home") } }, "2026-w13": { players: { x: P("a", "away"), y: P("b", "away") } } };
+      out.runs = ["2026-w12", "2026-w13", "2026-w14"].map((k) => S.survRunOf(k)?.n).join();
+      out.now = S.survRunNow().n;
+      out.r1 = S.survivorChampions(S.survRuns()[0]).join();
+      const b2 = S.survivorBoard(S.survRuns()[1]).filter((r) => r.pid !== "bot");
+      out.r2alive = b2.filter((r) => r.alive).map((r) => r.pid).sort().join();
+      out.used = S.survivorUsedRun("x", "2026-w14");
+      out.indep = S.survConf("Notre Dame");
+      const D = { ...S.realStats(), wids: ["2026-w12"], week: (k) => state.weeks[k], players: (k) => state.reveals[k].players };
+      const card = document.createElement("div"); card.innerHTML = S.careerPanel(D, "x"); out.career = card.textContent;
+      // Robo-Sharp in Run 2 never takes a team from a conference it burned.
+      const bs = S.botSurv(state.weeks["2026-w14"]); const bw13 = S.botSurv(state.weeks["2026-w13"]);
+      const team = (s) => s && (s.s === "home" ? G.find((g) => g.id === s.g).home : G.find((g) => g.id === s.g).away);
+      out.bot = [team(bw13), team(bs)].map((t) => t && S.survConf(t)).join("|");
+      // The sheet grays out burned teams for x in the Nov 28 week.
+      state.uid = "x"; state.draft = { sel: {}, lock: null, tb: null, surv: null }; state.myPicks = { weeks: {} };
+      location.hash = "#picks"; S.renderPicks();
+      const opts = [...document.querySelectorAll("#survSel option")].filter((o) => o.value);
+      out.disabled = opts.filter((o) => o.disabled).map((o) => o.textContent.trim().split(" ")[1]).sort().join();
+      out.enabled = opts.filter((o) => !o.disabled).length;
+      out.sheetNote = document.querySelector("#survPanel")?.textContent || "";
+      // Survivor tab: a Run 1 / Run 2 switch; Run 2 shows the conference lock note; Run 1 names its champion.
+      location.hash = "#survivor"; state.svRun = undefined; S.renderSurvivor();
+      out.switch = [...document.querySelectorAll("#v-survivor [data-svrun]")].map((b) => b.textContent.trim() + ":" + b.getAttribute("aria-pressed")).join("|");
+      out.tab2 = document.querySelector("#v-survivor .svrule")?.textContent || "";
+      document.querySelector('#v-survivor [data-svrun="1"]').click();
+      out.tab1 = document.querySelector("#v-survivor .svwin")?.textContent || "";
+      // GroupMe Picks live card for Run 2's first week announces the twist.
+      out.first13 = S.gmRunFirst(state.weeks["2026-w13"]); out.first14 = S.gmRunFirst(state.weeks["2026-w14"]);
+      out.last12 = S.gmRunLast(state.weeks["2026-w12"]); out.last13 = S.gmRunLast(state.weeks["2026-w13"]);
+    } catch (e) { out.err = String(e && e.stack || e); }
+    Object.assign(state, saved); location.hash = "#picks";
+    return out;
+  });
+  check("Survivor weeks map to their runs: Nov 14 is Run 1, Nov 21 and Nov 28 are Run 2", r2.runs === "1,2,2" && r2.now === 2, JSON.stringify(r2));
+  check("Run 1's lone survivor is its champion", r2.r1 === "x", JSON.stringify(r2));
+  check("Run 2 starts everyone alive again, and a picker who misses its first week sits it out", r2.r2alive === "x,y", JSON.stringify(r2));
+  check("a team used in Run 1 can be picked again in Run 2", r2.used && r2.used.teams.length === 1 && r2.used.confs[0] === "SEC", JSON.stringify(r2));
+  check("Notre Dame counts as the Independents", r2.indep === "Independents");
+  check("each Survivor run won is a career win", /Survivor wins\s*1/.test(r2.career), r2.career);
+  check("Robo-Sharp never reuses a burned conference in Run 2", r2.bot && r2.bot.split("|").length === 2 && r2.bot.split("|")[0] !== r2.bot.split("|")[1], JSON.stringify(r2));
+  check("the sheet grays out every team from a burned conference", r2.disabled === "Alabama,Georgia" && r2.enabled === 4, JSON.stringify({ d: r2.disabled, e: r2.enabled }));
+  check("the sheet explains the conference lock in plain words", /conference lock/i.test(r2.sheetNote) && /whole conference/.test(r2.sheetNote) && /Burned:\s*SEC/.test(r2.sheetNote), r2.sheetNote);
+  check("the Survivor tab has a Run 1 and Run 2 switch, on Run 2 by default", /Run 1.*:false\|Run 2.*:true/.test(r2.switch), r2.switch);
+  check("Run 2's board explains the conference lock", /whole conference is used up/.test(r2.tab2), r2.tab2);
+  check("Run 1's board names its champion outright", /wins Survivor Run 1 outright/.test(r2.tab1), r2.tab1);
+  check("the run's first and last weeks are known for the GroupMe cards", r2.first13 === true && r2.first14 === false && r2.last12 === true && r2.last13 === false, JSON.stringify(r2));
+  check("the Run 2 test ran without errors", !r2.err, r2.err);
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
   // Preview panel, drawn on the page with a made-up preview.
   await m.evaluate(() => { const { state, render } = window.tpRecap; state.preview = { week: 11, set: false, autoOpen: true, linesAt: new Date().toISOString(), games: Object.values(state.weeks)[0].games.slice(0, 5).map((g, i) => ({ ...g, slot: i + 1, awayRank: 3, homeRank: 99 })) }; location.hash = "#picks"; render(); });
@@ -658,7 +723,9 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.selectOption("#payAN", "0");
   check("the calculator stops at 13 weeks and 4 runs", (await m.getAttribute("#payWeeks", "max")) === "13" && (await m.getAttribute("#payRuns", "max")) === "4");
   const contests = await m.$eval("#contests", (e) => e.textContent);
-  check("the Rules page lists every planned contest", ["Second Survivor run", "Conference Champion Week", "Army-Navy", "Bowl challenge", "CFP bracket", "Survivor in 2027"].every((x) => contests.includes(x)));
+  check("the Rules page lists every planned contest", ["Conference Champion Week", "Army-Navy", "Bowl challenge", "CFP bracket", "Survivor in 2027"].every((x) => contests.includes(x)) && !contests.includes("Second Survivor run"));
+  { const sv = await m.$eval("#v-rules", (e) => e.textContent);
+    check("the live Survivor rules explain Run 2's conference lock in plain words", /Run 2 twist, the conference lock/.test(sv) && /whole conference/.test(sv) && /Notre Dame burns the Independents/.test(sv) && /free pick/.test(sv)); }
   await m.click('[data-paybuy="25"]'); pay = await payTxt();
   check("buy-in chips change the dollars", pay[0].includes("$500") && pay[2].includes("$100"), pay[0]);
   check("the Rules page does not mention upkeep", !/upkeep/i.test(await m.$eval("#payouts", (e) => e.textContent)));

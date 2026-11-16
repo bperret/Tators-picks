@@ -561,6 +561,9 @@ table.svtab tr.me td{background:transparent}
 table.svtab tr td.svp{background:var(--card)}
 table.svtab tr.me .svp{font-weight:700}
 .svp{white-space:nowrap;position:sticky;left:0;background:var(--card);z-index:1}
+.svruns{display:flex;gap:6px;margin:0 0 10px}.svruns button{flex:1}
+.svrule{margin:10px auto 0;max-width:34em;padding:8px 12px;border-radius:8px;background:rgba(242,194,48,.14);border:1px solid rgba(242,194,48,.5);font-size:.95rem;line-height:1.35}
+.svconf{display:block;font-size:.72rem;opacity:.85}
 /* Scroll cue for Picks by week: a shadow on the pinned name column while older weeks sit off to the left. */
 .svwrap.scrolls:not(.atstart) .svp,.svwrap.scrolls:not(.atstart) table.svtab th:first-child{box-shadow:6px 0 6px -4px rgba(0,0,0,.35)}
 .svwrap.scrolls::before{content:"\2190  Swipe for earlier weeks";display:block;position:sticky;left:0;font-size:.75rem;color:var(--muted);margin:0 0 4px}
@@ -903,7 +906,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Pick 10 games against the spread. Each correct pick is 1 point.</li>
         <li>Kick your field goal (FG) on one pick. If it covers, it is worth 3, the same as a real field goal.</li>
         <li>Guess the total points in game 1 for the tiebreaker.</li>
-        <li>Pick one Survivor team. Each team once a run.</li>
+        <li>Pick one Survivor team. In Run 2, each pick uses up that team's whole conference.</li>
         <li>Most weeks, everything locks Saturday at 10:15 a.m. CT. Then everyone's picks show.</li>
       </ol>
     </div>
@@ -954,7 +957,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li><b>The market.</b> Our lines freeze Wednesday night. The betting market keeps moving. When the market moves away from our line, Robo-Sharp takes the side our line now gives value. It trusts the market more than the ratings.</li>
         <li><b>How sure it is.</b> Each game shows Coin flip, Slight lean, Leans, or Heavy lean, from how likely it thinks its side is to cover. Even a Heavy lean loses plenty.</li>
         <li><b>Field goal.</b> It kicks on the game it likes most where all three ratings agree.</li>
-        <li><b>Survivor.</b> It takes the team most likely to cover among the teams it can still use.</li>
+        <li><b>Survivor.</b> It takes the team most likely to cover among the teams it can still use. In Run 2 it follows the conference lock like everyone else.</li>
         <li><b>Tiebreaker.</b> It guesses the betting total.</li>
         <li><b>Picks can change until the lock.</b> What it shows at the lock is what it plays. If it changes a side after picks open, the game shows a Robo flip alert.</li>
         <li>Robo-Sharp shows in the standings where its score lands, but it takes no rank and cannot win a week, a trophy, Survivor, or the season. If it finishes on top, the best picker wins.</li>
@@ -962,24 +965,24 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <details><summary class="rh">Survivor</summary>
       <ul>
         <li>Each week, also pick one team from the slate against the spread. If it covers, you stay alive. If it does not, you are out.</li>
-        <li>You cannot pick the same team twice in a run. A void game keeps you alive. A missed survivor pick puts you out.</li>
+        <li>Run 1: you cannot pick the same team twice. A void game keeps you alive. A missed survivor pick puts you out.</li>
         <li>If you join late and miss the first week of a run, you are out of that run. Resurrection does not bring you back.</li>
         <li>Survivor picks lock and reveal with your regular picks. The last picker alive wins the run. If more than one picker is still alive when a run ends, they share it.</li>
-        <li>If every remaining picker goes out in the same week, they are all resurrected and play one more week. The teams they used stay used. In a run's last week, they share the title instead.</li>
-        <li>2026 has two runs. The first run ends after the Saturday, November 14 week, and everyone still alive then shares it. The second run is planned; see Contests still to come.</li>
-        <li>Everyone who shares a run's title is a Co-Champion.</li>
-        <li>The Survivor tab shows every picker's pick each week, who is still alive, and which teams you have left.</li>
+        <li>If every remaining picker goes out in the same week, they are all resurrected and play one more week. The teams or conferences they used stay used. In a run's last week, they share the title instead.</li>
+        <li>Everyone who shares a run's title is a Co-Champion. Each run won counts as a Survivor win on your Pickers page.</li>
+        <li>The Survivor tab has a Run 1 and Run 2 switch. Each run shows every picker's pick each week, who is still alive, and which teams or conferences you have left.</li>
+      </ul>
+      <h3 class="rh">2026 Survivor runs</h3>
+      <ul>
+        <li><b>Run 1:</b> through the Saturday, November 14 week. No team twice.</li>
+        <li><b>Run 2:</b> the November 21 week, the November 28 week, and Conference Champion Week. Everyone starts Run 2 alive, even pickers who went out in Run 1. Miss Run 2's first week and you sit out Run 2.</li>
+        <li><b>Run 2 twist, the conference lock:</b> instead of using up a team, each pick uses up that team's whole conference for the rest of the run. Pick Georgia in week one and no SEC team can be your pick again this run.</li>
+        <li>Only the team you pick burns its conference. In a nonconference game, the other team's conference stays open.</li>
+        <li>Independents count as one conference, so picking Notre Dame burns the Independents.</li>
+        <li>Burned teams are grayed out on your sheet. If every team on a week's slate is from a conference you burned, that week is a free pick: any team counts, even one you used.</li>
       </ul></details>
       <details id="contests"><summary class="rh">Contests still to come</summary>
       <p class="note">This is the plan. It can change until each contest opens. 2026 has no prizes in any contest.</p>
-      <h3 class="rh">Second Survivor run</h3>
-      <ul>
-        <li>It covers the November 21 week, the November 28 week, and Conference Champion Week. Everyone starts it alive, even pickers who went out in the first run.</li>
-        <li>It is against the spread, with one change: the conference lock. Picking a team burns that team's conference for the rest of the run. Only your team's conference burns, so in a nonconference game the other team's conference stays open.</li>
-        <li>Independents count as one conference, so picking Notre Dame burns Independents.</li>
-        <li>The conference lock replaces the rule against using a team twice. If no legal game is left on the slate, you can pick any game, including a team you already used.</li>
-        <li>Robo-Sharp follows the conference lock too.</li>
-      </ul>
       <h3 class="rh">Conference Champion Week</h3>
       <ul>
         <li>All 10 conference title games make up the slate, 5 on Friday, December 4 and 5 on Saturday, December 5.</li>
@@ -1310,7 +1313,7 @@ function sheetCheck(){
   const wid=commishWeekId(),w=state.weeks[wid];if(!w||!["open","locked"].includes(w.status))return null;
   const SS=(state.sheetStatus||{})[wid]||{},rs=w.results||{};
   const need=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void)).map(g=>g.id);
-  const sb=survivorOpen(wid)?survivorBoard():null;
+  const sb=survivorOpen(wid)?survivorBoard(survRunOf(wid)):null;
   const survNeeded=pid=>{if(!sb)return false;const r=sb.find(x=>x.pid===pid);return !r||r.alive||r.pending};
   const by={};
   for(const a of state.logins||[]){if(a.removed)continue;const s=SS[a.id];
@@ -1530,12 +1533,14 @@ function botPicks(w,mode,which){if(!w)return null;const force=mode;mode=mode||ro
   if(!Object.keys(sel).length)return null;
   return {sel,lock:best&&best.id,tb,surv:botSurv(w,force)}}
 /* force: "old" or "new" for every week (the Commish check); otherwise each week uses its own mode. */
-function botSurv(w,force){const start=survivorStart();if(!survivorOpen(w.id))return null;const used=new Set();
-  for(const wid of Object.keys(state.weeks).sort()){if(wid<start||wid>=w.id)continue;const pw=state.weeks[wid];const s=pw&&botSurvPick(pw,used,force);if(s){const g=pw.games.find(x=>x.id===s.g);used.add(canon(s.s==="home"?g.home:g.away))}}
-  return botSurvPick(w,used,force)}
-function botSurvPick(w,used,force){const mode=force==="old"||force==="new"?force:roboMode(w);
-  if(mode==="new"){const E=roboEvals(w);const b=roboBest((w.games||[]).filter(g=>E[g.id]&&!used.has(canon(E[g.id].side==="home"?g.home:g.away))).map(g=>({g,e:E[g.id]})));return b?{g:b.g.id,s:b.e.side}:null}
-  const opts=(w.games||[]).map(g=>({g,s:modelSide(g),e:typeof g.modelLine==="number"?Math.abs(g.modelLine-g.homeLine):0})).filter(o=>o.s&&!used.has(canon(o.s==="home"?o.g.home:o.g.away)));
+function botSurv(w,force){const run=survRunOf(w.id);if(!run)return null;const used=new Set(),burned=new Set();
+  for(const wid of Object.keys(state.weeks).sort()){if(wid>=w.id)continue;const r=survRunOf(wid);if(!r||r.n!==run.n)continue;const pw=state.weeks[wid];const s=pw&&botSurvPick(pw,used,force,run.rule==="conf"?burned:null);if(s){const g=pw.games.find(x=>x.id===s.g);const t=s.s==="home"?g.home:g.away;used.add(canon(t));burned.add(survConf(t))}}
+  return botSurvPick(w,used,force,run.rule==="conf"?burned:null)}
+/* Conference lock for Robo-Sharp: a team is blocked when its conference is burned; if nothing on the slate is legal, any team is (free pick). */
+function survBlockFn(w,used,burned){if(!burned)return t=>used.has(canon(t));const anyLegal=(w.games||[]).some(g=>!burned.has(survConf(g.home))||!burned.has(survConf(g.away)));return anyLegal?t=>burned.has(survConf(t)):()=>false}
+function botSurvPick(w,used,force,burned){const mode=force==="old"||force==="new"?force:roboMode(w);const blocked=survBlockFn(w,used,burned);
+  if(mode==="new"){const E=roboEvals(w);const b=roboBest((w.games||[]).filter(g=>E[g.id]&&!blocked(E[g.id].side==="home"?g.home:g.away)).map(g=>({g,e:E[g.id]})));return b?{g:b.g.id,s:b.e.side}:null}
+  const opts=(w.games||[]).map(g=>({g,s:modelSide(g),e:typeof g.modelLine==="number"?Math.abs(g.modelLine-g.homeLine):0})).filter(o=>o.s&&!blocked(o.s==="home"?o.g.home:o.g.away));
   opts.sort((a,b)=>b.e-a.e||a.g.slot-b.g.slot);return opts[0]?{g:opts[0].g.id,s:opts[0].s}:null}
 /* Flip alert: games where Robo-Sharp's side now differs from its side when picks opened. */
 function roboFlips(w){if(roboMode(w)!=="new"||!w.robo.first||w.robo.first===w.robo.last)return [];
@@ -1544,36 +1549,52 @@ function roboFlips(w){if(roboMode(w)!=="new"||!w.robo.first||w.robo.first===w.ro
 window.tpRobo={roboEval,botPicks,roboFlips,roboWhy,roboBand}; /* for the browser test */
 function weekPlayers(wid,withBot){const r=state.reveals[wid];if(!r)return {};const o={};for(const [p,v] of Object.entries(r.players||{}))if(!removed().includes(p)&&p!==BOT)o[p]=v;if(withBot&&state.weeks[wid]){const b=botPicks(state.weeks[wid]);if(b)o[BOT]=b}return o}
 function survivorStart(){return state.config&&state.config.survivorStart}
-/* Survivor runs from survivorStart until config.survivorEnd, the end of the Saturday Nov 28 week in 2026. */
+/* Survivor runs (item 10, Nov 15). config.survivorRuns lists them ({n, from, to, rule}); a week belongs to the run whose window holds
+   its Saturday deadline. rule "team": no team twice. rule "conf": each pick burns the team's conference for the rest of the run.
+   With no runs saved, one team run lasts to config.survivorEnd (the old setup, and the test server). Same rules as lib/league.js. */
 function survWeekTime(wid){const w=state.weeks[wid];const d=w&&(w.origDeadline||w.deadline);return d?Date.parse(d):NaN}
-function survivorOpen(wid){const s=survivorStart();if(!s||wid<s)return false;const e=state.config.survivorEnd;const t=survWeekTime(wid);return !(e&&t>=Date.parse(e))}
-function survivorFinalWeek(wid){const e=state.config&&state.config.survivorEnd;const t=survWeekTime(wid);return !!(e&&t+7*864e5>=Date.parse(e))}
-function survivorWeeks(){return Object.keys(state.weeks).sort().filter(w=>survivorOpen(w)&&state.reveals[w]&&["locked","final"].includes(state.weeks[w].status))}
+function survRuns(){const c=state.config||{};const r=Array.isArray(c.survivorRuns)&&c.survivorRuns.length?c.survivorRuns:null;return r||[{n:1,from:null,to:c.survivorEnd||null,rule:"team"}]}
+function survRunOf(wid){const s=survivorStart();if(!s||!wid||wid<s)return null;const t=survWeekTime(wid);if(!Number.isFinite(t))return null;return survRuns().find(r=>(!r.from||t>=Date.parse(r.from))&&(!r.to||t<Date.parse(r.to)))||null}
+/* The run on screen: the current week's run, else the latest run that has started. */
+function survRunNow(){const r=survRunOf(currentWeekId());if(r)return r;const seen=Object.keys(state.weeks).map(survRunOf).filter(Boolean);return seen.length?seen.sort((a,b)=>b.n-a.n)[0]:survRuns()[0]}
+function survRunN(n){return survRuns().find(r=>r.n===n)||null}
+function survivorOpen(wid){return !!survRunOf(wid)}
+function survivorFinalWeek(wid){const r=survRunOf(wid);const t=survWeekTime(wid);return !!(r&&r.to&&t+7*864e5>=Date.parse(r.to))}
+function survivorWeeks(run=survRunNow()){return Object.keys(state.weeks).sort().filter(w=>{const r=survRunOf(w);return r&&run&&r.n===run.n&&state.reveals[w]&&["locked","final"].includes(state.weeks[w].status)})}
+/* Conference lock: conferences from the ATS list in rankings; Independents are one group; an unknown team is its own group. */
+function survConfMap(){const R=state.rankings||{};if(survConfMap._r===R)return survConfMap._m;const m={};((R.ats&&R.ats.teams)||[]).forEach(t=>{if(t&&t.team)m[canon(t.team)]=t.conf||""});survConfMap._r=R;survConfMap._m=m;return m}
+function survConf(team){const c=survConfMap()[canon(team)];return c?(/independ/i.test(c)?"Independents":c):"team:"+canon(team)}
+const survConfName=c=>c.startsWith("team:")?"its own group":c;
 /* If every remaining picker goes out in the same week, they all play one more week. Not in the last week, when they share. A lone picker is never revived. */
 function survResult(pid,wid){const w=state.weeks[wid];const p=(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;const g=sp&&w.games.find(x=>x.id===sp.g);if(!g)return "miss";const r=(w.results||{})[g.id];if(r&&r.void)return "void";const c=coverSide(g,r);return !c?"pending":c===sp.s?"win":"loss"}
 /* A picker with no sheet in Survivor's first week joined late, or skipped it. They are out, and resurrection does not bring them back. */
-function survLate(pid){if(pid===BOT)return false;const first=survivorWeeks()[0];return !!first&&!((state.reveals[first].players||{})[pid])}
-function survivorRevived(){const rev={};const alive=new Set(allPlayerIds(false).filter(p=>!removed().includes(p)&&!survLate(p)));
-  for(const wid of survivorWeeks()){if(alive.size<2)break;const res=[...alive].map(p=>[p,survResult(p,wid)]);if(res.some(x=>x[1]==="pending"))break;
+function survLateRun(pid,run){return survLate(pid,run)}
+function survLate(pid,run=survRunNow()){if(pid===BOT)return false;const first=survivorWeeks(run)[0];return !!first&&!((state.reveals[first].players||{})[pid])}
+function survivorRevived(run=survRunNow()){const rev={};const alive=new Set(allPlayerIds(false).filter(p=>!removed().includes(p)&&!survLate(p,run)));
+  for(const wid of survivorWeeks(run)){if(alive.size<2)break;const res=[...alive].map(p=>[p,survResult(p,wid)]);if(res.some(x=>x[1]==="pending"))break;
     const gone=res.filter(x=>x[1]==="loss"||x[1]==="miss").map(x=>x[0]);
     if(gone.length===alive.size&&!survivorFinalWeek(wid)){rev[wid]=true;continue}
     gone.forEach(p=>alive.delete(p))}
   return rev}
-function survivorBoard(){
-  const start=survivorStart();if(!start)return null;
-  const weeks=survivorWeeks();
+function survivorBoard(run=survRunNow()){
+  const start=survivorStart();if(!start||!run)return null;
+  const weeks=survivorWeeks(run);
   const ids=allPlayerIds(true).filter(p=>!removed().includes(p));
-  const rev=survivorRevived();
-  return ids.map(pid=>{const row={pid,alive:true,pending:false,out:null,used:[],picks:[]};
+  const rev=survivorRevived(run);const survLate=(pid)=>survLateRun(pid,run);
+  return ids.map(pid=>{const row={pid,alive:true,pending:false,out:null,used:[],burned:[],picks:[]};
     for(const wid of weeks){const w=state.weeks[wid];const p=pid===BOT?botPicks(w):(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;
       if(!sp){if(rev[wid]&&!survLate(pid))continue;row.alive=false;row.out={week:w.week,team:"no pick"};break}
       const g=w.games.find(x=>x.id===sp.g);if(!g){if(rev[wid]&&!survLate(pid))continue;row.alive=false;row.out={week:w.week,team:"no pick"};break}
-      const team=sp.s==="home"?g.home:g.away;row.used.push(team);row.picks.push({wid,week:w.week,team,line:sp.s==="home"?g.homeLine:-g.homeLine});
+      const team=sp.s==="home"?g.home:g.away;row.used.push(team);row.burned.push(sp.c||survConf(team));row.picks.push({wid,week:w.week,team,line:sp.s==="home"?g.homeLine:-g.homeLine});
       const r=(w.results||{})[g.id];if(r&&r.void)continue;const c=coverSide(g,r);if(!c){row.pending=true;continue}
       if(c!==sp.s){if(rev[wid])continue;row.alive=false;row.out={week:w.week,team};break}}
     return row});
 }
-function survivorUsed(pid){const start=survivorStart();const used=[];if(!start)return used;for(const wid of Object.keys(state.reveals).sort()){if(wid<start||wid===currentWeekId())continue;const p=(state.reveals[wid].players||{})[pid];const w=state.weeks[wid];if(p&&p.surv&&w){const g=w.games.find(x=>x.id===p.surv.g);if(g)used.push(canon(p.surv.s==="home"?g.home:g.away))}}return used}
+/* Survivor picks before the current week, in the current week's run only: teams (canon) and conferences burned. */
+function survivorUsedRun(pid,wid=currentWeekId()){const run=survRunOf(wid);const out={teams:[],confs:[]};if(!run)return out;
+  for(const k of Object.keys(state.reveals).sort()){if(k>=wid)continue;const r=survRunOf(k);if(!r||r.n!==run.n)continue;const p=(state.reveals[k].players||{})[pid];const w=state.weeks[k];
+    if(p&&p.surv&&w){const g=w.games.find(x=>x.id===p.surv.g);if(g){const t=p.surv.s==="home"?g.home:g.away;out.teams.push(canon(t));out.confs.push(p.surv.c||survConf(t))}}}return out}
+function survivorUsed(pid){return survivorUsedRun(pid).teams}
 function modelStats(pid,weeks){const st={agree:[0,0],fade:[0,0]};for(const wid of weeks){const w=state.weeks[wid];const p=pid===BOT?botPicks(w):((state.reveals[wid].players||{})[pid]);if(!p)continue;const rb=roboMode(w)==="new"?botPicks(w):null;for(const g of w.games){const ms=rb?rb.sel[g.id]:modelSide(g);const pick=(p.sel||{})[g.id];const c=coverSide(g,(w.results||{})[g.id]);if(!ms||!pick||!c)continue;const k=pick===ms?"agree":"fade";st[k][pick===c?0:1]++}}return st}
 function margin(g,r){return (r.home-r.away)+g.homeLine} /* >0 home covers */
 /* Live cover odds. The rest of the game's margin is treated as a normal curve around zero.
@@ -1850,9 +1871,10 @@ function gmDue(now=NOW()){const d=new Date(now).toLocaleString("en-US",{timeZone
 function gmNext(){const Q=gmQueue();return Q.find(x=>x.ready&&!x.at)||Q.find(x=>!x.stale&&!x.at)||{ready:false}}
 /* Facts the cards share. Counts only before the lock, never sides. */
 function gmActive(){return (state.logins||[]).filter(a=>!a.removed)}
-function gmAlive(wid){if(!survivorOpen(wid))return null;const sb=survivorBoard();return sb?sb.filter(r=>r.pid!==BOT&&r.alive):null}
-/* Run 1 of 2026 ends after the Nov 14 week (Rules). The app still runs one run to config.survivorEnd until item 10 ships; replace this then. */
-function gmRunLast(w){return survivorFinalWeek(w.id)||String(w.origDeadline||w.deadline||"").slice(0,10)==="2026-11-14"}
+function gmAlive(wid){const run=survRunOf(wid);if(!run)return null;const sb=survivorBoard(run);return sb?sb.filter(r=>r.pid!==BOT&&r.alive):null}
+/* The last week of a Survivor run (runs live in config.survivorRuns since item 10). */
+function gmRunLast(w){return survivorFinalWeek(w.id)}
+function gmRunFirst(w){const run=survRunOf(w.id);return !!run&&!Object.keys(state.weeks).some(k=>k<w.id&&(survRunOf(k)||{}).n===run.n)}
 /* The Final card's Survivor row. One survivor wins outright; two or more share as co-champions (Nov 15: Matt O won Run 1 outright, the card said "sharing"). */
 function gmSurvLine(ids,last){const n=gmAnd(ids);
   if(last){if(ids.length===1)return ["👑","Survivor champion",`${n} outlasted everyone and wins Survivor outright! 💀🏆`,"purple"];
@@ -1893,7 +1915,9 @@ function gmModel(it){
   else if(it.kind==="live"){const tg=tbGame(w);const al=gmAlive(w.id);
     M.title="Picks are live";M.sub=`Lock: ${kick(w.deadline)}`;
     if(tg)row("🎯","Tiebreaker",`Total points in ${tg.away} at ${tg.home}.`);
-    if(al)row("💀","Survivor",gmRunLast(w)?`Last week of this run. ${al.length} still alive. Survive and you share it.`:`${al.length} still alive. One team against the spread.`);
+    {const run=survRunOf(w.id);if(al&&run){const conf=run.rule==="conf";
+      if(gmRunFirst(w))row("💀",`Survivor Run ${run.n} starts!`,conf?"Everyone is back in! New twist: each pick burns its whole conference for the rest of the run. 🔥":"Everyone is back in! One team against the spread. No team twice.","purple");
+      else row("💀","Survivor",gmRunLast(w)?`Last week of this run! ${al.length} still alive. Survive and you share it.`:`${al.length} still alive. ${conf?"Pick from a conference you haven't burned.":"One team against the spread."}`,"purple")}}
     M.games=gmGameRows(w.games);M.foot="Lines are final. Get your picks in."}
   else if(it.kind==="last"){const act=gmActive(),ids=new Set(act.map(a=>a.id));const inn=(state.sheetsIn||[]).filter(id=>ids.has(id)).length;const al=gmAlive(w.id);
     M.title="Last call";M.sub=`Lock: ${kick(w.deadline)}`;
@@ -2237,14 +2261,20 @@ function renderPicks(){
     h+=`<div class="board tbpanel" id="tbPanel"><div class="tbtop"><h2>Tiebreaker</h2><button type="button" class="linkbtn tblink" data-jump="game-${esc(tg.id)}">Go to the game \u2191</button></div>
       <p class="tbq">Guess the total points scored in <b>${esc(LA.abbr)} ${LA.emoji||""} vs ${esc(LH.abbr)} ${LH.emoji||""}</b>, ${kick(tg.kickoff)}.</p>
       <div class="tbrow"><input id="tbInput" type="number" min="0" max="200" inputmode="numeric" pattern="[0-9]*" placeholder="${editable?"Total":"\u2013"}" aria-label="Tiebreaker: total points" value="${d.tb??""}" ${editable?"":"disabled"}><span class="note">${tot!=null?`Final total: ${tot}.${d.tb!=null?" Your miss: "+Math.abs(d.tb-tot)+".":""}`:"Closest guess wins a tied week. No guess counts as 0."}</span></div></div>`}
-  if(survivorOpen(wid)&&state.uid&&!out){
-    const board=survivorBoard()||[];const me=board.find(r=>r.pid===state.uid);
-    if(survBench(wid)){const f=survivorWeeks()[0];const fw=f&&state.weeks[f]?state.weeks[f].week:null;
+  if(survivorOpen(wid)&&state.uid&&!out){const srun=survRunOf(wid);const sconf=srun.rule==="conf";
+    const board=survivorBoard(srun)||[];const me=board.find(r=>r.pid===state.uid);
+    if(survBench(wid)){const f=survivorWeeks(srun)[0];const fw=f&&state.weeks[f]?state.weeks[f].week:null;
       h+=`<div class="survbox bench" id="survBench"><div class="survtop"><h2>Survivor</h2><span class="survtag">On the bench this run</span></div><p><b>How it works:</b> each week you pick one team against the spread. If it covers, you stay alive. One miss and you are out. Last ones standing win the run.</p><p><b>Why you can't pick yet:</b> this run started${fw?` in Week ${fw}`:""}, before you joined. Late joiners sit the run out, so the Survivor board shows you as out for now. You're in for the next run. Good to have you.</p></div>`}
-    else if(me&&!me.alive)h+=`<div class="survbox"><h2>Survivor</h2><p>💀 You are out. ${survLate(me.pid)?`You missed Week ${me.out.week}, the first week of this Survivor.`:`Week ${me.out.week}: ${esc(me.out.team)}.`}</p></div>`;
-    else{const used=survivorUsed(state.uid);const cur=d.surv?d.surv.g+"|"+d.surv.s:"";
-      const opts=gs.flatMap(g=>["away","home"].map(sd=>{const team=sd==="home"?g.home:g.away;const ln=sd==="home"?g.homeLine:-g.homeLine;const L=teamLook(team,g,sd);const usedT=used.includes(canon(team));return `<option value="${esc(g.id+"|"+sd)}" ${cur===g.id+"|"+sd?"selected":""} ${usedT?"disabled":""}>${esc(L.abbr)} ${esc(team)} ${fmtLine(ln)}${usedT?" (used)":""}</option>`})).join("");
-      h+=`<div class="survbox" id="survPanel"><div class="survtop"><h2>Survivor</h2><span class="survtag">One team · win or go home</span></div><p class="note">Pick one team against the spread. If it covers you stay alive. You cannot use a team twice.${used.length?" Used: "+used.map(esc).join(", ")+".":""}</p><select id="survSel" aria-label="Survivor pick" ${editable?"":"disabled"}><option value="">Pick your survivor team (each team once a run)</option>${opts}</select>${(()=>{const cg=survConflict(w,d);if(!cg)return "";const g=w.games.find(x=>x.id===cg);const st=d.surv.s,pk=d.sel[cg];const Ls=teamLook(st==="home"?g.home:g.away,g,st),Lp=teamLook(pk==="home"?g.home:g.away,g,pk);
+    else if(me&&!me.alive)h+=`<div class="survbox"><h2>Survivor</h2><p>💀 You are out of Run ${srun.n}. ${survLate(me.pid,srun)?`You missed Week ${me.out.week}, the first week of this Survivor.`:`Week ${me.out.week}: ${esc(me.out.team)}.`}</p></div>`;
+    else{const U=survivorUsedRun(state.uid,wid);const used=U.teams;const burned=new Set(U.confs);const cur=d.surv?d.surv.g+"|"+d.surv.s:"";
+      /* Conference lock (Run 2): a team whose conference is burned is grayed out, unless nothing legal is left (free pick). */
+      const live=gs.filter(g=>!(rs[g.id]&&rs[g.id].void));const free=sconf&&!live.some(g=>!burned.has(survConf(g.home))||!burned.has(survConf(g.away)));
+      const opts=gs.flatMap(g=>["away","home"].map(sd=>{const team=sd==="home"?g.home:g.away;const ln=sd==="home"?g.homeLine:-g.homeLine;const L=teamLook(team,g,sd);const cf=survConf(team);
+        const blocked=sconf?(!free&&burned.has(cf)):used.includes(canon(team));const tag=sconf?(blocked?" (conference used)":cf.startsWith("team:")?"":" · "+cf):(blocked?" (used)":"");
+        return `<option value="${esc(g.id+"|"+sd)}" ${cur===g.id+"|"+sd?"selected":""} ${blocked?"disabled":""}>${esc(L.abbr)} ${esc(team)} ${fmtLine(ln)}${esc(tag)}</option>`})).join("");
+      const ruleTxt=sconf?`<b>Run ${srun.n} twist: conference lock.</b> Pick one team against the spread. If it covers you stay alive. Your pick burns that team's whole conference for the rest of this run, so you can't pick any team from it again. Notre Dame burns the Independents.${burned.size?` <b>Burned:</b> ${[...burned].map(c=>esc(survConfName(c))).join(", ")}.`:""}${free?" <b>Free pick:</b> every conference on this slate is burned, so any team counts this week.":""}`
+        :`Pick one team against the spread. If it covers you stay alive. You cannot use a team twice.${used.length?" Used: "+used.map(esc).join(", ")+".":""}`;
+      h+=`<div class="survbox" id="survPanel"><div class="survtop"><h2>Survivor${survRuns().length>1?" · Run "+srun.n:""}</h2><span class="survtag">${sconf?"One team · burns its conference":"One team · win or go home"}</span></div><p class="note">${ruleTxt}</p><select id="survSel" aria-label="Survivor pick" ${editable?"":"disabled"}><option value="">${sconf?"Pick your survivor team (one per conference this run)":"Pick your survivor team (each team once a run)"}</option>${opts}</select>${(()=>{const cg=survConflict(w,d);if(!cg)return "";const g=w.games.find(x=>x.id===cg);const st=d.surv.s,pk=d.sel[cg];const Ls=teamLook(st==="home"?g.home:g.away,g,st),Lp=teamLook(pk==="home"?g.home:g.away,g,pk);
         return `<div class="conflict" role="alert"><b>Conflict.</b> Your survivor pick is ${esc(Ls.abbr)}, but your pick in that game is ${esc(Lp.abbr)}. Only one of them can cover, so one is sure to lose. <button type="button" class="linkbtn" data-jump="game-${esc(cg)}">Go to the game</button></div>`})()}</div>`}
   }
   if(w.swaps&&w.swaps.length)h+=`<div class="swaplog">Commissioner swaps: ${w.swaps.map(s=>esc(s.out)+" replaced by "+esc(s.in)).join("; ")}</div>`;
@@ -2290,8 +2320,8 @@ document.addEventListener("change",async e=>{
 document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="confSel"){state.atsConf=e.target.value;renderRankings()}if(e.target.id==="statConf"){state.statConf=e.target.value;renderRankings()}if(e.target.id==="statSlate"){state.statSlate=e.target.checked;renderRankings()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
 
 /* Survivor asks for a pick only while it is open and you are still in it. */
-function survBench(wid){return !!state.uid&&survivorOpen(wid)&&survLate(state.uid)} /* joined after the run's first week: sits this run out */
-function survNeeded(wid){if(!survivorOpen(wid)||survBench(wid))return false;const me=(survivorBoard()||[]).find(r=>r.pid===state.uid);return !me||me.alive||!!me.pending}
+function survBench(wid){const run=survRunOf(wid);return !!state.uid&&!!run&&survLate(state.uid,run)} /* joined after the run's first week: sits this run out */
+function survNeeded(wid){if(!survivorOpen(wid)||survBench(wid))return false;const me=(survivorBoard(survRunOf(wid))||[]).find(r=>r.pid===state.uid);return !me||me.alive||!!me.pending}
 function survConflict(w,d){if(!d||!d.surv||!d.sel)return null;const p=d.sel[d.surv.g];return p&&p!==d.surv.s?d.surv.g:null}
 function missingItems(w,wid,d){const rs=w.results||{};const m=[];
   const open=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void));const left=open.filter(g=>!d.sel[g.id]).length;
@@ -2514,8 +2544,8 @@ function recapFacts(wid){
   const bp=botPicks(w);if(bp&&Object.keys(bp.sel||{}).length){const s=scoreWeek(w,bp);const beat=rows.filter(r=>r.pts<s.pts).length;add("\u{1F916} Robo-Sharp",`${s.w}-${s.l} ATS, ${s.pts} point${pl(s.pts)}`,`Better than ${beat} of ${rows.length} pickers. It feels nothing either way.`,"")}
 
   /* Survivor */
-  const sb=survivorOpen(wid)?survivorBoard():null;if(sb){const hum=sb.filter(r=>r.pid!==BOT);const gone=hum.filter(r=>r.out&&r.out.week===w.week&&!survLate(r.pid));const alive=hum.filter(r=>r.alive).length;
-    if(survivorRevived()[wid])add("Resurrection",`Everyone went out in Week ${w.week}`,`So all ${alive} are back for one more week. The ref checked the rulebook twice.`,"odd");
+  const srun=survRunOf(wid);const sb=srun?survivorBoard(srun):null;if(sb){const hum=sb.filter(r=>r.pid!==BOT);const gone=hum.filter(r=>r.out&&r.out.week===w.week&&!survLate(r.pid,srun));const alive=hum.filter(r=>r.alive).length;
+    if(survivorRevived(srun)[wid])add("Resurrection",`Everyone went out in Week ${w.week}`,`So all ${alive} are back for one more week. The ref checked the rulebook twice.`,"odd");
     else if(gone.length)add("Survivor",`${gone.length} out in Week ${w.week}`,`${names(gone.map(r=>r.pid))} ${gone.length===1?"is":"are"} gone. ${alive} still alive.`,"bad");
     else if(alive&&w.status==="final"&&survivorOpen(wid))add("Survivor",`Nobody out in Week ${w.week}`,`${alive} still alive.`,"good")}
 
@@ -2545,6 +2575,7 @@ function renderRecap(){
   h+=facts.length?`<div class="rcgrid">${facts.map(f=>`<div class="rccard ${f.tone}"><div class="rctag">${esc(f.tag)}</div><div class="rctitle">${esc(f.title)}</div><p>${esc(f.body)}</p></div>`).join("")}</div>`:'<p class="note">No picks to talk about this week.</p>';
   el.innerHTML=h;
 }
+window.tpSurv={survRuns,survRunOf,survRunNow,survivorBoard,survivorGrid,survivorChampions,survivorUsedRun,survConf,botSurv,realStats,careerPanel,renderSurvivor,renderPicks,gmAlive,gmRunFirst,gmRunLast}; /* for the browser test */
 window.tpRecap={weekFacts,gmDue,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
@@ -2889,43 +2920,50 @@ function renderStandings(){
   const sb=survivorBoard();
   if(sb&&sb.length){const hum=sb.filter(r=>r.pid!==BOT),alive=hum.filter(r=>r.alive);
     const outN=hum.length-alive.length;
-    h+=`<div class="panel surv svmini"><h2>\u{1F480} Survivor</h2><div class="svcount"><span class="svalive">\u{1F7E2} <b>${alive.length}</b> alive</span><span class="svdead">\u{1F480} <b>${outN}</b> out</span></div>${alive.length&&alive.length<=12?`<div class="svlist">${alive.map(r=>`<span class="svp">${chip(r.pid)}${esc(nm(r.pid))}</span>`).join("")}</div>`:""}${!alive.length&&hum.length?'<p class="note">Nobody is left standing.</p>':""}<p class="note"><a href="#survivor">See the full Survivor board →</a></p></div>`}
+    h+=`<div class="panel surv svmini"><h2>\u{1F480} Survivor${survRuns().length>1?" · Run "+survRunNow().n:""}</h2><div class="svcount"><span class="svalive">\u{1F7E2} <b>${alive.length}</b> alive</span><span class="svdead">\u{1F480} <b>${outN}</b> out</span></div>${alive.length&&alive.length<=12?`<div class="svlist">${alive.map(r=>`<span class="svp">${chip(r.pid)}${esc(nm(r.pid))}</span>`).join("")}</div>`:""}${!alive.length&&hum.length?'<p class="note">Nobody is left standing.</p>':""}<p class="note"><a href="#survivor">See the full Survivor board →</a></p></div>`}
   el.innerHTML=h;
 }
 
+document.addEventListener("click",e=>{const b=e.target.closest("[data-svrun]");if(!b)return;state.svRun=+b.dataset.svrun;renderSurvivor()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-seasonview]");if(!b)return;state.seasonView=b.dataset.seasonview;renderStandings()});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-seasonsort]");if(!b)return;state.seasonSort=b.dataset.seasonsort;renderStandings()});
 document.addEventListener("change",e=>{if(e.target.id!=="stWeekSel")return;state.stWeek=e.target.value;renderStandings()});
 
 /* ---------- survivor ---------- */
-function survivorGrid(){
-  const start=survivorStart();if(!start)return null;
-  const weeks=survivorWeeks();
+function survivorGrid(run=survRunNow()){
+  const start=survivorStart();if(!start||!run)return null;
+  const weeks=survivorWeeks(run);
   const ids=allPlayerIds(true).filter(p=>!removed().includes(p));
-  const rev=survivorRevived();
-  const rows=ids.map(pid=>{const row={pid,alive:true,outWeek:null,cells:{},wins:0,used:[]};
+  const rev=survivorRevived(run);const survLate=pid=>survLateRun(pid,run);
+  const rows=ids.map(pid=>{const row={pid,alive:true,outWeek:null,cells:{},wins:0,used:[],burned:[]};
     for(const wid of weeks){const w=state.weeks[wid];if(!row.alive){row.cells[wid]={st:"gone"};continue}
       const p=pid===BOT?botPicks(w):(state.reveals[wid].players||{})[pid];const sp=p&&p.surv;const g=sp&&w.games.find(x=>x.id===sp.g);
       if(!g){const back=!!rev[wid]&&!survLate(pid);row.cells[wid]={st:"miss",rev:back};if(!back){row.alive=false;row.outWeek=w.week}continue}
-      const team=sp.s==="home"?g.home:g.away;const line=sp.s==="home"?g.homeLine:-g.homeLine;row.used.push(team);
+      const team=sp.s==="home"?g.home:g.away;const line=sp.s==="home"?g.homeLine:-g.homeLine;row.used.push(team);row.burned.push(sp.c||survConf(team));
       const r=(w.results||{})[g.id];let st="pending";
       if(r&&r.void)st="void";else{const c=coverSide(g,r);if(c)st=c===sp.s?"win":"loss"}
       let mg=null;if(r&&!r.void&&(r.final||r.away||r.home)){const m=(r.home-r.away)+g.homeLine;mg=Math.round((sp.s==="home"?m:-m)*10)/10}
-      row.cells[wid]={st,team,line,g,side:sp.s,mg,rev:st==="loss"&&!!rev[wid]};
+      row.cells[wid]={st,team,line,g,side:sp.s,mg,rev:st==="loss"&&!!rev[wid],conf:sp.c||survConf(team)};
       if(st==="win")row.wins++;if(st==="loss"&&!rev[wid]){row.alive=false;row.outWeek=w.week}}
     return row});
   const lastOut=Math.max(0,...rows.filter(r=>!r.alive).map(r=>r.outWeek));
   rows.sort((a,b)=>(b.alive-a.alive)||((b.outWeek||0)-(a.outWeek||0))||b.wins-a.wins||nm(a.pid).localeCompare(nm(b.pid)));
-  return {weeks,rows,lastOut,rev}}
+  return {weeks,rows,lastOut,rev,run}}
+/* Survivor tab (item 10): a Run switcher at the top (state.svRun, in memory), one board at a time. Default: the run on now. */
+function survRunsStarted(){const now=survRunNow();return survRuns().filter(r=>r.n<=(now?now.n:1))}
 function renderSurvivor(){
-  const el=$("#v-survivor");const G=survivorGrid();
+  const el=$("#v-survivor");const runs=survRunsStarted();const run=survRunN(state.svRun)&&runs.some(r=>r.n===state.svRun)?survRunN(state.svRun):survRunNow();const G=survivorGrid(run);
   if(!G){el.innerHTML='<div class="panel empty">Survivor has not started yet.</div>';return}
-  const {weeks}=G;const all=G.rows;const rows=all.filter(r=>r.pid!==BOT);const alive=rows.filter(r=>r.alive);const cw=currentWeekId();const curOpen=!state.reveals[cw];
-  let h=`<div class="board svhead"><h2>\u{1F480} Survivor \u{1F480}</h2><p class="svtag">One team a week. One miss and you're out. \u{2620}\u{FE0F}</p><div class="svstats"><div><b>\u{1F7E2} ${alive.length}</b><span>alive</span></div><div><b>\u{1FAA6} ${rows.length-alive.length}</b><span>out</span></div><div><b>\u{1F5D3}\u{FE0F} ${weeks.length}</b><span>week${weeks.length===1?"":"s"} played</span></div></div>`;
+  const {weeks}=G;const all=G.rows;const rows=all.filter(r=>r.pid!==BOT);const alive=rows.filter(r=>r.alive);const cw=currentWeekId();const cwRun=survRunOf(cw);const curOpen=!state.reveals[cw]&&!!cwRun&&cwRun.n===run.n;const conf=run.rule==="conf";
+  const champs=survivorChampions(run);
+  const swH=runs.length>1?`<div class="seg svruns" role="group" aria-label="Survivor run">${runs.map(r=>{const ch=survivorChampions(r);return `<button type="button" class="segb" data-svrun="${r.n}" aria-pressed="${r.n===run.n}">Run ${r.n}${ch.length?" \u{1F3C6}":r.n===(survRunNow()||{}).n?" \u{1F7E2}":""}</button>`}).join("")}</div>`:"";
+  let h=`${swH}<div class="board svhead"><h2>\u{1F480} Survivor${runs.length>1?" \u00b7 Run "+run.n:""} \u{1F480}</h2><p class="svtag">${conf?"One team a week. Each pick burns its whole conference. One miss and you're out. \u{2620}\u{FE0F}":"One team a week. One miss and you're out. \u{2620}\u{FE0F}"}</p><div class="svstats"><div><b>\u{1F7E2} ${alive.length}</b><span>alive</span></div><div><b>\u{1FAA6} ${rows.length-alive.length}</b><span>out</span></div><div><b>\u{1F5D3}\u{FE0F} ${weeks.length}</b><span>week${weeks.length===1?"":"s"} played</span></div></div>`;
   const lastW=weeks.length&&state.weeks[weeks[weeks.length-1]];const settled=lastW&&lastW.status==="final";const over=settled&&survivorFinalWeek(lastW.id);
+  if(conf)h+=`<p class="svrule">\u{1F525} <b>Conference lock:</b> when you pick a team, its whole conference is used up for the rest of this run. Pick Georgia and the SEC is gone. Notre Dame burns the Independents. If nothing legal is left on a slate, you get a free pick of any team.</p>`;
   if(!rows.length)h+='<p class="note">Pickers appear here after their first week locks.</p>';
-  else if(alive.length===1&&weeks.length)h+=settled?`<p class="svwin">🏆 ${esc(nm(alive[0].pid))} wins Survivor.</p>`:`<p class="svwin">Only ${esc(nm(alive[0].pid))} is still alive.</p>`;
-  else if(alive.length>1&&over)h+=`<p class="svwin">\u{1F3C6} ${alive.map(r=>esc(nm(r.pid))).join(" and ")} share Survivor. All ${alive.length} made it through Week ${lastW.week}.</p>`;
+  else if(!weeks.length)h+=`<p class="svwin">Everyone starts Run ${run.n} alive, even pickers who went out in an earlier run.</p>`;
+  else if(alive.length===1&&weeks.length)h+=settled?`<p class="svwin">🏆 ${esc(nm(alive[0].pid))} wins Survivor${runs.length>1?" Run "+run.n:""} outright!</p>`:`<p class="svwin">Only ${esc(nm(alive[0].pid))} is still alive.</p>`;
+  else if(alive.length>1&&over)h+=`<p class="svwin">\u{1F3C6} ${alive.map(r=>esc(nm(r.pid))).join(" and ")} share Survivor${runs.length>1?" Run "+run.n:""}. All ${alive.length} made it through Week ${lastW.week}.</p>`;
   else if(!alive.length&&weeks.length){const lw=Math.max(...rows.map(r=>r.outWeek||0));const co=rows.filter(r=>r.outWeek===lw);
     h+=settled?`<p class="svwin">🏆 ${co.length>1?co.map(r=>esc(nm(r.pid))).join(" and ")+" share Survivor. They went out together in week "+lw+".":esc(nm(co[0].pid))+" wins Survivor, the last one out in week "+lw+"."}</p>`:`<p class="svwin">Everyone is out so far. Week ${lw} is not final yet.</p>`}
   {const lr=weeks.filter(k=>G.rev[k]).pop();if(lr&&lr===weeks[weeks.length-1])h+=`<p class="svwin">Everyone left went out in Week ${state.weeks[lr].week}, so all ${alive.length} are back for one more week.</p>`}
@@ -2936,19 +2974,21 @@ function renderSurvivor(){
   /* grid */
   /* Oldest week on the left, the open week at the right end (Benton, Nov 12). */
   const wks=weeks.slice();
-  const head=wks.map(wid=>`<th class="num">W${state.weeks[wid].week}</th>`).join("")+(curOpen&&survivorOpen(cw)?`<th class="num">W${state.weeks[cw]?state.weeks[cw].week:""}</th>`:"");
+  const head=wks.map(wid=>`<th class="num">W${state.weeks[wid].week}</th>`).join("")+(curOpen?`<th class="num">W${state.weeks[cw]?state.weeks[cw].week:""}</th>`:"");
   const cell=(c)=>{if(!c)return '<td></td>';if(c.st==="gone")return '<td class="svc gone" aria-label="out"></td>';if(c.st==="miss")return `<td class="svc loss"><span class="svt">No pick</span>${c.rev?'<span class="svl">Resurrected</span>':""}</td>`;
     const L=teamLook(c.team,c.g,c.side);const lab={win:"Covered",loss:"Lost",void:"Void",pending:"Pending"}[c.st];
-    return `<td class="svc ${c.st}" title="${esc(c.team)} ${fmtLine(c.line)}: ${lab}${c.mg!=null?" by "+Math.abs(c.mg):""}"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">${fmtLine(c.line)}${c.mg!=null&&c.st!=="void"?" \u00b7 "+(c.mg>0?"covered by "+c.mg:c.mg<0?"missed by "+Math.abs(c.mg):"push"):""}${c.rev?" \u00b7 resurrected":""}</span></td>`};
+    return `<td class="svc ${c.st}" title="${esc(c.team)} ${fmtLine(c.line)}: ${lab}${c.mg!=null?" by "+Math.abs(c.mg):""}${conf?" · burned "+esc(survConfName(c.conf)):""}"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">${fmtLine(c.line)}${c.mg!=null&&c.st!=="void"?" \u00b7 "+(c.mg>0?"covered by "+c.mg:c.mg<0?"missed by "+Math.abs(c.mg):"push"):""}${c.rev?" \u00b7 resurrected":""}</span>${conf?`<span class="svl svconf">\u{1F525} ${esc(survConfName(c.conf))}</span>`:""}</td>`};
   const myCur=state.myPicks&&state.myPicks.weeks&&state.myPicks.weeks[cw]&&state.myPicks.weeks[cw].surv;
-  const curCell=pid=>{if(!(curOpen&&survivorOpen(cw)))return "";const r=rows.find(x=>x.pid===pid);if(r&&!r.alive)return '<td class="svc gone"></td>';
+  const curCell=pid=>{if(!curOpen)return "";const r=rows.find(x=>x.pid===pid);if(r&&!r.alive)return '<td class="svc gone"></td>';
     if(pid===state.uid){if(!myCur)return '<td class="svc next"><span class="svt">Not picked</span></td>';const w=state.weeks[cw];const g=w&&w.games.find(x=>x.id===myCur.g);if(!g)return '<td class="svc next"></td>';const team=myCur.s==="home"?g.home:g.away;const L=teamLook(team,g,myCur.s);return `<td class="svc next"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">Your pick</span></td>`}
     return '<td class="svc next"><span class="svl">Hidden until the lock</span></td>'};
   h+=`<div class="panel"><h2>Picks by week</h2>${info("survgrid",`Oldest week on the left, newest on the right. Each cell shows the team, its line, and how far it covered or missed. Picks stay hidden until the weekly lock. Robo-Sharp 🤖 plays but cannot win.`)}<div class="tablewrap svwrap"><table class="svtab"><thead><tr><th>Picker</th><th>Status</th>${head}</tr></thead><tbody>${all.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.alive?"":" svout"}"><td class="svp">${typeof chip==="function"?chip(r.pid):""}${esc(nm(r.pid))}</td><td>${r.alive?'<span class="svs alive">Alive</span>':'<span class="svs out">💀 Out W'+r.outWeek+'</span>'}</td>${wks.map(wid=>cell(r.cells[wid])).join("")}${curCell(r.pid)}</tr>`).join("")}</tbody></table></div>
   <div class="svkey"><span class="svc win"><span class="svt">Covered</span></span><span class="svc loss"><span class="svt">Lost</span></span><span class="svc pending"><span class="svt">Pending</span></span><span class="svc void"><span class="svt">Void, still alive</span></span></div></div>`;
   /* teams left for me */
   const me=rows.find(r=>r.pid===state.uid);
-  if(me&&me.alive&&survivorOpen(cw)){const usedSet=new Set(me.used.map(canon));const w=state.weeks[cw];const avail=w?[...new Set(w.games.flatMap(g=>[g.away,g.home]))].filter(t=>!usedSet.has(canon(t))):[];
+  if(me&&me.alive&&curOpen&&conf){const burned=new Set(me.burned);const w=state.weeks[cw];const confs=w?[...new Set(w.games.flatMap(g=>[survConf(g.away),survConf(g.home)]))]:[];const open=confs.filter(c=>!burned.has(c));
+    h+=`<div class="panel"><h2>Conferences you have left</h2><p class="note">Burned this run: ${me.burned.length?[...new Set(me.burned)].map(c=>esc(survConfName(c))).join(", "):"none yet"}.</p>${w?(open.length?`<p class="note">Still open on this week's slate: ${open.filter(c=>!c.startsWith("team:")).map(esc).join(", ")}${open.some(c=>c.startsWith("team:"))?" (plus teams with no conference on file)":""}.</p>`:`<p class="note">Every conference on this slate is burned, so this week is a free pick: any team counts.</p>`):""}</div>`}
+  else if(me&&me.alive&&curOpen){const usedSet=new Set(me.used.map(canon));const w=state.weeks[cw];const avail=w?[...new Set(w.games.flatMap(g=>[g.away,g.home]))].filter(t=>!usedSet.has(canon(t))):[];
     h+=`<div class="panel"><h2>Teams you have left</h2><p class="note">Used: ${me.used.length?me.used.map(t=>{const L=teamLook(t);return esc(L.abbr)+" "+(L.emoji||"")}).join(", "):"none yet"}.</p>${avail.length?`<p class="note">Still available on this week's slate: ${avail.map(t=>{const L=teamLook(t);return esc(L.abbr)+" "+(L.emoji||"")}).join(", ")}.</p>`:""}</div>`}
   const old=el.querySelector(".svwrap");const keep=old&&old.dataset.user?old.scrollLeft:null;
   el.innerHTML=h;
@@ -3248,8 +3288,9 @@ function renderPlayers(){
 /* Past picks, career wins, personal insights, and Beat the close. Every panel reads a data object D,
    so each panel can be tested with any data. Robo-Sharp gets no history here. */
 function realStats(){const cfg=state.config||{};return {wids:countedWeeks(),week:k=>state.weeks[k],players:k=>weekPlayers(k),closing:state.closing||{},
-  done:s=>s<cfg.season,survivor:s=>s===cfg.season?survivorChampions():[],bowl:()=>[],cfp:()=>[]}}
-function survivorChampions(){const G=survivorGrid();if(!G||!G.weeks.length)return [];const last=state.weeks[G.weeks[G.weeks.length-1]];if(last.status!=="final"||!survivorFinalWeek(last.id))return [];
+  done:s=>s<cfg.season,survivor:s=>s===cfg.season?survRuns().map(r=>survivorChampions(r)).filter(l=>l.length):[],bowl:()=>[],cfp:()=>[]}}
+/* Champions of one run: everyone alive after the run's last week, else the last ones out. Each run is its own career win (Benton, Nov 15). */
+function survivorChampions(run=survRunNow()){const G=survivorGrid(run);if(!G||!G.weeks.length)return [];const last=state.weeks[G.weeks[G.weeks.length-1]];if(last.status!=="final"||!survivorFinalWeek(last.id))return [];
   const rows=G.rows.filter(r=>r.pid!==BOT);const alive=rows.filter(r=>r.alive);if(alive.length)return alive.map(r=>r.pid);const lw=Math.max(...rows.map(r=>r.outWeek||0));return rows.filter(r=>r.outWeek===lw).map(r=>r.pid)}
 function statWinners(D,wid){const w=D.week(wid);if(!w||w.status!=="final")return [];const ps=D.players(wid);const rows=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));if(!rows.length)return [];
   rows.sort((a,b)=>b.pts-a.pts||((a.tbMiss??1e9)-(b.tbMiss??1e9)));return rows.filter(r=>r.pts===rows[0].pts&&(r.tbMiss??1e9)===(rows[0].tbMiss??1e9)).map(r=>r.pid)}
@@ -3261,7 +3302,7 @@ const TR_TOP=6;
 function careerPanel(D,pid){const c={season:0,week:0,conf:0,surv:0,bowl:0,cfp:0,co:0};const count=(list,key)=>{if(list.includes(pid)){c[key]++;if(list.length>1)c.co++}};
   /* Conference Champion Week scores like any week for the season, but its win is its own stat, not a weekly win. */
   for(const k of D.wids)count(statWinners(D,k),D.week(k).confChamp?"conf":"week");
-  for(const s of statSeasons(D)){if(D.done(s))count(seasonChamp(D,s),"season");count(D.survivor(s),"surv");count(D.bowl(s),"bowl");count(D.cfp(s),"cfp")}
+  for(const s of statSeasons(D)){if(D.done(s))count(seasonChamp(D,s),"season");{const sv=D.survivor(s)||[];(Array.isArray(sv[0])?sv:[sv]).forEach(l=>count(l,"surv"))}count(D.bowl(s),"bowl");count(D.cfp(s),"cfp")}
   /* Only earned tiles show (Nov 12, V11), so a first season is not a wall of zeros. */
   const T=[["Season titles",c.season],["Weekly wins",c.week],["Conf Champ wins",c.conf],["Survivor wins",c.surv],["Bowl wins",c.bowl],["CFP wins",c.cfp],["Co-Champion",c.co],["Iron Man seasons",ironSeasons(D,pid)]].filter(x=>x[1]>0);
   const tile=(t,n)=>`<div><span class="note">${t}</span><b>${n}</b></div>`;

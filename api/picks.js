@@ -1,7 +1,8 @@
 // Saving a pick sheet. The server clock enforces the lock: any save at or after the deadline is refused.
 import { q, one } from "../lib/db.js";
 import { readBody, send, fail, currentPlayer } from "../lib/http.js";
-import { getConfig, effectiveStatus, survivorUsed, survivorClosed, saveNote } from "../lib/league.js";
+import { getConfig, effectiveStatus, survivorUsed, survivorRunOf, survivorCheck, confMap, confOf, saveNote } from "../lib/league.js";
+import { getKv } from "../lib/db.js";
 
 const canon = (s) => String(s || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
 
@@ -37,13 +38,17 @@ export default async function handler(req, res) {
     const config = await getConfig();
     if (b.surv) {
       if (!config.survivorStart || b.weekId < config.survivorStart) return fail(res, 400, "Survivor has not started.");
-      if (survivorClosed(w, config)) return fail(res, 400, "Survivor is over for this season.");
+      const run = survivorRunOf(w, config);
+      if (!run) return fail(res, 400, "Survivor is over for this season.");
       const g = games.find((x) => x.id === b.surv.g);
-      if (!g || (b.surv.s !== "home" && b.surv.s !== "away")) return fail(res, 400, "That survivor pick is not on this slate.");
+      if (!g || voids.has(g.id) || (b.surv.s !== "home" && b.surv.s !== "away")) return fail(res, 400, "That survivor pick is not on this slate.");
       const team = b.surv.s === "home" ? g.home : g.away;
-      const used = (await survivorUsed(me.id, b.weekId, config)).map(canon);
-      if (used.includes(canon(team))) return fail(res, 400, `You already used ${team} in Survivor.`);
-      surv = { g: g.id, s: b.surv.s };
+      // Run 2 conference lock or the no-repeat team rule, checked by survivorCheck (lib/league.js).
+      const map = run.rule === "conf" ? confMap(await getKv("rankings", null)) : {};
+      const prior = await survivorUsed(me.id, b.weekId, config, run, map);
+      const err = survivorCheck({ rule: run.rule, team, games, voids, usedTeams: prior.teams, burned: new Set(prior.confs), map });
+      if (err) return fail(res, 400, err);
+      surv = run.rule === "conf" ? { g: g.id, s: b.surv.s, c: confOf(team, map) } : { g: g.id, s: b.surv.s };
     }
     const prevRow = await one("select data from picks where player_id = $1 and week_id = $2", [me.id, b.weekId]);
     const data = { sel, lock, tb, surv };
