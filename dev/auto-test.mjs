@@ -360,6 +360,21 @@ try {
   const before = JSON.stringify(R2.ats);
   await tick({ now: CT("2026-11-08T02:10:00-06:00") });
   check("ATS games are counted once", JSON.stringify((await getKv("rankings", {})).ats.teams) === JSON.stringify(R2.ats.teams));
+  {
+    // A late game ESPN's default scoreboard rolled past: only the Sunday game log has it. The ATS job adds it from the log, once.
+    const tgl = await getKv("teamGames", {});
+    tgl.games["120"] = { id: "120", wk: 11, d: "2026-11-08T05:30:00Z", a: "Kentucky", h: "Tennessee", as: 20, hs: 24, n: false, l: null, t: null };
+    await setKv("teamGames", tgl);
+    const sa = await getKv("atsAuto", {}); sa.lines["120"] = -3; await setKv("atsAuto", sa);
+    const tn0 = (await getKv("rankings", {})).ats.teams.find((t) => t.team === "Tennessee").ats;
+    await runJob("ats", { now: CT("2026-11-08T10:50:00-06:00") });
+    const tn1 = (await getKv("rankings", {})).ats.teams.find((t) => t.team === "Tennessee").ats;
+    check("a late game missing from ESPN's scoreboard is added to ATS records from the game log", Number(tn1.split("-")[0]) === Number(tn0.split("-")[0]) + 1, tn0 + " -> " + tn1);
+    const cl = await q("select detail from log where action = 'Caught up team ATS records' order by id desc limit 1");
+    check("the catch up is in the public log", cl.length === 1 && cl[0].detail === "Added from the game log: Kentucky at Tennessee", JSON.stringify(cl));
+    await runJob("ats", { now: CT("2026-11-08T11:20:00-06:00") });
+    check("a caught up game counts once", (await getKv("rankings", {})).ats.teams.find((t) => t.team === "Tennessee").ats === tn1);
+  }
 
   // ---- r/CFB poll: a page change becomes a flag, and the paste fallback works ----
   redditHtml = "<html><body><h1>2026 Week 10</h1><div>new layout</div></body></html>";
