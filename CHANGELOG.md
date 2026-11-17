@@ -136,6 +136,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Date | Change | Commit |
 |---|---|---|
+| Nov 17 | Tracker: item 64 set to copy ESPN's standings view (columns, order, no tiebreakers, no SP+ or ATS columns) | `86e2342` |
 | Nov 17 | Tracker: item 64, conference standings view in Teams | `b2494a3` |
 | Nov 11 | Tracker: dopamine review items 49 to 60 (sealed sheet reveal, field goal moment, the belt, near miss line, rank arrows, Humans vs Robo-Sharp, Awards Night, hot hand, week phase card, Ring of Honor, Letterman years, Report to camp); item 44 kept for 2027; Roadmap section with build order | `55b2416` |
 | Nov 6 | Tracker: item 47, smarter Robo-Sharp (freeze its sheet, market signal, three model consensus, agreement gate, cover chance, key numbers, model scoreboard, plain Rules text); absorbs item 28 | `c10e522` |
