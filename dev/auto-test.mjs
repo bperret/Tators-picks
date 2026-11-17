@@ -2,7 +2,7 @@
 // Run: node dev/auto-test.mjs
 import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
-import { setFetcher, SITE, CORE, FITT, halfPoint } from "../lib/espn.js";
+import { setFetcher, SITE, CORE, FITT, halfPoint, STANDINGS, parseStandings } from "../lib/espn.js";
 import { tick, runJob, autoView, chooseGames, dueJobs, liveDue } from "../lib/auto.js";
 import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, survivorRunOf, survivorCheck, RUNS_2026, confMap, confOf, closingLines, buildState } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
@@ -83,7 +83,21 @@ const polls = { rankings: [{ name: "AP Top 25", shortName: "AP Poll", type: "ap"
   others: [{ team: teams[31], points: 12 }] }] };
 const fitt = { teams: Object.values(teams).map((t, i) => ({ team: { id: t.id, nickname: t.location }, categories: [{ totals: [String(25 - i * 0.7)] }] })) };
 
+// ESPN-shaped FBS standings: 9 conferences of 12. The Big 12 comes out of order on purpose, with a tie group.
+let standingsBad = false;
+const stEntry = (name, cw, cl, ow, ol) => ({ team: { location: name, displayName: name },
+  stats: [{ name: "overall", type: "total", summary: `${ow}-${ol}` }, { name: "vs. Conf.", type: "vsconf", summary: `${cw}-${cl}` },
+    { name: "pointsFor", type: "pointsfor", value: ow * 30 }, { name: "pointsAgainst", type: "pointsagainst", value: ol * 20 },
+    { name: "Home", type: "home", summary: `${Math.ceil(ow / 2)}-0` }, { name: "Road", type: "road", summary: `${Math.floor(ow / 2)}-${ol}` }, { name: "streak", type: "streak", displayValue: "W2" }] });
+const standingsFeed = () => ({ children: [
+  { name: "Big 12 Conference", abbreviation: "Big 12", standings: { entries: [
+    stEntry("Kansas State", 1, 6, 4, 6), stEntry("Texas Tech", 6, 1, 9, 1), stEntry("Houston", 4, 3, 7, 3), stEntry("Baylor", 4, 3, 6, 4), stEntry("Utah", 7, 0, 10, 0),
+    stEntry("Arizona", 4, 3, 7, 3), stEntry("BYU", 5, 2, 8, 2), stEntry("Arizona State", 4, 3, 6, 4), stEntry("UCF", 3, 4, 5, 5), stEntry("TCU", 3, 4, 5, 5), stEntry("Kansas", 2, 5, 4, 6), stEntry("Colorado", 2, 5, 4, 6)] } },
+  ...Array.from({ length: 8 }, (_, c) => ({ name: `Conference ${c + 1}`, abbreviation: `C${c + 1}`, standings: { entries: Array.from({ length: 12 }, (_, i) => stEntry(`School ${c}-${i}`, 6 - (i % 7), i % 7, 9 - (i % 9), i % 9)) } })),
+] });
+
 setFetcher(async (url) => {
+  if (url === STANDINGS) { if (standingsBad) return { children: [] }; return standingsFeed(); }
   if (url.startsWith(SITE + "/scoreboard")) {
     if (blockStatus) throw Object.assign(new Error(`ESPN answered ${blockStatus} for /scoreboard.`), { status: blockStatus });
     if (failScoreboard) throw new Error("ESPN answered 503 for /scoreboard.");
@@ -382,6 +396,21 @@ try {
   let a6 = await getKv("auto", {});
   check("changed r/CFB page flags with the paste fallback", !out.ran.rankings.ok && a6.flags.some((f) => f.key === "rankings:failed" && f.msg.includes("r/CFB poll") && f.msg.includes("poll.redditcfb.com")), out.ran.rankings.msg);
   check("other rankings still saved when r/CFB fails", (await getKv("rankings", {})).reddit.asOf === "Week 9");
+  {
+    // Conference standings (item 64).
+    const cs = await getKv("confStandings", null);
+    const b12 = cs && cs.confs.find((c) => c.name === "Big 12 Conference");
+    check("rankings job saves ESPN's conference standings", !!b12 && cs.confs.length === 9 && cs.source === "ESPN", JSON.stringify(cs && cs.confs.length));
+    check("standings sort by conference PCT, ties keep ESPN's order", b12 && b12.teams.map((t) => t.team).join(",") === "Utah,Texas Tech,BYU,Houston,Baylor,Arizona,Arizona State,UCF,TCU,Kansas,Colorado,Kansas State", b12 && b12.teams.map((t) => t.team).join(","));
+    const ut = b12 && b12.teams[0];
+    check("a standings row keeps conference and overall records, points, home, away", ut && ut.conf.w === 7 && ut.all.w === 10 && ut.pf === 300 && ut.home === "5-0" && ut.away === "5-0" && ut.streak === "W2", JSON.stringify(ut));
+    standingsBad = true;
+    const o2 = await runJob("rankings", { now: CT("2026-11-08T02:40:00-06:00") });
+    standingsBad = false;
+    check("a bad standings feed keeps the saved tables and flags", JSON.stringify((await getKv("confStandings", null)).confs) === JSON.stringify(cs.confs) && /Conference standings: ESPN's standings looked wrong/.test(o2.ran.rankings.msg), o2.ran.rankings.msg);
+    const alt = parseStandings({ children: Array.from({ length: 9 }, (_, c) => ({ name: "C" + c, standings: { entries: Array.from({ length: 12 }, (_, i) => ({ team: { location: `T${c}-${i}` }, stats: [{ name: "wins", value: 5 }, { name: "losses", value: i }, { name: "vsconf_wins", value: 3 }, { name: "vsconf_losses", value: i % 4 }, { name: "vsconf_pointsFor", value: 99 }] })) } })) });
+    check("standings read stats sent as separate wins and losses", alt.confs[0].teams[0].all.w === 5 && alt.confs[0].teams[0].conf.w === 3 && alt.confs[0].teams[0].cpf === 99 && alt.noConf === 0, JSON.stringify(alt.confs[0].teams[0]));
+  }
   check("a partial rankings failure says what else happened", /No change: |Updated /.test(out.ran.rankings.msg) && /r\/CFB poll: /.test(out.ran.rankings.msg), out.ran.rankings.msg);
   const pasted = parseRedditText(pastedTable);
   check("pasted r/CFB table reads the same as the page", pasted.teams.length === 25 && pasted.teams[21].team === "Hawai'i" && pasted.teams[0].fpv === 229 && pasted.asOf === "Week 9");

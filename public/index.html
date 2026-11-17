@@ -509,6 +509,18 @@ th.aw,td.aw{min-width:3.6em;padding-left:2px;padding-right:2px;white-space:nowra
 .srow.g-rat{grid-template-columns:36px 32px 1fr 46px 40px 36px}
 .srow.g-sco{grid-template-columns:24px 32px 1fr 38px 38px 44px 36px}
 .srow.g-ats{grid-template-columns:24px 32px 1fr 54px 44px 50px}
+.board h3.csth{font-family:var(--cond);font-size:1.05rem;letter-spacing:.04em;margin:14px 0 4px;color:var(--board-ink)}
+.cstw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px 6px;padding:0 4px}
+.cst{border-collapse:collapse;font-family:var(--cond);font-size:.95rem;color:var(--board-ink);min-width:620px;width:100%}
+.cst th,.cst td{padding:6px 7px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--board-line);font-variant-numeric:tabular-nums}
+.cst th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--board-dim);font-weight:700}
+.cst th.grp{text-align:center;border-bottom:0}
+.cst .gl{border-left:1px solid var(--board-line)}
+.cst td.pc{background:rgba(242,194,48,.08)}
+.cst .tm{position:sticky;left:0;z-index:1;background:var(--board);text-align:left;white-space:normal;min-width:150px;max-width:180px;box-shadow:1px 0 0 var(--board-line)}
+.cst .tm button{all:unset;cursor:pointer;display:flex;align-items:center;gap:6px}
+.cst .tm .ark{min-width:16px;text-align:right;font-size:.8rem;color:var(--board-dim)}
+@media (max-width:520px){.cst .tm{min-width:0;max-width:none}.cst .tm .rteam{display:none}}
 .srow .rnum i,.srow .num i{font-style:normal;font-size:.7rem;margin-left:2px}
 .srow i.up{color:#4fc585}.srow i.dn{color:#ff7a70}
 .rrec2{margin-left:6px;font-size:.8rem;color:var(--board-dim);font-variant-numeric:tabular-nums}
@@ -683,6 +695,7 @@ td.svc.next{border:1px dashed var(--line)}
 .muswap{padding:6px 10px}.mubackp{margin:0 0 8px}.mubackp .linkbtn{color:var(--board-ink)}
 .musite{margin:4px 0 10px}
 .tseg{flex-wrap:nowrap}.tseg .segb{flex:1 1 0;min-width:0;padding:6px 4px;font-size:.92rem;text-align:center}
+@media (max-width:420px){.tseg{gap:4px}.tseg .segb{font-size:.82rem;letter-spacing:.02em;padding:6px 2px}}
 .mutable{display:flex;flex-direction:column;font-family:var(--cond);font-size:1.02rem}
 .murow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:8px;padding:6px 0;border-bottom:1px solid var(--board-line);color:var(--board-ink);align-items:center}
 .murow.muhead{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--board-dim)}
@@ -3004,7 +3017,7 @@ function svEdge(sw){sw.classList.toggle("atstart",sw.scrollLeft<=4);sw.classList
 // margin, SOS). ATS: record, cover margin, over/under. Tap any team for the same team card.
 // Scoring, ATS, and the card use the team game log, loaded only when Teams opens.
 async function loadTeamGames(){state.tgLoading=true;const d=await api("/api/state?part=teams");state.tgLoading=false;
-  state.teamGames=d.ok?{games:d.games||[],updatedAt:d.updatedAt||null}:{games:[],error:d.error};
+  state.teamGames=d.ok?{games:d.games||[],updatedAt:d.updatedAt||null,standings:d.standings||null}:{games:[],error:d.error};
   if(state.view==="rankings")renderRankings()}
 function teamStatRows(games,R){
   const sp={};((R.power&&R.power.sp&&R.power.sp.teams)||[]).forEach(t=>sp[canon(t.team)]=t.rating);
@@ -3158,6 +3171,33 @@ function atsView(C){
   return h+"</div>";
 }
 
+/* ---------- Conference standings (item 64) ---------- */
+/* ESPN's tables as sent by the rankings job: sorted by conference PCT, ties in ESPN's order. We never break ties. */
+function confLabel(c,C){const n={};c.teams.forEach(t=>{const k=C.conf[canon(t.team)];if(k)n[k]=(n[k]||0)+1});const k=Object.keys(n).sort((a,b)=>n[b]-n[a])[0];return k||c.abbr||c.name}
+function confView(C){
+  const D=state.teamGames;
+  if(!D)return `<div class="panel empty">Loading conference standings…</div>`;
+  const S=D.standings;
+  if(!S||!Array.isArray(S.confs)||!S.confs.length)return `<div class="panel empty">${D.error?esc(D.error):"Conference standings show here after the next rankings update from ESPN."}</div>`;
+  const F=tFilter(S.confs.flatMap(c=>c.teams.map(t=>canon(t.team))),C);
+  const cf=state.statConf||"";
+  const show=S.confs.filter(c=>(!cf||confLabel(c,C)===cf)&&(!F.only||c.teams.some(t=>C.onSlate.has(canon(t.team)))));
+  const r=x=>x?x.w+"-"+x.l:"–",p=x=>x&&x.w+x.l?(x.w/(x.w+x.l)).toFixed(3).replace(/^0/,""):"–",n=x=>x==null?"–":x;
+  let h=`<div class="board"><h2>Conference standings</h2>${info("confs",`From ESPN${S.asOf?", as of "+esc(S.asOf):""}. Sorted by conference win percentage, the same as ESPN. Teams tied on percentage stay in ESPN's order: the site does not break ties by conference rules, so the order inside a tie is not official. Updates with the rankings, about every 6 hours. Tap a team for its card.`)}${F.bar}`;
+  if(!show.length)h+='<p class="note">No conferences match.</p>';
+  for(const c of show){
+    h+=`<h3 class="csth">${esc(c.name)}</h3><div class="cstw"><table class="cst"><thead><tr><th class="tm"></th><th class="grp gl" colspan="4">Conference</th><th class="grp gl" colspan="6">Overall</th></tr>
+      <tr><th class="tm">Team</th><th class="gl">W-L</th><th>Pct</th><th>PF</th><th>PA</th><th class="gl">W-L</th><th>Pct</th><th>PF</th><th>PA</th><th>Home</th><th>Away</th></tr></thead><tbody>`;
+    let open=null;
+    for(const t of c.teams){const k=canon(t.team);if(state.statOpen===k)open=k;const ap=C.ap[k];
+      h+=`<tr><td class="tm"><button data-steam="${esc(k)}" aria-expanded="${state.statOpen===k}" aria-label="${esc(k)}"><span class="ark">${ap?ap.rank:""}</span>${tChip(k)}${tName(k)}</button></td>
+        <td class="gl">${r(t.conf)}</td><td class="pc">${p(t.conf)}</td><td>${n(t.cpf)}</td><td>${n(t.cpa)}</td>
+        <td class="gl">${r(t.all)}</td><td>${p(t.all)}</td><td>${n(t.pf)}</td><td>${n(t.pa)}</td><td>${esc(t.home||"–")}</td><td>${esc(t.away||"–")}</td></tr>`}
+    h+=`</tbody></table></div>${open?teamCard(open,C):""}`;
+  }
+  return h+"</div>";
+}
+
 /* ---------- Matchup preview (item 39) ---------- */
 /* Any two teams side by side, with each model's projected spread. Picks and the preview link here with the game filled in.
    Home field: VSiN's 2026 team values (Adam Burke, Aug 31, 2026): 2 points by default, 1 to 3.5 by home record.
@@ -3239,13 +3279,13 @@ document.addEventListener("change",e=>{if(e.target.id==="muA"||e.target.id==="mu
 window.tpMatchup={muProject,hfaOf,muGame};
 function renderRankings(){
   const el=$("#v-rankings");const R=state.rankings;
-  const v={ap:"polls",cfp:"polls",stats:"power"}[state.rankView]||state.rankView||"polls";state.rankView=["polls","power","ats","matchup"].includes(v)?v:"polls";
-  const seg=`<div class="seg tseg" role="group" aria-label="Teams view">${[["polls","Polls"],["power","Power"],["ats","ATS"],["matchup","Matchup"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${state.rankView===k}">${l}</button>`).join("")}</div>`;
+  const v={ap:"polls",cfp:"polls",stats:"power"}[state.rankView]||state.rankView||"polls";state.rankView=["polls","power","ats","confs","matchup"].includes(v)?v:"polls";
+  const seg=`<div class="seg tseg" role="group" aria-label="Teams view">${[["polls","Polls"],["power","Power"],["ats","ATS"],["confs","Confs"],["matchup","Matchup"]].map(([k,l])=>`<button class="segb" data-rank="${k}" aria-pressed="${state.rankView===k}">${l}</button>`).join("")}</div>`;
   if(!R){el.innerHTML=seg+'<div class="panel empty">Team rankings update by themselves from ESPN. They show here after the first update.</div>';return}
   if(!state.teamGames&&!state.tgLoading)loadTeamGames();
   const C=teamsCtx(R);
   if(el.contains(document.activeElement)&&document.activeElement.tagName==="SELECT")return; /* a poll redraw must not close an open team list */
-  el.innerHTML=seg+(state.rankView==="polls"?pollsView(C):state.rankView==="power"?powerView(C):state.rankView==="matchup"?matchupView(C):atsView(C));
+  el.innerHTML=seg+(state.rankView==="polls"?pollsView(C):state.rankView==="power"?powerView(C):state.rankView==="matchup"?matchupView(C):state.rankView==="confs"?confView(C):atsView(C));
 }
 
 /* ---------- players ---------- */
