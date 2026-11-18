@@ -1741,16 +1741,17 @@ document.addEventListener("input",e=>{const m=/^an-(fa|fn|ha|hn)$/.exec(e.target
    Commissioner only, on the hidden Awards tab. Picks save on this device only; nothing reaches the server.
    League contrarian scoring: a correct pick is worth pickers who entered ÷ pickers who took that winner, so a lone right call
    pays the whole room and a pick everyone shared pays 1. Wrong or blank is 0. Robo-Sharp takes the betting favorite (listed first),
-   plays unranked, and never counts toward anyone's value. Candidates are samples from November odds boards and preseason
-   lists until the real finalists come out (most Nov 24, Heisman after Championship Saturday). */
+   plays unranked, and never counts toward anyone's value. Candidates (Nov 18 research): each award's projected top 10, most likely first,
+   from the Nov 10 to 17 semifinalist lists, Nov 15 to 17 Heisman markets, Coach of the Year coverage, and stats. Most awards name
+   three finalists Nov 24; the Heisman names finalists after Championship Saturday. */
 const AW_LOCK="2026-12-11T00:00:00Z";
 const AW_LIST=[
-  {k:"heis",e:"🏆",n:"Heisman Trophy",what:"Most outstanding player",when:"Sat Dec 12",c:[["Darian Mensah","QB","Miami"],["Jeremiah Smith","WR","Ohio State"],["Malachi Toney","WR","Miami"],["CJ Carr","QB","Notre Dame"]]},
-  {k:"qb",e:"🎯",n:"Davey O'Brien Award",what:"Best quarterback",when:"Thu Dec 10",c:[["Darian Mensah","QB","Miami"],["CJ Carr","QB","Notre Dame"],["Trinidad Chambliss","QB","Ole Miss"]]},
-  {k:"rb",e:"🏃",n:"Doak Walker Award",what:"Best running back",when:"Thu Dec 10",c:[["Kewan Lacy","RB","Ole Miss"],["Ahmad Hardy","RB","Missouri"]]},
-  {k:"wr",e:"🙌",n:"Biletnikoff Award",what:"Best receiver",when:"Thu Dec 10",c:[["Jeremiah Smith","WR","Ohio State"],["Malachi Toney","WR","Miami"]]},
-  {k:"def",e:"🛡️",n:"Bednarik Award",what:"Defensive player of the year",when:"Thu Dec 10",tba:1,c:[["Sample finalist 1","",""],["Sample finalist 2","",""],["Sample finalist 3","",""]]},
-  {k:"coach",e:"📋",n:"Coach of the Year",what:"The Home Depot Award",when:"Thu Dec 10",tba:1,c:[["Sample coach 1","",""],["Sample coach 2","",""],["Sample coach 3","",""]]}];
+  {k:"heis",e:"🏆",n:"Heisman Trophy",what:"Most outstanding player",when:"Sat Dec 12",c:[["Jeremiah Smith","WR","Ohio State"],["Darian Mensah","QB","Miami"],["Devon Dampier","QB","Utah"],["CJ Carr","QB","Notre Dame"],["Gunner Stockton","QB","Georgia"],["Drew Mestemaker","QB","Oklahoma State"],["Keelon Russell","QB","Alabama"],["Conner Weigman","QB","Houston"],["LaNorris Sellers","QB","South Carolina"],["Gio Lopez","QB","Wake Forest"]]},
+  {k:"qb",e:"🎯",n:"Davey O'Brien Award",what:"Best quarterback",when:"Thu Dec 10",c:[["Darian Mensah","QB","Miami"],["Devon Dampier","QB","Utah"],["CJ Carr","QB","Notre Dame"],["Gunner Stockton","QB","Georgia"],["Drew Mestemaker","QB","Oklahoma State"],["Conner Weigman","QB","Houston"],["Keelon Russell","QB","Alabama"],["Gio Lopez","QB","Wake Forest"],["LaNorris Sellers","QB","South Carolina"],["Trinidad Chambliss","QB","Ole Miss"]]},
+  {k:"rb",e:"🏃",n:"Doak Walker Award",what:"Best running back",when:"Thu Dec 10",c:[["Jahiem White","RB","North Texas"],["DeSean Bishop","RB","Tennessee"],["Jadan Baugh","RB","Florida"],["Wayne Knight","RB","UCLA"],["Dylan Riley","RB","Boise State"],["Cam Cook","RB","West Virginia"],["Caleb Hawkins","RB","Oklahoma State"],["Jamal Roberts","RB","Missouri"],["Aiden Flora","RB","Iowa State"],["Nate Sheppard","RB","Duke"]]},
+  {k:"wr",e:"🙌",n:"Biletnikoff Award",what:"Best receiver",when:"Thu Dec 10",c:[["Jeremiah Smith","WR","Ohio State"],["Malachi Toney","WR","Miami"],["Collin Dixon","WR","Illinois"],["Jesse Legree","WR","Oregon State"],["Easton Messer","WR","Florida Atlantic"],["Umari Hatcher","WR","Syracuse"],["Justin Bowick","WR","Oklahoma State"],["Charlie Becker","WR","Indiana"],["Cayden Lee","WR","Missouri"],["Jackson Harris","WR","LSU"]]},
+  {k:"def",e:"🛡️",n:"Bednarik Award",what:"Defensive player of the year",when:"Thu Dec 10",c:[["Colin Simmons","EDGE","Texas"],["Xavier Lewis","DT","North Carolina"],["A.J. Holmes Jr.","DT","Texas Tech"],["Gideon Lampron","LB","Colorado"],["Ashton Hampton","CB","Clemson"],["Chris Cole","LB","Georgia"],["KJ Bolden","DB","Georgia"],["Sammy Omosigho","LB","UCLA"],["Xavier Gilliam","DL","Tennessee"],["Tobi Osunsanmi","DL","Indiana"]]},
+  {k:"coach",e:"📋",n:"Coach of the Year",what:"The Home Depot Award",when:"Thu Dec 10",c:[["Morgan Scalley","","Utah"],["Bob Chesney","","UCLA"],["Jake Dickert","","Wake Forest"],["Mario Cristobal","","Miami"],["Marcus Freeman","","Notre Dame"],["Kirby Smart","","Georgia"],["Spencer Danielson","","Boise State"],["Manny Diaz","","Duke"],["Eric Morris","","Oklahoma State"],["Charles Huff","","Memphis"]]}];
 /* Made-up winners for the Final preview: one favorite, the rest mixed, so the contrarian payoff shows. */
 const AW_RES={heis:1,qb:0,rb:1,wr:0,def:2,coach:1};
 function awState(){const k="tp-awproto-"+(state.uid||"x");if(state.aw&&state.awKey===k)return state.aw;state.awKey=k;
@@ -1766,7 +1767,7 @@ function awScore(P){return P.map(x=>{let pts=0,hits=0;for(const a of AW_LIST){co
 function renderAW(){const el=$("#v-awards");if(!state.isOwner){el.innerHTML="";return}
   const d=awState(),ph=state.awPhase||"pre",P=awField(),pre=ph==="pre",fin=ph==="final";
   let h=`<div class="bwproto"><b>Prototype. Only you can see this tab.</b> Your picks save on this device only and count for nothing. Just for fun.</div>
-    <div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p>
+    <div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">Ten contenders each, most likely first. Real finalists are named Nov 24.</p>
       <p class="awwhen">Locks before the awards show, Thu Dec 10 (time TBA). Heisman Sat Dec 12, the same day as Army-Navy.</p></div>
     <div class="bwbar" role="group" aria-label="Preview">${[["pre","Before lock"],["lock","After lock"],["final","Final"]].map(([k,l])=>`<button type="button" class="mbchip" data-awph="${k}" aria-pressed="${ph===k}">${l}</button>`).join("")}</div>`;
   if(pre)h+=`<p class="note awcount">${AW_LIST.filter(a=>Number.isInteger(d[a.k])).length} of ${AW_LIST.length} awards picked.</p>`;
@@ -1774,22 +1775,22 @@ function renderAW(){const el=$("#v-awards");if(!state.isOwner){el.innerHTML="";r
     h+=`<div class="game awcard"><div class="awhead"><span class="awe" aria-hidden="true">${a.e}</span><div><b>${esc(a.n)}</b><small>${esc(a.what)} · ${esc(a.when)}</small></div></div>
       ${a.tba?'<p class="note">Finalists are named Nov 24. These are stand-ins so the flow works.</p>':""}
       <div class="awcs" role="radiogroup" aria-label="${esc(a.n)}">${a.c.map(([nm,pos,tm],i)=>{const v=awVal(S,i),on=mine===i,win=w===i;
-        const sub=[pos,tm].filter(Boolean).join(", ")+(i===0&&!a.tba?(pos||tm?" · ":"")+"favorite":"");
+        const sub=[pos,tm].filter(Boolean).join(", ")+(i===0?" · top pick":"");
         const tag=pre?"":`<span class="awv">${S.c[i]} of ${S.in_}${v!=null?` · worth ${v}`:" · nobody"}</span>`;
         return `<button type="button" class="awc${on?" on":""}${win?" win":""}${fin&&on&&!win?" miss":""}" role="radio" aria-checked="${on}" data-aw="${a.k}" data-awi="${i}" ${pre?"":"disabled"}><span class="awn">${win?"🏆 ":""}${esc(nm)}</span>${sub?`<small>${esc(sub)}</small>`:""}${tag}</button>`}).join("")}</div>
       ${!pre&&Number.isInteger(mine)?`<p class="awyou">${fin?(mine===w?`You got it: +${awVal(S,w)}`:"Missed: 0"):`If ${esc(a.c[mine][0])} wins: +${awVal(S,mine)}`}</p>`:""}</div>`}
   if(fin){const R=awScore(P).sort((x,y)=>y.pts-x.pts||y.hits-x.hits);let rk=0,prev=null;
     const robo=AW_LIST.reduce((t,a)=>t+(AW_RES[a.k]===0?awVal(awSplit(P,a.k,a.c.length),0):0),0);
     h+=`<h3 class="rh">Final standings</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th></tr></thead><tbody>${R.map((r,i)=>{if(r.pts!==prev){rk=i+1;prev=r.pts}return `<tr class="${r.id==="me"?"me":""}"><td>${rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td></tr>`}).join("")}
-      <tr><td>—</td><td>🤖 Robo-Sharp (all favorites)</td><td class="n">${AW_LIST.filter(a=>AW_RES[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td></tr></tbody></table>
+      <tr><td>—</td><td>🤖 Robo-Sharp (all top picks)</td><td class="n">${AW_LIST.filter(a=>AW_RES[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td></tr></tbody></table>
       <p class="note">Sample pickers and made-up winners. Exact ties share.</p>`}
   h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul>
       <li>Pick one winner for each of the ${AW_LIST.length} awards before the lock.</li>
       <li>A right pick is worth the number of pickers ÷ the number who took that winner. If you are the only one of 12 on him, that is 12 points. If all 12 had him, everyone gets 1.</li>
       <li>A wrong or blank pick is 0. Most points wins. Exact ties share.</li>
       <li>Values show after the lock, so nobody can chase the room.</li>
-      <li>Robo-Sharp takes the betting favorite every time. It plays unranked and cannot win.</li></ul></div>
-    ${info("awproto",`Sample candidates from November Heisman odds and preseason award coverage. Real finalists replace them: most awards name three finalists Nov 24, and the Heisman names its finalists after Championship Saturday. The awards show date is Dec 10 per the Maxwell Award's release; the show time is not set.`)}`;
+      <li>Robo-Sharp takes the top pick every time (the betting favorite for the Heisman). It plays unranked and cannot win.</li></ul></div>
+    ${info("awproto",`Each list is the projected top 10 as of Nov 18, most likely first. Sources: the semifinalist lists (Bednarik Nov 10, Biletnikoff Nov 16, Davey O'Brien and Doak Walker Nov 17), Heisman prediction markets and sportsbooks (Nov 15 to 17), Coach of the Year coverage, and season stats. The awards show date is Dec 10 per the Maxwell Award's release; some school releases say Dec 11; the show time is not set.`)}`;
   el.innerHTML=h}
 document.addEventListener("click",e=>{const p=e.target.closest("#v-awards [data-awph]");if(p){state.awPhase=p.dataset.awph;renderAW();return}
   const b=e.target.closest("#v-awards [data-aw]");if(!b||b.disabled)return;const d=awState(),k=b.dataset.aw,i=+b.dataset.awi;
