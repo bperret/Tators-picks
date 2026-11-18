@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.51.1 | Nov 18, 1:53 PM | Awards | Award Watch now lists each award's projected top 10, most likely first, from the Nov 10 to 17 semifinalist lists, Heisman markets, Coach of the Year coverage, and stats. Stand-ins are gone. Robo-Sharp takes each top pick | S | 35 | `655e4eb` |
 | 1.51 | Nov 18, 12:49 PM | Awards (new, commissioner only) | Item 65 prototype: Award Watch. Pick the winner of 6 awards (Heisman, Davey O'Brien, Doak Walker, Biletnikoff, Bednarik, Coach of the Year) from sample candidates. League contrarian scoring: a right pick is worth pickers ÷ pickers who took that winner. Values show after the lock. Robo-Sharp takes every favorite, unranked. Before lock / After lock / Final preview with sample pickers. Picks save on this device only | M | 102 | `3beb2aa` |
 | 1.50.3 | Nov 18, 10:53 AM | Teams | Confs: every conference folds, closed by default, with the leader's chip and conference record on the closed row. Tap to open; opened conferences stay open across refreshes. Picking one conference in the filter opens it | S | 35 | `6db34c9` |
 | 1.50.2 | Nov 17, 9:03 PM | GroupMe | While next week is a draft, the GroupMe list shows its Picks live, Last call, Locked, and Final posts ahead as dashed rows with their best times. They draw once picks open Wednesday, since games and lines can still change | S | 26 | `a4fa447` |
