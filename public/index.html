@@ -1744,7 +1744,7 @@ document.addEventListener("input",e=>{const m=/^an-(fa|fn|ha|hn)$/.exec(e.target
    plays unranked, and never counts toward anyone's value. Candidates (Nov 18 research): each award's projected top 10, most likely first,
    from the Nov 10 to 17 semifinalist lists, Nov 15 to 17 Heisman markets, Coach of the Year coverage, and stats. Most awards name
    three finalists Nov 24; the Heisman names finalists after Championship Saturday. */
-const AW_LOCK="2026-12-11T00:00:00Z";
+const AW_LOCK="2026-11-24T04:00:00Z"; /* Mon Nov 23, 10 PM CT, before most awards cut to three finalists Nov 24 (Benton, Nov 18) */
 const AW_LIST=[
   {k:"heis",e:"🏆",n:"Heisman Trophy",what:"Most outstanding player",when:"Sat Dec 12",c:[["Jeremiah Smith","WR","Ohio State"],["Darian Mensah","QB","Miami"],["Devon Dampier","QB","Utah"],["CJ Carr","QB","Notre Dame"],["Gunner Stockton","QB","Georgia"],["Drew Mestemaker","QB","Oklahoma State"],["Keelon Russell","QB","Alabama"],["Conner Weigman","QB","Houston"],["LaNorris Sellers","QB","South Carolina"],["Gio Lopez","QB","Wake Forest"]]},
   {k:"qb",e:"🎯",n:"Davey O'Brien Award",what:"Best quarterback",when:"Thu Dec 10",c:[["Darian Mensah","QB","Miami"],["Devon Dampier","QB","Utah"],["CJ Carr","QB","Notre Dame"],["Gunner Stockton","QB","Georgia"],["Drew Mestemaker","QB","Oklahoma State"],["Conner Weigman","QB","Houston"],["Keelon Russell","QB","Alabama"],["Gio Lopez","QB","Wake Forest"],["LaNorris Sellers","QB","South Carolina"],["Trinidad Chambliss","QB","Ole Miss"]]},
@@ -1768,7 +1768,7 @@ function renderAW(){const el=$("#v-awards");if(!state.isOwner){el.innerHTML="";r
   const d=awState(),ph=state.awPhase||"pre",P=awField(),pre=ph==="pre",fin=ph==="final";
   let h=`<div class="bwproto"><b>Prototype. Only you can see this tab.</b> Your picks save on this device only and count for nothing. Just for fun.</div>
     <div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">Ten contenders each, most likely first. Real finalists are named Nov 24.</p>
-      <p class="awwhen">Locks before the awards show, Thu Dec 10 (time TBA). Heisman Sat Dec 12, the same day as Army-Navy.</p></div>
+      <p class="awwhen">Locks Mon Nov 23 at 10 PM CT, the night before most awards cut to three finalists. Winners Thu Dec 10; Heisman Sat Dec 12, the same day as Army-Navy.</p></div>
     <div class="bwbar" role="group" aria-label="Preview">${[["pre","Before lock"],["lock","After lock"],["final","Final"]].map(([k,l])=>`<button type="button" class="mbchip" data-awph="${k}" aria-pressed="${ph===k}">${l}</button>`).join("")}</div>`;
   if(pre)h+=`<p class="note awcount">${AW_LIST.filter(a=>Number.isInteger(d[a.k])).length} of ${AW_LIST.length} awards picked.</p>`;
   for(const a of AW_LIST){const S=awSplit(P,a.k,a.c.length),mine=d[a.k],w=fin?AW_RES[a.k]:null;
@@ -1989,7 +1989,7 @@ const gmNames=ids=>ids.map(p=>nm(p)).join(", ").replace(/\.$/,"");
 /* "A and B", "A, B, and C" for the Final card lines. */
 const gmAnd=ids=>{const n=ids.map(p=>nm(p).replace(/\.$/,""));return n.length<3?n.join(" and "):n.slice(0,-1).join(", ")+", and "+n[n.length-1]};
 function gmGameRows(gs){return [...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");const fav=g.homeLine<0?hL:aL;
-  return {away:g.away,ar:g.awayRank||"",ac:aL.c1,home:g.home,hr:g.homeRank||"",hc:hL.c1,at:g.neutral?"vs":"at",line:g.homeLine===0?"PK":`${fav.abbr} ${fmtLine(-Math.abs(g.homeLine))}`}})}
+  return {away:g.away,ar:g.awayRank>0&&g.awayRank<99?g.awayRank:"",ac:aL.c1,home:g.home,hr:g.homeRank>0&&g.homeRank<99?g.homeRank:"",hc:hL.c1,at:g.neutral?"vs":"at",line:g.homeLine===0?"PK":`${fav.abbr} ${fmtLine(-Math.abs(g.homeLine))}`}})}
 /* One fun row per card, so posts stay fresh: leader watch, Robo-Sharp watch, lone wolf, or the league's ATS record. Each card tries its list in order and uses the first fact that has data. */
 function gmFun(it,w){const strip=x=>String(x).replace(/\.$/,"");
   const leader=()=>{const R=seasonTally(false).rows.filter(r=>r.cpts>0);if(!R.length)return null;const top=R.filter(r=>r.cpts===R[0].cpts);
@@ -2678,7 +2678,7 @@ function renderRecap(){
   el.innerHTML=h;
 }
 window.tpSurv={survRuns,survRunOf,survRunNow,survivorBoard,survivorGrid,survivorChampions,survivorUsedRun,survConf,botSurv,realStats,careerPanel,renderSurvivor,renderPicks,gmAlive,gmRunFirst,gmRunLast}; /* for the browser test */
-window.tpRecap={weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
+window.tpRecap={gmGameRows,weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */

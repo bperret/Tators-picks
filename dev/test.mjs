@@ -1097,6 +1097,10 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
 
   // ---- GroupMe tab ----
+  {
+    const rk = await c.evaluate(() => window.tpRecap.gmGameRows([{ slot: 1, away: "Alabama", home: "LSU", awayRank: 99, homeRank: 7, homeLine: -3.5 }, { slot: 2, away: "Utah", home: "Ohio State", awayRank: 0, homeRank: 25, homeLine: 7.5 }]));
+    check("GroupMe slate shows no rank for an unranked team", rk[0].ar === "" && rk[0].hr === 7 && rk[1].ar === "" && rk[1].hr === 25, JSON.stringify(rk));
+  }
   check("pickers do not see the GroupMe tab", await m.isHidden("#gmTab"));
   await m.evaluate(() => (location.hash = "#groupme")); await m.waitForTimeout(150);
   check("a picker sent to GroupMe lands on Picks", await m.evaluate(() => location.hash !== "#groupme" || document.querySelector("#v-groupme").hidden || !document.querySelector("#gmCard")));
