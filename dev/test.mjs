@@ -1133,6 +1133,16 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     check("Undo posted clears the mark", !gmU.groupme.posted[gmKey]);
     await c.click(`#v-groupme [data-gmsel="${gmKey}"]`);
     check("GroupMe has one About this note", (await c.locator("#v-groupme details.info").count()) === 1);
+    {
+      // A draft week lists its other posts ahead as Later rows with best times; none can be opened or drawn (Nov 17).
+      const ah = await c.evaluate(() => { const T = window.tpRecap, S = T.state, cw = S.config.currentWeek, wk = S.weeks[cw], keep = { st: wk.status, pv: S.preview };
+        wk.status = "draft"; S.preview = { week: wk.week, games: wk.games };
+        const Q = T.gmQueue(), nx = T.gmNext(); T.renderGM();
+        const rows = [...document.querySelectorAll("#v-groupme .gmq li")].map((li) => (li.classList.contains("ahead") ? "A:" : "") + li.textContent);
+        const out = { kinds: Q.map((x) => x.kind + (x.ahead ? "*" : "")).join(","), next: nx.kind, rows, open: document.querySelectorAll("#v-groupme .gmq li.ahead button").length, note: /draw once picks open/.test(document.querySelector("#v-groupme").textContent) };
+        wk.status = keep.st; S.preview = keep.pv; T.renderGM(); return out; });
+      check("a draft week lists Picks live, Last call, Locked, and Final ahead with best times", ah.kinds === "pv,live*,last*,lock*,final*" && ah.next === "pv" && ah.open === 0 && ah.note && ah.rows.filter((r) => r.startsWith("A:")).length === 4 && ah.rows.some((r) => /Picks live.*Wed 8:30 PM/.test(r)), JSON.stringify(ah));
+    }
     { const sk = c.locator('#v-groupme [data-gm="skip"]'); await sk.scrollIntoViewIfNeeded(); await c.evaluate(() => window.scrollBy(0, -220)); await c.screenshot({ path: "dev/test-gmskip.png" }); }
     check("a gray Skipped button sits under Posted", await c.evaluate(() => { const p = document.querySelector('#v-groupme [data-gm="post"]'), s = document.querySelector('#v-groupme [data-gm="skip"]'); return !!p && !!s && s.textContent === "Skipped" && s.getBoundingClientRect().top > p.getBoundingClientRect().bottom - 1; }));
     await c.click('#v-groupme [data-gm="skip"]'); await c.waitForTimeout(400);

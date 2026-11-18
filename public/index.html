@@ -376,6 +376,7 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .gmq{list-style:none;padding:0;margin:16px auto 10px;max-width:440px;display:flex;flex-direction:column;gap:4px}
 .gmq button{width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:8px;font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left}
 .gmq button[aria-current="true"]{box-shadow:0 0 0 2px var(--flag)}
+.gmq li.ahead>div{min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:8px;background:transparent;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
 .gmq .st{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:2px 8px;white-space:nowrap}
 .st.done{background:var(--turf);color:var(--chalk)}.st.ready{background:var(--flag);color:var(--flag-ink)}.st.later{color:var(--muted);border:1px solid var(--line)}.st.skip{color:var(--muted);text-decoration:line-through}
 .bwcts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
@@ -1873,7 +1874,12 @@ function gmQueue(){
     add("last",w.id,w.week,eff==="open",eff!=="open");
     add("lock",w.id,w.week,eff==="locked",eff==="final");
     add("final",w.id,w.week,eff==="final",false)}
-  if(P&&!(w&&w.status!=="draft"&&w.week===P.week)){const wid=w&&w.status==="draft"&&w.week===P.week?w.id:gmWid(P.week);add("pv",wid,P.week,true,false)}
+  let up=null;
+  if(P&&!(w&&w.status!=="draft"&&w.week===P.week)){const wid=w&&w.status==="draft"&&w.week===P.week?w.id:gmWid(P.week);add("pv",wid,P.week,true,false);up={wid,wk:P.week}}
+  else if(w&&w.status==="draft")up={wid:w.id,wk:w.week};
+  /* The coming week's other posts, listed ahead as "Later" with their best times (Benton, Nov 17). No card is drawn
+     until picks open, since swaps and the Wednesday line refresh can still change it, so these rows cannot be opened. */
+  if(up)for(const k of ["live","last","lock","final"])out.push({key:`${k}:${up.wid}`,kind:k,wid:up.wid,wk:up.wk,ready:false,stale:false,ahead:true,at:null,label:GM_KINDS[k][0],when:GM_KINDS[k][1],sk:false});
   return out}
 /* Prototype tabs (Bowl Blitz, Army-Navy) get no action dot for now (Benton, Nov 12). Set true to bring it back. */
 const PROTO_DOT=false;
@@ -1882,7 +1888,7 @@ const PROTO_DOT=false;
 const GM_DAY={live:3,last:6,lock:6,final:0};
 function gmDue(now=NOW()){const d=new Date(now).toLocaleString("en-US",{timeZone:TZ,weekday:"short"});const dow=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(d);
   return gmQueue().some(x=>x.ready&&!x.at&&GM_DAY[x.kind]===dow)}
-function gmNext(){const Q=gmQueue();return Q.find(x=>x.ready&&!x.at)||Q.find(x=>!x.stale&&!x.at)||{ready:false}}
+function gmNext(){const Q=gmQueue().filter(x=>!x.ahead);return Q.find(x=>x.ready&&!x.at)||Q.find(x=>!x.stale&&!x.at)||{ready:false}}
 /* Facts the cards share. Counts only before the lock, never sides. */
 function gmActive(){return (state.logins||[]).filter(a=>!a.removed)}
 function gmAlive(wid){const run=survRunOf(wid);if(!run)return null;const sb=survivorBoard(run);return sb?sb.filter(r=>r.pid!==BOT&&r.alive):null}
@@ -2054,9 +2060,9 @@ async function gmPaint(M,sig){
 function gmTimes(){return info("gmhow",`<b>How it works.</b> The tab follows the weekly rhythm: Preview Monday, Picks live Wednesday at 6 PM, Last call Saturday morning, Locked at 10:15 AM, and Final and recap once every game is final. The next post that is ready shows first. Tap any row to see that card again. Save or share opens your phone's share sheet, where you can save to Photos or send straight to GroupMe; on a computer it downloads the image. Copy URL copies the site link, to paste with the image. Posted and Skipped marks save on the server, so your phone and computer agree. Counts update on each refresh, so save the card right before you post. Nothing here shows a picker's sides before the lock. A post you skip, or one whose moment passes with no mark, shows as Skipped.<br><br><b>Posting times.</b> ${Object.entries(GM_BEST).filter(([k])=>k!=="pv").map(([k,b])=>`${esc(GM_KINDS[k][0])}: ${esc(b[0])}.`).join(" ")} Preview is optional, Mon 12:15 PM. <b>Avoid:</b> weekdays 8 AM to 6 PM outside lunch (buried under work), Saturday afternoon and evening (game day trash talk buries it), and after 10 PM (it competes with everything overnight). <b>Stay consistent:</b> the same times every week matter more than the perfect minute, and a steady rhythm keeps people from muting Announcements. After 3 or 4 weeks, check which posts get the most likes and adjust.`)}
 function renderGM(){const el=$("#v-groupme");if(!state.isOwner){el.innerHTML="";return}
   const Q=gmQueue(),nx=gmNext();
-  const it=Q.find(x=>x.key===state.gmSel)||(nx.key?nx:null);
+  const it=Q.find(x=>!x.ahead&&x.key===state.gmSel)||(nx.key?nx:null);
   const st=x=>x.at?(x.sk?`<span class="st skip">Skipped</span>`:`<span class="st done">Posted ${esc(kick(x.at).replace(/ CT$/,""))}</span>`):x.ready?`<span class="st ready">Ready</span>`:x.stale?`<span class="st skip">Skipped</span>`:`<span class="st later">${esc(GM_BEST[x.kind][0])}</span>`;
-  const list=()=>`<ol class="gmq" aria-label="This week's posts">${Q.map(x=>`<li><button type="button" data-gmsel="${esc(x.key)}" aria-current="${!!it&&x.key===it.key}"><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</button></li>`).join("")}</ol>`;
+  const list=()=>`<ol class="gmq" aria-label="This week's posts">${Q.map(x=>x.ahead?`<li class="ahead"><div><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</div></li>`:`<li><button type="button" data-gmsel="${esc(x.key)}" aria-current="${!!it&&x.key===it.key}"><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</button></li>`).join("")}</ol>${Q.some(x=>x.ahead)?`<p class="gmnote">Later posts draw once picks open Wednesday at 6 PM, since games and lines can still change before then.</p>`:""}`;
   let h=`<div class="gmwrap"><h2 class="gmh">GroupMe posts</h2><p class="gmnote">Save or copy the card, post it in GroupMe, then tap Posted. Only you can see this tab.</p>`;
   if(!it){h+=`<div class="game gmdone"><b>All caught up.</b><span>The next post shows up here when it is due. Best times: Picks live Wed 8:30 PM, Last call Sat 8:15 AM, Locked Sat 10:20 AM, Final Sun 12:15 PM.</span></div>${list()}${gmTimes()}</div>`;el.innerHTML=h;return}
   const M=gmModel(it),sig=it.key+"|"+JSON.stringify(M),have=state.gmImg&&state.gmImg.sig===sig;state.gmText=gmText(M);
@@ -2590,7 +2596,7 @@ function renderRecap(){
   el.innerHTML=h;
 }
 window.tpSurv={survRuns,survRunOf,survRunNow,survivorBoard,survivorGrid,survivorChampions,survivorUsedRun,survConf,botSurv,realStats,careerPanel,renderSurvivor,renderPicks,gmAlive,gmRunFirst,gmRunLast}; /* for the browser test */
-window.tpRecap={weekFacts,gmDue,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
+window.tpRecap={weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */
