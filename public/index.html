@@ -518,7 +518,18 @@ th.aw,td.aw{min-width:3.6em;padding-left:2px;padding-right:2px;white-space:nowra
 .cst th.grp{text-align:center;border-bottom:0}
 .cst .gl{border-left:1px solid var(--board-line)}
 .cst td.pc{background:rgba(242,194,48,.08)}
-.board h3.csth.ind,.cst.ind{opacity:.55}.board h3.csth.ind .note{font-size:.8rem;font-weight:400;margin-left:6px}
+.board h3.csth.ind,.cst.ind{opacity:.55}
+details.cfd{border-bottom:1px solid var(--board-line)}
+details.cfd>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px;padding:2px 0}
+details.cfd>summary::-webkit-details-marker{display:none}
+details.cfd>summary::before{content:"▸";color:var(--flag);font-size:.9rem;transition:transform .15s}
+details.cfd[open]>summary::before{transform:rotate(90deg)}
+details.cfd>summary h3.csth{margin:0;flex:1}
+details.cfd .cflead{display:flex;align-items:center;gap:6px;font-family:var(--cond);font-size:.85rem;color:var(--board-dim);white-space:nowrap}
+details.cfd.ind .cflead{opacity:.7}
+details.cfd[open]>summary .cflead{visibility:hidden}
+details.cfd .cstw{margin-top:4px}
+@media (prefers-reduced-motion:reduce){details.cfd>summary::before{transition:none}}
 .cst .tm{position:sticky;left:0;z-index:1;background:var(--board);text-align:left;white-space:normal;min-width:150px;max-width:180px;box-shadow:1px 0 0 var(--board-line)}
 .cst .tm button{all:unset;cursor:pointer;display:flex;align-items:center;gap:6px}
 .cst .tm .ark{min-width:16px;text-align:right;font-size:.8rem;color:var(--board-dim)}
@@ -3180,6 +3191,8 @@ function atsView(C){
 
 /* ---------- Conference standings (item 64) ---------- */
 /* ESPN's tables as sent by the rankings job: sorted by conference PCT, ties in ESPN's order. We never break ties. */
+const CF_OPEN=new Set();
+document.addEventListener("toggle",e=>{const d=e.target;if(!d||!d.dataset||!d.dataset.cf)return;if(d.open)CF_OPEN.add(d.dataset.cf);else CF_OPEN.delete(d.dataset.cf)},true);
 const isIndep=c=>/independ/i.test(c.name+" "+(c.abbr||""));
 function confView(C){
   const D=state.teamGames;
@@ -3196,15 +3209,16 @@ function confView(C){
   const r=x=>x?x.w+"-"+x.l:"–",p=x=>x&&x.w+x.l?(x.w/(x.w+x.l)).toFixed(3).replace(/^0/,""):"–",n=x=>x==null?"–":x;
   let h=`<div class="board"><h2>Conference standings</h2>${info("confs",`From ESPN${S.asOf?", as of "+esc(S.asOf):""}. Sorted by conference win percentage, the same as ESPN. Teams tied on percentage stay in ESPN's order: the site does not break ties by conference rules, so the order inside a tie is not official. Independents have no conference standings and sit at the bottom. Updates with the rankings, about every 6 hours. Tap a team for its card.`)}${bar}`;
   if(!show.length)h+='<p class="note">No conferences match.</p>';
-  for(const c of show){const ind=isIndep(c);
-    h+=`<h3 class="csth${ind?" ind":""}">${esc(c.name)}${ind?' <span class="note">No conference standings</span>':""}</h3><div class="cstw"><table class="cst${ind?" ind":""}"><thead><tr><th class="tm"></th><th class="grp gl" colspan="4">Conference</th><th class="grp gl" colspan="6">Overall</th></tr>
+  /* Every conference starts folded (Benton, Nov 18); taps stay open across redraws (CF_OPEN, in memory). A filtered single conference opens itself. */
+  for(const c of show){const ind=isIndep(c),lead=!ind&&c.teams[0],isOpen=CF_OPEN.has(c.name)||!!cf||c.teams.some(t=>canon(t.team)===state.statOpen);
+    h+=`<details class="cfd${ind?" ind":""}" data-cf="${esc(c.name)}"${isOpen?" open":""}><summary><h3 class="csth${ind?" ind":""}">${esc(c.name)}</h3><span class="cflead">${ind?"No standings":lead?`${tChip(canon(lead.team))} ${r(lead.conf)}`:""}</span></summary><div class="cstw"><table class="cst${ind?" ind":""}"><thead><tr><th class="tm"></th><th class="grp gl" colspan="4">Conference</th><th class="grp gl" colspan="6">Overall</th></tr>
       <tr><th class="tm">Team</th><th class="gl">W-L</th><th>Pct</th><th>PF</th><th>PA</th><th class="gl">W-L</th><th>Pct</th><th>PF</th><th>PA</th><th>Home</th><th>Away</th></tr></thead><tbody>`;
     let open=null;
     for(const t of c.teams){const k=canon(t.team);if(state.statOpen===k)open=k;const ap=C.ap[k];
       h+=`<tr><td class="tm"><button data-steam="${esc(k)}" aria-expanded="${state.statOpen===k}" aria-label="${esc(k)}"><span class="ark">${ap?ap.rank:""}</span>${tChip(k)}${tName(k)}</button></td>
         <td class="gl">${ind?"–":r(t.conf)}</td><td class="pc">${ind?"–":p(t.conf)}</td><td>${ind?"–":n(t.cpf)}</td><td>${ind?"–":n(t.cpa)}</td>
         <td class="gl">${r(t.all)}</td><td>${p(t.all)}</td><td>${n(t.pf)}</td><td>${n(t.pa)}</td><td>${esc(t.home||"–")}</td><td>${esc(t.away||"–")}</td></tr>`}
-    h+=`</tbody></table></div>${open?teamCard(open,C):""}`;
+    h+=`</tbody></table></div>${open?teamCard(open,C):""}</details>`;
   }
   return h+"</div>";
 }

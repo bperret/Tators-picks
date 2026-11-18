@@ -761,17 +761,22 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
       { name: "American Conference", abbr: "AAC", teams: [row("Tulane", 5, 1, 8, 2), row("UTSA", 5, 1, 8, 2)] }] };
     await pg.query("insert into kv (key, value) values ('confStandings', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(cs)]);
     await m.evaluate(async () => { const T = window.tpRecap; T.state.teamGames = null; T.state.rankView = "confs"; T.render(); });
-    await m.waitForSelector("#v-rankings table.cst"); await m.waitForTimeout(200);
+    await m.waitForSelector("#v-rankings details.cfd"); await m.waitForTimeout(200);
     const cv = await m.evaluate(() => ({ heads: [...document.querySelectorAll("#v-rankings h3.csth")].map((e) => e.textContent),
       sec: [...document.querySelectorAll("#v-rankings table.cst")][0] ? [...[...document.querySelectorAll("#v-rankings table.cst")][0].querySelectorAll("tbody [data-steam]")].map((b) => b.dataset.steam) : [],
       cells: (document.querySelector('#v-rankings table.cst [data-steam="Georgia"]') || {}).closest ? [...document.querySelector('#v-rankings table.cst [data-steam="Georgia"]').closest("tr").querySelectorAll("td")].slice(1).map((td) => td.textContent).join("|") : "" }));
-    check("Conferences shows one ESPN table per conference, in ESPN's order", cv.heads.join(",") === "Southeastern Conference,American Conference,FBS Independents No conference standings" && cv.sec.join(",") === "Georgia,Alabama,LSU", JSON.stringify(cv));
+    check("Conferences shows one ESPN table per conference, in ESPN's order", cv.heads.join(",") === "Southeastern Conference,American Conference,FBS Independents" && cv.sec.join(",") === "Georgia,Alabama,LSU", JSON.stringify(cv));
     check("a standings row shows conference and overall W-L, Pct, PF, PA, home, away", cv.cells === "6-1|.857|100|90|9-1|.900|300|200|5-0|3-2", cv.cells);
-    if (process.env.SHOT) { await m.locator("#v-rankings").screenshot({ path: process.env.SHOT + "/confs.png" }); await m.evaluate(() => { document.querySelector("#v-rankings .cstw").scrollLeft = 260; }); await m.locator("#v-rankings .cstw >> nth=0").screenshot({ path: process.env.SHOT + "/confs-scroll.png" }); await m.evaluate(() => { document.querySelector("#v-rankings .cstw").scrollLeft = 0; }); }
+    if (process.env.SHOT) { await m.locator("#v-rankings").screenshot({ path: process.env.SHOT + "/confs.png" }); await m.evaluate(() => { document.querySelector('#v-rankings details.cfd').open = true; }); await m.waitForTimeout(100); await m.locator("#v-rankings").screenshot({ path: process.env.SHOT + "/confs-open.png" }); await m.evaluate(() => { document.querySelector('#v-rankings details.cfd').open = false; }); await m.waitForTimeout(100); }
+    const folded = await m.evaluate(() => ({ n: document.querySelectorAll("#v-rankings details.cfd").length, open: document.querySelectorAll("#v-rankings details.cfd[open]").length, lead: (document.querySelector('#v-rankings details.cfd[data-cf="Southeastern Conference"] .cflead') || {}).textContent || "" }));
+    check("every conference starts folded, with its leader on the closed row", folded.n === 3 && folded.open === 0 && /6-1/.test(folded.lead), JSON.stringify(folded));
+    await m.click('#v-rankings details.cfd[data-cf="Southeastern Conference"] > summary'); await m.waitForTimeout(150);
+    await m.evaluate(() => window.tpRecap.render()); await m.waitForTimeout(150);
+    check("an opened conference stays open across a redraw", await m.evaluate(() => document.querySelector('#v-rankings details.cfd[data-cf="Southeastern Conference"]').open && !document.querySelector('#v-rankings details.cfd[data-cf="American Conference"]').open));
     check("independents sit last, grayed, with no conference columns", await m.evaluate(() => { const t = [...document.querySelectorAll("#v-rankings table.cst")].pop(); return t.classList.contains("ind") && t.querySelector("tbody td.gl").textContent === "–" && !!t.querySelector('[data-steam="Notre Dame"]'); }));
     await m.selectOption("#cfConf", "American Conference"); await m.waitForTimeout(200);
     const fl = await m.evaluate(() => [...document.querySelectorAll("#v-rankings h3.csth")].map((e) => e.textContent).join(","));
-    check("the Confs conference filter works from the list itself", fl === "American Conference", fl);
+    check("the Confs conference filter works from the list itself, opened", fl === "American Conference" && await m.evaluate(() => document.querySelector('#v-rankings details.cfd[data-cf="American Conference"]').open), fl);
     await m.selectOption("#cfConf", ""); await m.waitForTimeout(200);
     await m.click('#v-rankings table.cst [data-steam="Alabama"]'); await m.waitForTimeout(200);
     check("tapping a team opens its card under its conference", (await m.locator("#v-rankings .sdet").count()) === 1);
