@@ -388,6 +388,15 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .bwlist{display:flex;flex-direction:column;gap:10px}
 .bwwho{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:.76rem;color:var(--muted);line-height:1.3}
 .bwfin{font-family:var(--cond);font-size:.9rem;color:var(--muted)}
+.awhero{border-radius:12px;padding:14px 16px;margin-bottom:10px;background:linear-gradient(135deg,#2a1f00,#5a4300);color:#fff4cf;border:1px solid #c9a227}
+.awhero h2{margin:0 0 4px;color:#f2c230}.awhero p{margin:2px 0}.awhero .awwhen{font-size:.86rem;opacity:.85}
+.awcard{padding:10px 12px}.awhead{display:flex;gap:10px;align-items:center;margin-bottom:6px}.awhead .awe{font-size:1.6rem}.awhead small{display:block;color:var(--muted);font-size:.82rem}
+.awcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
+.awc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.awc small{color:var(--muted);font-size:.78rem}.awc .awn{font-weight:700}
+.awc.on{border:2px solid #c9a227;box-shadow:0 0 0 1px #c9a227 inset}.awc.win{background:rgba(46,160,67,.14);border-color:#2ea043}.awc.miss{opacity:.6;text-decoration:line-through}
+.awc:disabled{cursor:default}.awv{font-family:var(--cond);font-size:.8rem;color:var(--muted)}
+.awyou{margin:6px 0 0;font-family:var(--cond);font-weight:700}
 .bwtb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.9rem}.bwtb input{width:84px;font:inherit;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 .bwt{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:12px}table.bwt{background:transparent;color:var(--ink)}.bwt th,.bwt td{padding:5px 6px;border-top:1px solid var(--line);text-align:left;color:var(--ink);background:transparent;text-shadow:none}.bwt th{font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:.74rem;color:var(--muted)}.bwt .n{text-align:right;font-variant-numeric:tabular-nums}.bwt tr.me td{font-weight:700;background:var(--card)}
 .recapban{display:block;text-align:center;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
@@ -911,6 +920,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
     <a href="#profile" data-v="profile">Profile</a>
     <a href="#bowls" data-v="bowls" id="bowlsTab" hidden>Bowl Blitz</a>
     <a href="#armynavy" data-v="armynavy" id="anTab" hidden>Army-Navy</a>
+    <a href="#awards" data-v="awards" id="awTab" hidden>Awards</a>
     <a href="#groupme" data-v="groupme" id="gmTab" hidden>GroupMe</a>
     <a href="#demo" data-v="demo" id="demoTab" hidden>Demo</a>
     <a href="#commish" data-v="commish" id="commishTab" hidden>Commish</a>
@@ -1097,6 +1107,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
   <section class="view" id="v-playoffs" hidden></section>
   <section class="view" id="v-bowls" hidden></section>
   <section class="view" id="v-armynavy" hidden></section>
+  <section class="view" id="v-awards" hidden></section>
   <section class="view" id="v-groupme" hidden></section>
   <section class="view" id="v-demo" hidden></section>
   <section class="view" id="v-commish" hidden></section>
@@ -1244,7 +1255,7 @@ function applyState(S){
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],classOf:S.classOf||{},
     myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[],groupme:S.groupme||{posted:{}}});
-  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#gmTab").hidden=!state.isOwner;$("#demoTab").hidden=!state.isOwner;requestAnimationFrame(tabsEdge);
+  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#awTab").hidden=!state.isOwner;$("#gmTab").hidden=!state.isOwner;$("#demoTab").hidden=!state.isOwner;requestAnimationFrame(tabsEdge);
   syncDraft();
 }
 async function refresh(quiet){
@@ -1478,10 +1489,10 @@ function syncDraft(){
 }
 
 /* ---------- routing ---------- */
-const VIEWS=["scoreboard","picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","groupme","demo","commish"];
+const VIEWS=["scoreboard","picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","awards","groupme","demo","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
-function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v==="demo"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v==="awards"||v==="groupme"||v==="demo"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
 function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
 function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
   try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
@@ -1496,7 +1507,7 @@ function tabsIntoView(){const n=document.querySelector("nav.tabs"),a=n&&n.queryS
   if(n.scrollWidth>n.clientWidth){const l=a.offsetLeft-n.offsetLeft,r=l+a.offsetWidth;if(l<n.scrollLeft+44||r>n.scrollLeft+n.clientWidth-44)n.scrollLeft=Math.max(0,l-(n.clientWidth-a.offsetWidth)/2)}tabsEdge()}
 document.addEventListener("scroll",e=>{if(e.target&&e.target.matches&&e.target.matches("nav.tabs"))tabsEdge()},true);
 window.addEventListener("resize",tabsEdge);
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v==="demo")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy"||v==="awards"||v==="groupme"||v==="demo")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   tabsIntoView();
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render();if(state.toTop){state.toTop=false;scrollTo(0,0)}}
@@ -1726,6 +1737,64 @@ function anRead(d){if(!anDone())return ["fa","fn","ha","hn"].every(k=>d[k]==="")
 document.addEventListener("click",e=>{const t=e.target.closest("#v-armynavy [data-anph]");if(!t)return;state.anPhase=t.dataset.anph;renderAN()});
 document.addEventListener("input",e=>{const m=/^an-(fa|fn|ha|hn)$/.exec(e.target.id||"");if(!m)return;const d=anState();d[m[1]]=e.target.value.replace(/\D/g,"").slice(0,2);anSave();
   $("#anRead").textContent=anRead(d);$("#anErr").textContent=anErr(d);$("#anTab").classList.toggle("hot",PROTO_DOT&&!anDone())});
+/* Award Watch prototype (item 65, Benton Nov 18: a 2026 exception to "no more contests this season", just for fun for now).
+   Commissioner only, on the hidden Awards tab. Picks save on this device only; nothing reaches the server.
+   League contrarian scoring: a correct pick is worth pickers who entered ÷ pickers who took that winner, so a lone right call
+   pays the whole room and a pick everyone shared pays 1. Wrong or blank is 0. Robo-Sharp takes the betting favorite (listed first),
+   plays unranked, and never counts toward anyone's value. Candidates are samples from November odds boards and preseason
+   lists until the real finalists come out (most Nov 24, Heisman after Championship Saturday). */
+const AW_LOCK="2026-12-11T00:00:00Z";
+const AW_LIST=[
+  {k:"heis",e:"🏆",n:"Heisman Trophy",what:"Most outstanding player",when:"Sat Dec 12",c:[["Darian Mensah","QB","Miami"],["Jeremiah Smith","WR","Ohio State"],["Malachi Toney","WR","Miami"],["CJ Carr","QB","Notre Dame"]]},
+  {k:"qb",e:"🎯",n:"Davey O'Brien Award",what:"Best quarterback",when:"Thu Dec 10",c:[["Darian Mensah","QB","Miami"],["CJ Carr","QB","Notre Dame"],["Trinidad Chambliss","QB","Ole Miss"]]},
+  {k:"rb",e:"🏃",n:"Doak Walker Award",what:"Best running back",when:"Thu Dec 10",c:[["Kewan Lacy","RB","Ole Miss"],["Ahmad Hardy","RB","Missouri"]]},
+  {k:"wr",e:"🙌",n:"Biletnikoff Award",what:"Best receiver",when:"Thu Dec 10",c:[["Jeremiah Smith","WR","Ohio State"],["Malachi Toney","WR","Miami"]]},
+  {k:"def",e:"🛡️",n:"Bednarik Award",what:"Defensive player of the year",when:"Thu Dec 10",tba:1,c:[["Sample finalist 1","",""],["Sample finalist 2","",""],["Sample finalist 3","",""]]},
+  {k:"coach",e:"📋",n:"Coach of the Year",what:"The Home Depot Award",when:"Thu Dec 10",tba:1,c:[["Sample coach 1","",""],["Sample coach 2","",""],["Sample coach 3","",""]]}];
+/* Made-up winners for the Final preview: one favorite, the rest mixed, so the contrarian payoff shows. */
+const AW_RES={heis:1,qb:0,rb:1,wr:0,def:2,coach:1};
+function awState(){const k="tp-awproto-"+(state.uid||"x");if(state.aw&&state.awKey===k)return state.aw;state.awKey=k;
+  let d=null;try{d=JSON.parse(localStorage.getItem(k))}catch(e){}state.aw=d&&typeof d==="object"?d:{};return state.aw}
+function awSave(){try{localStorage.setItem(state.awKey,JSON.stringify(state.aw))}catch(e){}}
+function awDone(){const d=awState();return AW_LIST.every(a=>Number.isInteger(d[a.k]))}
+/* Sample pickers lean toward the favorite, the way a real room does. */
+function awField(){const P=AN_FAKE.map((name,i)=>{const p={};for(const a of AW_LIST){const r=bwHash(name+a.k);p[a.k]=r<.55?0:Math.min(a.c.length-1,1+Math.floor((r-.55)/.45*(a.c.length-1)))}return {id:"f"+i,name,p}});
+  const d=awState();if(AW_LIST.some(a=>Number.isInteger(d[a.k])))P.push({id:"me",name:"You",p:{...d}});return P}
+function awSplit(P,k,n){const c=Array(n).fill(0);let in_=0;for(const x of P){if(Number.isInteger(x.p[k])){c[x.p[k]]++;in_++}}return {c,in_}}
+const awVal=(S,i)=>S.c[i]?Math.round(S.in_/S.c[i]*10)/10:null;
+function awScore(P){return P.map(x=>{let pts=0,hits=0;for(const a of AW_LIST){const S=awSplit(P,a.k,a.c.length),w=AW_RES[a.k];if(x.p[a.k]===w){pts+=awVal(S,w);hits++}}return {...x,pts:Math.round(pts*10)/10,hits}})}
+function renderAW(){const el=$("#v-awards");if(!state.isOwner){el.innerHTML="";return}
+  const d=awState(),ph=state.awPhase||"pre",P=awField(),pre=ph==="pre",fin=ph==="final";
+  let h=`<div class="bwproto"><b>Prototype. Only you can see this tab.</b> Your picks save on this device only and count for nothing. Just for fun.</div>
+    <div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p>
+      <p class="awwhen">Locks before the awards show, Thu Dec 10 (time TBA). Heisman Sat Dec 12, the same day as Army-Navy.</p></div>
+    <div class="bwbar" role="group" aria-label="Preview">${[["pre","Before lock"],["lock","After lock"],["final","Final"]].map(([k,l])=>`<button type="button" class="mbchip" data-awph="${k}" aria-pressed="${ph===k}">${l}</button>`).join("")}</div>`;
+  if(pre)h+=`<p class="note awcount">${AW_LIST.filter(a=>Number.isInteger(d[a.k])).length} of ${AW_LIST.length} awards picked.</p>`;
+  for(const a of AW_LIST){const S=awSplit(P,a.k,a.c.length),mine=d[a.k],w=fin?AW_RES[a.k]:null;
+    h+=`<div class="game awcard"><div class="awhead"><span class="awe" aria-hidden="true">${a.e}</span><div><b>${esc(a.n)}</b><small>${esc(a.what)} · ${esc(a.when)}</small></div></div>
+      ${a.tba?'<p class="note">Finalists are named Nov 24. These are stand-ins so the flow works.</p>':""}
+      <div class="awcs" role="radiogroup" aria-label="${esc(a.n)}">${a.c.map(([nm,pos,tm],i)=>{const v=awVal(S,i),on=mine===i,win=w===i;
+        const sub=[pos,tm].filter(Boolean).join(", ")+(i===0&&!a.tba?(pos||tm?" · ":"")+"favorite":"");
+        const tag=pre?"":`<span class="awv">${S.c[i]} of ${S.in_}${v!=null?` · worth ${v}`:" · nobody"}</span>`;
+        return `<button type="button" class="awc${on?" on":""}${win?" win":""}${fin&&on&&!win?" miss":""}" role="radio" aria-checked="${on}" data-aw="${a.k}" data-awi="${i}" ${pre?"":"disabled"}><span class="awn">${win?"🏆 ":""}${esc(nm)}</span>${sub?`<small>${esc(sub)}</small>`:""}${tag}</button>`}).join("")}</div>
+      ${!pre&&Number.isInteger(mine)?`<p class="awyou">${fin?(mine===w?`You got it: +${awVal(S,w)}`:"Missed: 0"):`If ${esc(a.c[mine][0])} wins: +${awVal(S,mine)}`}</p>`:""}</div>`}
+  if(fin){const R=awScore(P).sort((x,y)=>y.pts-x.pts||y.hits-x.hits);let rk=0,prev=null;
+    const robo=AW_LIST.reduce((t,a)=>t+(AW_RES[a.k]===0?awVal(awSplit(P,a.k,a.c.length),0):0),0);
+    h+=`<h3 class="rh">Final standings</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th></tr></thead><tbody>${R.map((r,i)=>{if(r.pts!==prev){rk=i+1;prev=r.pts}return `<tr class="${r.id==="me"?"me":""}"><td>${rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td></tr>`}).join("")}
+      <tr><td>—</td><td>🤖 Robo-Sharp (all favorites)</td><td class="n">${AW_LIST.filter(a=>AW_RES[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td></tr></tbody></table>
+      <p class="note">Sample pickers and made-up winners. Exact ties share.</p>`}
+  h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul>
+      <li>Pick one winner for each of the ${AW_LIST.length} awards before the lock.</li>
+      <li>A right pick is worth the number of pickers ÷ the number who took that winner. If you are the only one of 12 on him, that is 12 points. If all 12 had him, everyone gets 1.</li>
+      <li>A wrong or blank pick is 0. Most points wins. Exact ties share.</li>
+      <li>Values show after the lock, so nobody can chase the room.</li>
+      <li>Robo-Sharp takes the betting favorite every time. It plays unranked and cannot win.</li></ul></div>
+    ${info("awproto",`Sample candidates from November Heisman odds and preseason award coverage. Real finalists replace them: most awards name three finalists Nov 24, and the Heisman names its finalists after Championship Saturday. The awards show date is Dec 10 per the Maxwell Award's release; the show time is not set.`)}`;
+  el.innerHTML=h}
+document.addEventListener("click",e=>{const p=e.target.closest("#v-awards [data-awph]");if(p){state.awPhase=p.dataset.awph;renderAW();return}
+  const b=e.target.closest("#v-awards [data-aw]");if(!b||b.disabled)return;const d=awState(),k=b.dataset.aw,i=+b.dataset.awi;
+  if(d[k]===i)delete d[k];else d[k]=i;awSave();renderAW();const n=AW_LIST.filter(a=>Number.isInteger(d[a.k])).length;toast(`You have picked ${n} of ${AW_LIST.length} awards.`,"info")});
+
 /* Bowl challenge prototype (item 3). Commissioner only, on the hidden Bowl Blitz tab. Picks save on this device only; nothing reaches the server.
    Teams: Athlon's Nov 1 projections. Dates: ESPN's 2026-27 schedule. Lines are samples from the SP+ gap, neutral site, half-point rule. */
 const BOWL_SRC="Teams from Athlon Sports' bowl projections after Week 9 (Nov 1). Athlon listed South Carolina twice, so Kentucky fills the Liberty Bowl. Dates from ESPN's 2026-27 schedule.";
@@ -2133,6 +2202,7 @@ function render(){
   $("#picksTab").classList.toggle("hot",!!(state.db&&w&&w.status==="open"&&!(state.sheetsIn||[]).includes(state.uid)));
   if(state.view==="bowls")renderBowls();
   if(state.view==="armynavy")renderAN();
+  if(state.view==="awards")renderAW();
   if(state.isOwner){$("#gmTab").classList.toggle("hot",gmDue())}
   if(state.view==="groupme")renderGM();
   if(state.view==="demo")renderDemo();

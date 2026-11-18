@@ -1072,7 +1072,29 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await c.click('[data-anph="half"]');
   check("halftime view has no winner yet", (await c.textContent("#v-armynavy")).includes("The final decides it"));
   check("the Army-Navy tab adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
-  await c.click('[data-anph="pre"]'); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
+  await c.click('[data-anph="pre"]');
+  {
+    // Award Watch prototype (item 65): commissioner only, device-only picks, league contrarian scoring.
+    check("a picker sent to Awards lands on Picks", await m.evaluate(() => { location.hash = "#awards"; return new Promise((r) => setTimeout(() => r(location.hash !== "#awards" || document.querySelector("#v-awards").hidden || !document.querySelector("#v-awards .awcard")), 200)); }));
+    await c.evaluate(() => { localStorage.removeItem("tp-awproto-" + window.tpRecap.state.uid); window.tpRecap.state.aw = null; location.hash = "#awards"; }); await c.waitForSelector("#v-awards .awcard");
+    check("Awards shows six award cards and the prototype banner", (await c.locator("#v-awards .awcard").count()) === 6 && /Prototype\. Only you can see this tab/.test(await c.textContent("#v-awards")));
+    await c.click('#v-awards [data-aw="heis"][data-awi="2"]'); await c.click('#v-awards [data-aw="wr"][data-awi="0"]');
+    const saved = await c.evaluate(() => JSON.parse(localStorage.getItem("tp-awproto-" + window.tpRecap.state.uid)));
+    check("award picks save on this device", saved.heis === 2 && saved.wr === 0, JSON.stringify(saved));
+    check("values stay hidden before the lock", (await c.locator("#v-awards .awv").count()) === 0);
+    await c.click('[data-awph="lock"]');
+    const vals = await c.evaluate(() => [...document.querySelectorAll('#v-awards [data-aw="heis"] .awv')].map((x) => x.textContent));
+    check("after the lock each candidate shows its split and its worth (pickers ÷ takers)", vals.length === 4 && vals.every((v) => { const m = /^(\d+) of (\d+)(?: · worth ([\d.]+)| · nobody)$/.exec(v); if (!m) return false; return m[1] === "0" ? !m[3] : Math.abs(+m[3] - Math.round(+m[2] / +m[1] * 10) / 10) < 1e-9; }), JSON.stringify(vals));
+    check("your pick shows what it would pay", /If Malachi Toney wins: \+[\d.]+/.test(await c.textContent("#v-awards")));
+    await c.click('[data-awph="final"]');
+    const fin = await c.textContent("#v-awards .bwt");
+    check("Final ranks pickers by points with Robo-Sharp unranked on all favorites", fin.includes("You") && /Robo-Sharp \(all favorites\)/.test(fin) && (await c.locator("#v-awards .bwt tr", { hasText: "Robo-Sharp" }).locator("td").first().textContent()) === "—");
+    check("the Awards tab adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
+    if (process.env.SHOT) { await c.click('[data-awph="lock"]'); await c.screenshot({ path: process.env.SHOT + "/aw-lock.png", fullPage: true }); await c.click('[data-awph="final"]'); await c.screenshot({ path: process.env.SHOT + "/aw-final.png", fullPage: true }); }
+    await c.click('[data-awph="pre"]');
+    if (process.env.SHOT) await c.screenshot({ path: process.env.SHOT + "/aw-pre.png", fullPage: true });
+  }
+  await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
 
   // ---- GroupMe tab ----
   check("pickers do not see the GroupMe tab", await m.isHidden("#gmTab"));
