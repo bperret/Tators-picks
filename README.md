@@ -28,11 +28,13 @@ GitHub Actions (`.github/workflows/automation.yml`) calls `/api/cron` on a sched
 
 | When (Central) | Job | Manual fallback in the Commissioner tab |
 |---|---|---|
+| Mon 9 a.m. to the slate | Preview the coming slate with current lines, repulled every 6 hours. Takes no picks | Build preview, Refresh lines |
 | Tue 1 p.m. to Fri | Build the coming Saturday's slate from ESPN as a draft | Build from ESPN, or Load a slate |
 | Wed 6 p.m. | Open picks, unless turned off or moved back to draft | Open picks |
 | After the lock | Pull scores on each run, mark the week final when every game is final or void | Pull scores now, Scores, Mark week final |
-| Every 6 hours | AP, CFP, and FPI from ESPN; the r/CFB poll from poll.redditcfb.com | Refresh rankings, Update rankings (accepts the r/CFB table copied from the site) |
-| Every run | Save lines before kickoff, add finished games to team ATS records | Update ATS |
+| Every 6 hours | AP, CFP, and FPI from ESPN; the r/CFB poll from poll.redditcfb.com; FBS conference standings from ESPN for the Teams Confs view | Refresh rankings, Update rankings (accepts the r/CFB table copied from the site) |
+| Button only | SP+ from ESPN's SP+ story and VSiN power ratings from VSiN's weekly article | Update ratings |
+| Every run | Save lines before kickoff, add finished games to team ATS records, and catch up any late game the game log has but the scoreboard missed | Update ATS |
 | First run, then Sunday 9 a.m. | Fill the team game log for weeks 1 to now, then recheck the last two weeks | Fill game log |
 | Every run until done | Add lines and totals to logged games that lack them, from ESPN's per-game odds feed (100 games a run). Stops itself if the feed has no old lines. | Fill lines |
 
@@ -41,9 +43,10 @@ Any failed job becomes a flag in the Automation panel with the manual fallback. 
 Rules the automation keeps:
 
 * Scores entered by hand are never overwritten. Set a game back to ESPN to hand it back.
-* A postponed or canceled game waits for the commissioner to void it.
+* A postponed or canceled game waits for the commissioner to void it. A moved kickoff stays on the slate: the scores job takes ESPN's new time.
 * Moving a week back to draft stops the automatic open for that week. Reopening scoring stops the automatic final.
-* Robo-Sharp's line is ESPN FPI's projected margin for each game. SP+ and VSiN stay as last loaded. With the new Robo-Sharp switched on, each ATS run while picks are open also saves the market line and SP+ and VSiN ratings on the week for Robo-Sharp. Nothing changes them after the lock.
+* Robo-Sharp blends ESPN FPI's projected margin, SP+, VSiN, and the market line. Each ATS run while picks are open saves the market line and the SP+ and VSiN ratings on the week. Nothing changes them after the lock.
+* Conference standings keep ESPN's order. Ties are not broken by conference rules. A bad standings feed keeps the last saved tables and raises a flag.
 * The team game log keeps every finished FBS game: scores, the line saved before kickoff, and the total. The ATS job adds games as they finish. The Teams tab reads it from `/api/state?part=teams`, so the main state stays small. A hand-entered slate score shows in place of ESPN's.
 
 ESPN's feeds are unofficial and can change without notice.
