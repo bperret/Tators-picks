@@ -756,6 +756,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     // Conference standings (item 64): ESPN's tables from kv confStandings, through the teams part.
     const row = (team, cw, cl, ow, ol) => ({ team, conf: { w: cw, l: cl }, cpf: 100, cpa: 90, all: { w: ow, l: ol }, pf: 300, pa: 200, home: "5-0", away: "3-2", streak: "W1" });
     const cs = { at: "2026-11-17T12:00:00Z", asOf: "Nov 17, 2026", source: "ESPN", confs: [
+      { name: "FBS Independents", abbr: "IND", teams: [{ ...row("Notre Dame", 0, 0, 8, 2), conf: null }] },
       { name: "Southeastern Conference", abbr: "SEC", teams: [row("Georgia", 6, 1, 9, 1), row("Alabama", 5, 2, 8, 2), row("LSU", 5, 2, 7, 3)] },
       { name: "American Conference", abbr: "AAC", teams: [row("Tulane", 5, 1, 8, 2), row("UTSA", 5, 1, 8, 2)] }] };
     await pg.query("insert into kv (key, value) values ('confStandings', $1::jsonb) on conflict (key) do update set value = excluded.value", [JSON.stringify(cs)]);
@@ -764,14 +765,25 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const cv = await m.evaluate(() => ({ heads: [...document.querySelectorAll("#v-rankings h3.csth")].map((e) => e.textContent),
       sec: [...document.querySelectorAll("#v-rankings table.cst")][0] ? [...[...document.querySelectorAll("#v-rankings table.cst")][0].querySelectorAll("tbody [data-steam]")].map((b) => b.dataset.steam) : [],
       cells: (document.querySelector('#v-rankings table.cst [data-steam="Georgia"]') || {}).closest ? [...document.querySelector('#v-rankings table.cst [data-steam="Georgia"]').closest("tr").querySelectorAll("td")].slice(1).map((td) => td.textContent).join("|") : "" }));
-    check("Conferences shows one ESPN table per conference, in ESPN's order", cv.heads.join(",") === "Southeastern Conference,American Conference" && cv.sec.join(",") === "Georgia,Alabama,LSU", JSON.stringify(cv));
+    check("Conferences shows one ESPN table per conference, in ESPN's order", cv.heads.join(",") === "Southeastern Conference,American Conference,FBS Independents No conference standings" && cv.sec.join(",") === "Georgia,Alabama,LSU", JSON.stringify(cv));
     check("a standings row shows conference and overall W-L, Pct, PF, PA, home, away", cv.cells === "6-1|.857|100|90|9-1|.900|300|200|5-0|3-2", cv.cells);
     if (process.env.SHOT) { await m.locator("#v-rankings").screenshot({ path: process.env.SHOT + "/confs.png" }); await m.evaluate(() => { document.querySelector("#v-rankings .cstw").scrollLeft = 260; }); await m.locator("#v-rankings .cstw >> nth=0").screenshot({ path: process.env.SHOT + "/confs-scroll.png" }); await m.evaluate(() => { document.querySelector("#v-rankings .cstw").scrollLeft = 0; }); }
+    check("independents sit last, grayed, with no conference columns", await m.evaluate(() => { const t = [...document.querySelectorAll("#v-rankings table.cst")].pop(); return t.classList.contains("ind") && t.querySelector("tbody td.gl").textContent === "–" && !!t.querySelector('[data-steam="Notre Dame"]'); }));
+    await m.selectOption("#cfConf", "American Conference"); await m.waitForTimeout(200);
+    const fl = await m.evaluate(() => [...document.querySelectorAll("#v-rankings h3.csth")].map((e) => e.textContent).join(","));
+    check("the Confs conference filter works from the list itself", fl === "American Conference", fl);
+    await m.selectOption("#cfConf", ""); await m.waitForTimeout(200);
     await m.click('#v-rankings table.cst [data-steam="Alabama"]'); await m.waitForTimeout(200);
     check("tapping a team opens its card under its conference", (await m.locator("#v-rankings .sdet").count()) === 1);
     await m.click('#v-rankings table.cst [data-steam="Alabama"]'); await m.waitForTimeout(150);
     const note = await m.evaluate(() => { const d = document.querySelector('#v-rankings details.info[data-info="confs"]'); return d ? d.textContent : ""; });
     check("Conferences says ties are not broken by conference rules", /not official/.test(note), note.slice(0, 120));
+    await m.evaluate(() => { window.tpRecap.state.rankView = "ats"; window.tpRecap.render(); });
+    await m.waitForSelector("#statConf"); const opt = await m.evaluate(() => [...document.querySelectorAll("#statConf option")].map((o) => o.value).find((v) => v));
+    await m.selectOption("#statConf", opt); await m.waitForTimeout(200);
+    const atsOk = await m.evaluate((o) => document.querySelector("#statConf").value === o && document.activeElement.id !== "statConf", opt);
+    check("picking a conference in the Teams filter redraws (the select lets go of focus)", atsOk, opt);
+    await m.selectOption("#statConf", ""); await m.waitForTimeout(150);
     await m.evaluate(() => { window.tpRecap.state.rankView = "polls"; window.tpRecap.render(); });
   }
   const rec = await m.evaluate(() => { const { state, suRec } = window.tpRecap; const R = state.rankings || {}; const t = ((R.ats && R.ats.teams) || []).find((x) => x.su) || ((R.ap && R.ap.teams) || []).find((x) => x.record); return t ? { team: t.team, want: t.su || t.record, got: suRec(t.team) } : null; });

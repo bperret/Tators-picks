@@ -517,6 +517,7 @@ th.aw,td.aw{min-width:3.6em;padding-left:2px;padding-right:2px;white-space:nowra
 .cst th.grp{text-align:center;border-bottom:0}
 .cst .gl{border-left:1px solid var(--board-line)}
 .cst td.pc{background:rgba(242,194,48,.08)}
+.board h3.csth.ind,.cst.ind{opacity:.55}.board h3.csth.ind .note{font-size:.8rem;font-weight:400;margin-left:6px}
 .cst .tm{position:sticky;left:0;z-index:1;background:var(--board);text-align:left;white-space:normal;min-width:150px;max-width:180px;box-shadow:1px 0 0 var(--board-line)}
 .cst .tm button{all:unset;cursor:pointer;display:flex;align-items:center;gap:6px}
 .cst .tm .ark{min-width:16px;text-align:right;font-size:.8rem;color:var(--board-dim)}
@@ -2330,7 +2331,7 @@ document.addEventListener("change",async e=>{
   if(e.target.id==="liveChk"||e.target.id==="liveGap"||e.target.id==="liveCap"){const live=e.target.id==="liveChk"?{on:e.target.checked}:e.target.id==="liveGap"?{gap:+e.target.value}:{cap:+e.target.value};const r=await api("/api/admin",{action:"autoSettings",live});toast(r.ok?"Saved":r.error);await refresh(true);render();return}
   if(e.target.id==="autoOpenChk"){const r=await api("/api/admin",{action:"autoSettings",autoOpen:e.target.checked});toast(r.ok?(e.target.checked?"Picks will open by themselves":"Picks open only when you tap Open picks"):r.error);await refresh(true);renderCommish()}
   if(e.target.id==="cwkSel"){state.cwk=e.target.value;renderCommish()}});
-document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="confSel"){state.atsConf=e.target.value;renderRankings()}if(e.target.id==="statConf"){state.statConf=e.target.value;renderRankings()}if(e.target.id==="statSlate"){state.statSlate=e.target.checked;renderRankings()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
+document.addEventListener("change",e=>{if(e.target.id==="survSel"&&state.draft){const v=e.target.value;state.draft.surv=v?{g:v.split("|")[0],s:v.split("|")[1]}:null;state.dirty=true;renderPicks();return}if(e.target.id==="profileSel"){state.profile=e.target.value;renderPlayers()}if(e.target.id==="confSel"){state.atsConf=e.target.value;e.target.blur();renderRankings()}if(e.target.id==="statConf"){state.statConf=e.target.value;e.target.blur();renderRankings()}if(e.target.id==="cfConf"){state.cfConf=e.target.value;e.target.blur();renderRankings()}if(e.target.id==="statSlate"){state.statSlate=e.target.checked;renderRankings()}if(e.target.id==="incTest"){state.incTest=e.target.checked;renderPlayers()}});
 
 /* Survivor asks for a pick only while it is open and you are still in it. */
 function survBench(wid){const run=survRunOf(wid);return !!state.uid&&!!run&&survLate(state.uid,run)} /* joined after the run's first week: sits this run out */
@@ -3173,25 +3174,29 @@ function atsView(C){
 
 /* ---------- Conference standings (item 64) ---------- */
 /* ESPN's tables as sent by the rankings job: sorted by conference PCT, ties in ESPN's order. We never break ties. */
-function confLabel(c,C){const n={};c.teams.forEach(t=>{const k=C.conf[canon(t.team)];if(k)n[k]=(n[k]||0)+1});const k=Object.keys(n).sort((a,b)=>n[b]-n[a])[0];return k||c.abbr||c.name}
+const isIndep=c=>/independ/i.test(c.name+" "+(c.abbr||""));
 function confView(C){
   const D=state.teamGames;
   if(!D)return `<div class="panel empty">Loading conference standings…</div>`;
   const S=D.standings;
   if(!S||!Array.isArray(S.confs)||!S.confs.length)return `<div class="panel empty">${D.error?esc(D.error):"Conference standings show here after the next rankings update from ESPN."}</div>`;
-  const F=tFilter(S.confs.flatMap(c=>c.teams.map(t=>canon(t.team))),C);
-  const cf=state.statConf||"";
-  const show=S.confs.filter(c=>(!cf||confLabel(c,C)===cf)&&(!F.only||c.teams.some(t=>C.onSlate.has(canon(t.team)))));
+  /* Independents have no conference standings: they go last, grayed, with no conference columns. */
+  const all=[...S.confs.filter(c=>!isIndep(c)),...S.confs.filter(isIndep)];
+  /* Its own list of ESPN's conference names, so the filter never depends on matching the ATS list's labels. */
+  const cf=all.some(c=>c.name===state.cfConf)?state.cfConf:"";
+  const only=!!state.statSlate&&C.onSlate.size>0;
+  const show=all.filter(c=>(!cf||c.name===cf)&&(!only||c.teams.some(t=>C.onSlate.has(canon(t.team)))));
+  const bar=`<div class="bar"><label for="cfConf" class="note">Conference</label><select id="cfConf"><option value="">All conferences</option>${all.map(c=>`<option ${c.name===cf?"selected":""}>${esc(c.name)}</option>`).join("")}</select>${C.onSlate.size?`<label class="note"><input type="checkbox" id="statSlate" ${only?"checked":""}> This week's slate only</label>`:""}</div>`;
   const r=x=>x?x.w+"-"+x.l:"–",p=x=>x&&x.w+x.l?(x.w/(x.w+x.l)).toFixed(3).replace(/^0/,""):"–",n=x=>x==null?"–":x;
-  let h=`<div class="board"><h2>Conference standings</h2>${info("confs",`From ESPN${S.asOf?", as of "+esc(S.asOf):""}. Sorted by conference win percentage, the same as ESPN. Teams tied on percentage stay in ESPN's order: the site does not break ties by conference rules, so the order inside a tie is not official. Updates with the rankings, about every 6 hours. Tap a team for its card.`)}${F.bar}`;
+  let h=`<div class="board"><h2>Conference standings</h2>${info("confs",`From ESPN${S.asOf?", as of "+esc(S.asOf):""}. Sorted by conference win percentage, the same as ESPN. Teams tied on percentage stay in ESPN's order: the site does not break ties by conference rules, so the order inside a tie is not official. Independents have no conference standings and sit at the bottom. Updates with the rankings, about every 6 hours. Tap a team for its card.`)}${bar}`;
   if(!show.length)h+='<p class="note">No conferences match.</p>';
-  for(const c of show){
-    h+=`<h3 class="csth">${esc(c.name)}</h3><div class="cstw"><table class="cst"><thead><tr><th class="tm"></th><th class="grp gl" colspan="4">Conference</th><th class="grp gl" colspan="6">Overall</th></tr>
+  for(const c of show){const ind=isIndep(c);
+    h+=`<h3 class="csth${ind?" ind":""}">${esc(c.name)}${ind?' <span class="note">No conference standings</span>':""}</h3><div class="cstw"><table class="cst${ind?" ind":""}"><thead><tr><th class="tm"></th><th class="grp gl" colspan="4">Conference</th><th class="grp gl" colspan="6">Overall</th></tr>
       <tr><th class="tm">Team</th><th class="gl">W-L</th><th>Pct</th><th>PF</th><th>PA</th><th class="gl">W-L</th><th>Pct</th><th>PF</th><th>PA</th><th>Home</th><th>Away</th></tr></thead><tbody>`;
     let open=null;
     for(const t of c.teams){const k=canon(t.team);if(state.statOpen===k)open=k;const ap=C.ap[k];
       h+=`<tr><td class="tm"><button data-steam="${esc(k)}" aria-expanded="${state.statOpen===k}" aria-label="${esc(k)}"><span class="ark">${ap?ap.rank:""}</span>${tChip(k)}${tName(k)}</button></td>
-        <td class="gl">${r(t.conf)}</td><td class="pc">${p(t.conf)}</td><td>${n(t.cpf)}</td><td>${n(t.cpa)}</td>
+        <td class="gl">${ind?"–":r(t.conf)}</td><td class="pc">${ind?"–":p(t.conf)}</td><td>${ind?"–":n(t.cpf)}</td><td>${ind?"–":n(t.cpa)}</td>
         <td class="gl">${r(t.all)}</td><td>${p(t.all)}</td><td>${n(t.pf)}</td><td>${n(t.pa)}</td><td>${esc(t.home||"–")}</td><td>${esc(t.away||"–")}</td></tr>`}
     h+=`</tbody></table></div>${open?teamCard(open,C):""}`;
   }
