@@ -1960,13 +1960,14 @@ window.tpBoard={boardOn,sbFromBoard,sbFromSlate,sbSort}; /* for the browser test
 /* GroupMe tab (commissioner only). One announcement at a time on the weekly rhythm: Preview, Picks live, Last call, Locked, Final and recap.
    Each card is drawn on a canvas as a 1080 px PNG (gmDraw), so the screen shows exactly the image that gets saved, shared, or copied.
    Posted marks save on the server in kv groupme (admin action gmPosted), so every device agrees. */
-const GM_KINDS={aw:["Award Watch","now, before the lock"],awr:["Award Watch last call","Monday, lock day"],awl:["Award Watch locked","after the Monday 10 PM lock"],pv:["Preview","Mon"],live:["Picks live","Wed 6 PM"],last:["Last call","Sat morning"],lock:["Locked","Sat 10:15 AM"],final:["Final and recap","Sunday"]};
+const GM_KINDS={aw:["Award Watch","now, before the lock"],awr:["Award Watch last call","Monday, lock day"],awl:["Award Watch locked","after the Monday 10 PM lock"],pv:["Preview","Mon"],live:["Picks live","Wed 6 PM"],fri:["Set your lineup","Fri"],last:["Last call","Sat morning"],lock:["Locked","Sat 10:15 AM"],final:["Final and recap","Sunday"]};
 /* Best time to post each card (Nov 12 timing plan): when this crowd has the phone out. Same times every week trains people to expect them. */
 const GM_BEST={awr:["Mon 12:15 PM","Lock day. Post it with the recap at lunch, which leaves the afternoon and evening before the 10 PM lock."],
   awl:["Tue 12:15 PM","Lunch the day most awards cut to three finalists, so the picks and the cut land together."],
   aw:["Thu 12:15 PM","A one-off. Lunch on a quiet day, so it does not share Wednesday night with Picks live. Gives four days before the Monday 10 PM lock."],
   pv:["Mon 12:15 PM","Lunch break, the one weekday slot most people check their phone. Optional: skip it most weeks."],
   live:["Wed 8:30 PM","Picks open at 6, but 6 is the drive home, dinner, and kids. Around 8:30 is couch time."],
+  fri:["Fri 12:15 PM","Lunch, a day before the games. Catches the planners before the weekend starts; Saturday's Last call catches the rest."],
   last:["Sat 8:15 AM","Up with coffee, before kids' activities take over. Leaves 2 hours before the 10:15 lock."],
   lock:["Sat 10:20 AM","Pregame. Everyone is on the phone before the 11 AM kickoffs and wants to see the picks. Best attention of the week."],
   final:["Sun 12:15 PM","After church or brunch, around the NFL kickoff. The week is usually final late Saturday, so the card is ready."]};
@@ -1979,6 +1980,8 @@ function gmQueue(){
   if(w&&w.status!=="draft"){const eff=w.status==="open"&&pastDeadline(w)?"locked":w.status;
     add("pv",w.id,w.week,false,true);
     add("live",w.id,w.week,eff==="open",eff!=="open");
+    /* Friday reminder (Benton, Nov 19): ready from Friday 12 AM CT (34 h 15 min before a Saturday 10:15 lock) until the lock. */
+    add("fri",w.id,w.week,eff==="open"&&NOW()>=Date.parse(w.deadline)-34.25*3600e3,eff!=="open");
     add("last",w.id,w.week,eff==="open",eff!=="open");
     add("lock",w.id,w.week,eff==="locked",eff==="final");
     add("final",w.id,w.week,eff==="final",false)}
@@ -1993,16 +1996,23 @@ function gmQueue(){
   {const A=AWD();if(A){const lk=Date.parse(A.lock),t=NOW(),open=t<lk,won=Object.keys(A.res||{}).length>0;
     const one=(kind,ready,stale)=>{const key=`${kind}:${A.season}`;return {key,kind,wid:null,wk:null,ready:!!ready&&!stale,stale:!!stale,at:posted[key]||null,label:GM_KINDS[kind][0],when:GM_KINDS[kind][1],sk:!!gmSkipped()[key]}};
     out.unshift(one("aw",open,!open),one("awr",open&&t>=lk-22*3600e3,!open),one("awl",!open,won))}}
-  if(up)for(const k of ["live","last","lock","final"])out.push({key:`${k}:${up.wid}`,kind:k,wid:up.wid,wk:up.wk,ready:false,stale:false,ahead:true,at:null,label:GM_KINDS[k][0],when:GM_KINDS[k][1],sk:false});
+  if(up)for(const k of ["live","fri","last","lock","final"])out.push({key:`${k}:${up.wid}`,kind:k,wid:up.wid,wk:up.wk,ready:false,stale:false,ahead:true,at:null,label:GM_KINDS[k][0],when:GM_KINDS[k][1],sk:false});
   return out}
 /* Prototype tabs (Bowl Blitz, Army-Navy) get no action dot for now (Benton, Nov 12). Set true to bring it back. */
 const PROTO_DOT=false;
 /* GroupMe dot: only on a posting day (Central time), only while a post that belongs to today is ready and not marked Posted.
    Wed: Picks live. Sat: Last call, then Locked once the lock passes. Sun: Final and recap. The optional Monday Preview never lights it. */
-const GM_DAY={live:3,last:6,lock:6,final:0};
+const GM_DAY={live:3,fri:5,last:6,lock:6,final:0};
 function gmDue(now=NOW()){const d=new Date(now).toLocaleString("en-US",{timeZone:TZ,weekday:"short"});const dow=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(d);
   return gmQueue().some(x=>x.ready&&!x.at&&(GM_DAY[x.kind]===dow||/^aw/.test(x.kind)))}
 function gmNext(){const Q=gmQueue().filter(x=>!x.ahead);return Q.find(x=>x.ready&&!x.at)||Q.find(x=>!x.stale&&!x.at)||{ready:false}}
+/* Special contests coming up soon, for the Friday reminder (Benton, Nov 19: remind them of any contest outside the standard picks).
+   Only real contests that are open and lock within 10 days. Add Army-Navy, Bowl Blitz, and the CFP bracket here once they are real. */
+function gmSoon(now=NOW()){const out=[];const A=AWD();
+  if(A&&awOpen()&&Date.parse(A.lock)-now<=10*864e5)out.push({ic:"🏆",label:"Award Watch",text:`Pick ${A.list.length} award winners on the Awards tab. ${A.n} in so far. Locks ${kick(A.lock)}.`});
+  return out}
+/* Whole days between two moments, by the Central calendar. */
+function gmDayGap(a,b){const d=x=>{const s=new Date(x).toLocaleDateString("en-CA",{timeZone:TZ});return Date.parse(s+"T00:00:00Z")};return Math.round((d(b)-d(a))/864e5)}
 /* Facts the cards share. Counts only before the lock, never sides. */
 function gmActive(){return (state.logins||[]).filter(a=>!a.removed)}
 function gmAlive(wid){const run=survRunOf(wid);if(!run)return null;const sb=survivorBoard(run);return sb?sb.filter(r=>r.pid!==BOT&&r.alive):null}
@@ -2021,8 +2031,9 @@ function gmTop(base){const c=new Map();let best=null;for(const k of base){const 
 const gmNames=ids=>ids.map(p=>nm(p)).join(", ").replace(/\.$/,"");
 /* "A and B", "A, B, and C" for the Final card lines. */
 const gmAnd=ids=>{const n=ids.map(p=>nm(p).replace(/\.$/,""));return n.length<3?n.join(" and "):n.slice(0,-1).join(", ")+", and "+n[n.length-1]};
-function gmGameRows(gs){return [...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");const fav=g.homeLine<0?hL:aL;
-  return {away:g.away,ar:g.awayRank>0&&g.awayRank<99?g.awayRank:"",ac:aL.c1,home:g.home,hr:g.homeRank>0&&g.homeRank<99?g.homeRank:"",hc:hL.c1,at:g.neutral?"vs":"at",line:g.homeLine===0?"PK":`${fav.abbr} ${fmtLine(-Math.abs(g.homeLine))}`}})}
+function gmKT(iso){const d=new Date(iso);if(isNaN(d))return "";return d.toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}).replace(":00","")}
+function gmGameRows(gs,o={}){return [...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");const fav=g.homeLine<0?hL:aL;
+  return {away:g.away,ar:g.awayRank>0&&g.awayRank<99?g.awayRank:"",ac:aL.c1,home:g.home,hr:g.homeRank>0&&g.homeRank<99?g.homeRank:"",hc:hL.c1,at:g.neutral?"vs":"at",line:(g.homeLine===0?"PK":`${fav.abbr} ${fmtLine(-Math.abs(g.homeLine))}`)+(o.time&&g.kickoff?` · ${gmKT(g.kickoff)}`:"")}})}
 /* One fun row per card, so posts stay fresh: leader watch, Computer watch, lone wolf, or the league's ATS record. Each card tries its list in order and uses the first fact that has data. */
 function gmFun(it,w){const strip=x=>String(x).replace(/\.$/,"");
   const leader=()=>{const R=seasonTally(false).rows.filter(r=>r.cpts>0);if(!R.length)return null;const top=R.filter(r=>r.cpts===R[0].cpts);
@@ -2037,7 +2048,7 @@ function gmFun(it,w){const strip=x=>String(x).replace(/\.$/,"");
     return ["🐺","Lone wolf",`${strip(nm(pid))} is the only one on ${gmTeam(g,sd)} ${gmLine(g,sd)}.`]};
   const weekRobo=()=>{const b=botPicks(w);const ps=weekPlayers(w.id);const n=Object.keys(ps).length;if(!b||!n)return null;const rs=scoreWeek(w,b);const beat=Object.values(ps).filter(p=>scoreWeek(w,p).pts>rs.pts).length;
     return ["🤖","Computer watch",`The Computer went ${rs.w}-${rs.l} for ${rs.pts} pts. ${beat} of ${n} pickers beat it.`]};
-  const order={pv:[leader,pct],live:[leader,pct],last:[pct,robo,leader],lock:[wolf,robo],final:[weekRobo,pct]}[it.kind]||[];
+  const order={pv:[leader,pct],live:[leader,pct],fri:[leader,pct,robo],last:[pct,robo,leader],lock:[wolf,robo],final:[weekRobo,pct]}[it.kind]||[];
   for(const f of order){try{const r=f();if(r)return r}catch(e){}}return null}
 /* The card as plain data: kicker, title, sub, rows ({ic, label, text}; ic "GP" draws the goalpost), games, foot. Text only, no HTML. */
 function gmModel(it){
@@ -2080,6 +2091,14 @@ function gmModel(it){
       if(gmRunFirst(w))row("💀",`Survivor Run ${run.n} starts!`,conf?"Everyone is back in! New twist: each pick burns its whole conference for the rest of the run. 🔥":"Everyone is back in! One team against the spread. No team twice.","purple");
       else row("💀","Survivor",gmRunLast(w)?`Last week of this run! ${al.length} still alive. Survive and you share it.`:`${al.length} still alive. ${conf?"Pick from a conference you haven't burned.":"One team against the spread."}`,"purple")}}
     M.games=gmGameRows(w.games);M.foot="Lines are final. Get your picks in."}
+  else if(it.kind==="fri"){const act=gmActive(),ids=new Set(act.map(a=>a.id));const inn=(state.sheetsIn||[]).filter(id=>ids.has(id)).length;const al=gmAlive(w.id);
+    const first=[...w.games].map(g=>g.kickoff).filter(Boolean).sort()[0],dd=gmDayGap(NOW(),first);
+    const when=dd<=0?"today":dd===1?"tomorrow":new Date(first).toLocaleDateString("en-US",{timeZone:TZ,weekday:"long"});const all=act.length&&inn>=act.length;
+    M.kick=`Week ${w.week} · Games ${when}`;M.title=all?"Everyone's in!":"Set your lineup";M.sub=`Lock: ${kick(w.deadline)}`;
+    row("📝","Sheets in",all?`All ${inn} in. Sit back and enjoy the games. Change picks any time before the lock.`:`${inn} of ${act.length}. Games are ${when}. Take a look and make your picks.`,all?"green":"gold");
+    if(al)row("💀","Survivor",`${al.length} still alive. Don't forget your Survivor pick.`,"purple");
+    for(const c of gmSoon())row(c.ic,c.label,c.text,"blue");
+    M.games=gmGameRows(w.games,{time:true});M.foot=all?"Kickoff times are Central.":"Make your picks in the app. Times are Central."}
   else if(it.kind==="last"){const act=gmActive(),ids=new Set(act.map(a=>a.id));const inn=(state.sheetsIn||[]).filter(id=>ids.has(id)).length;const al=gmAlive(w.id);
     M.title="Last call";M.sub=`Lock: ${kick(w.deadline)}`;
     row("📝","Sheets in",`${inn} of ${act.length}. ${pastDeadline(w)?"Picks are locked.":countdownText(w)+"."}`);
@@ -2114,7 +2133,8 @@ function gmModel(it){
     /* Six fact rows plus the fun row is the most that fits an iPhone screen, so the recap line drops on a crowded week. */
     if(f&&M.rows.length<6)row("📣","From the recap",strip(f.title));
     M.foot="Full recap on the Recap tab! 👉"}
-  const fn=gmFun(it,w);if(fn)M.rows.push({ic:fn[0],label:fn[1],text:fn[2],fun:true});
+  /* The Friday card drops its fun row when a contest row shows, so the slate still fits the iPhone height. */
+  const fn=it.kind==="fri"&&gmSoon().length?null:gmFun(it,w);if(fn)M.rows.push({ic:fn[0],label:fn[1],text:fn[2],fun:true});
   return M}
 /* Plain text of the card, for a caption or a text-only post. GroupMe allows 1,000 characters. */
 function gmText(M){const L=[`🏈 ${M.league.toUpperCase()} · ${M.kick.toUpperCase()}`,M.title.toUpperCase(),M.sub,""];
@@ -2188,7 +2208,7 @@ function gmDraw(ctx,M,H){const W=GM_W,cx=W/2,C=GM_C,F=GM_F;ctx.textAlign="center
   ctx.font=`700 17px ${F.cond}`;const fl=gmWrap(ctx,M.foot.toUpperCase(),W-48);const fh=20+fl.length*22+10;ctx.fillStyle=C.board;ctx.fillRect(0,y,W,fh);
   ctx.fillStyle=C.gold;fl.forEach((l,i)=>ctx.fillText(l,cx,y+34+i*22-6));
   return y+fh}
-window.tpGM={gmDraw,GM_W,GM_MAXH,gmModel,gmSurvLine,gmIds:()=>Object.keys(PLAYERS).filter(p=>p!==BOT),weekIds:()=>Object.keys(state.weeks).sort(),wk:id=>state.weeks[id]&&state.weeks[id].week}; /* for the browser test */
+window.tpGM={gmSoon,gmDraw,GM_W,GM_MAXH,gmModel,gmSurvLine,gmIds:()=>Object.keys(PLAYERS).filter(p=>p!==BOT),weekIds:()=>Object.keys(state.weeks).sort(),wk:id=>state.weeks[id]&&state.weeks[id].week}; /* for the browser test */
 async function gmPaint(M,sig){
   try{await Promise.all([`400 30px "Graduate"`,`700 18px "Barlow Condensed"`,`600 12px "Barlow Condensed"`,`500 16px "Barlow"`,`600 15px "Barlow"`].map(f=>document.fonts&&document.fonts.load(f))).catch(()=>{})}catch(e){}
   const scratch=document.createElement("canvas");scratch.width=10;scratch.height=10;const H=Math.ceil(gmDraw(scratch.getContext("2d"),M,0));
@@ -2556,6 +2576,8 @@ const DEMOS=[
    about:"The Award Watch card drawn now and shown as the pop-up. The real one shows what you posted, at the moment you tapped Posted.",run:()=>gcDemo("aw")},
   {key:"gc-awr",group:"Latest GroupMe card on open (item 66)",title:"Award Watch last call",
    about:"Monday's last call card as the pop-up. Drawn now, so the counts are today's.",run:()=>gcDemo("awr")},
+  {key:"gc-fri",group:"Latest GroupMe card on open (item 66)",title:"Set your lineup (Friday)",
+   about:"The Friday reminder as the pop-up, while a week is open: sheets in, Survivor, any special contest locking soon, and the slate with kickoff times.",run:()=>gcDemo("fri")},
   {key:"gc-final",group:"Latest GroupMe card on open (item 66)",title:"Final and recap",
    about:"The Final card for the current week as the pop-up, if the week is final. A picker with a fresh sealed sheet never gets this card: the sealed sheet wins.",run:()=>gcDemo("final")},
   {key:"gc-live",group:"Latest GroupMe card on open (item 66)",title:"Picks live",
@@ -2649,7 +2671,7 @@ function gcExpired(c,now=NOW()){if(now-Date.parse(c.at)>8*864e5)return true;cons
     case "aw":case "awr":return !awOpen();
     case "awl":return !AWD()||Object.keys(AWD().res||{}).length>0;
     case "pv":return !!w&&w.status!=="draft";
-    case "live":case "last":return !w||w.status!=="open"||pastDeadline(w);
+    case "live":case "fri":case "last":return !w||w.status!=="open"||pastDeadline(w);
     case "lock":return !w||w.status==="final";
     case "final":return !w||Object.values(W).some(x=>x.id>c.wid&&x.status!=="draft");
     default:return true}}

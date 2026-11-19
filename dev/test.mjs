@@ -1099,6 +1099,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const ms = await st(m);
     check("before the lock a picker gets the count but nobody else's picks", ms.n === 2 && ms.picks === undefined && ms.entered === undefined, JSON.stringify(ms));
     await re(c);
+    check("the Friday reminder mentions Award Watch while it is open", (await c.evaluate(() => window.tpGM.gmSoon().map((x) => x.label).join())) === "Award Watch");
     check("the commissioner sees who is in, with counts, never names picked", /Commish: who is in/.test(await c.textContent("#v-awards")) && Object.values((await st(c)).entered).sort().join() === "2,2");
     await c.evaluate(() => (location.hash = "#groupme")); await c.waitForSelector("#gmCard");
     const gq = await c.evaluate(() => { const q = window.tpRecap.gmQueue(); return { first: q[0].kind, ready: q[0].ready, next: window.tpRecap.gmNext().kind }; });
@@ -1117,6 +1118,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     if (process.env.SHOT) { await c.waitForTimeout(600); await c.screenshot({ path: process.env.SHOT + "/aw-gm.png", fullPage: true }); }
     // Lock it.
     await adm({ action: "award", lock: new Date(Date.now() - 60000).toISOString() });
+    await re(c); check("after its lock Award Watch drops off the Friday reminder", (await c.evaluate(() => window.tpGM.gmSoon().length)) === 0);
     check("a save after the lock is refused (423)", (await save(m, { heis: "CJ Carr" })) === 423);
     await re(m); await m.evaluate(() => window.tpRecap.render());
     const vals = await m.evaluate(() => [...document.querySelectorAll('#v-awards [data-aw="heis"] .awv')].map((x) => x.textContent));
@@ -1185,6 +1187,22 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const h = gmDraw(cv.getContext("2d"), { league: "Tator's Picks", kick: "Week 11", title: "Picks are live", sub: "Lock: Sat 10:15 AM CT", rows, games, foot: "Lines are final. Get your picks in." }, 0);
     return { h: Math.ceil(h), max: GM_MAXH, w: GM_W }; });
   check("a full 10 game Picks live card still fits an iPhone screen", gmWorst.h <= gmWorst.max, JSON.stringify(gmWorst));
+  // ---- Friday reminder (Nov 19) ----
+  const gmFri = await c.evaluate(() => { const { gmDraw, GM_MAXH } = window.tpGM; const cv = document.createElement("canvas");
+    const games = Array.from({ length: 10 }, (_, i) => ({ away: "Mississippi State", ar: 21 + i % 4, ac: "#660000", home: "North Carolina State", hr: 12, hc: "#cc0000", at: "at", line: "NCST −10.5 · 11:30 AM" }));
+    const rows = [["📝", "Sheets in", "9 of 14. Games are tomorrow. Take a look and make your picks.", "gold"], ["💀", "Survivor", "12 still alive. Don't forget your Survivor pick.", "purple"], ["🏆", "Award Watch", "Pick 6 award winners on the Awards tab. 11 in so far. Locks Mon 10:00 PM CT.", "blue"]].map(([ic, label, text, tone, fun]) => ({ ic, label, text, tone, fun: !!fun }));
+    const h = gmDraw(cv.getContext("2d"), { league: "Tator's Picks", kick: "Week 12 · Games tomorrow", title: "Set your lineup", sub: "Lock: Sat 10:15 AM CT", rows, games, foot: "Make your picks in the app. Times are Central." }, 0);
+    return { h: Math.ceil(h), max: GM_MAXH }; });
+  check("a full Friday card with the slate and a contest still fits an iPhone screen", gmFri.h <= gmFri.max, JSON.stringify(gmFri));
+  const fri = await c.evaluate(() => { const T = window.tpRecap, S = T.state, G = window.tpGM; const wid = T.curWeek().id, w = S.weeks[wid], keep = { status: w.status, deadline: w.deadline };
+    const now = Date.now(); w.status = "open"; w.deadline = new Date(now + 20 * 3600e3).toISOString();
+    const q1 = T.gmQueue().filter((x) => x.wid === wid).map((x) => x.kind + (x.ready ? "+" : "")).join();
+    const M = G.gmModel({ kind: "fri", wid, wk: w.week, key: "fri:" + wid });
+    w.deadline = new Date(now + 40 * 3600e3).toISOString(); const early = T.gmQueue().find((x) => x.key === "fri:" + wid).ready;
+    w.status = keep.status; w.deadline = keep.deadline;
+    return { q1, kick: M.kick, title: M.title, rows: M.rows.map((r) => r.label), line: (M.games[0] || {}).line, early }; });
+  check("the Friday reminder sits between Picks live and Last call and is ready on lock eve", /live\+,fri\+,last\+/.test(fri.q1) && fri.early === false, JSON.stringify(fri));
+  check("the Friday card says games are coming, counts sheets, and puts kickoff times on the slate", /^Week \d+ · Games /.test(fri.kick) && fri.rows[0] === "Sheets in" && / · \d{1,2}(:\d\d)? (AM|PM)$/.test(fri.line || ""), JSON.stringify(fri));
   // ---- Final card (Nov 15): colored rows, confetti, Survivor wording ----
   const gmFinal = await c.evaluate(() => { const { gmDraw, GM_MAXH } = window.tpGM; const cv = document.createElement("canvas");
     const rows = [["🏆", "Weekly winner", "Christopher Montgomery takes the belt with 10 points! 🥇", "gold"], ["GP", "Field goals", "9 of 16 split the uprights! 🙌", "green"],
@@ -1259,7 +1277,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
         const rows = [...document.querySelectorAll("#v-groupme .gmq li")].map((li) => (li.classList.contains("ahead") ? "A:" : "") + li.textContent);
         const out = { kinds: Q.map((x) => x.kind + (x.ahead ? "*" : "")).join(","), next: nx.kind, rows, open: document.querySelectorAll("#v-groupme .gmq li.ahead button").length, note: /draw once picks open/.test(document.querySelector("#v-groupme").textContent) };
         wk.status = keep.st; S.preview = keep.pv; T.renderGM(); return out; });
-      check("a draft week lists Picks live, Last call, Locked, and Final ahead with best times", ah.kinds.replace(/^(aw\w*,)+/, "") === "pv,live*,last*,lock*,final*" && ah.next === "pv" && ah.open === 0 && ah.note && ah.rows.filter((r) => r.startsWith("A:")).length === 4 && ah.rows.some((r) => /Picks live.*Wed 8:30 PM/.test(r)), JSON.stringify(ah));
+      check("a draft week lists Picks live, Set your lineup, Last call, Locked, and Final ahead with best times", ah.kinds.replace(/^(aw\w*,)+/, "") === "pv,live*,fri*,last*,lock*,final*" && ah.next === "pv" && ah.open === 0 && ah.note && ah.rows.filter((r) => r.startsWith("A:")).length === 5 && ah.rows.some((r) => /Picks live.*Wed 8:30 PM/.test(r)), JSON.stringify(ah));
     }
     { const sk = c.locator('#v-groupme [data-gm="skip"]'); await sk.scrollIntoViewIfNeeded(); await c.evaluate(() => window.scrollBy(0, -220)); await c.screenshot({ path: "dev/test-gmskip.png" }); }
     check("a gray Skipped button sits under Posted", await c.evaluate(() => { const p = document.querySelector('#v-groupme [data-gm="post"]'), s = document.querySelector('#v-groupme [data-gm="skip"]'); return !!p && !!s && s.textContent === "Skipped" && s.getBoundingClientRect().top > p.getBoundingClientRect().bottom - 1; }));
