@@ -204,7 +204,7 @@ export default async function handler(req, res) {
       case "robo": {
         const cfg = await getConfig();
         if (b.backfill) {
-          // Weeks with no Robo-Sharp inputs get them now. An open week uses today's market lines and ratings.
+          // Weeks with no Computer inputs get them now. An open week uses today's market lines and ratings.
           // A locked or final week uses the line saved last before each kickoff (the close) and the ratings
           // saved with that week if they hold SP+ or VSiN, else today's. Both are after the fact, and the note says so.
           const now = Date.now();
@@ -230,7 +230,7 @@ export default async function handler(req, res) {
             await putWeek(w);
             done.push(w.week);
           }
-          if (done.length) await addLog(BY, "Updated Robo-Sharp", `Saved its inputs for Week ${done.join(", ")}`);
+          if (done.length) await addLog(BY, "Updated the Computer", `Saved its inputs for Week ${done.join(", ")}`);
           return send(res, 200, { ok: true, weeks: done });
         }
         return fail(res, 400, "Nothing to change.");

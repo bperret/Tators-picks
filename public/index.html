@@ -998,17 +998,17 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>After 10 wrong PINs in a row, that number pauses for 15 minutes. Text the commissioner if you need in sooner.</li>
         <li>Your cell number is never shown to other pickers.</li>
       </ul></details>
-      <details><summary class="rh">Robo-Sharp</summary>
+      <details><summary class="rh">The Computer</summary>
       <ul id="roboRulesNew">
-        <li>Robo-Sharp is the league's computer picker. It plays every week and cannot win anything. Beat the bot.</li>
+        <li>The Computer is the league's robot picker. It plays every week and cannot win anything. Beat the Computer.</li>
         <li><b>Its line.</b> It blends three computer power ratings (SP+, FPI, and VSiN) into one line of its own.</li>
-        <li><b>The market.</b> Our lines freeze Wednesday night. The betting market keeps moving. When the market moves away from our line, Robo-Sharp takes the side our line now gives value. It trusts the market more than the ratings.</li>
+        <li><b>The market.</b> Our lines freeze Wednesday night. The betting market keeps moving. When the market moves away from our line, the Computer takes the side our line now gives value. It trusts the market more than the ratings.</li>
         <li><b>How sure it is.</b> Each game shows Coin flip, Slight lean, Leans, or Heavy lean, from how likely it thinks its side is to cover. Even a Heavy lean loses plenty.</li>
         <li><b>Field goal.</b> It kicks on the game it likes most where all three ratings agree.</li>
         <li><b>Survivor.</b> It takes the team most likely to cover among the teams it can still use. In Run 2 it follows the conference lock like everyone else.</li>
         <li><b>Tiebreaker.</b> It guesses the betting total.</li>
-        <li><b>Picks can change until the lock.</b> What it shows at the lock is what it plays. If it changes a side after picks open, the game shows a Robo flip alert.</li>
-        <li>Robo-Sharp shows in the standings where its score lands, but it takes no rank and cannot win a week, a trophy, Survivor, or the season. If it finishes on top, the best picker wins.</li>
+        <li><b>Picks can change until the lock.</b> What it shows at the lock is what it plays. If it changes a side after picks open, the game shows a Computer flip alert.</li>
+        <li>The Computer shows in the standings where its score lands, but it takes no rank and cannot win a week, a trophy, Survivor, or the season. If it finishes on top, the best picker wins.</li>
       </ul></details>
       <details><summary class="rh">Survivor</summary>
       <ul>
@@ -1041,7 +1041,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>One game on Saturday, December 12. It stands alone and is straight up. The spread shows for information only.</li>
         <li>Enter a predicted final score and a predicted halftime score before the lock.</li>
         <li>The winner is decided in this order: the correct game winner, then the closest final score, then the closest halftime score. Exact ties share. Closest means the fewest points off, adding the miss on each team's score.</li>
-        <li>It earns its own career stat. It adds no season points, no weekly win, and has no field goal. It does not affect Iron Man. Robo-Sharp plays but cannot win.</li>
+        <li>It earns its own career stat. It adds no season points, no weekly win, and has no field goal. It does not affect Iron Man. The Computer plays but cannot win.</li>
       </ul>
       <h3 class="rh">Bowl challenge</h3>
       <ul>
@@ -1049,7 +1049,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Choose any 10 bowls and pick them against the spread. Each correct pick is 1 point. Kick one field goal, worth 3 if it covers. A blank pick scores 0.</li>
         <li>One lock covers the contest: Tuesday, December 15, before the first kickoff. Lines are set once after December 6. A void game scores for nobody and cannot be replaced after the lock.</li>
         <li>Tiebreaker: everyone guesses the total points in one fixed bowl, picked or not. It is the bowl with the highest ranked AP teams.</li>
-        <li>Robo-Sharp takes its 10 biggest edges, shows with no rank, and cannot win. Its picks stay hidden until the lock.</li>
+        <li>The Computer takes its 10 biggest edges, shows with no rank, and cannot win. Its picks stay hidden until the lock.</li>
       </ul>
       <h3 class="rh">CFP bracket</h3>
       <ul>
@@ -1068,7 +1068,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Conference Champion Week wins are their own career stat and do not count as weekly wins. Army-Navy wins are their own career stat too.</li>
         <li>Career wins count from Week 9 of 2026. A win shared with another picker also counts as a Co-Champion credit.</li>
         <li>Beat the close compares the line when picks opened to the last line saved before kickoff. If the line moved toward your side, you beat the close, even if your pick lost. Late picks count. Games where the line never moved do not count.</li>
-        <li>Robo-Sharp appears in Beat the close with no rank. It has no career record.</li>
+        <li>The Computer appears in Beat the close with no rank. It has no career record.</li>
         <li>Your weekly rival is the picker just above you in the season standings as the week starts. The leader's rival is the picker right behind. Rivals are for fun and count for nothing.</li>
         <li>Iron Man (&#x1F9BE;): you picked every game before the lock, every week from your first week on. The tiebreaker and Survivor do not count. Conference Champion Week counts. Army-Navy, bowls, and the CFP bracket do not. A void game does not count against you. One missed game or week ends it for the season.</li>
         <li>A full season Iron Man starts in the season's first week and runs through Conference Champion Week. It stays on your Pickers page. If you start later, you can hold the status but not the full season.</li>
@@ -1084,7 +1084,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
         <li>Army-Navy pays 1%. Winners who tie exactly split it.</li>
         <li>Ties split the combined prizes for the tied places. If two pickers tie for 1st, they split 1st and 2nd.</li>
         <li>Everyone who wins a Survivor run together splits that run's prize.</li>
-        <li>Robo-Sharp cannot win money. Its prize goes to the next best picker.</li>
+        <li>The Computer cannot win money. Its prize goes to the next best picker.</li>
         <li>Starting in 2027, buy-ins are due before Week 1.</li>
       </ul>
       <h3 class="rh">What would I win?</h3>
@@ -1171,8 +1171,8 @@ function liveGap(){return (state.config&&state.config.liveRun&&state.config.live
 function curWeek(){return state.weeks[currentWeekId()]||null}
 function removed(){return (state.config&&state.config.removed)||[]}
 const canon=n=>ALIAS[String(n).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"")]||n;
-const nm=id=>id===BOT?"Robo-Sharp":(state.names[id]||"Picker");
-const first=id=>id===BOT?"Robo-Sharp":nm(id); /* Full names everywhere (Benton, Nov 12); kept as a helper so callers stay the same. */
+const nm=id=>id===BOT?"The Computer":(state.names[id]||"Picker");
+const first=id=>id===BOT?"The Computer":nm(id); /* Full names everywhere (Benton, Nov 12); kept as a helper so callers stay the same. */
 
 /* ---------- app layer: talks to the Tator's Picks server ---------- */
 let SERVER_OFFSET=0,PLAYERS={},ME=null,POLL=null;
@@ -1204,7 +1204,7 @@ function chip(pid,big){if(pid===BOT)return `<span class="pchip bot${big?" big":"
 // Field goal icon: a goalpost (base post, crossbar, two uprights). No emoji exists for it.
 const GP='<svg class="gp" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 23v-10M3 13h18M3 13V1.5M21 13V1.5"/></svg>';
 function tag(pid,lk){const a=accByUid(pid);const st=a&&a.c1?` style="background:${a.c1};color:${inkFor(a.c1)};box-shadow:inset 0 -3px 0 ${a.c2}"`:"";return `<span class="ptag${lk?" lk":""}"${st}>${lk?GP:""}${a&&a.emoji?a.emoji+" ":""}${esc(first(pid))}</span>`}
-function talkLine(pid){if(pid===BOT)return '<p class="talk">Robo-Sharp blends three computer ratings with the betting market, kicks its field goal where all three agree, guesses the betting total, and takes its surest cover in Survivor. Its picks are final at the lock. Beat the bot.</p>';return ""}
+function talkLine(pid){if(pid===BOT)return '<p class="talk">The Computer blends three power ratings with the betting market, kicks its field goal where all three agree, guesses the betting total, and takes its surest cover in Survivor. Its picks are final at the lock. Beat the Computer.</p>';return ""}
 function emBtn(pre,a,e,label){return `<button type="button" class="emb" data-pick="${pre}:emoji" data-val="${e}" aria-pressed="${a.emoji===e}"${label?` title="${esc(label)}" aria-label="${esc(label)}"`:""}>${e}</button>`}
 function lookPicker(pre,a,noPrev){
   const teamEm=[];const seen=new Set();Object.keys(TEAMS).sort().forEach(n=>{const e=TEAMS[n][3];if(e&&!seen.has(e)){seen.add(e);teamEm.push([e,n])}});
@@ -1532,7 +1532,7 @@ document.addEventListener("click",e=>{if(e.target.closest(".gotile"))state.toTop
 const BOT="bot";
 const baseChip=pid=>pid===BOT?'<span class="pchip bot" aria-hidden="true">\ud83e\udd16</span>':"";
 function modelSide(g){if(typeof g.modelLine!=="number")return null;const e=g.modelLine-g.homeLine;if(e>0)return "away";if(e<0)return "home";return g.homeLine<0?"away":"home"}
-/* Robo-Sharp. Two versions, picked per week by roboMode(w):
+/* The Computer. Two versions, picked per week by roboMode(w):
    "old": the FPI line alone. Model side in every game, field goal on the biggest gap, the betting total
    as its tiebreaker, and in Survivor the biggest gap on a team it has not used.
    "new" (the week has saved inputs in w.robo; permanent since Nov 6, no switch): blends three ratings with the
@@ -1553,13 +1553,13 @@ function roboEval(g,inp){
   const cons=M.length?Math.round(M.reduce((t,x)=>t+x[1],0)/M.length*10)/10:null;
   const em=cons!=null?cons-L:null,ek=mkt!=null?mkt-L:null;
   let s=em!=null&&ek!=null?ROBO_W.mkt*ek+ROBO_W.model*em:em!=null?em:ek;
-  /* Key numbers: Robo's fair line crossing 3, 7, 10, or 14 past the league line adds a little. */
+  /* Key numbers: the Computer's fair line crossing 3, 7, 10, or 14 past the league line adds a little. */
   if(s){const fair=L+s;for(const [k,wt] of ROBO_KEYS)for(const kk of [k,-k])if((L<kk&&kk<fair)||(fair<kk&&kk<L))s+=Math.sign(s)*wt}
   s=Math.round(s*100)/100;
   const side=s>0?"away":s<0?"home":(L<0?"away":"home");const sg=side==="away"?1:-1;
   const agree=M.filter(x=>Math.sign(x[1]-L)===sg).length;
   return {side,s,p:normCdf(Math.abs(s)/ROBO_W.sd),agree,n:M.length,cons,mkt,ek,em,models:M}}
-/* How strongly Robo-Sharp feels, from its cover chance. The label shows; the percent stays in Commish. */
+/* How strongly the Computer feels, from its cover chance. The label shows; the percent stays in Commish. */
 /* Cuts by edge in points, as cover chances: 2 pts = 55.9%, 1.25 = 53.7%, 0.5 = 51.5%. The blend shrinks edges, so the cuts sit low. */
 const ROBO_BANDS=[[0.559,"heavy","Heavy lean"],[0.537,"lean","Leans"],[0.515,"slight","Slight lean"],[0,"flip","Coin flip"]];
 function roboBand(p){return ROBO_BANDS.find(b=>p>=b[0])}
@@ -1586,13 +1586,13 @@ function botPicks(w,mode,which){if(!w)return null;const force=mode;mode=mode||ro
 function botSurv(w,force){const run=survRunOf(w.id);if(!run)return null;const used=new Set(),burned=new Set();
   for(const wid of Object.keys(state.weeks).sort()){if(wid>=w.id)continue;const r=survRunOf(wid);if(!r||r.n!==run.n)continue;const pw=state.weeks[wid];const s=pw&&botSurvPick(pw,used,force,run.rule==="conf"?burned:null);if(s){const g=pw.games.find(x=>x.id===s.g);const t=s.s==="home"?g.home:g.away;used.add(canon(t));burned.add(survConf(t))}}
   return botSurvPick(w,used,force,run.rule==="conf"?burned:null)}
-/* Conference lock for Robo-Sharp: a team is blocked when its conference is burned; if nothing on the slate is legal, any team is (free pick). */
+/* Conference lock for the Computer: a team is blocked when its conference is burned; if nothing on the slate is legal, any team is (free pick). */
 function survBlockFn(w,used,burned){if(!burned)return t=>used.has(canon(t));const anyLegal=(w.games||[]).some(g=>!burned.has(survConf(g.home))||!burned.has(survConf(g.away)));return anyLegal?t=>burned.has(survConf(t)):()=>false}
 function botSurvPick(w,used,force,burned){const mode=force==="old"||force==="new"?force:roboMode(w);const blocked=survBlockFn(w,used,burned);
   if(mode==="new"){const E=roboEvals(w);const b=roboBest((w.games||[]).filter(g=>E[g.id]&&!blocked(E[g.id].side==="home"?g.home:g.away)).map(g=>({g,e:E[g.id]})));return b?{g:b.g.id,s:b.e.side}:null}
   const opts=(w.games||[]).map(g=>({g,s:modelSide(g),e:typeof g.modelLine==="number"?Math.abs(g.modelLine-g.homeLine):0})).filter(o=>o.s&&!blocked(o.s==="home"?o.g.home:o.g.away));
   opts.sort((a,b)=>b.e-a.e||a.g.slot-b.g.slot);return opts[0]?{g:opts[0].g.id,s:opts[0].s}:null}
-/* Flip alert: games where Robo-Sharp's side now differs from its side when picks opened. */
+/* Flip alert: games where the Computer's side now differs from its side when picks opened. */
 function roboFlips(w){if(roboMode(w)!=="new"||!w.robo.first||w.robo.first===w.robo.last)return [];
   const a=botPicks(w,"new","first"),b=botPicks(w,"new","last");if(!a||!b)return [];
   return (w.games||[]).filter(g=>a.sel[g.id]&&b.sel[g.id]&&a.sel[g.id]!==b.sel[g.id]).map(g=>({g,from:a.sel[g.id],to:b.sel[g.id]}))}
@@ -1701,7 +1701,7 @@ function anField(){const ln=anLine(),P=AN_FAKE.map((name,i)=>{const r=k=>bwHash(
     return {id:"f"+i,name,fa,fn,ha:Math.floor(fa*(.3+r("h")*.3)),hn:Math.floor(fn*(.3+r("i")*.3))}});
   const d=state.an;if(anDone())P.push({id:"me",name:"You",fa:+d.fa,fn:+d.fn,ha:+d.ha,hn:+d.hn});
   let rn=Math.round((AN_TOTAL-ln)/2),ra=Math.round(AN_TOTAL)-rn;if(ra===rn)ln<0?rn++:ra++;
-  P.push({id:BOT,name:"Robo-Sharp",fa:ra,fn:rn,ha:Math.floor(ra*.45),hn:Math.floor(rn*.45)});return P}
+  P.push({id:BOT,name:"The Computer",fa:ra,fn:rn,ha:Math.floor(ra*.45),hn:Math.floor(rn*.45)});return P}
 function anTable(P,ph){const R=anResult(ph);
   const rows=P.map(p=>{const hm=Math.abs(p.ha-R.half.a)+Math.abs(p.hn-R.half.n);if(!R.fin)return {...p,hm,ok:null,fm:null};
     const ok=(p.fa>p.fn)===(R.fin.a>R.fin.n);return {...p,hm,ok,fm:Math.abs(p.fa-R.fin.a)+Math.abs(p.fn-R.fin.n)}});
@@ -1710,7 +1710,7 @@ function anTable(P,ph){const R=anResult(ph);
     return `<tr class="${r.id==="me"?"me":""}"><td>${shown}</td><td>${r.id===BOT?"🤖 ":""}${esc(r.name)}</td><td class="n">${r.ha}-${r.hn}</td><td class="n">${r.fa}-${r.fn}</td>${R.fin?`<td class="n">${r.ok?"✓":"✗"}</td><td class="n">${r.fm}</td>`:""}<td class="n">${r.hm}</td></tr>`}).join("");
   return `<h3 class="rh">${R.fin?"Final standings":"At halftime"}</h3><p class="bwfin">${R.fin?`Final: Army ${R.fin.a}, Navy ${R.fin.n} · `:""}Halftime: Army ${R.half.a}, Navy ${R.half.n}</p>
     <table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Half</th><th class="n">Final</th>${R.fin?'<th class="n">Win</th><th class="n">Off</th>':""}<th class="n">Half off</th></tr></thead><tbody>${body}</tbody></table>
-    <p class="note">Scores are Army first, then Navy. Sample pickers and a made-up result. ${R.fin?"Order: the right winner, then the fewest points off the final, then the fewest off halftime. Exact ties share.":"Nobody wins at halftime. The final decides it."} Robo-Sharp plays unranked and cannot win.</p>`}
+    <p class="note">Scores are Army first, then Navy. Sample pickers and a made-up result. ${R.fin?"Order: the right winner, then the fewest points off the final, then the fewest off halftime. Exact ties share.":"Nobody wins at halftime. The final decides it."} The Computer plays unranked and cannot win.</p>`}
 /* Army-Navy is dressed up on purpose: flag hero, team colors, Salute to Service, and traditions. No academy or branch marks, emoji and text only. */
 const AN_BRANCH=[["\u{1FA96}","Army","1775"],["⚓","Navy","1775"],["\u{1F985}","Marine Corps","1775"],["\u{1F6DF}","Coast Guard","1790"],["✈️","Air Force","1947"],["\u{1F680}","Space Force","2019"]];
 const AN_TRAD=[["\u{1F941}","The March On","Before kickoff, the Corps of Cadets and the Brigade of Midshipmen march onto the field."],
@@ -1754,7 +1754,7 @@ document.addEventListener("input",e=>{const m=/^an-(fa|fn|ha|hn)$/.exec(e.target
    The award list, your picks, the lock, and the winners come from the server in state.awards (lib/awards.js). Picks save by name.
    League contrarian scoring: a right pick is worth pickers who picked that award ÷ pickers who took the winner, so a lone right call
    pays the whole room and a pick everyone shared pays 1. Wrong or blank is 0. Splits and values show only after the lock.
-   Robo-Sharp takes the top pick (listed first), plays unranked, and never counts toward anyone's value. */
+   The Computer takes the top pick (listed first), plays unranked, and never counts toward anyone's value. */
 const AWD=()=>state.awards||null;
 const AW_LIST_=()=>(AWD()&&AWD().list)||[];
 const awOpen=()=>{const A=AWD();return !!A&&NOW()<Date.parse(A.lock)};
@@ -1797,14 +1797,14 @@ function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";retur
   if(!pre&&nRes&&P.length){const Sc=awScore(P,R).sort((x,y)=>y.pts-x.pts||y.hits-x.hits);let rk=0,prev=null;
     const robo=L.reduce((t,a)=>t+(R[a.k]===0?awVal(awSplit(P,a.k,a.c.length),0):0),0);
     h+=`<h3 class="rh">${fin?"Final standings":"Standings so far"}</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th></tr></thead><tbody>${Sc.map((r,i)=>{if(r.pts!==prev){rk=i+1;prev=r.pts}return `<tr class="${r.id===state.uid?"me":""}"><td>${rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td></tr>`}).join("")}
-      <tr><td>—</td><td>🤖 Robo-Sharp (all top picks)</td><td class="n">${L.filter(a=>R[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td></tr></tbody></table>
+      <tr><td>—</td><td>🤖 The Computer (all top picks)</td><td class="n">${L.filter(a=>R[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td></tr></tbody></table>
       <p class="note">Exact ties share.</p>`}
   h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul>
       <li>Pick one winner for each of the ${L.length} awards before the lock. Tap again to clear a pick. You can change picks until the lock.</li>
       <li>A right pick is worth the number of pickers who picked that award ÷ the number who took that winner. If you are the only one of 12 on him, that is 12 points. If all 12 had him, everyone gets 1.</li>
       <li>A wrong or blank pick is 0. Most points wins. Exact ties share. Just for fun: no season points, no payout.</li>
       <li>Values show after the lock, so nobody can chase the room. A player cut from the finalists on Nov 24 can no longer win.</li>
-      <li>Robo-Sharp takes the top pick every time (the betting favorite for the Heisman). It plays unranked and cannot win.</li></ul></div>
+      <li>The Computer takes the top pick every time (the betting favorite for the Heisman). It plays unranked and cannot win.</li></ul></div>
     ${info("awproto",`Each list is the projected top 10 as of Nov 18, most likely first. Sources: the semifinalist lists (Bednarik Nov 10, Biletnikoff Nov 16, Davey O'Brien and Doak Walker Nov 17), Heisman prediction markets and sportsbooks (Nov 15 to 17), Coach of the Year coverage, and season stats. The awards show date is Dec 10 per the Maxwell Award's release; some school releases say Dec 11.`)}`;
   el.innerHTML=h}
 /* Each tap saves the whole sheet. The page shows the change at once and puts it back if the server refuses. */
@@ -1853,7 +1853,7 @@ function bwField(G,tb){const P=BW_FAKE.map((n,i)=>{const ids=G.map(g=>g.id).sort
     return {id:"f"+i,name:n,sel,lock:ids[Math.floor(bwHash(n+"fg")*10)],tb:Math.round(40+bwHash(n+"tb")*35)}});
   const d=state.bw;P.push({id:"me",name:"You",sel:d.sel,lock:d.lock,tb:+d.tb||0});
   const edge=[...G].sort((x,y)=>Math.abs(y.model-y.homeLine)-Math.abs(x.model-x.homeLine)).slice(0,10),rs={};
-  edge.forEach(g=>rs[g.id]=g.model<g.homeLine?"home":"away");P.push({id:BOT,name:"Robo-Sharp",sel:rs,lock:edge[0].id,tb:Math.round(tb.total)});return P}
+  edge.forEach(g=>rs[g.id]=g.model<g.homeLine?"home":"away");P.push({id:BOT,name:"The Computer",sel:rs,lock:edge[0].id,tb:Math.round(tb.total)});return P}
 function bwTable(P,G,ph,tb){const tr=bwRes(tb,ph);
   const rows=P.map(p=>{let w=0,l=0,pts=0;Object.entries(p.sel).forEach(([id,sd])=>{const g=G.find(z=>z.id===id),r=g&&bwRes(g,ph);if(!r)return;if(r.cover===sd){w++;pts+=p.lock===id?3:1}else l++});
     return {...p,w,l,pts,miss:tr?Math.abs(p.tb-(tr.a+tr.h)):null}}).sort((x,y)=>y.pts-x.pts||(x.miss==null?1e9:x.miss)-(y.miss==null?1e9:y.miss));
@@ -1861,13 +1861,13 @@ function bwTable(P,G,ph,tb){const tr=bwRes(tb,ph);
   const body=rows.map(r=>{let shown="—";if(r.id!==BOT){n++;const key=r.pts+"|"+r.miss;if(key!==prev){rk=n;prev=key}shown=rk}
     return `<tr class="${r.id==="me"?"me":""}"><td>${shown}</td><td>${r.id===BOT?"🤖 ":""}${esc(r.name)}</td><td class="n">${r.w}-${r.l}</td><td class="n">${r.pts}</td><td class="n">${r.miss==null?"·":r.miss}</td></tr>`}).join("");
   return `<h3 class="rh">${ph==="final"?"Final standings":"Standings so far"}</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">W-L</th><th class="n">Pts</th><th class="n">TB off</th></tr></thead><tbody>${body}</tbody></table>
-    <p class="note">Sample pickers and made-up scores. Robo-Sharp plays unranked and cannot win. ${tr?`Tiebreaker: ${esc(tb.name)} totaled ${tr.a+tr.h}.`:"The tiebreaker bowl is not final yet."}</p>`}
+    <p class="note">Sample pickers and made-up scores. The Computer plays unranked and cannot win. ${tr?`Tiebreaker: ${esc(tb.name)} totaled ${tr.a+tr.h}.`:"The tiebreaker bowl is not final yet."}</p>`}
 function bwCard(g,ph,P,isTb){const d=state.bw,ed=ph==="pre",r=bwRes(g,ph),mine=d.sel[g.id];
   const day=g.kickoff?new Date(g.kickoff).toLocaleString("en-US",{timeZone:TZ,month:"short",day:"numeric"})+" · "+kick(g.kickoff):"Date TBD";
   const side=sd=>{const team=g[sd],L=teamLook(team,g,sd),ln=fmtLine(sd==="home"?g.homeLine:-g.homeLine),rk=g[sd+"Rank"];
     const tag=r&&r.cover===sd?(mine===sd?'<span class="cv good">You covered</span>':mine?'<span class="cv bad">Beat you</span>':'<span class="cv">Covered</span>'):"";
     return `<button class="side" style="--tc:${L.c1};--tc2:${L.c2};--ti:${L.ink}" data-bwg="${g.id}" data-bws="${sd}" aria-pressed="${mine===sd}" aria-label="${esc(team)} ${ln}" ${ed?"":"disabled"}>${tag}<span class="mono" aria-hidden="true"${L.abbr.length>4?' style="font-size:.62rem"':""}>${esc(L.abbr)}</span><span class="tm">${esc(team)}${L.emoji?' <span class="emo" aria-hidden="true">'+L.emoji+"</span>":""}</span><span class="ln">${ln}${rk<99?'<span class="rk">#'+rk+"</span>":""}</span></button>`};
-  const who=sd=>P.filter(p=>p.sel[g.id]===sd).map(p=>(p.id===BOT?"🤖 Robo":esc(p.name))+(p.lock===g.id?" (FG)":"")).join(", ")||"Nobody";
+  const who=sd=>P.filter(p=>p.sel[g.id]===sd).map(p=>(p.id===BOT?"🤖 Computer":esc(p.name))+(p.lock===g.id?" (FG)":"")).join(", ")||"Nobody";
   const tbBox=isTb&&ed?`<label class="bwtb">🎯 Total points in this bowl <input id="bwTb" type="number" inputmode="numeric" min="0" max="200" value="${esc(d.tb)}" aria-label="Tiebreaker: total points in the ${esc(g.name)}"></label>`:"";
   return `<div class="game${isTb?" tbgame":""}">${isTb?'<div class="tbband"><span>🎯 Tiebreaker bowl</span><span>Everyone guesses</span></div>':""}<div class="gmeta"><span class="slot bwname" style="--bc:var(--bc-${(BW_LOOK[g.id]||["","slate"])[1]})">${(BW_LOOK[g.id]||[""])[0]} ${esc(g.name)}</span><span class="when">${esc(day)} · ${esc(g.city)}</span></div>
     <div class="sides">${side("away")}${side("home")}<button class="flagbtn" data-bwlock="${g.id}" aria-pressed="${d.lock===g.id}" aria-label="Kick your field goal on this bowl: 3 points if it covers" ${ed?"":"disabled"}>${GP}<span>FG</span><span class="fl3">3 pts</span></button></div>
@@ -2023,20 +2023,20 @@ const gmNames=ids=>ids.map(p=>nm(p)).join(", ").replace(/\.$/,"");
 const gmAnd=ids=>{const n=ids.map(p=>nm(p).replace(/\.$/,""));return n.length<3?n.join(" and "):n.slice(0,-1).join(", ")+", and "+n[n.length-1]};
 function gmGameRows(gs){return [...gs].sort((a,b)=>a.slot-b.slot).map(g=>{const aL=teamLook(g.away,g,"away"),hL=teamLook(g.home,g,"home");const fav=g.homeLine<0?hL:aL;
   return {away:g.away,ar:g.awayRank>0&&g.awayRank<99?g.awayRank:"",ac:aL.c1,home:g.home,hr:g.homeRank>0&&g.homeRank<99?g.homeRank:"",hc:hL.c1,at:g.neutral?"vs":"at",line:g.homeLine===0?"PK":`${fav.abbr} ${fmtLine(-Math.abs(g.homeLine))}`}})}
-/* One fun row per card, so posts stay fresh: leader watch, Robo-Sharp watch, lone wolf, or the league's ATS record. Each card tries its list in order and uses the first fact that has data. */
+/* One fun row per card, so posts stay fresh: leader watch, Computer watch, lone wolf, or the league's ATS record. Each card tries its list in order and uses the first fact that has data. */
 function gmFun(it,w){const strip=x=>String(x).replace(/\.$/,"");
   const leader=()=>{const R=seasonTally(false).rows.filter(r=>r.cpts>0);if(!R.length)return null;const top=R.filter(r=>r.cpts===R[0].cpts);
     if(top.length>1)return ["👀","Leader watch",`${top.slice(0,3).map(r=>strip(nm(r.pid))).join(" and ")} share the lead at ${R[0].cpts} pts.`];
     const nx=R[1];return ["👀","Leader watch",nx?`${strip(nm(R[0].pid))} leads with ${R[0].cpts} pts. ${strip(nm(nx.pid))} is ${R[0].cpts-nx.cpts} back.`:`${strip(nm(R[0].pid))} leads with ${R[0].cpts} pts.`]};
   const robo=()=>{const R=seasonTally(true).rows;const b=R.find(r=>r.pid===BOT);const hum=R.filter(r=>r.pid!==BOT).length;if(!b||!hum)return null;const ahead=R.filter(r=>r.pid!==BOT&&r.cpts>b.cpts).length;
-    return ["🤖","Robo-Sharp watch",ahead===0?"The robot is on top of the league. Nobody has passed it yet.":`${ahead} of ${hum} pickers are ahead of the robot this season.`]};
+    return ["🤖","Computer watch",ahead===0?"The Computer is on top of the league. Nobody has passed it yet.":`${ahead} of ${hum} pickers are ahead of the Computer this season.`]};
   const pct=()=>{const R=seasonTally(false).rows;const W=R.reduce((a,r)=>a+r.w,0),L=R.reduce((a,r)=>a+r.l,0);if(W+L<20)return null;return ["📊","League fact",`The league is ${W}-${L} against the spread this season, ${Math.round(100*W/(W+L))}%.`]};
   const wolf=()=>{const R=state.reveals[w.id];const ps=Object.entries((R&&R.players)||{}).filter(([p])=>p!==BOT&&!removed().includes(p));if(ps.length<3)return null;
     const by={};for(const [pid,p] of ps)for(const [gid,sd] of Object.entries(p.sel||{}))(by[gid+"|"+sd]=by[gid+"|"+sd]||[]).push(pid);
     const solo=Object.entries(by).filter(([,a])=>a.length===1);if(!solo.length)return null;const [k,[pid]]=solo[w.week%solo.length];const [gid,sd]=k.split("|");const g=w.games.find(x=>x.id===gid);if(!g)return null;
     return ["🐺","Lone wolf",`${strip(nm(pid))} is the only one on ${gmTeam(g,sd)} ${gmLine(g,sd)}.`]};
   const weekRobo=()=>{const b=botPicks(w);const ps=weekPlayers(w.id);const n=Object.keys(ps).length;if(!b||!n)return null;const rs=scoreWeek(w,b);const beat=Object.values(ps).filter(p=>scoreWeek(w,p).pts>rs.pts).length;
-    return ["🤖","Robo-Sharp watch",`The robot went ${rs.w}-${rs.l} for ${rs.pts} pts. ${beat} of ${n} pickers beat it.`]};
+    return ["🤖","Computer watch",`The Computer went ${rs.w}-${rs.l} for ${rs.pts} pts. ${beat} of ${n} pickers beat it.`]};
   const order={pv:[leader,pct],live:[leader,pct],last:[pct,robo,leader],lock:[wolf,robo],final:[weekRobo,pct]}[it.kind]||[];
   for(const f of order){try{const r=f();if(r)return r}catch(e){}}return null}
 /* The card as plain data: kicker, title, sub, rows ({ic, label, text}; ic "GP" draws the goalpost), games, foot. Text only, no HTML. */
@@ -2059,7 +2059,7 @@ function gmModel(it){
     if(solo)row("🐺","Lone wolves",`${solo} pick${solo===1?"":"s"} only one picker made. Hit one and you get the whole room.`,"purple");
     row("✂️","Finalist day","Most awards cut to 3 finalists today. Some picks are already dead.","red");
     row("📅","Winners","Most awards Thu Dec 10. Heisman Sat Dec 12.");
-    M.rows.push({ic:"🤖",label:"Robo-Sharp",text:"Took every favorite. Beat the robot.",fun:true});
+    M.rows.push({ic:"🤖",label:"The Computer",text:"Took every favorite. Beat the Computer.",fun:true});
     M.foot="Every pick is on the Awards tab 👉";return M}
   if(it.kind==="aw"){const A=AWD(),act=gmActive();
     M.kick="New contest · Just for fun";M.title="Award Watch";M.sub=`Lock: ${kick(A.lock)}`;M.confetti=true;
@@ -2068,7 +2068,7 @@ function gmModel(it){
     row("✂️","Why Monday night","Most awards cut to 3 finalists Nov 24. Lock in before the field shrinks.","red");
     row("📅","Winners","Most awards Thu Dec 10. Heisman Sat Dec 12.","blue");
     if(A.n)row("📝","In so far",`${A.n} of ${act.length} pickers.`);
-    M.rows.push({ic:"🤖",label:"Beat the robot",text:"Robo-Sharp takes every favorite. Fade it and get paid.",fun:true});
+    M.rows.push({ic:"🤖",label:"Beat the Computer",text:"The Computer takes every favorite. Fade it and get paid.",fun:true});
     M.foot="Award Watch tab in the app 👉";return M}
   if(it.kind==="pv"){const P=state.preview&&state.preview.week===it.wk?state.preview:null;
     M.title="Slate preview";M.sub=P&&P.autoOpen===false?"Picks open soon":"Picks open Wed 6 PM CT";
@@ -2096,7 +2096,7 @@ function gmModel(it){
     if(top)row("📊","Most picked side",`${say(top)}: ${top.n} of ${ps.length}`);
     if(tf)row("GP","Most popular field goal",`${say(tf)}: ${tf.n} of ${ps.length}`);
     if(ts)row("💀","Top Survivor pick",`${say(ts)}: ${ts.n} of ${sv.length}`);
-    if(bg)row("🤖","Robo-Sharp's field goal",say({g:bg,s:b.sel[b.lock]}));
+    if(bg)row("🤖","The Computer's field goal",say({g:bg,s:b.sel[b.lock]}));
     M.foot=k1&&k1>NOW()?`First kickoff ${kick(new Date(k1).toISOString())}. Scoreboard is live.`:"Games are on. Scoreboard is live."}
   else if(it.kind==="final"){const win=weekWinners(w.id);const ps=weekPlayers(w.id);const sc=win.length?scoreWeek(w,ps[win[0]]):null;
     const live=Object.entries(ps).filter(([p])=>p!==BOT&&!removed().includes(p));
@@ -2360,9 +2360,9 @@ function renderPicks(){
   if(w.status==="draft")h+='<div class="note">Draft view. Only you see this until you open picks in the Commissioner tab.</div>';
   if(out)h+='<div class="panel">You are not active in the league this season. Contact the commissioner.</div>';
   const locked=pastDeadline(w)||w.status==="final";
-  /* Robo flip alert: Robo-Sharp watches the market until the lock, so a side can change after Wednesday. */
+  /* Computer flip alert: the Computer watches the market until the lock, so a side can change after Wednesday. */
   const flips=roboFlips(w);
-  if(flips.length)h+=`<div class="panel roboalert" role="note"><b>🤖 Robo flip alert.</b> Robo-Sharp changed ${flips.length===1?"a pick":flips.length+" picks"} since picks opened: ${flips.map(f=>{const L=teamLook(f.to==="home"?f.g.home:f.g.away,f.g,f.to);return esc(L.abbr)+" "+fmtLine(f.to==="home"?f.g.homeLine:-f.g.homeLine)}).join(", ")}.${locked?"":" Its picks are final at the lock."}</div>`;
+  if(flips.length)h+=`<div class="panel roboalert" role="note"><b>🤖 Computer flip alert.</b> The Computer changed ${flips.length===1?"a pick":flips.length+" picks"} since picks opened: ${flips.map(f=>{const L=teamLook(f.to==="home"?f.g.home:f.g.away,f.g,f.to);return esc(L.abbr)+" "+fmtLine(f.to==="home"?f.g.homeLine:-f.g.homeLine)}).join(", ")}.${locked?"":" Its picks are final at the lock."}</div>`;
   const gs=[...w.games].sort(locked?lockedOrder:(a,b)=>a.slot-b.slot);
   const tg=tbGame(w);
   const flag=GP;
@@ -2396,13 +2396,13 @@ function renderPicks(){
         if(E){const Lb=teamLook(E.side==="home"?g.home:g.away,g,E.side);const bl=E.side==="home"?g.homeLine:-g.homeLine;
           const why=roboWhy(g,E);
           const bd=roboBand(E.p);
-          h+=`<div class="model lean" title="Robo-Sharp's current lean. It can change until the lock.">🤖 Robo <span class="band b-${bd[1]}">${bd[2]}</span> <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · FG":""} <span class="note">· ${esc(why)} · final at lock</span></div>`}}
+          h+=`<div class="model lean" title="The Computer's current lean. It can change until the lock.">🤖 Computer <span class="band b-${bd[1]}">${bd[2]}</span> <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · FG":""} <span class="note">· ${esc(why)} · final at lock</span></div>`}}
       if(fl){const Lf=teamLook(fl.from==="home"?g.home:g.away,g,fl.from),Lt=teamLook(fl.to==="home"?g.home:g.away,g,fl.to);
-        h+=`<div class="roboflip" role="note">🔄 Robo flipped: ${esc(Lf.abbr)} to <b>${esc(Lt.abbr)}</b> since picks opened</div>`}}
+        h+=`<div class="roboflip" role="note">🔄 The Computer flipped: ${esc(Lf.abbr)} to <b>${esc(Lt.abbr)}</b> since picks opened</div>`}}
     else if(typeof g.modelLine==="number"&&!(locked&&rev&&nPlayers)){const fav=g.modelLine<0?"home":"away";const fl=-Math.abs(g.modelLine);const Lf=teamLook(fav==="home"?g.home:g.away,g,fav);const edge=Math.round((g.modelLine-g.homeLine)*10)/10;const side=edge>0?"away":"home";const Ls=teamLook(side==="home"?g.home:g.away,g,side);
       const bp=botPicks(w);const bs=modelSide(g);const Lb=teamLook(bs==="home"?g.home:g.away,g,bs);
       const bl=bs==="home"?g.homeLine:-g.homeLine;
-      h+=`<div class="model" title="Robo-Sharp's pick, then the model line it comes from">🤖 Robo-Sharp: <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · FG":""} <span class="note">· ${esc(String(g.modelSource||"model").replace(/^ESPN /,""))} ${esc(Lf.abbr)} ${g.modelLine===0?"PK":"\u2212"+Math.abs(fl)}</span></div>`}
+      h+=`<div class="model" title="The Computer's pick, then the model line it comes from">🤖 The Computer: <b>${esc(Lb.abbr)} ${fmtLine(bl)}</b>${bp&&bp.lock===g.id?" · FG":""} <span class="note">· ${esc(String(g.modelSource||"model").replace(/^ESPN /,""))} ${esc(Lf.abbr)} ${g.modelLine===0?"PK":"\u2212"+Math.abs(fl)}</span></div>`}
     if(conflictHere)h+=`<div class="conflict" role="alert">Your survivor pick is the other side of this game. <button type="button" class="linkbtn" data-jump="surv">Review survivor</button></div>`;
     if(rev&&nPlayers){
       const sp=split(g,players);const na=sp.away.length,nh=sp.home.length,tot=na+nh||1;
@@ -2418,7 +2418,7 @@ function renderPicks(){
         const named=allNames?ids:ids.filter(pid=>pid===state.uid||pid===keyIds.rival||pid===keyIds.leader);
         const rest=allNames?[]:ids.filter(pid=>!named.includes(pid));
         const botFg=!!(bp&&bp.lock===g.id);
-        const bot=botSide===s?(allNames?`<span class="wn bot${botFg?" fg":""}" title="Robo-Sharp${botFg?", field goal":""}">${botFg?GP:""}<span aria-hidden="true">🤖</span>Robo</span>`:`<span class="wcp${botFg?" fg":""}" title="Robo-Sharp${botFg?", field goal":""}" role="img" aria-label="Robo-Sharp">${chip(BOT)}</span>`):"";
+        const bot=botSide===s?(allNames?`<span class="wn bot${botFg?" fg":""}" title="The Computer${botFg?", field goal":""}">${botFg?GP:""}<span aria-hidden="true">🤖</span>Computer</span>`:`<span class="wcp${botFg?" fg":""}" title="The Computer${botFg?", field goal":""}" role="img" aria-label="The Computer">${chip(BOT)}</span>`):"";
         const items=named.map(nameTag).join("")+(rest.length||bot?`<span class="wchips">${rest.map(chipTag).join("")}${bot}</span>`:"");
         return `<div class="wc" style="--tc:${L.c1}"><div class="wch">${esc(L.abbr)} · ${ids.length}</div>${ids.length||bot?items:'<span class="wn none">Nobody</span>'}</div>`};
       h+=`<div class="whocols">${col("away",LA)}${col("home",LH)}</div>`;
@@ -2717,7 +2717,7 @@ function recapLink(){const ws=recapWeeks();if(!ws.length)return null;const wid=w
 function recapBanner(){const ws=recapWeeks();if(!ws.length)return "";const wid=ws[ws.length-1];let seen=null;try{seen=localStorage.getItem("tp-recap-seen-"+state.uid)}catch(e){}
   return seen===wid?"":`<a class="recapban" href="#recap">\u{1F4E3} The Week ${state.weeks[wid].week} recap is in. See who drew a flag.</a>`}
 /* One rank rule for every place that states a season rank (Nov 12, V5): the Standings # column. Active pickers only,
-   no Robo-Sharp; points, then field goals made, then the smallest tiebreaker total; exact ties share the place. */
+   not the Computer; points, then field goals made, then the smallest tiebreaker total; exact ties share the place. */
 function seasonRanks(wids){const out=(removed()||[]);const t=seasonThrough(wids).filter(r=>r.pid!==BOT&&!out.includes(r.pid));
   const rk={};t.forEach((r,i)=>{const p=t[i-1];rk[r.pid]=p&&p.pts===r.pts&&p.lw===r.lw&&p.tb===r.tb?rk[p.pid]:i+1});return rk}
 function rankAfter(wids){return seasonRanks(wids)}
@@ -2780,8 +2780,8 @@ function recapFacts(wid){
   const track=[...games].sort((a,b)=>b.tot-a.tot)[0];
   if(track&&track.tot>=60)add("Track meet",`${track.tot} points in ${teamLook(track.g.away,track.g,"away").abbr} at ${teamLook(track.g.home,track.g,"home").abbr}`,"Defense was optional.","");
 
-  /* Robo-Sharp */
-  const bp=botPicks(w);if(bp&&Object.keys(bp.sel||{}).length){const s=scoreWeek(w,bp);const beat=rows.filter(r=>r.pts<s.pts).length;add("\u{1F916} Robo-Sharp",`${s.w}-${s.l} ATS, ${s.pts} point${pl(s.pts)}`,`Better than ${beat} of ${rows.length} pickers. It feels nothing either way.`,"")}
+  /* The Computer */
+  const bp=botPicks(w);if(bp&&Object.keys(bp.sel||{}).length){const s=scoreWeek(w,bp);const beat=rows.filter(r=>r.pts<s.pts).length;add("\u{1F916} The Computer",`${s.w}-${s.l} ATS, ${s.pts} point${pl(s.pts)}`,`Better than ${beat} of ${rows.length} pickers. It feels nothing either way.`,"")}
 
   /* Survivor */
   const srun=survRunOf(wid);const sb=srun?survivorBoard(srun):null;if(sb){const hum=sb.filter(r=>r.pid!==BOT);const gone=hum.filter(r=>r.out&&r.out.week===w.week&&!survLate(r.pid,srun));const alive=hum.filter(r=>r.alive).length;
@@ -2944,7 +2944,7 @@ function raceFacts(wid){const w=state.weeks[wid],me=state.uid,rs=w.results||{};c
   const ps=weekPlayers(wid);const mine=ps[me];if(!mine)return out;const S=scoreWeek(w,mine);
   const left=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void)&&!coverSide(g,rs[g.id]));
   if(w.status!=="final"&&left.length){const pts=Object.entries(ps).map(([pid,p])=>({pid,pts:scoreWeek(w,p).pts}));const top=Math.max(...pts.map(x=>x.pts));const back=top-S.pts;const tail=`with ${pl(left.length,"game")} left`;
-    /* Behind: the gap to the lead, your place, the gap to 2nd and 3rd above you, and what you can still score. Robo-Sharp is not counted. */
+    /* Behind: the gap to the lead, your place, the gap to 2nd and 3rd above you, and what you can still score. The Computer is not counted. */
     if(back>0){const room=left.filter(g=>(mine.sel||{})[g.id]).length+(left.some(g=>g.id===mine.lock)?2:0);
       const others=pts.filter(x=>x.pid!==me).map(x=>x.pts).sort((x,y)=>y-x);const place=others.filter(x=>x>S.pts).length+1,tied=others.includes(S.pts);
       const gaps=[2,3].filter(k=>k<place&&others[k-1]>S.pts).map(k=>`${ordinal(k)} is ${others[k-1]-S.pts} ahead`);
@@ -2984,8 +2984,8 @@ function weekFacts(wid,limit=2){const w=state.weeks[wid],me=state.uid;if(!w||w.s
   const hum=Object.entries(ps).map(([pid,p])=>({pid,...scoreWeek(w,p)}));const n=hum.length;
   /* Rival */
   {const R=raceFacts(wid).rival;if(R){const beat=/^You beat/.test(R);add("rival",beat?55:35,"\u{1F47F}",R,beat?"good":/beat you/.test(R)?"bad":"neu")}}
-  /* Robo-Sharp */
-  {const b=botPicks(w);if(b){const B=scoreWeek(w,b).pts;add("bot",S.pts>B?50:30,"\u{1F916}",S.pts>B?`You beat Robo-Sharp, ${S.pts} to ${B}.`:S.pts<B?`Robo-Sharp got you this week, ${B} to ${S.pts}.`:`Dead even with Robo-Sharp at ${B}.`,S.pts>B?"good":S.pts<B?"bad":"neu")}}
+  /* The Computer */
+  {const b=botPicks(w);if(b){const B=scoreWeek(w,b).pts;add("bot",S.pts>B?50:30,"\u{1F916}",S.pts>B?`You beat the Computer, ${S.pts} to ${B}.`:S.pts<B?`The Computer got you this week, ${B} to ${S.pts}.`:`Dead even with the Computer at ${B}.`,S.pts>B?"good":S.pts<B?"bad":"neu")}}
   /* Best or worst week this season */
   {const prev=priorWeeks(wid).map(k=>{const p=weekPlayers(k)[me];return p?scoreWeek(state.weeks[k],p).pts:null}).filter(x=>x!=null);
     if(prev.length&&S.pts>Math.max(...prev))add("best",80,"\u{1F680}",`${S.pts} points is your best week of the season.`,"good");
@@ -3039,7 +3039,7 @@ function ironSeasons(D,pid){return statSeasons(D).filter(s=>{const r=ironOf(D,pi
 function ironTag(pid){if(pid===BOT)return "";return ironOf(realStats(),pid,state.config&&state.config.season)?' <span title="Iron Man: every pick in, every week" aria-label="Iron Man">\u{1F9BE}</span>':""}
 
 /* ---------- the belt, hot hand, rank moves (items 51, 56, 53) ---------- */
-/* The belt: the winner of the latest final week this season holds it until the next week goes final. Shared winners all hold it. Robo-Sharp never does. */
+/* The belt: the winner of the latest final week this season holds it until the next week goes final. Shared winners all hold it. The Computer never does. */
 const BELT='<svg class="belt" viewBox="0 0 34 18" aria-hidden="true"><rect x="0" y="6" width="34" height="6" rx="2" fill="#6b3f10"/><ellipse cx="17" cy="9" rx="9.5" ry="8" fill="#e0b13a" stroke="#8a6a12" stroke-width="1.4"/><ellipse cx="17" cy="9" rx="5" ry="4" fill="#fff3c4" stroke="#8a6a12" stroke-width="1"/></svg>';
 function finalSeasonWeeks(){return seasonWeeks().filter(k=>state.weeks[k].status==="final")}
 function beltOf(){const f=finalSeasonWeeks();const wid=f[f.length-1];if(!wid)return null;const pids=weekWinners(wid).filter(p=>p!==BOT);return pids.length?{wid,week:state.weeks[wid].week,cc:!!state.weeks[wid].confChamp,pids}:null}
@@ -3048,7 +3048,7 @@ function beltLine(){const b=beltOf();if(!b)return "";const wk=b.cc?"Conference C
   const who=b.pids.length>1?b.pids.map(p=>esc(first(p))).join(" and ")+" share":me?"You hold":esc(nm(b.pids[0]))+" holds";
   return notice(BELT,`${who} the belt as the ${wk} winner.${me?" Defend it this week.":" Win the week to take it."}`,"beltline")}
 /* Hot hand: a hot week is HOT_MIN or more correct picks in a final week. Two or more straight hot weeks is a heater.
-   A hot week shows until the next week goes final; a heater shows while the streak holds. A missed week ends it. Robo-Sharp gets neither. */
+   A hot week shows until the next week goes final; a heater shows while the streak holds. A missed week ends it. The Computer gets neither. */
 const HOT_MIN=7;
 function hotOf(pid){if(pid===BOT)return null;const f=finalSeasonWeeks();let n=0,last=null;
   for(let i=f.length-1;i>=0;i--){const p=weekPlayers(f[i])[pid];const s=p?scoreWeek(state.weeks[f[i]],p):null;if(!s||s.w<HOT_MIN)break;n++;if(last==null)last=s.w}
@@ -3060,7 +3060,7 @@ function rankMoves(ids){const ws=seasonWeeks();if(ws.length<2)return {};const pl
   const rank=list=>{const t=tallySeason(list,k=>state.weeks[k],pl,ids).rows;const o={};t.forEach((r,i)=>{const p=t[i-1];r.rk=p&&p.cpts===r.cpts&&p.clw===r.clw&&p.ctb===r.ctb?p.rk:i+1;o[r.pid]={rk:r.rk,weeks:r.weeks}});return o};
   const a=rank(ws.slice(0,-1)),b=rank(ws);const out={};for(const p of ids)if(a[p]&&b[p])out[p]=a[p].weeks?a[p].rk-b[p].rk:"new";return out}
 /* Iron Man, the belt, and hot hand sit on their own small line under the name, so a long name cannot cut them off. */
-/* Survivor runs won this season (Benton, Nov 18): 💀 for one, 💀×N for more. Co-champions each get it. Never Robo-Sharp.
+/* Survivor runs won this season (Benton, Nov 18): 💀 for one, 💀×N for more. Co-champions each get it. Never the Computer.
    Worked out once per data refresh, since it reads every run's grid. */
 let SURV_WON=null;
 function survWonMap(){if(SURV_WON&&SURV_WON.w===state.weeks&&SURV_WON.c===state.config)return SURV_WON.m;const m={};
@@ -3073,7 +3073,7 @@ function moveTag(m){return m==="new"?'<i class="mv new">new</i>':m>0?`<i class="
 
 /* ---------- class badges ---------- */
 /* A picker's class is the season of their first picked game (server: state.classOf). 2026 is the Redshirt class; nobody earns it later.
-   Robo-Sharp gets none. Remove keeps it; Start over deletes the picks, so the class resets. */
+   The Computer gets none. Remove keeps it; Start over deletes the picks, so the class resets. */
 function classYear(pid){if(pid===BOT)return null;return (state.classOf||{})[pid]||null}
 function classLabel(y){return y===2026?"Redshirt Class of 2026":"Class of "+y}
 function classBadge(pid){const y=classYear(pid);if(!y)return "";const rs=y===2026;
@@ -3125,7 +3125,7 @@ function renderStandings(){
   const rows=T.rows.map(r=>({...r,pts:dropView?r.dpts:r.pts,lw:dropView?r.dlw:r.lw,tb:dropView?r.dtb:r.tb})).sort((a,b)=>b.pts-a.pts||b.lw-a.lw||a.tb-b.tb||(a.pid<b.pid?-1:1));
   const dropTag=r=>dropView&&r.drop?`<span class="dropwk">Drops Wk ${esc(state.weeks[r.drop].week)} \u00b7 ${r.wk[r.drop].played?r.wk[r.drop].pts+" pt"+(r.wk[r.drop].pts===1?"":"s"):"missed"}</span>`:"";
   const active=rows.filter(r=>!removed().includes(r.pid)),out=rows.filter(r=>removed().includes(r.pid));
-  /* Robo-Sharp sits where its score puts it but takes no rank number, so the top league member is always #1. */
+  /* The Computer sits where its score puts it but takes no rank number, so the top league member is always #1. */
   {const hs=active.filter(r=>r.pid!==BOT);hs.forEach((r,i)=>{const p=hs[i-1];r.rk=p&&p.pts===r.pts&&p.lw===r.lw&&p.tb===r.tb?p.rk:i+1});const b=active.find(r=>r.pid===BOT);if(b)b.rk=""}
   let h="";
   /* Where you stand, in one line at the top (Nov 12, V12). Same rank as the # column below. */
@@ -3160,9 +3160,9 @@ function renderStandings(){
     if(dropView)h+=`<p class="note">${T.official?`Each picker's lowest regular week no longer counts.${T.locked?" Locked for the season.":""}`:`Projection: if the season ended today, each picker's lowest regular week would drop. It starts counting once ${T.need} more regular week${T.need===1?" is":"s are"} final.`} ATS and Pct still count every game.</p>`}
   const byPct=state.seasonSort==="pct";const sortBtn=(k,t,title)=>`<button class="ssort" data-seasonsort="${k}" aria-pressed="${(k==="pct")===byPct}" title="${title}">${t}</button>`;
   if(!active.length)h+='<p class="note">No picks in yet.</p>';
-  else h+=`<div class="tablewrap"><table class="stk szt"><thead><tr><th>#</th><th class="pnh">Picker</th><th class="aw"><span class="sr">Marks</span></th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num rkc">${r.rk}${showMv&&r.pid!==BOT?moveTag(mv[r.pid]):""}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="aw">${marksH(r.pid)}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${(state.isOwner?seasonSort(out):[]).map(r=>`<tr class="out"><td class="num rkc"></td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}</td><td class="aw"></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}${info("season",`Ranked by points, then field goals made, then smallest total tiebreaker miss. A week with no sheet scores 0 with a tiebreaker guess of 0. Drop worst week: each picker's lowest regular week comes off the season total once ${DROP_MIN} regular weeks are final, and Conference Champion Week never drops. Until then, If it ended today shows the projection. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.`)}`;
+  else h+=`<div class="tablewrap"><table class="stk szt"><thead><tr><th>#</th><th class="pnh">Picker</th><th class="aw"><span class="sr">Marks</span></th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num rkc">${r.rk}${showMv&&r.pid!==BOT?moveTag(mv[r.pid]):""}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="aw">${marksH(r.pid)}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${(state.isOwner?seasonSort(out):[]).map(r=>`<tr class="out"><td class="num rkc"></td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}</td><td class="aw"></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}${info("season",`Ranked by points, then field goals made, then smallest total tiebreaker miss. A week with no sheet scores 0 with a tiebreaker guess of 0. Drop worst week: each picker's lowest regular week comes off the season total once ${DROP_MIN} regular weeks are final, and Conference Champion Week never drops. Until then, If it ended today shows the projection. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. The Computer 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.`)}`;
   {const keys=[];if(active.some(r=>ironTag(r.pid)))keys.push("\u{1F9BE} Iron Man: every pick in, every week.");if(active.some(r=>beltTag(r.pid)))keys.push(BELT+" The belt: last week's winner.");if(active.some(r=>hotTag(r.pid)))keys.push(`\u{1F525} Hot week: ${HOT_MIN} or more correct. \u{1F525}\u00d7N: a heater, N straight hot weeks.`);if(active.some(r=>survTag(r.pid)))keys.push("\u{1F480} Survivor champion this season. \u{1F480}\u00d7N: N runs won.");if(showMv&&Object.keys(mv).length)keys.push("\u25B2\u25BC Places moved since the latest week began.");if(keys.length)h+=`<p class="note keys">${keys.join(" ")}</p>`}
-  {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of Robo-Sharp.</p>`}}
+  {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of the Computer.</p>`}}
   h+="</div>";
   h+=titlesPanel()+beatBotPanel()+closePanel(realStats());
   const sb=survivorBoard();
@@ -3230,7 +3230,7 @@ function renderSurvivor(){
   const curCell=pid=>{if(!curOpen)return "";const r=rows.find(x=>x.pid===pid);if(r&&!r.alive)return '<td class="svc gone"></td>';
     if(pid===state.uid){if(!myCur)return '<td class="svc next"><span class="svt">Not picked</span></td>';const w=state.weeks[cw];const g=w&&w.games.find(x=>x.id===myCur.g);if(!g)return '<td class="svc next"></td>';const team=myCur.s==="home"?g.home:g.away;const L=teamLook(team,g,myCur.s);return `<td class="svc next"><span class="svt" style="border-left:4px solid ${L.c1}">${esc(L.abbr)} ${L.emoji||""}</span><span class="svl">Your pick</span></td>`}
     return '<td class="svc next"><span class="svl">Hidden until the lock</span></td>'};
-  h+=`<div class="panel"><h2>Picks by week</h2>${info("survgrid",`Oldest week on the left, newest on the right. Each cell shows the team, its line, and how far it covered or missed. Picks stay hidden until the weekly lock. Robo-Sharp 🤖 plays but cannot win.`)}<div class="tablewrap svwrap"><table class="svtab"><thead><tr><th>Picker</th><th>Status</th>${head}</tr></thead><tbody>${all.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.alive?"":" svout"}"><td class="svp">${typeof chip==="function"?chip(r.pid):""}${esc(nm(r.pid))}</td><td>${r.alive?'<span class="svs alive">Alive</span>':'<span class="svs out">💀 Out W'+r.outWeek+'</span>'}</td>${wks.map(wid=>cell(r.cells[wid])).join("")}${curCell(r.pid)}</tr>`).join("")}</tbody></table></div>
+  h+=`<div class="panel"><h2>Picks by week</h2>${info("survgrid",`Oldest week on the left, newest on the right. Each cell shows the team, its line, and how far it covered or missed. Picks stay hidden until the weekly lock. The Computer 🤖 plays but cannot win.`)}<div class="tablewrap svwrap"><table class="svtab"><thead><tr><th>Picker</th><th>Status</th>${head}</tr></thead><tbody>${all.map(r=>`<tr class="${r.pid===state.uid?"me":""}${r.alive?"":" svout"}"><td class="svp">${typeof chip==="function"?chip(r.pid):""}${esc(nm(r.pid))}</td><td>${r.alive?'<span class="svs alive">Alive</span>':'<span class="svs out">💀 Out W'+r.outWeek+'</span>'}</td>${wks.map(wid=>cell(r.cells[wid])).join("")}${curCell(r.pid)}</tr>`).join("")}</tbody></table></div>
   <div class="svkey"><span class="svc win"><span class="svt">Covered</span></span><span class="svc loss"><span class="svt">Lost</span></span><span class="svc pending"><span class="svt">Pending</span></span><span class="svc void"><span class="svt">Void, still alive</span></span></div></div>`;
   /* teams left for me */
   const me=rows.find(r=>r.pid===state.uid);
@@ -3480,7 +3480,7 @@ function matchupView(C){
     o+=`<div class="murow"><span>${x.l}</span><b>${esc(muSay(x.m,a,h))}</b><span>${edge}</span></div>`}
   if(have.length>1)o+=`<div class="murow muavg"><span>Average</span><b>${esc(muSay(avg,a,h))}</b><span></span></div>`;
   if(g)o+=`<div class="murow"><span>Betting line</span><b>${lineM===0?"Pick'em":esc(teamLook(lineM>0?h:a).abbr)+" "+fmtLine(-Math.abs(lineM))}</b><span class="note">${g.neutral?"Neutral":esc(teamLook(g.home).abbr)+" home"}</span></div>`;
-  if(g&&typeof g.modelLine==="number"){const fm=canon(g.home)===h?-g.modelLine:g.modelLine;o+=`<div class="murow"><span>\u{1F916} Robo-Sharp</span><b>${esc(muSay(fm,a,h))}</b><span class="note">ESPN FPI game projection</span></div>`}
+  if(g&&typeof g.modelLine==="number"){const fm=canon(g.home)===h?-g.modelLine:g.modelLine;o+=`<div class="murow"><span>\u{1F916} The Computer</span><b>${esc(muSay(fm,a,h))}</b><span class="note">ESPN FPI game projection</span></div>`}
   o+="</div>";
   const flags=[];
   if(have.length>1){const ms=have.map(x=>x.m),sp=Math.max(...ms)-Math.min(...ms);if(sp>=3)flags.push(`The models disagree by ${sp.toFixed(1)} points.`)}
@@ -3568,7 +3568,7 @@ function renderPlayers(){
 }
 /* ---------- picker stats ---------- */
 /* Past picks, career wins, personal insights, and Beat the close. Every panel reads a data object D,
-   so each panel can be tested with any data. Robo-Sharp gets no history here. */
+   so each panel can be tested with any data. The Computer gets no history here. */
 function realStats(){const cfg=state.config||{};return {wids:countedWeeks(),week:k=>state.weeks[k],players:k=>weekPlayers(k),closing:state.closing||{},
   done:s=>s<cfg.season,survivor:s=>s===cfg.season?survRuns().map(r=>survivorChampions(r)).filter(l=>l.length):[],bowl:()=>[],cfp:()=>[]}}
 /* Champions of one run: everyone alive after the run's last week, else the last ones out. Each run is its own career win (Benton, Nov 15). */
@@ -3652,7 +3652,7 @@ function titlesPanel(){const weeks=countedWeeks(state.incTest).filter(w=>state.w
 function beatBotPanel(){const weeks=countedWeeks(state.incTest);const ids=allPlayerIds(false).filter(p=>!removed().includes(p));
   const ms=ids.map(p=>({p,...modelStats(p,weeks)})).filter(x=>x.agree[0]+x.agree[1]+x.fade[0]+x.fade[1]);if(!ms.length)return "";
   const pc=a=>a[0]+a[1]?Math.round(a[0]/(a[0]+a[1])*100)+"%":"\u2013";
-  return `<div class="panel"><h2>Beat the bot</h2><p class="note">Agree = you took Robo-Sharp's side. Fade = you took the other side. Each shows your record and win rate.</p><div class="tablewrap"><table class="plain"><thead><tr><th>Picker</th><th class="num">Agree</th><th class="num">Win %</th><th class="num">Fade</th><th class="num">Win %</th></tr></thead><tbody>${ms.map(x=>`<tr><td class="pn">${chip(x.p)}${esc(nm(x.p))}</td><td class="num">${x.agree[0]}-${x.agree[1]}</td><td class="num">${pc(x.agree)}</td><td class="num">${x.fade[0]}-${x.fade[1]}</td><td class="num">${pc(x.fade)}</td></tr>`).join("")}</tbody></table></div></div>`}
+  return `<div class="panel"><h2>Beat the Computer</h2><p class="note">Agree = you took the Computer's side. Fade = you took the other side. Each shows your record and win rate.</p><div class="tablewrap"><table class="plain"><thead><tr><th>Picker</th><th class="num">Agree</th><th class="num">Win %</th><th class="num">Fade</th><th class="num">Win %</th></tr></thead><tbody>${ms.map(x=>`<tr><td class="pn">${chip(x.p)}${esc(nm(x.p))}</td><td class="num">${x.agree[0]}-${x.agree[1]}</td><td class="num">${pc(x.agree)}</td><td class="num">${x.fade[0]}-${x.fade[1]}</td><td class="num">${pc(x.fade)}</td></tr>`).join("")}</tbody></table></div></div>`}
 function trendChart(weeks,ids,sel){
   if(weeks.length<2)return '<p class="note">The chart starts after two weeks. Each line shows one picker\'s season rank after each week.</p>';
   const ranks={};ids.forEach(p=>ranks[p]=[]);const cum={};ids.forEach(p=>cum[p]={pts:0,lw:0,tb:0});
@@ -3720,7 +3720,7 @@ function autoPanel(){
     <p class="note">Page visit runs: ${Lv.on?`on, every ${Lv.gap} minutes. Today: ${Lv.today} of ${Lv.cap}.${Lv.at?" Last one "+esc(when(Lv.at))+".":""}`:"off."} Settings are in Setup and one-time tools.</p>
     <div class="autobar"><button class="btn sm" data-act="pause">${A.paused?"Resume automation":"Pause automation"}</button></div>
     ${info("autosched",`Each week, on the first run at or after each time below. The schedule can run hours late. Monday 9 a.m. posts a preview for pickers, and its lines update every 6 hours. Tuesday 1 p.m. builds a draft from ESPN, and pickers see those 10 games with no picks allowed. Wednesday 6 p.m. refreshes the lines and opens picks, unless you already opened them, the box above is off, the week is on hold, or it has under 10 games. Open picks always refreshes the lines first. Refresh lines works any time before picks open: it updates the draft, or the preview if there is no draft yet. Once picks open, lines are final. After the lock, scores update on each run, and the week is marked final when every game is final or void. A postponed game waits for you to void it. A score you enter by hand is never overwritten. Each button here does the same job by hand. Open picks and Pull scores have their buttons in This week and Scores. Fill game log and Fill lines are in Setup and one-time tools. Update ratings runs only when you tap it: it reads SP+ from ESPN and VSiN from its weekly article, checks every school and the size of the change, and keeps the old ratings if anything looks off. Both post new numbers Sunday or Monday.`)}</details>`}
-/* Commish: Robo-Sharp check. Band counts for every week with saved inputs, and a back end model scoreboard. */
+/* Commish: The Computer check. Band counts for every week with saved inputs, and a back end model scoreboard. */
 function roboPanel(){
   const wids=Object.keys(state.weeks).sort().filter(k=>{const w=state.weeks[k];return w&&w.robo&&w.robo.last});
   let rows="";
@@ -3734,10 +3734,10 @@ function roboPanel(){
   const sc={};const add=(k,side,c)=>{if(!side)return;const t=sc[k]||(sc[k]=[0,0]);t[side===c?0:1]++};
   const sideOf=(x,L)=>x==null?null:x-L>0?"away":x-L<0?"home":null;
   for(const wid of wids){const w=state.weeks[wid];const E=roboEvals(w);for(const g of w.games||[]){const c=coverSide(g,(w.results||{})[g.id]);const e=E[g.id];if(!c||!e)continue;
-    for(const [k,x] of e.models)add(k,sideOf(x,g.homeLine),c);add("Consensus",sideOf(e.cons,g.homeLine),c);add("Market move",e.ek==null||Math.abs(e.ek)<0.5?null:e.ek>0?"away":"home",c);add("Robo-Sharp (new)",e.side,c)}}
-  const keys=["FPI","SP+","VSiN","Consensus","Market move","Robo-Sharp (new)"].filter(k=>sc[k]);
+    for(const [k,x] of e.models)add(k,sideOf(x,g.homeLine),c);add("Consensus",sideOf(e.cons,g.homeLine),c);add("Market move",e.ek==null||Math.abs(e.ek)<0.5?null:e.ek>0?"away":"home",c);add("The Computer",e.side,c)}}
+  const keys=["FPI","SP+","VSiN","Consensus","Market move","The Computer"].filter(k=>sc[k]);
   const board=keys.length?`<div class="tablewrap"><table><thead><tr><th>Source</th><th class="num">ATS</th><th class="num">Pct</th></tr></thead><tbody>${keys.map(k=>{const t=sc[k];return `<tr><td>${k}</td><td class="num">${t[0]}-${t[1]}</td><td class="num">${t[0]+t[1]?Math.round(t[0]/(t[0]+t[1])*100)+"%":"–"}</td></tr>`}).join("")}</tbody></table></div><p class="note">Graded against our line on final slate games. About 150 games are needed before these say much.</p>`:'<p class="note">No graded games with saved inputs yet.</p>';
-  return `${secTag("robo",false)}${secHead("Robo-Sharp","bands and scoreboard")}
+  return `${secTag("robo",false)}${secHead("The Computer","bands and scoreboard")}
     <h3 class="rh">Confidence bands</h3>${rows||'<p class="note">No week has saved inputs yet.</p>'}
     <h3 class="rh">Model scoreboard</h3>${board}</details>`}
 /* Commish: one-time and set-once tools, folded at the bottom, left out of Expand all. Nothing here is needed week to week. */

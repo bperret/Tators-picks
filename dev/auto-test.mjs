@@ -206,7 +206,7 @@ try {
   check("whole line gets the half point", w.games.find((g) => g.espnId === "101").homeLine === -7.5);
   check("pick'em gets the half point", w.games.find((g) => g.espnId === "107").homeLine === -0.5);
   check("10 a.m. and Friday games left out", !w.pool.some((g) => ["113", "114"].includes(g.espnId)));
-  check("Robo-Sharp has FPI lines", w.games.every((g) => typeof g.modelLine === "number" && g.modelSource === "ESPN FPI"));
+  check("The Computer has FPI lines", w.games.every((g) => typeof g.modelLine === "number" && g.modelSource === "ESPN FPI"));
   check("pool holds swap options", w.pool.length === 12, String(w.pool.length));
   const a1 = await getKv("auto", {});
   check("no-line game is flagged", a1.flags.some((f) => f.msg.includes("No line yet")));
@@ -250,7 +250,7 @@ try {
   let rw = await getWeek("2026-w11");
   check("Refresh lines moves the draft with the half point rule", rw.games.find((g) => g.espnId === "101").homeLine === -9.5 && /1 line moved/.test(out.ran.refresh.msg), JSON.stringify(out.ran.refresh));
   check("Refresh lines updates the swap pool too", rw.pool.find((g) => g.espnId === "101").homeLine === -9.5);
-  check("Refresh lines keeps Robo-Sharp's line and the week a draft", rw.status === "draft" && typeof rw.games[0].modelLine === "number" && !!rw.linesAt);
+  check("Refresh lines keeps the Computer's line and the week a draft", rw.status === "draft" && typeof rw.games[0].modelLine === "number" && !!rw.linesAt);
   check("Refresh lines is logged", (await q("select * from log order by id desc limit 5")).some((r) => JSON.stringify(r).includes("Refreshed lines")));
   slateGames[0][4] = "-7";
 
@@ -267,8 +267,8 @@ try {
     const op = await getWeek("2026-w11");
     check("a line that moved since the preview keeps the preview's line", op.games.find((g) => g.id === "e101").pvLine === -6.5);
     check("a line that did not move has no tag", op.games.filter((g) => g.pvLine != null).length === 1, JSON.stringify(op.games.map((g) => g.pvLine)));
-    check("Robo-Sharp's first inputs are saved at the open, the market at our line", op.robo && op.robo.v === 2 && op.robo.first && op.robo.first.g.e101 && typeof op.robo.first.g.e101 === "object", JSON.stringify(op.robo && op.robo.first && op.robo.first.g.e101));
-    check("Robo-Sharp saves SP+ ratings for both teams", Object.values(op.robo.first.g).some((x) => Array.isArray(x.sp)), JSON.stringify(op.robo.first.g));
+    check("The Computer's first inputs are saved at the open, the market at our line", op.robo && op.robo.v === 2 && op.robo.first && op.robo.first.g.e101 && typeof op.robo.first.g.e101 === "object", JSON.stringify(op.robo && op.robo.first && op.robo.first.g.e101));
+    check("The Computer saves SP+ ratings for both teams", Object.values(op.robo.first.g).some((x) => Array.isArray(x.sp)), JSON.stringify(op.robo.first.g));
     check("the job message says what happened, in the past tense", /^Opened Week 11 picks\. Checked 10 games\./.test(out.ran.open.msg), out.ran.open.msg);
     const aO = await getKv("auto", {});
     check("the refresh row says it ran inside Open picks", /^Ran as part of Open picks for Week 11/.test(aO.runs.refresh.msg), aO.runs.refresh.msg);
@@ -292,12 +292,12 @@ try {
   check("lines saved before kickoff", st.lines && st.lines["101"] === -7, JSON.stringify(st.lines && st.lines["101"]));
   {
     const rw2 = await getWeek("2026-w11");
-    check("ATS runs before the lock save the market line for Robo-Sharp", rw2.robo && rw2.robo.last.g.e101.mkt === -7 && rw2.robo.first.at !== rw2.robo.last.at, JSON.stringify(rw2.robo && rw2.robo.last.g.e101));
+    check("ATS runs before the lock save the market line for the Computer", rw2.robo && rw2.robo.last.g.e101.mkt === -7 && rw2.robo.first.at !== rw2.robo.last.at, JSON.stringify(rw2.robo && rw2.robo.last.g.e101));
     const before = JSON.stringify(rw2.robo.last);
     slateGames[0][4] = "-9";
     await runJob("ats", { now: CT("2026-11-07T10:30:00-06:00") });
     slateGames[0][4] = "-7";
-    check("after the lock Robo-Sharp's inputs stay frozen", JSON.stringify((await getWeek("2026-w11")).robo.last) === before);
+    check("after the lock the Computer's inputs stay frozen", JSON.stringify((await getWeek("2026-w11")).robo.last) === before);
   }
 
   // ---- Saturday afternoon: live scores, a postponement, a failure ----

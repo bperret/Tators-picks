@@ -117,7 +117,7 @@ try {
     check("one-time jobs live in Setup and one-time tools, not Automation", (await c.locator('[data-sec="auto"] [data-job="gamelog"], [data-sec="auto"] [data-job="lines"]').count()) === 0 && (await c.locator('[data-sec="tools"] [data-job="gamelog"], [data-sec="tools"] [data-job="lines"]').count()) === 2 && auto.length > 0 && tools.length > 0);
     check("Automation has no second Open picks or Pull scores button", (await c.locator('[data-sec="auto"] [data-job="open"], [data-sec="auto"] [data-job="scores"]').count()) === 0);
     check("set-once settings sit in Setup and one-time tools", (await c.locator('[data-sec="tools"] #liveChk, [data-sec="tools"] #ovTeam, [data-sec="tools"] #nameInput, [data-sec="tools"] #slateForm').count()) === 4);
-  check("Commish keeps the Robo-Sharp section but has no switch or Save inputs", (await c.locator('#v-commish [data-sec="robo"]').count()) === 1 && (await c.locator('#roboChk, [data-act="roboFill"]').count()) === 0);
+  check("Commish keeps the the Computer section but has no switch or Save inputs", (await c.locator('#v-commish [data-sec="robo"]').count()) === 1 && (await c.locator('#roboChk, [data-act="roboFill"]').count()) === 0);
   }
   await c.click(".mbadd summary");
   await c.fill("#apName", "Mike"); await c.fill("#apPhone", "(214) 555-0123");
@@ -268,8 +268,8 @@ try {
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
   check("week shows locked", (await m.textContent("#statusBadge")).toLowerCase().includes("locked"));
   check("picks revealed after the lock", (await m.locator(".cbar").count()) > 0);
-  check("Robo-Sharp shows in the pick lists after the lock", (await m.locator(".whocols .wn.bot, .whocols .wcp[aria-label='Robo-Sharp']").count()) === 5);
-  check("Robo-Sharp model line hides after the lock", (await m.locator(".game .model").count()) === 0);
+  check("The Computer shows in the pick lists after the lock", (await m.locator(".whocols .wn.bot, .whocols .wcp[aria-label='The Computer']").count()) === 5);
+  check("The Computer model line hides after the lock", (await m.locator(".game .model").count()) === 0);
   const order = await m.evaluate(() => [...document.querySelectorAll("#v-picks .game")].map((e) => e.id));
   check("same kickoff: better AP game first", order.join() === "g-g4,g-g1,g-g3,g-g2,g-g5", order.join());
   const live = await m.evaluate(() => {
@@ -418,7 +418,7 @@ try {
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#standings")); await m.waitForTimeout(300);
   const st = await m.textContent("#v-standings");
   check("standings show the week", st.includes("Week 10") && st.includes("Mike T."));
-  check("Robo-Sharp plays", st.includes("Robo-Sharp"));
+  check("The Computer plays", st.includes("The Computer"));
   // The belt, hot hand, rank arrows, near miss, and the week dropdown (items 51, 56, 53, 52, 40), drawn on the page with three made-up weeks.
   const pz = await m.evaluate(() => {
     const T = window.tpRecap; const { state } = T;
@@ -468,7 +468,7 @@ try {
     return { me: server.pickedIn.includes(state.uid), noSides: server.pickedIn.every((x) => typeof x === "string"), zero: ids.includes("open0"), rec: zero && [zero.w, zero.l, zero.pts], tbOnly: ids.includes("tbOnly"), bot: ids.includes("__bot") || ids.some((x) => /bot|robo/i.test(x)), order, plain, pct: pctText({ w: 5, l: 3 }), none: pctText({ w: 0, l: 0 }), nullPct: pickPct({ w: 0, l: 0 }) };
   });
   check("a picker with one game in shows at 0-0; an empty sheet does not", season.me && season.noSides && season.zero && season.rec.join() === "0,0,0" && !season.tbOnly, JSON.stringify(season));
-  // Class badges: server sends each picker's first season; Redshirt for 2026; none for Robo-Sharp; removed pickers left off the Classes panel.
+  // Class badges: server sends each picker's first season; Redshirt for 2026; none for the Computer; removed pickers left off the Classes panel.
   const cls = await m.evaluate(async () => {
     const { state } = window.tpRecap; const { classYear, classBadge, classPanel } = window.tpStats;
     const server = await (await fetch("/api/state")).json();
@@ -478,7 +478,7 @@ try {
     const out = { mine: server.classOf && server.classOf[server.me.id], rs: classBadge("r26"), std: classBadge("n27"), bot: classBadge("__bot") + (classYear("__bot") || ""), none: classBadge("nobody"), panel: classPanel("r26") };
     Object.assign(state, keep); return out;
   });
-  check("class badges: Redshirt 2026, Class of 2027, none for Robo-Sharp", cls.mine === 2026 && /Redshirt Class of 2026/.test(cls.rs) && /clsb rs/.test(cls.rs) && /Class of 2027/.test(cls.std) && !/ rs/.test(cls.std) && cls.bot === "" && cls.none === "", JSON.stringify({ mine: cls.mine, bot: cls.bot }));
+  check("class badges: Redshirt 2026, Class of 2027, none for the Computer", cls.mine === 2026 && /Redshirt Class of 2026/.test(cls.rs) && /clsb rs/.test(cls.rs) && /Class of 2027/.test(cls.std) && !/ rs/.test(cls.std) && cls.bot === "" && cls.none === "", JSON.stringify({ mine: cls.mine, bot: cls.bot }));
   check("Classes panel lists each class and hides removed pickers", /Classes/.test(cls.panel) && /data-pk="r26"/.test(cls.panel) && /data-pk="n27"/.test(cls.panel) && !/data-pk="gone"/.test(cls.panel) && cls.panel.indexOf("Redshirt") < cls.panel.indexOf("Class of 2027"));
   check("correct pick % rounds to a whole number, a dash before any graded pick", season.pct === "63%" && season.none === "–" && season.nullPct === null, JSON.stringify(season));
   check("Pct sort: best first, more correct picks on a tie, no graded picks last", season.order === "bfaedc" && season.plain === "ca", JSON.stringify(season));
@@ -565,7 +565,7 @@ try {
       out.indep = S.survConf("Notre Dame");
       const D = { ...S.realStats(), wids: ["2026-w12"], week: (k) => state.weeks[k], players: (k) => state.reveals[k].players };
       const card = document.createElement("div"); card.innerHTML = S.careerPanel(D, "x"); out.career = card.textContent;
-      // Robo-Sharp in Run 2 never takes a team from a conference it burned.
+      // The Computer in Run 2 never takes a team from a conference it burned.
       const bs = S.botSurv(state.weeks["2026-w14"]); const bw13 = S.botSurv(state.weeks["2026-w13"]);
       const team = (s) => s && (s.s === "home" ? G.find((g) => g.id === s.g).home : G.find((g) => g.id === s.g).away);
       out.bot = [team(bw13), team(bs)].map((t) => t && S.survConf(t)).join("|");
@@ -595,7 +595,7 @@ try {
   check("a team used in Run 1 can be picked again in Run 2", r2.used && r2.used.teams.length === 1 && r2.used.confs[0] === "SEC", JSON.stringify(r2));
   check("Notre Dame counts as the Independents", r2.indep === "Independents");
   check("each Survivor run won is a career win", /Survivor wins\s*1/.test(r2.career), r2.career);
-  check("Robo-Sharp never reuses a burned conference in Run 2", r2.bot && r2.bot.split("|").length === 2 && r2.bot.split("|")[0] !== r2.bot.split("|")[1], JSON.stringify(r2));
+  check("The Computer never reuses a burned conference in Run 2", r2.bot && r2.bot.split("|").length === 2 && r2.bot.split("|")[0] !== r2.bot.split("|")[1], JSON.stringify(r2));
   check("the sheet grays out every team from a burned conference", r2.disabled === "Alabama,Georgia" && r2.enabled === 4, JSON.stringify({ d: r2.disabled, e: r2.enabled }));
   check("the sheet explains the conference lock in plain words", /conference lock/i.test(r2.sheetNote) && /whole conference/.test(r2.sheetNote) && /Burned:\s*SEC/.test(r2.sheetNote), r2.sheetNote);
   check("the Survivor tab has a Run 1 and Run 2 switch, on Run 2 by default", /Run 1.*:false\|Run 2.*:true/.test(r2.switch), r2.switch);
@@ -682,7 +682,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const draw = (p) => (el.innerHTML = careerPanel(D, p) + insightPanel(D, p) + closePanel(D) + pastPanel(D, p));
     const stat = () => el.querySelector(".stats").textContent;
     draw("sample0"); const text = el.textContent; const co = stat();
-    const row = [...el.querySelectorAll("table.plain tbody tr")].find((t) => t.textContent.includes("Robo-Sharp"));
+    const row = [...el.querySelectorAll("table.plain tbody tr")].find((t) => t.textContent.includes("The Computer"));
     const out = { text, co, rob: row ? row.cells[0].textContent : "none", width: document.documentElement.scrollWidth };
     draw("sample3"); out.bowl = stat();
     const k = D.wids[D.wids.length - 1]; const win = window.tpStats.statWinners(D, k)[0]; draw(win); out.before = stat();
@@ -690,7 +690,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   });
   check("stats panels fill with a full season", full2.text.includes("Hurt them most") && full2.text.includes("Beat the close") && full2.text.includes("Past picks") && !full2.text.includes("No team has burned"), full2.text.slice(0, 300));
   check("stats have no undefined or NaN", !/undefined|NaN|null/.test(full2.text));
-  check("Robo-Sharp is in Beat the close with no rank", full2.rob === "", full2.rob);
+  check("The Computer is in Beat the close with no rank", full2.rob === "", full2.rob);
   check("career counts season, Bowl, and CFP wins", /Bowl wins1/.test(full2.bowl), full2.bowl);
   { const num = (t, l) => { const m = t.match(new RegExp(l + "(\\d+)")); return m ? +m[1] : 0; };
     check("Conference Champion Week wins count apart from weekly wins", num(full2.after, "Weekly wins") === num(full2.before, "Weekly wins") - 1 && num(full2.after, "Conf Champ wins") === num(full2.before, "Conf Champ wins") + 1, full2.before + " | " + full2.after); }
@@ -839,7 +839,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
       a: document.querySelector("#muA").value, h: document.querySelector("#muH").value, site: (document.querySelector('#v-rankings [data-musite][aria-pressed="true"]') || {}).dataset.musite,
       text: document.querySelector("#v-rankings").textContent, back: !!document.querySelector("[data-muback]") }));
     check("the link opens Matchup with both teams and the home team filled in", mu.hash === "#rankings" && mu.seg === "true" && mu.site === (muLink.neutral ? "n" : "h") && mu.back, JSON.stringify({ ...mu, text: undefined }));
-    check("Matchup shows each model, the betting line, Robo-Sharp, and side by side", ["SP+", "FPI", "VSiN", "Betting line", "Side by side", "Home field", "SP+ rank by week"].every((x) => mu.text.includes(x)), mu.text.slice(0, 400));
+    check("Matchup shows each model, the betting line, the Computer, and side by side", ["SP+", "FPI", "VSiN", "Betting line", "Side by side", "Home field", "SP+ rank by week"].every((x) => mu.text.includes(x)), mu.text.slice(0, 400));
     await m.click('[data-musite="n"]'); await m.waitForTimeout(150);
     const mu2 = await m.textContent("#v-rankings");
     check("changing home field off the real site asks to match it before comparing to the line", muLink.neutral || (mu2.includes("Neutral site: no home field added.") && mu2.includes("to compare with the betting line")), mu2.slice(0, 300));
@@ -1046,7 +1046,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("prototype picks survive a reload on this device", (await c.locator('#v-bowls .side[aria-pressed="true"]').count()) === 10);
   await c.click('[data-bwph="final"]');
   const bwFinal = await c.textContent("#v-bowls .bwt");
-  check("Final shows standings with Robo-Sharp unranked", bwFinal.includes("Robo-Sharp") && bwFinal.includes("You") && (await c.locator("#v-bowls .bwt tr", { hasText: "Robo-Sharp" }).locator("td").first().textContent()) === "—");
+  check("Final shows standings with the Computer unranked", bwFinal.includes("The Computer") && bwFinal.includes("You") && (await c.locator("#v-bowls .bwt tr", { hasText: "The Computer" }).locator("td").first().textContent()) === "—");
   check("picks are read only after the lock", (await c.locator("#v-bowls .side:not([disabled])").count()) === 0);
   await c.click('[data-bwph="live"]');
   check("After lock shows some bowls not played yet", (await c.textContent("#v-bowls")).includes("Not played yet") && (await c.textContent("#v-bowls")).includes("Final:"));
@@ -1072,7 +1072,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("the Army-Navy entry survives a reload", (await c.inputValue("#an-fn")) === "20");
   await c.click('[data-anph="final"]');
   const anT = await c.textContent("#v-armynavy .bwt");
-  check("Army-Navy final ranks by winner, then final, then halftime", anT.includes("You") && anT.includes("Robo-Sharp") && (await c.locator("#v-armynavy .bwt tr", { hasText: "Robo-Sharp" }).locator("td").first().textContent()) === "—" && (await c.isDisabled("#an-fa")));
+  check("Army-Navy final ranks by winner, then final, then halftime", anT.includes("You") && anT.includes("The Computer") && (await c.locator("#v-armynavy .bwt tr", { hasText: "The Computer" }).locator("td").first().textContent()) === "—" && (await c.isDisabled("#an-fa")));
   await c.click('[data-anph="half"]');
   check("halftime view has no winner yet", (await c.textContent("#v-armynavy")).includes("The final decides it"));
   check("the Army-Navy tab adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
@@ -1136,7 +1136,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     check("the commissioner enters a winner", (await st(c)).res.wr === "Jeremiah Smith");
     await re(m); await m.evaluate(() => window.tpRecap.render());
     const tbl = await m.textContent("#v-awards .bwt");
-    check("standings show with Robo-Sharp unranked", /Standings so far/.test(await m.textContent("#v-awards")) && /Robo-Sharp \(all top picks\)/.test(tbl) && (await m.locator("#v-awards .bwt tr", { hasText: "Robo-Sharp" }).locator("td").first().textContent()) === "—");
+    check("standings show with the Computer unranked", /Standings so far/.test(await m.textContent("#v-awards")) && /The Computer \(all top picks\)/.test(tbl) && (await m.locator("#v-awards .bwt tr", { hasText: "The Computer" }).locator("td").first().textContent()) === "—");
     check("a lone right pick pays the whole room", /You got it: \+1/.test(await m.textContent("#v-awards")));
     check("the Awards tab adds no sideways scroll on a phone", (await m.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
     if (process.env.SHOT) await m.screenshot({ path: process.env.SHOT + "/aw-lock.png", fullPage: true });
@@ -1203,7 +1203,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await c.evaluate(() => { const b = document.querySelector('#v-groupme .gmq [data-gmsel^="final:"]'); if (b) b.click(); });
   await c.waitForFunction(() => { const i = document.querySelector("#gmCard"); return i && i.src && !i.classList.contains("wait"); }, null, { timeout: 5000 }).catch(() => {});
   const gmTxt = await c.getAttribute("#gmCard", "alt");
-  check("each card carries one fun fact row", /Leader watch|Robo-Sharp watch|Lone wolf|League fact/.test(gmTxt), gmTxt.split("\n").filter((l) => / watch:| wolf:| fact:/.test(l)).join(" | "));
+  check("each card carries one fun fact row", /Leader watch|Computer watch|Lone wolf|League fact/.test(gmTxt), gmTxt.split("\n").filter((l) => / watch:| wolf:| fact:/.test(l)).join(" | "));
   check("the text version names the week, ends with the site link, and stays under 1,000 characters", /WEEK \d+/.test(gmTxt) && gmTxt.length <= 1000 && gmTxt.includes("🔗 http"), String(gmTxt.length));
   const gmKey = await c.getAttribute('#v-groupme [data-gm="post"]:not([disabled])', "data-key").catch(() => null);
   if (gmKey) {
@@ -1386,7 +1386,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.fill("#loginPhone", "2145550123"); await m.fill("#loginPin", pin2); await m.click("#loginBtn");
   await m.waitForSelector("#welcomeCard:not([hidden])");
   check("the same PIN logs in and the walk-on runs again", (await m.textContent("#welcomeCard")).includes("You made the roster"));
-  // ---- Robo-Sharp: new model, inputs, switch, flip alert ----
+  // ---- the Computer: new model, inputs, switch, flip alert ----
   {
     const ev = await c.evaluate(() => {
       const { roboEval } = window.tpRobo;
@@ -1396,18 +1396,18 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
       const d = roboEval({ ...base, homeLine: -7.5, modelLine: -6 }, { sp: [10, 20], vs: [80, 85] });
       return { a, b, d };
     });
-    check("Robo-Sharp follows the market when the ratings sit on our line", ev.a.side === "home" && Math.abs(ev.a.s + 1.5) < 0.01, JSON.stringify(ev.a));
-    check("Robo-Sharp adds a little when its line crosses 7", Math.abs(ev.b.s + 1.4) < 0.01, JSON.stringify(ev.b));
-    check("Robo-Sharp blends three ratings and counts who agrees", ev.d.side === "away" && ev.d.cons === -7 && ev.d.agree === 2 && ev.d.n === 3, JSON.stringify(ev.d));
+    check("The Computer follows the market when the ratings sit on our line", ev.a.side === "home" && Math.abs(ev.a.s + 1.5) < 0.01, JSON.stringify(ev.a));
+    check("The Computer adds a little when its line crosses 7", Math.abs(ev.b.s + 1.4) < 0.01, JSON.stringify(ev.b));
+    check("The Computer blends three ratings and counts who agrees", ev.d.side === "away" && ev.d.cons === -7 && ev.d.agree === 2 && ev.d.n === 3, JSON.stringify(ev.d));
     await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
     await c.evaluate(() => { document.querySelectorAll('#v-commish details[data-sec]').forEach((d) => (d.open = true)); });
     {
       const panel = await c.textContent('[data-sec="robo"]');
-      check("the Robo-Sharp section shows the bands and the model scoreboard, no old vs new", /Confidence bands/.test(panel) && /Model scoreboard/.test(panel) && !/old vs new/i.test(panel) && !/Field goal:/.test(panel), panel.slice(0, 300));
+      check("the the Computer section shows the bands and the model scoreboard, no old vs new", /Confidence bands/.test(panel) && /Model scoreboard/.test(panel) && !/old vs new/i.test(panel) && !/Field goal:/.test(panel), panel.slice(0, 300));
       check("week bands read as counts when a week has inputs", !/Week \d+\./.test(panel) || /Bands: \d+ heavy, \d+ leans, \d+ slight, \d+ coin flip\./.test(panel), panel.slice(0, 300));
     }
     await c.evaluate(() => (location.hash = "#rules")); await c.waitForTimeout(300);
-    check("Rules show only the new Robo-Sharp text", await c.evaluate(() => !document.querySelector("#roboRulesNew").hidden && !document.querySelector("#roboRulesOld")));
+    check("Rules show only the new the Computer text", await c.evaluate(() => !document.querySelector("#roboRulesNew").hidden && !document.querySelector("#roboRulesOld")));
     const flip = await c.evaluate(() => {
       const g = { id: "x1", slot: 1, away: "Florida", home: "Georgia", neutral: true, homeLine: -7.5, modelLine: -7.5 };
       const w = { id: "2099-w01", games: [g], robo: { v: 2, first: { g: { x1: { mkt: -7.5 } } }, last: { g: { x1: { mkt: -11 } } } } };
@@ -1419,12 +1419,12 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
       const mk = roboEval(g, { mkt: -6 }), rt = roboEval({ ...g, modelLine: -6 }, {}), both = roboEval({ ...g, modelLine: -6 }, { mkt: -6 }), flat = roboEval({ ...g, modelLine: -2.5 }, { mkt: -2.5 });
       return [roboWhy(g, mk), roboWhy(g, rt), roboWhy(g, both), roboWhy(g, flat)];
     });
-    check("Robo's card names what drove the pick", why[0].startsWith("Market call:") && why[0].includes("\u22126") || why[0].includes("-6"), why.join(" | "));
-    check("Robo's card says ratings call, both, or coin flip", why[1] === "Ratings call: 1 of 1 like it" && why[2] === "Ratings and market agree" && why[3] === "Ratings split, market flat", why.join(" | "));
+    check("The Computer's card names what drove the pick", why[0].startsWith("Market call:") && why[0].includes("\u22126") || why[0].includes("-6"), why.join(" | "));
+    check("The Computer's card says ratings call, both, or coin flip", why[1] === "Ratings call: 1 of 1 like it" && why[2] === "Ratings and market agree" && why[3] === "Ratings split, market flat", why.join(" | "));
     const bands = await c.evaluate(() => { const { roboEval, roboBand } = window.tpRobo; const g = { away: "Texas", home: "Ole Miss", neutral: true, homeLine: -10.5 };
       return [0.3, 0.8, 1.6, 3].map((e) => roboBand(roboEval({ ...g, modelLine: -10.5 - e }, {}).p)[2]); });
-    check("Robo's confidence bands run from coin flip to heavy lean", bands.join() === "Coin flip,Slight lean,Leans,Heavy lean", bands.join());
-    check("a market move after the open shows as a Robo flip", flip.join() === "away>home", flip.join());
+    check("The Computer's confidence bands run from coin flip to heavy lean", bands.join() === "Coin flip,Slight lean,Leans,Heavy lean", bands.join());
+    check("a market move after the open shows as a Computer flip", flip.join() === "away>home", flip.join());
   }
 } catch (e) {
   check("test run", false, e.message);

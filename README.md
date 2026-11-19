@@ -1,6 +1,6 @@
 # Tator's Picks
 
-College football pick em against the spread for one league. Ten games a week, a 3 point field goal pick, a tiebreaker, Survivor, and Robo-Sharp, the computer player.
+College football pick em against the spread for one league. Ten games a week, a 3 point field goal pick, a tiebreaker, Survivor, and the Computer, the robot picker you have to beat.
 
 ## How it runs
 
@@ -46,7 +46,7 @@ Rules the automation keeps:
 * Scores entered by hand are never overwritten. Set a game back to ESPN to hand it back.
 * A postponed or canceled game waits for the commissioner to void it. A moved kickoff stays on the slate: the scores job takes ESPN's new time.
 * Moving a week back to draft stops the automatic open for that week. Reopening scoring stops the automatic final.
-* Robo-Sharp blends ESPN FPI's projected margin, SP+, VSiN, and the market line. Each ATS run while picks are open saves the market line and the SP+ and VSiN ratings on the week. Nothing changes them after the lock.
+* The Computer blends ESPN FPI's projected margin, SP+, VSiN, and the market line. Each ATS run while picks are open saves the market line and the SP+ and VSiN ratings on the week. Nothing changes them after the lock.
 * Conference standings keep ESPN's order. Ties are not broken by conference rules. A bad standings feed keeps the last saved tables and raises a flag.
 * The team game log keeps every finished FBS game: scores, the line saved before kickoff, and the total. The ATS job adds games as they finish. The Teams tab reads it from `/api/state?part=teams`, so the main state stays small. A hand-entered slate score shows in place of ESPN's.
 
