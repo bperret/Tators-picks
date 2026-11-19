@@ -245,8 +245,11 @@ Build note for 33 and 34: one saved badge list per picker, drawn by one helper, 
 67. The Picker: the season champion's title. Decided Nov 18 (Benton). Everyone is a picker; the season champion is crowned The Picker for that year. Today the champion has no name or mark (only the Season titles career tile), while the weekly winner has the belt and Survivor winners the skull.
    - Mark: ☝️ (the pointing pick plus the "We're No. 1" foam finger). Unused in the app as of Nov 18. Icon: a gold foam finger SVG in the same style as `BELT`, so the belt (weekly) and the foam finger (season) read as a set.
    - Shows in the season table marks, the Pickers profile, and Career wins (Season titles become The Picker titles). Never the Computer.
+   - The two weekly foes (Benton, Nov 18): "Beat The Picker to become The Picker. Also beat the bot." The reigning Picker (last season's champion) shows on the weekly Picks view as prominently as the Computer: a ☝️ chip with the full name in the pick columns under each game, a weekly "beat The Picker" count beside the Computer's line, and both in the recap and the Final GroupMe card. The Picker still plays for points and can defend the title.
+   - Lock rule stays: the Computer's lean shows before the lock, but The Picker's sides are a picker's picks, so they show only after the lock, like everyone's. Before the lock, show the name and season record only.
+   - So the 2026 champion must hold the title in 2027, or there is no Picker to beat in year one.
    - Pairs with Ring of Honor (58: "The Picker, 2026"), Awards Night (55: crowning The Picker), and Report to camp (60: "Who's The Picker this year?").
-   - Undecided: whether the app itself is renamed The Picker (Benton likes it; app stays Tator's Picks for now), and whether the 2026 champion gets the title retroactively.
+   - Undecided: whether the app itself is renamed The Picker (Benton likes it; app stays Tator's Picks for now), and nothing else (the 2026 champion holds the title in 2027).
 Buy-in amount for 2027 is not set.
 
 ### Engagement review (Nov 2): Benton's calls
