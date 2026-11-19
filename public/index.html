@@ -401,6 +401,7 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .awyou{margin:6px 0 0;font-family:var(--cond);font-weight:700}
 .bwtb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.9rem}.bwtb input{width:84px;font:inherit;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 .bwt{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:12px}table.bwt{background:transparent;color:var(--ink)}.bwt th,.bwt td{padding:5px 6px;border-top:1px solid var(--line);text-align:left;color:var(--ink);background:transparent;text-shadow:none}.bwt th{font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:.74rem;color:var(--muted)}.bwt .n{text-align:right;font-variant-numeric:tabular-nums}.bwt tr.me td{font-weight:700;background:var(--card)}
+.awban{display:flex;align-items:center;gap:10px;background:#f6e7a8;color:#3d2f00;border:1px solid #c9a227;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-weight:700;text-decoration:none;line-height:1.3}.awban span:nth-child(2){flex:1}.awban span:last-child{font-size:1.4rem}.awban.due{border-width:2px}
 .recapban{display:block;text-align:center;background:var(--board,#17482a);color:var(--board-ink,#fff);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-family:var(--cond);font-weight:700;letter-spacing:.03em;text-decoration:none}
 .rchero h2{margin:0}
 .rchero .note{color:#e8edf2}
@@ -1760,10 +1761,15 @@ function awField(){const A=AWD();if(!A)return [];const src=A.picks||(Object.keys
 function awSplit(P,k,n){const c=Array(n).fill(0);let in_=0;for(const x of P){if(Number.isInteger(x.p[k])){c[x.p[k]]++;in_++}}return {c,in_}}
 const awVal=(S,i)=>S.c[i]?Math.round(S.in_/S.c[i]*10)/10:null;
 function awScore(P,R){return P.map(x=>{let pts=0,hits=0;for(const a of AW_LIST_()){if(!(a.k in R))continue;const S=awSplit(P,a.k,a.c.length),w=R[a.k];if(x.p[a.k]===w){pts+=awVal(S,w);hits++}}return {...x,pts:Math.round(pts*10)/10,hits}})}
-/* Picks notice while the contest is open and your six are not all in. */
-function awNotice(){if(!awOpen()||awDone())return "";const n=awCount(),A=AWD();
-  return notice("🏆",`<b>Award Watch is open.</b> ${n?`You have ${n} of ${A.list.length} picked.`:`Pick ${A.list.length} award winners.`} Locks ${esc(kick(A.lock))}. <a href="#awards">Make your picks</a>`,"awnt")}
+/* Banner at the very top of Picks (Benton, Nov 18): links to the Awards tab for the whole contest.
+   Open: how many you have picked and the lock. Locked: everyone's picks, then the standings. Final: until you open the tab once. */
+function awBanner(){const A=AWD();if(!A)return "";const L=A.list.length,R=Object.keys(A.res||{}).length,lk=esc(kick(A.lock));let t;
+  if(awOpen()){const n=awCount();t=n===L?`Your ${L} Award Watch picks are in. Change them until ${lk}.`:`Award Watch: pick ${L} award winners. ${n?`${n} of ${L} picked. `:""}Locks ${lk}.`}
+  else if(R<L)t=R?`Award Watch: ${R} of ${L} winners are in. See the standings.`:"Award Watch is locked. See everyone's picks.";
+  else{let seen=null;try{seen=localStorage.getItem("tp-aw-final-"+state.uid)}catch(e){}if(seen)return "";t="Award Watch is final. See who called it."}
+  return `<a class="awban${awOpen()&&!awDone()?" due":""}" href="#awards"><span aria-hidden="true">🏆</span><span>${t}</span><span aria-hidden="true">›</span></a>`}
 function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";return}
+  if(A.list.every(a=>(A.res||{})[a.k])){try{localStorage.setItem("tp-aw-final-"+state.uid,"1")}catch(e){}}
   const L=A.list,d=awState(),pre=awOpen(),R=awRes(),P=pre?[]:awField(),nRes=Object.keys(R).length,fin=nRes===L.length;
   let h=`<div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">Just for fun. No season points, no payout.</p>
       <p class="awwhen">${pre?`Locks ${esc(kick(A.lock))}, the night before most awards cut to three finalists.`:`Locked ${esc(kick(A.lock))}.`} Winners Thu Dec 10; Heisman Sat Dec 12, the same day as Army-Navy.</p></div>`;
@@ -1944,9 +1950,11 @@ window.tpBoard={boardOn,sbFromBoard,sbFromSlate,sbSort}; /* for the browser test
 /* GroupMe tab (commissioner only). One announcement at a time on the weekly rhythm: Preview, Picks live, Last call, Locked, Final and recap.
    Each card is drawn on a canvas as a 1080 px PNG (gmDraw), so the screen shows exactly the image that gets saved, shared, or copied.
    Posted marks save on the server in kv groupme (admin action gmPosted), so every device agrees. */
-const GM_KINDS={aw:["Award Watch","now, before the lock"],pv:["Preview","Mon"],live:["Picks live","Wed 6 PM"],last:["Last call","Sat morning"],lock:["Locked","Sat 10:15 AM"],final:["Final and recap","Sunday"]};
+const GM_KINDS={aw:["Award Watch","now, before the lock"],awr:["Award Watch last call","Monday, lock day"],awl:["Award Watch locked","after the Monday 10 PM lock"],pv:["Preview","Mon"],live:["Picks live","Wed 6 PM"],last:["Last call","Sat morning"],lock:["Locked","Sat 10:15 AM"],final:["Final and recap","Sunday"]};
 /* Best time to post each card (Nov 12 timing plan): when this crowd has the phone out. Same times every week trains people to expect them. */
-const GM_BEST={aw:["Thu 12:15 PM","A one-off. Lunch on a quiet day, so it does not share Wednesday night with Picks live. Gives four days before the Monday 10 PM lock."],
+const GM_BEST={awr:["Mon 12:15 PM","Lock day. Post it with the recap at lunch, which leaves the afternoon and evening before the 10 PM lock."],
+  awl:["Tue 12:15 PM","Lunch the day most awards cut to three finalists, so the picks and the cut land together."],
+  aw:["Thu 12:15 PM","A one-off. Lunch on a quiet day, so it does not share Wednesday night with Picks live. Gives four days before the Monday 10 PM lock."],
   pv:["Mon 12:15 PM","Lunch break, the one weekday slot most people check their phone. Optional: skip it most weeks."],
   live:["Wed 8:30 PM","Picks open at 6, but 6 is the drive home, dinner, and kids. Around 8:30 is couch time."],
   last:["Sat 8:15 AM","Up with coffee, before kids' activities take over. Leaves 2 hours before the 10:15 lock."],
@@ -1970,7 +1978,11 @@ function gmQueue(){
   /* The coming week's other posts, listed ahead as "Later" with their best times (Benton, Nov 17). No card is drawn
      until picks open, since swaps and the Wednesday line refresh can still change it, so these rows cannot be opened. */
   /* Award Watch one-off (item 65): ready until the lock, then Skipped if never marked. Listed first. */
-  {const A=AWD();if(A){const key=`aw:${A.season}`;out.unshift({key,kind:"aw",wid:null,wk:null,ready:awOpen(),stale:!awOpen(),at:posted[key]||null,label:GM_KINDS.aw[0],when:GM_KINDS.aw[1],sk:!!gmSkipped()[key]})}}
+  /* Award Watch one-offs (item 65), listed first: the opener (ready until the lock), Monday's last call (ready on lock day,
+     from Mon 12 AM CT), and Tuesday's locked card (ready after the lock until the first winner is in). */
+  {const A=AWD();if(A){const lk=Date.parse(A.lock),t=NOW(),open=t<lk,won=Object.keys(A.res||{}).length>0;
+    const one=(kind,ready,stale)=>{const key=`${kind}:${A.season}`;return {key,kind,wid:null,wk:null,ready:!!ready&&!stale,stale:!!stale,at:posted[key]||null,label:GM_KINDS[kind][0],when:GM_KINDS[kind][1],sk:!!gmSkipped()[key]}};
+    out.unshift(one("aw",open,!open),one("awr",open&&t>=lk-22*3600e3,!open),one("awl",!open,won))}}
   if(up)for(const k of ["live","last","lock","final"])out.push({key:`${k}:${up.wid}`,kind:k,wid:up.wid,wk:up.wk,ready:false,stale:false,ahead:true,at:null,label:GM_KINDS[k][0],when:GM_KINDS[k][1],sk:false});
   return out}
 /* Prototype tabs (Bowl Blitz, Army-Navy) get no action dot for now (Benton, Nov 12). Set true to bring it back. */
@@ -1979,7 +1991,7 @@ const PROTO_DOT=false;
    Wed: Picks live. Sat: Last call, then Locked once the lock passes. Sun: Final and recap. The optional Monday Preview never lights it. */
 const GM_DAY={live:3,last:6,lock:6,final:0};
 function gmDue(now=NOW()){const d=new Date(now).toLocaleString("en-US",{timeZone:TZ,weekday:"short"});const dow=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(d);
-  return gmQueue().some(x=>x.ready&&!x.at&&(GM_DAY[x.kind]===dow||x.kind==="aw"))}
+  return gmQueue().some(x=>x.ready&&!x.at&&(GM_DAY[x.kind]===dow||/^aw/.test(x.kind)))}
 function gmNext(){const Q=gmQueue().filter(x=>!x.ahead);return Q.find(x=>x.ready&&!x.at)||Q.find(x=>!x.stale&&!x.at)||{ready:false}}
 /* Facts the cards share. Counts only before the lock, never sides. */
 function gmActive(){return (state.logins||[]).filter(a=>!a.removed)}
@@ -2021,6 +2033,24 @@ function gmFun(it,w){const strip=x=>String(x).replace(/\.$/,"");
 function gmModel(it){
   const w=state.weeks[it.wid];const M={league:(state.config&&state.config.name)||"Tator's Picks",kick:`Week ${it.wk}`,title:"",sub:"",rows:[],games:[],foot:""};
   const row=(ic,label,text,tone)=>M.rows.push({ic,label,text,tone});
+  if(it.kind==="awr"){const A=AWD(),act=gmActive();
+    M.kick="Award Watch · Last call";M.title="Last call";M.sub=`Lock: ${kick(A.lock)}`;
+    row("📝","In so far",`${A.n} of ${act.length} pickers. ${act.length-A.n>0?`${act.length-A.n} still out.`:"Everyone is in!"}`,"gold");
+    row("✂️","Why tonight","Most awards cut to 3 finalists tomorrow. Lock in while all 10 names are live.","red");
+    row("🐺","Go against the room","A right pick is worth pickers ÷ pickers on that winner. Alone on the right guy? You get the whole room.","purple");
+    row("📅","Winners","Most awards Thu Dec 10. Heisman Sat Dec 12.","blue");
+    M.rows.push({ic:"🙈",label:"No peeking",text:"Nobody sees anyone's picks until the lock.",fun:true});
+    M.foot="Award Watch tab in the app 👉";return M}
+  if(it.kind==="awl"){const A=AWD(),P=A.picks||{},ps=Object.values(P);
+    M.kick="Award Watch · Locked";M.title="Picks are locked";M.sub=`${ps.length} picker${ps.length===1?"":"s"} in. Every pick is public now.`;
+    const top=A.list.map(a=>{const c={};let n=0;for(const p of ps)if(p[a.k]){c[p[a.k]]=(c[p[a.k]]||0)+1;n++}const b=Object.entries(c).sort((x,y)=>y[1]-x[1])[0];return b?`${a.n.replace(/ (Trophy|Award)$/,"")}: ${b[0]} (${b[1]} of ${n})`:null}).filter(Boolean);
+    if(top.length)row("📊","Most picked",top.join("\n"),"blue");
+    const solo=A.list.reduce((t,a)=>{const c={};for(const p of ps)if(p[a.k])c[p[a.k]]=(c[p[a.k]]||0)+1;return t+Object.values(c).filter(v=>v===1).length},0);
+    if(solo)row("🐺","Lone wolves",`${solo} pick${solo===1?"":"s"} only one picker made. Hit one and you get the whole room.`,"purple");
+    row("✂️","Finalist day","Most awards cut to 3 finalists today. Some picks are already dead.","red");
+    row("📅","Winners","Most awards Thu Dec 10. Heisman Sat Dec 12.");
+    M.rows.push({ic:"🤖",label:"Robo-Sharp",text:"Took every favorite. Beat the robot.",fun:true});
+    M.foot="Every pick is on the Awards tab 👉";return M}
   if(it.kind==="aw"){const A=AWD(),act=gmActive();
     M.kick="New contest · Just for fun";M.title="Award Watch";M.sub=`Lock: ${kick(A.lock)}`;M.confetti=true;
     row("🏆",`Pick ${A.list.length} winners`,"Heisman, Davey O'Brien, Doak Walker, Biletnikoff, Bednarik, and Coach of the Year. 10 contenders each.","gold");
@@ -2206,7 +2236,7 @@ function render(){
     if(state.preview){$("#weekLine").textContent=`Week ${state.preview.week} preview · Picks are not open yet`;setB("Preview","plain")}
     else if(state.upcoming){$("#weekLine").textContent=`Week ${state.upcoming.week} slate drops soon.${lf?" Week "+lf.week+" is final.":""}`;setB("Slate coming","plain")}
     else{$("#weekLine").textContent=lf?`Week ${lf.week} is final. The next slate drops Tuesday.`:"The first slate drops Tuesday.";setB("Off week","plain")}}
-  if(state.view==="picks"){renderPicks();if(state.preview)$("#v-picks").insertAdjacentHTML("afterbegin",previewPanel());const cw=curWeek();const ban=isRookie()||(cw&&(cw.status==="open"||cw.status==="draft"))?"":recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban)}
+  if(state.view==="picks"){renderPicks();if(state.preview)$("#v-picks").insertAdjacentHTML("afterbegin",previewPanel());const cw=curWeek();const ban=isRookie()||(cw&&(cw.status==="open"||cw.status==="draft"))?"":recapBanner();if(ban)$("#v-picks").insertAdjacentHTML("afterbegin",ban);const ab=awBanner();if(ab)$("#v-picks").insertAdjacentHTML("afterbegin",ab)}
   if(state.view==="picks"){const rk=$("#rookie");if(rk&&rk.parentNode.firstElementChild!==rk)rk.parentNode.prepend(rk)}
   /* Scoreboard tab (item 48): shows from the lock until the week goes final. The dot shows while one of our games is live. */
   {const on=boardOn();$("#sbTab").hidden=!on;$("#sbTab").classList.toggle("hot",on&&boardLive());
@@ -2303,7 +2333,6 @@ function renderPicks(){
   let nt="";
   if(rookie)h+=rookiePanel();else nt+=racePanel(wid);
   if(!rookie&&w.status!=="draft")nt+=beltLine();
-  nt+=awNotice();
   /* Sheets in sits under the 10 games (Nov 12, V2), so the first screen reaches game 1. */
   let sheetsNt="";
   if(w.status==="open"&&!pastDeadline(w)){const ids=(state.sheetsIn||[]).filter(p=>!removed().includes(p));const all=Object.keys(PLAYERS).filter(p=>!removed().includes(p)&&PLAYERS[p].setupDone);

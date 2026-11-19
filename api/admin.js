@@ -259,7 +259,7 @@ export default async function handler(req, res) {
       case "gmPosted": {
         // GroupMe tab: mark an announcement posted, or undo it. Private to the commissioner, so no public log entry.
         const key = String(b.key || "");
-        if (!(/^(pv|live|last|lock|final):\d{4}-w\d{1,2}$/.test(key) || /^aw:\d{4}$/.test(key))) return fail(res, 400, "Unknown post.");
+        if (!(/^(pv|live|last|lock|final):\d{4}-w\d{1,2}$/.test(key) || /^aw[rl]?:\d{4}$/.test(key))) return fail(res, 400, "Unknown post.");
         const gm = await getKv("groupme", { posted: {} });
         gm.posted = gm.posted || {};
         gm.skipped = gm.skipped || {};
