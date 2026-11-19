@@ -954,8 +954,9 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
 
   // ---- tab tiles: on Picks only since Nov 12 (V10) ----
   await m.reload(); await m.waitForSelector("#app:not([hidden])"); await m.evaluate(() => (location.hash = "#picks")); await m.waitForSelector("#goFoot .gotile");
-  const tabs = await m.$$eval("nav.tabs a", (a) => a.filter((x) => !x.hidden).map((x) => x.getAttribute("href")));
-  check("pickers have 9 tabs and no Commish", tabs.length === 9 && !tabs.includes("#commish"), JSON.stringify(tabs));
+  // Award Watch (item 65) is a one-off contest tab with no tile, so it is left out of the tile count.
+  const tabs = (await m.$$eval("nav.tabs a", (a) => a.filter((x) => !x.hidden).map((x) => x.getAttribute("href")))).filter((x) => x !== "#awards");
+  check("pickers have 9 stock tabs and no Commish", tabs.length === 9 && !tabs.includes("#commish"), JSON.stringify(tabs));
   const tileMiss = [];
   for (const t of tabs) {
     await m.evaluate((h) => (location.hash = h), t); await m.waitForTimeout(80);
@@ -1074,25 +1075,51 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("the Army-Navy tab adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
   await c.click('[data-anph="pre"]');
   {
-    // Award Watch prototype (item 65): commissioner only, device-only picks, league contrarian scoring.
-    check("a picker sent to Awards lands on Picks", await m.evaluate(() => { location.hash = "#awards"; return new Promise((r) => setTimeout(() => r(location.hash !== "#awards" || document.querySelector("#v-awards").hidden || !document.querySelector("#v-awards .awcard")), 200)); }));
-    await c.evaluate(() => { localStorage.removeItem("tp-awproto-" + window.tpRecap.state.uid); window.tpRecap.state.aw = null; location.hash = "#awards"; }); await c.waitForSelector("#v-awards .awcard");
-    check("Awards shows six award cards, ten contenders each, and the prototype banner", (await c.locator("#v-awards .awcard").count()) === 6 && (await c.locator("#v-awards .awc").count()) === 60 && /Prototype\. Only you can see this tab/.test(await c.textContent("#v-awards")));
-    await c.click('#v-awards [data-aw="heis"][data-awi="2"]'); await c.click('#v-awards [data-aw="wr"][data-awi="0"]');
-    const saved = await c.evaluate(() => JSON.parse(localStorage.getItem("tp-awproto-" + window.tpRecap.state.uid)));
-    check("award picks save on this device", saved.heis === 2 && saved.wr === 0, JSON.stringify(saved));
-    check("values stay hidden before the lock", (await c.locator("#v-awards .awv").count()) === 0);
-    await c.click('[data-awph="lock"]');
-    const vals = await c.evaluate(() => [...document.querySelectorAll('#v-awards [data-aw="heis"] .awv')].map((x) => x.textContent));
-    check("after the lock each candidate shows its split and its worth (pickers ÷ takers)", vals.length === 10 && vals.every((v) => { const m = /^(\d+) of (\d+)(?: · worth ([\d.]+)| · nobody)$/.exec(v); if (!m) return false; return m[1] === "0" ? !m[3] : Math.abs(+m[3] - Math.round(+m[2] / +m[1] * 10) / 10) < 1e-9; }), JSON.stringify(vals));
-    check("your pick shows what it would pay", /If Devon Dampier wins: \+[\d.]+/.test(await c.textContent("#v-awards")));
-    await c.click('[data-awph="final"]');
-    const fin = await c.textContent("#v-awards .bwt");
-    check("Final ranks pickers by points with Robo-Sharp unranked on all favorites", fin.includes("You") && /Robo-Sharp \(all top picks\)/.test(fin) && (await c.locator("#v-awards .bwt tr", { hasText: "Robo-Sharp" }).locator("td").first().textContent()) === "—");
-    check("the Awards tab adds no sideways scroll on a phone", (await c.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
-    if (process.env.SHOT) { await c.click('[data-awph="lock"]'); await c.screenshot({ path: process.env.SHOT + "/aw-lock.png", fullPage: true }); await c.click('[data-awph="final"]'); await c.screenshot({ path: process.env.SHOT + "/aw-final.png", fullPage: true }); }
-    await c.click('[data-awph="pre"]');
-    if (process.env.SHOT) await c.screenshot({ path: process.env.SHOT + "/aw-pre.png", fullPage: true });
+    // Award Watch (item 65): open to every login, picks saved on the server, the server clock enforces the lock.
+    const adm = (b) => c.evaluate((x) => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(x) }).then(async (r) => ({ status: r.status, ...(await r.json()) })), b);
+    const st = (pg) => pg.evaluate(() => fetch("/api/state").then((r) => r.json()).then((s) => s.awards));
+    const save = (pg, a) => pg.evaluate((x) => fetch("/api/picks", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ awards: x }) }).then((r) => r.status), a);
+    const re = async (pg) => { await pg.evaluate(() => window.tpRecap.refresh(true)); await pg.waitForTimeout(150); };
+    check("the lock can be moved by the commissioner", (await adm({ action: "award", lock: new Date(Date.now() + 7 * 864e5).toISOString() })).ok === true);
+    check("a winner cannot go in before the lock", (await adm({ action: "award", k: "heis", winner: "Devon Dampier" })).status === 409);
+    await re(m); await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(150);
+    check("pickers see the Awards tab and a Picks notice while it is open", !(await m.isHidden("#awTab")) && (await m.locator(".awnt").count()) === 1 && (await m.evaluate(() => document.querySelector("#awTab").classList.contains("hot"))));
+    await m.evaluate(() => (location.hash = "#awards")); await m.waitForSelector("#v-awards .awcard");
+    check("Awards shows six award cards and ten contenders each, with no prototype banner", (await m.locator("#v-awards .awcard").count()) === 6 && (await m.locator("#v-awards .awc").count()) === 60 && !/Prototype/.test(await m.textContent("#v-awards")));
+    await m.click('#v-awards [data-aw="heis"][data-awi="2"]'); await m.waitForTimeout(250); await m.click('#v-awards [data-aw="wr"][data-awi="0"]'); await m.waitForTimeout(250);
+    const mine = (await st(m)).mine;
+    check("award picks save on the server by name", mine.heis === "Devon Dampier" && mine.wr === "Jeremiah Smith" && Object.keys(mine).length === 2, JSON.stringify(mine));
+    check("a name not on the list is refused", (await save(m, { heis: "Nobody Real" })) === 400);
+    check("values stay hidden before the lock", (await m.locator("#v-awards .awv").count()) === 0);
+    await c.evaluate(() => (location.hash = "#awards")); await re(c); await c.waitForSelector("#v-awards .awcard");
+    await c.click('#v-awards [data-aw="heis"][data-awi="2"]'); await c.waitForTimeout(250); await c.click('#v-awards [data-aw="qb"][data-awi="0"]'); await c.waitForTimeout(250);
+    const ms = await st(m);
+    check("before the lock a picker gets the count but nobody else's picks", ms.n === 2 && ms.picks === undefined && ms.entered === undefined, JSON.stringify(ms));
+    await re(c);
+    check("the commissioner sees who is in, with counts, never names picked", /Commish: who is in/.test(await c.textContent("#v-awards")) && Object.values((await st(c)).entered).sort().join() === "2,2");
+    await c.evaluate(() => (location.hash = "#groupme")); await c.waitForSelector("#gmCard");
+    const gq = await c.evaluate(() => { const q = window.tpRecap.gmQueue(); return { first: q[0].kind, ready: q[0].ready, next: window.tpRecap.gmNext().kind }; });
+    check("GroupMe lists the Award Watch one-off first, ready now", gq.first === "aw" && gq.ready && gq.next === "aw", JSON.stringify(gq));
+    check("the Award Watch card names the contest and the lock", /AWARD WATCH/.test(await c.getAttribute("#gmCard", "alt")) && /Lock:/.test(await c.getAttribute("#gmCard", "alt")));
+    const awPost = await adm({ action: "gmPosted", key: "aw:2026" }); await adm({ action: "gmPosted", key: "aw:2026", undo: true });
+    check("the Award Watch post can be marked Posted", awPost.status === 200);
+    if (process.env.SHOT) { await c.waitForTimeout(600); await c.screenshot({ path: process.env.SHOT + "/aw-gm.png", fullPage: true }); }
+    // Lock it.
+    await adm({ action: "award", lock: new Date(Date.now() - 60000).toISOString() });
+    check("a save after the lock is refused (423)", (await save(m, { heis: "CJ Carr" })) === 423);
+    await re(m); await m.evaluate(() => window.tpRecap.render());
+    const vals = await m.evaluate(() => [...document.querySelectorAll('#v-awards [data-aw="heis"] .awv')].map((x) => x.textContent));
+    check("after the lock each candidate shows its split and its worth", vals[2] === "2 of 2 · worth 1" && vals[0] === "0 of 2 · nobody", JSON.stringify(vals));
+    check("the Picks notice and the tab dot go away at the lock", !(await m.evaluate(() => document.querySelector("#awTab").classList.contains("hot"))));
+    await c.evaluate(() => (location.hash = "#awards")); await re(c); await c.waitForSelector("#v-awards [data-awset]");
+    await c.selectOption('#v-awards [data-awset="wr"]', "Jeremiah Smith"); await c.waitForTimeout(400);
+    check("the commissioner enters a winner", (await st(c)).res.wr === "Jeremiah Smith");
+    await re(m); await m.evaluate(() => window.tpRecap.render());
+    const tbl = await m.textContent("#v-awards .bwt");
+    check("standings show with Robo-Sharp unranked", /Standings so far/.test(await m.textContent("#v-awards")) && /Robo-Sharp \(all top picks\)/.test(tbl) && (await m.locator("#v-awards .bwt tr", { hasText: "Robo-Sharp" }).locator("td").first().textContent()) === "—");
+    check("a lone right pick pays the whole room", /You got it: \+1/.test(await m.textContent("#v-awards")));
+    check("the Awards tab adds no sideways scroll on a phone", (await m.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
+    if (process.env.SHOT) await m.screenshot({ path: process.env.SHOT + "/aw-lock.png", fullPage: true });
   }
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
 
@@ -1172,7 +1199,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
         const rows = [...document.querySelectorAll("#v-groupme .gmq li")].map((li) => (li.classList.contains("ahead") ? "A:" : "") + li.textContent);
         const out = { kinds: Q.map((x) => x.kind + (x.ahead ? "*" : "")).join(","), next: nx.kind, rows, open: document.querySelectorAll("#v-groupme .gmq li.ahead button").length, note: /draw once picks open/.test(document.querySelector("#v-groupme").textContent) };
         wk.status = keep.st; S.preview = keep.pv; T.renderGM(); return out; });
-      check("a draft week lists Picks live, Last call, Locked, and Final ahead with best times", ah.kinds === "pv,live*,last*,lock*,final*" && ah.next === "pv" && ah.open === 0 && ah.note && ah.rows.filter((r) => r.startsWith("A:")).length === 4 && ah.rows.some((r) => /Picks live.*Wed 8:30 PM/.test(r)), JSON.stringify(ah));
+      check("a draft week lists Picks live, Last call, Locked, and Final ahead with best times", ah.kinds.replace(/^aw,/, "") === "pv,live*,last*,lock*,final*" && ah.next === "pv" && ah.open === 0 && ah.note && ah.rows.filter((r) => r.startsWith("A:")).length === 4 && ah.rows.some((r) => /Picks live.*Wed 8:30 PM/.test(r)), JSON.stringify(ah));
     }
     { const sk = c.locator('#v-groupme [data-gm="skip"]'); await sk.scrollIntoViewIfNeeded(); await c.evaluate(() => window.scrollBy(0, -220)); await c.screenshot({ path: "dev/test-gmskip.png" }); }
     check("a gray Skipped button sits under Posted", await c.evaluate(() => { const p = document.querySelector('#v-groupme [data-gm="post"]'), s = document.querySelector('#v-groupme [data-gm="skip"]'); return !!p && !!s && s.textContent === "Skipped" && s.getBoundingClientRect().top > p.getBoundingClientRect().bottom - 1; }));

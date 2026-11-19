@@ -394,6 +394,8 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .awcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
 .awc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
 .awc small{color:var(--muted);font-size:.78rem}.awc .awn{font-weight:700}
+.awadm{display:grid;gap:4px;padding:10px 12px}.awadm span{color:var(--muted);font-size:.9rem}
+.awset{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700;font-size:.9rem}.awset select{flex:1;min-height:40px;font:inherit}
 .awc.on{border:2px solid #c9a227;box-shadow:0 0 0 1px #c9a227 inset}.awc.win{background:rgba(46,160,67,.14);border-color:#2ea043}.awc.miss{opacity:.6;text-decoration:line-through}
 .awc:disabled{cursor:default}.awv{font-family:var(--cond);font-size:.8rem;color:var(--muted)}
 .awyou{margin:6px 0 0;font-family:var(--cond);font-weight:700}
@@ -1254,8 +1256,8 @@ function applyState(S){
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Picker");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],classOf:S.classOf||{},
-    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[],groupme:S.groupme||{posted:{}}});
-  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#awTab").hidden=!state.isOwner;$("#gmTab").hidden=!state.isOwner;$("#demoTab").hidden=!state.isOwner;requestAnimationFrame(tabsEdge);
+    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[],awards:S.awards||null,groupme:S.groupme||{posted:{}}});
+  $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#awTab").hidden=!state.awards;$("#gmTab").hidden=!state.isOwner;$("#demoTab").hidden=!state.isOwner;requestAnimationFrame(tabsEdge);
   syncDraft();
 }
 async function refresh(quiet){
@@ -1492,7 +1494,7 @@ function syncDraft(){
 const VIEWS=["scoreboard","picks","standings","recap","rankings","players","survivor","rules","profile","playoffs","bowls","armynavy","awards","groupme","demo","commish"];
 /* Engagement: tab opens and Recap reads go up in small batches, at most every 2 minutes, or as the page hides. Polls send nothing. */
 const ENG={pages:{},recaps:[],sent:new Set(),at:Date.now(),last:null};
-function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v==="awards"||v==="groupme"||v==="demo"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
+function engNote(v){if(!ME||v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v==="demo"||v===ENG.last)return;ENG.last=v;ENG.pages[v]=(ENG.pages[v]||0)+1;engFlush()}
 function engRecap(wid){if(ENG.sent.has(wid))return;ENG.sent.add(wid);ENG.recaps.push(wid);engFlush()}
 function engFlush(now){if(!ME||!(Object.keys(ENG.pages).length||ENG.recaps.length)||(!now&&Date.now()-ENG.at<120e3))return;ENG.at=Date.now();const body=JSON.stringify({pages:ENG.pages,recaps:ENG.recaps});ENG.pages={};ENG.recaps=[];
   try{navigator.sendBeacon("/api/state",new Blob([body],{type:"application/json"}))}catch(e){}}
@@ -1507,7 +1509,7 @@ function tabsIntoView(){const n=document.querySelector("nav.tabs"),a=n&&n.queryS
   if(n.scrollWidth>n.clientWidth){const l=a.offsetLeft-n.offsetLeft,r=l+a.offsetWidth;if(l<n.scrollLeft+44||r>n.scrollLeft+n.clientWidth-44)n.scrollLeft=Math.max(0,l-(n.clientWidth-a.offsetWidth)/2)}tabsEdge()}
 document.addEventListener("scroll",e=>{if(e.target&&e.target.matches&&e.target.matches("nav.tabs"))tabsEdge()},true);
 window.addEventListener("resize",tabsEdge);
-function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy"||v==="awards"||v==="groupme"||v==="demo")&&!state.isOwner)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
+function route(){let v=(location.hash||"#picks").slice(1);if(!VIEWS.includes(v))v="picks";if((v==="commish"||v==="bowls"||v==="armynavy"||v==="groupme"||v==="demo")&&!state.isOwner)v="picks";if(v==="awards"&&!state.awards)v="picks";if(v==="scoreboard"&&state.db&&!boardOn())v="picks";state.view=v;engNote(v);
   document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   tabsIntoView();
   VIEWS.forEach(k=>$("#v-"+k).hidden=k!==v);render();if(state.toTop){state.toTop=false;scrollTo(0,0)}}
@@ -1737,64 +1739,70 @@ function anRead(d){if(!anDone())return ["fa","fn","ha","hn"].every(k=>d[k]==="")
 document.addEventListener("click",e=>{const t=e.target.closest("#v-armynavy [data-anph]");if(!t)return;state.anPhase=t.dataset.anph;renderAN()});
 document.addEventListener("input",e=>{const m=/^an-(fa|fn|ha|hn)$/.exec(e.target.id||"");if(!m)return;const d=anState();d[m[1]]=e.target.value.replace(/\D/g,"").slice(0,2);anSave();
   $("#anRead").textContent=anRead(d);$("#anErr").textContent=anErr(d);$("#anTab").classList.toggle("hot",PROTO_DOT&&!anDone())});
-/* Award Watch prototype (item 65, Benton Nov 18: a 2026 exception to "no more contests this season", just for fun for now).
-   Commissioner only, on the hidden Awards tab. Picks save on this device only; nothing reaches the server.
-   League contrarian scoring: a correct pick is worth pickers who entered ÷ pickers who took that winner, so a lone right call
-   pays the whole room and a pick everyone shared pays 1. Wrong or blank is 0. Robo-Sharp takes the betting favorite (listed first),
-   plays unranked, and never counts toward anyone's value. Candidates (Nov 18 research): each award's projected top 10, most likely first,
-   from the Nov 10 to 17 semifinalist lists, Nov 15 to 17 Heisman markets, Coach of the Year coverage, and stats. Most awards name
-   three finalists Nov 24; the Heisman names finalists after Championship Saturday. */
-const AW_LOCK="2026-11-24T04:00:00Z"; /* Mon Nov 23, 10 PM CT, before most awards cut to three finalists Nov 24 (Benton, Nov 18) */
-const AW_LIST=[
-  {k:"heis",e:"🏆",n:"Heisman Trophy",what:"Most outstanding player",when:"Sat Dec 12",c:[["Jeremiah Smith","WR","Ohio State"],["Darian Mensah","QB","Miami"],["Devon Dampier","QB","Utah"],["CJ Carr","QB","Notre Dame"],["Gunner Stockton","QB","Georgia"],["Drew Mestemaker","QB","Oklahoma State"],["Keelon Russell","QB","Alabama"],["Conner Weigman","QB","Houston"],["LaNorris Sellers","QB","South Carolina"],["Gio Lopez","QB","Wake Forest"]]},
-  {k:"qb",e:"🎯",n:"Davey O'Brien Award",what:"Best quarterback",when:"Thu Dec 10",c:[["Darian Mensah","QB","Miami"],["Devon Dampier","QB","Utah"],["CJ Carr","QB","Notre Dame"],["Gunner Stockton","QB","Georgia"],["Drew Mestemaker","QB","Oklahoma State"],["Conner Weigman","QB","Houston"],["Keelon Russell","QB","Alabama"],["Gio Lopez","QB","Wake Forest"],["LaNorris Sellers","QB","South Carolina"],["Trinidad Chambliss","QB","Ole Miss"]]},
-  {k:"rb",e:"🏃",n:"Doak Walker Award",what:"Best running back",when:"Thu Dec 10",c:[["Jahiem White","RB","North Texas"],["DeSean Bishop","RB","Tennessee"],["Jadan Baugh","RB","Florida"],["Wayne Knight","RB","UCLA"],["Dylan Riley","RB","Boise State"],["Cam Cook","RB","West Virginia"],["Caleb Hawkins","RB","Oklahoma State"],["Jamal Roberts","RB","Missouri"],["Aiden Flora","RB","Iowa State"],["Nate Sheppard","RB","Duke"]]},
-  {k:"wr",e:"🙌",n:"Biletnikoff Award",what:"Best receiver",when:"Thu Dec 10",c:[["Jeremiah Smith","WR","Ohio State"],["Malachi Toney","WR","Miami"],["Collin Dixon","WR","Illinois"],["Jesse Legree","WR","Oregon State"],["Easton Messer","WR","Florida Atlantic"],["Umari Hatcher","WR","Syracuse"],["Justin Bowick","WR","Oklahoma State"],["Charlie Becker","WR","Indiana"],["Cayden Lee","WR","Missouri"],["Jackson Harris","WR","LSU"]]},
-  {k:"def",e:"🛡️",n:"Bednarik Award",what:"Defensive player of the year",when:"Thu Dec 10",c:[["Colin Simmons","EDGE","Texas"],["Xavier Lewis","DT","North Carolina"],["A.J. Holmes Jr.","DT","Texas Tech"],["Gideon Lampron","LB","Colorado"],["Ashton Hampton","CB","Clemson"],["Chris Cole","LB","Georgia"],["KJ Bolden","DB","Georgia"],["Sammy Omosigho","LB","UCLA"],["Xavier Gilliam","DL","Tennessee"],["Tobi Osunsanmi","DL","Indiana"]]},
-  {k:"coach",e:"📋",n:"Coach of the Year",what:"The Home Depot Award",when:"Thu Dec 10",c:[["Morgan Scalley","","Utah"],["Bob Chesney","","UCLA"],["Jake Dickert","","Wake Forest"],["Mario Cristobal","","Miami"],["Marcus Freeman","","Notre Dame"],["Kirby Smart","","Georgia"],["Spencer Danielson","","Boise State"],["Manny Diaz","","Duke"],["Eric Morris","","Oklahoma State"],["Charles Huff","","Memphis"]]}];
-/* Made-up winners for the Final preview: one favorite, the rest mixed, so the contrarian payoff shows. */
-const AW_RES={heis:1,qb:0,rb:1,wr:0,def:2,coach:1};
-function awState(){const k="tp-awproto-"+(state.uid||"x");if(state.aw&&state.awKey===k)return state.aw;state.awKey=k;
-  let d=null;try{d=JSON.parse(localStorage.getItem(k))}catch(e){}state.aw=d&&typeof d==="object"?d:{};return state.aw}
-function awSave(){try{localStorage.setItem(state.awKey,JSON.stringify(state.aw))}catch(e){}}
-function awDone(){const d=awState();return AW_LIST.every(a=>Number.isInteger(d[a.k]))}
-/* Sample pickers lean toward the favorite, the way a real room does. */
-function awField(){const P=AN_FAKE.map((name,i)=>{const p={};for(const a of AW_LIST){const r=bwHash(name+a.k);p[a.k]=r<.55?0:Math.min(a.c.length-1,1+Math.floor((r-.55)/.45*(a.c.length-1)))}return {id:"f"+i,name,p}});
-  const d=awState();if(AW_LIST.some(a=>Number.isInteger(d[a.k])))P.push({id:"me",name:"You",p:{...d}});return P}
+/* Award Watch (item 65, Benton Nov 18: a 2026 exception to "no more contests this season", just for fun, open to every login).
+   The award list, your picks, the lock, and the winners come from the server in state.awards (lib/awards.js). Picks save by name.
+   League contrarian scoring: a right pick is worth pickers who picked that award ÷ pickers who took the winner, so a lone right call
+   pays the whole room and a pick everyone shared pays 1. Wrong or blank is 0. Splits and values show only after the lock.
+   Robo-Sharp takes the top pick (listed first), plays unranked, and never counts toward anyone's value. */
+const AWD=()=>state.awards||null;
+const AW_LIST_=()=>(AWD()&&AWD().list)||[];
+const awOpen=()=>{const A=AWD();return !!A&&NOW()<Date.parse(A.lock)};
+/* Names to list positions, so a renamed list never breaks a pick. */
+function awIdx(a,name){const i=a.c.findIndex(c=>c[0]===name);return i<0?null:i}
+function awPicksOf(o){const p={};for(const a of AW_LIST_()){const i=awIdx(a,o&&o[a.k]);if(i!=null)p[a.k]=i}return p}
+function awState(){return awPicksOf(AWD()&&AWD().mine)}
+function awCount(){return Object.keys(awState()).length}
+function awDone(){return awCount()===AW_LIST_().length}
+function awRes(){const A=AWD();const r={};if(!A)return r;for(const a of A.list){const i=awIdx(a,(A.res||{})[a.k]);if(i!=null)r[a.k]=i}return r}
+/* Everyone after the lock: active pickers with at least one pick. */
+function awField(){const A=AWD();if(!A)return [];const src=A.picks||(Object.keys(A.mine||{}).length?{[state.uid]:A.mine}:{});
+  return Object.entries(src).filter(([pid])=>!removed().includes(pid)).map(([pid,o])=>({id:pid,name:nm(pid),p:awPicksOf(o)}))}
 function awSplit(P,k,n){const c=Array(n).fill(0);let in_=0;for(const x of P){if(Number.isInteger(x.p[k])){c[x.p[k]]++;in_++}}return {c,in_}}
 const awVal=(S,i)=>S.c[i]?Math.round(S.in_/S.c[i]*10)/10:null;
-function awScore(P){return P.map(x=>{let pts=0,hits=0;for(const a of AW_LIST){const S=awSplit(P,a.k,a.c.length),w=AW_RES[a.k];if(x.p[a.k]===w){pts+=awVal(S,w);hits++}}return {...x,pts:Math.round(pts*10)/10,hits}})}
-function renderAW(){const el=$("#v-awards");if(!state.isOwner){el.innerHTML="";return}
-  const d=awState(),ph=state.awPhase||"pre",P=awField(),pre=ph==="pre",fin=ph==="final";
-  let h=`<div class="bwproto"><b>Prototype. Only you can see this tab.</b> Your picks save on this device only and count for nothing. Just for fun.</div>
-    <div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">Ten contenders each, most likely first. Real finalists are named Nov 24.</p>
-      <p class="awwhen">Locks Mon Nov 23 at 10 PM CT, the night before most awards cut to three finalists. Winners Thu Dec 10; Heisman Sat Dec 12, the same day as Army-Navy.</p></div>
-    <div class="bwbar" role="group" aria-label="Preview">${[["pre","Before lock"],["lock","After lock"],["final","Final"]].map(([k,l])=>`<button type="button" class="mbchip" data-awph="${k}" aria-pressed="${ph===k}">${l}</button>`).join("")}</div>`;
-  if(pre)h+=`<p class="note awcount">${AW_LIST.filter(a=>Number.isInteger(d[a.k])).length} of ${AW_LIST.length} awards picked.</p>`;
-  for(const a of AW_LIST){const S=awSplit(P,a.k,a.c.length),mine=d[a.k],w=fin?AW_RES[a.k]:null;
+function awScore(P,R){return P.map(x=>{let pts=0,hits=0;for(const a of AW_LIST_()){if(!(a.k in R))continue;const S=awSplit(P,a.k,a.c.length),w=R[a.k];if(x.p[a.k]===w){pts+=awVal(S,w);hits++}}return {...x,pts:Math.round(pts*10)/10,hits}})}
+/* Picks notice while the contest is open and your six are not all in. */
+function awNotice(){if(!awOpen()||awDone())return "";const n=awCount(),A=AWD();
+  return notice("🏆",`<b>Award Watch is open.</b> ${n?`You have ${n} of ${A.list.length} picked.`:`Pick ${A.list.length} award winners.`} Locks ${esc(kick(A.lock))}. <a href="#awards">Make your picks</a>`,"awnt")}
+function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";return}
+  const L=A.list,d=awState(),pre=awOpen(),R=awRes(),P=pre?[]:awField(),nRes=Object.keys(R).length,fin=nRes===L.length;
+  let h=`<div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">Just for fun. No season points, no payout.</p>
+      <p class="awwhen">${pre?`Locks ${esc(kick(A.lock))}, the night before most awards cut to three finalists.`:`Locked ${esc(kick(A.lock))}.`} Winners Thu Dec 10; Heisman Sat Dec 12, the same day as Army-Navy.</p></div>`;
+  if(pre)h+=`<p class="note awcount">${awCount()} of ${L.length} awards picked. ${A.n} picker${A.n===1?"":"s"} in so far. Picks save as you tap.</p>`;
+  else h+=`<p class="note awcount">${P.length} picker${P.length===1?"":"s"} in. ${nRes?`${nRes} of ${L.length} winners in.`:"Winners come in Dec 10 and Dec 12."}</p>`;
+  if(state.isOwner&&pre&&A.entered){const E=Object.entries(A.entered);h+=`<div class="game awadm"><b>Commish: who is in</b><span>${E.length?E.map(([p,c])=>`${esc(nm(p))} (${c})`).join(", "):"Nobody yet."}</span></div>`}
+  for(const a of L){const S=awSplit(P,a.k,a.c.length),mine=d[a.k],w=a.k in R?R[a.k]:null;
     h+=`<div class="game awcard"><div class="awhead"><span class="awe" aria-hidden="true">${a.e}</span><div><b>${esc(a.n)}</b><small>${esc(a.what)} · ${esc(a.when)}</small></div></div>
-      ${a.tba?'<p class="note">Finalists are named Nov 24. These are stand-ins so the flow works.</p>':""}
-      <div class="awcs" role="radiogroup" aria-label="${esc(a.n)}">${a.c.map(([nm,pos,tm],i)=>{const v=awVal(S,i),on=mine===i,win=w===i;
+      <div class="awcs" role="radiogroup" aria-label="${esc(a.n)}">${a.c.map(([nm_,pos,tm],i)=>{const v=awVal(S,i),on=mine===i,win=w===i;
         const sub=[pos,tm].filter(Boolean).join(", ")+(i===0?" · top pick":"");
         const tag=pre?"":`<span class="awv">${S.c[i]} of ${S.in_}${v!=null?` · worth ${v}`:" · nobody"}</span>`;
-        return `<button type="button" class="awc${on?" on":""}${win?" win":""}${fin&&on&&!win?" miss":""}" role="radio" aria-checked="${on}" data-aw="${a.k}" data-awi="${i}" ${pre?"":"disabled"}><span class="awn">${win?"🏆 ":""}${esc(nm)}</span>${sub?`<small>${esc(sub)}</small>`:""}${tag}</button>`}).join("")}</div>
-      ${!pre&&Number.isInteger(mine)?`<p class="awyou">${fin?(mine===w?`You got it: +${awVal(S,w)}`:"Missed: 0"):`If ${esc(a.c[mine][0])} wins: +${awVal(S,mine)}`}</p>`:""}</div>`}
-  if(fin){const R=awScore(P).sort((x,y)=>y.pts-x.pts||y.hits-x.hits);let rk=0,prev=null;
-    const robo=AW_LIST.reduce((t,a)=>t+(AW_RES[a.k]===0?awVal(awSplit(P,a.k,a.c.length),0):0),0);
-    h+=`<h3 class="rh">Final standings</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th></tr></thead><tbody>${R.map((r,i)=>{if(r.pts!==prev){rk=i+1;prev=r.pts}return `<tr class="${r.id==="me"?"me":""}"><td>${rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td></tr>`}).join("")}
-      <tr><td>—</td><td>🤖 Robo-Sharp (all top picks)</td><td class="n">${AW_LIST.filter(a=>AW_RES[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td></tr></tbody></table>
-      <p class="note">Sample pickers and made-up winners. Exact ties share.</p>`}
+        return `<button type="button" class="awc${on?" on":""}${win?" win":""}${w!=null&&on&&!win?" miss":""}" role="radio" aria-checked="${on}" data-aw="${a.k}" data-awi="${i}" ${pre?"":"disabled"}><span class="awn">${win?"🏆 ":""}${esc(nm_)}</span>${sub?`<small>${esc(sub)}</small>`:""}${tag}</button>`}).join("")}</div>
+      ${!pre&&Number.isInteger(mine)?`<p class="awyou">${w!=null?(mine===w?`You got it: +${awVal(S,w)}`:"Missed: 0"):`If ${esc(a.c[mine][0])} wins: +${awVal(S,mine)}`}</p>`:""}
+      ${state.isOwner&&!pre?`<label class="awset">Winner <select data-awset="${a.k}"><option value="">Not in yet</option>${a.c.map(c=>`<option${w!=null&&a.c[w][0]===c[0]?" selected":""}>${esc(c[0])}</option>`).join("")}</select></label>`:""}</div>`}
+  if(!pre&&nRes&&P.length){const Sc=awScore(P,R).sort((x,y)=>y.pts-x.pts||y.hits-x.hits);let rk=0,prev=null;
+    const robo=L.reduce((t,a)=>t+(R[a.k]===0?awVal(awSplit(P,a.k,a.c.length),0):0),0);
+    h+=`<h3 class="rh">${fin?"Final standings":"Standings so far"}</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th></tr></thead><tbody>${Sc.map((r,i)=>{if(r.pts!==prev){rk=i+1;prev=r.pts}return `<tr class="${r.id===state.uid?"me":""}"><td>${rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td></tr>`}).join("")}
+      <tr><td>—</td><td>🤖 Robo-Sharp (all top picks)</td><td class="n">${L.filter(a=>R[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td></tr></tbody></table>
+      <p class="note">Exact ties share.</p>`}
   h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul>
-      <li>Pick one winner for each of the ${AW_LIST.length} awards before the lock.</li>
-      <li>A right pick is worth the number of pickers ÷ the number who took that winner. If you are the only one of 12 on him, that is 12 points. If all 12 had him, everyone gets 1.</li>
-      <li>A wrong or blank pick is 0. Most points wins. Exact ties share.</li>
-      <li>Values show after the lock, so nobody can chase the room.</li>
+      <li>Pick one winner for each of the ${L.length} awards before the lock. Tap again to clear a pick. You can change picks until the lock.</li>
+      <li>A right pick is worth the number of pickers who picked that award ÷ the number who took that winner. If you are the only one of 12 on him, that is 12 points. If all 12 had him, everyone gets 1.</li>
+      <li>A wrong or blank pick is 0. Most points wins. Exact ties share. Just for fun: no season points, no payout.</li>
+      <li>Values show after the lock, so nobody can chase the room. A player cut from the finalists on Nov 24 can no longer win.</li>
       <li>Robo-Sharp takes the top pick every time (the betting favorite for the Heisman). It plays unranked and cannot win.</li></ul></div>
-    ${info("awproto",`Each list is the projected top 10 as of Nov 18, most likely first. Sources: the semifinalist lists (Bednarik Nov 10, Biletnikoff Nov 16, Davey O'Brien and Doak Walker Nov 17), Heisman prediction markets and sportsbooks (Nov 15 to 17), Coach of the Year coverage, and season stats. The awards show date is Dec 10 per the Maxwell Award's release; some school releases say Dec 11; the show time is not set.`)}`;
+    ${info("awproto",`Each list is the projected top 10 as of Nov 18, most likely first. Sources: the semifinalist lists (Bednarik Nov 10, Biletnikoff Nov 16, Davey O'Brien and Doak Walker Nov 17), Heisman prediction markets and sportsbooks (Nov 15 to 17), Coach of the Year coverage, and season stats. The awards show date is Dec 10 per the Maxwell Award's release; some school releases say Dec 11.`)}`;
   el.innerHTML=h}
-document.addEventListener("click",e=>{const p=e.target.closest("#v-awards [data-awph]");if(p){state.awPhase=p.dataset.awph;renderAW();return}
-  const b=e.target.closest("#v-awards [data-aw]");if(!b||b.disabled)return;const d=awState(),k=b.dataset.aw,i=+b.dataset.awi;
-  if(d[k]===i)delete d[k];else d[k]=i;awSave();renderAW();const n=AW_LIST.filter(a=>Number.isInteger(d[a.k])).length;toast(`You have picked ${n} of ${AW_LIST.length} awards.`,"info")});
+/* Each tap saves the whole sheet. The page shows the change at once and puts it back if the server refuses. */
+document.addEventListener("click",async e=>{const b=e.target.closest("#v-awards [data-aw]");if(!b||b.disabled)return;const A=AWD();if(!A)return;
+  const a=A.list.find(x=>x.k===b.dataset.aw),i=+b.dataset.awi,was={...(A.mine||{})},next={...was};
+  if(next[a.k]===a.c[i][0])delete next[a.k];else next[a.k]=a.c[i][0];
+  A.mine=next;renderAW();$("#awTab").classList.toggle("hot",awOpen()&&!awDone());
+  const r=await api("/api/picks",{awards:next});
+  if(r&&r.ok){A.mine=r.awards||next;toast(`You have picked ${Object.keys(A.mine).length} of ${A.list.length} awards. Saved.`,"info")}
+  else{A.mine=was;toast((r&&r.error)||"Could not save. Try again.")}
+  renderAW();$("#awTab").classList.toggle("hot",awOpen()&&!awDone())});
+document.addEventListener("change",async e=>{const s=e.target.closest("#v-awards [data-awset]");if(!s)return;s.disabled=true;
+  const r=await api("/api/admin",{action:"award",k:s.dataset.awset,winner:s.value||null});
+  if(r&&r.ok){toast(s.value?`Winner saved: ${s.value}.`:"Winner cleared.","info");await refresh(true);renderAW()}else{s.disabled=false;toast((r&&r.error)||"Could not save. Try again.")}});
 
 /* Bowl challenge prototype (item 3). Commissioner only, on the hidden Bowl Blitz tab. Picks save on this device only; nothing reaches the server.
    Teams: Athlon's Nov 1 projections. Dates: ESPN's 2026-27 schedule. Lines are samples from the SP+ gap, neutral site, half-point rule. */
@@ -1936,9 +1944,10 @@ window.tpBoard={boardOn,sbFromBoard,sbFromSlate,sbSort}; /* for the browser test
 /* GroupMe tab (commissioner only). One announcement at a time on the weekly rhythm: Preview, Picks live, Last call, Locked, Final and recap.
    Each card is drawn on a canvas as a 1080 px PNG (gmDraw), so the screen shows exactly the image that gets saved, shared, or copied.
    Posted marks save on the server in kv groupme (admin action gmPosted), so every device agrees. */
-const GM_KINDS={pv:["Preview","Mon"],live:["Picks live","Wed 6 PM"],last:["Last call","Sat morning"],lock:["Locked","Sat 10:15 AM"],final:["Final and recap","Sunday"]};
+const GM_KINDS={aw:["Award Watch","now, before the lock"],pv:["Preview","Mon"],live:["Picks live","Wed 6 PM"],last:["Last call","Sat morning"],lock:["Locked","Sat 10:15 AM"],final:["Final and recap","Sunday"]};
 /* Best time to post each card (Nov 12 timing plan): when this crowd has the phone out. Same times every week trains people to expect them. */
-const GM_BEST={pv:["Mon 12:15 PM","Lunch break, the one weekday slot most people check their phone. Optional: skip it most weeks."],
+const GM_BEST={aw:["Thu 12:15 PM","A one-off. Lunch on a quiet day, so it does not share Wednesday night with Picks live. Gives four days before the Monday 10 PM lock."],
+  pv:["Mon 12:15 PM","Lunch break, the one weekday slot most people check their phone. Optional: skip it most weeks."],
   live:["Wed 8:30 PM","Picks open at 6, but 6 is the drive home, dinner, and kids. Around 8:30 is couch time."],
   last:["Sat 8:15 AM","Up with coffee, before kids' activities take over. Leaves 2 hours before the 10:15 lock."],
   lock:["Sat 10:20 AM","Pregame. Everyone is on the phone before the 11 AM kickoffs and wants to see the picks. Best attention of the week."],
@@ -1960,6 +1969,8 @@ function gmQueue(){
   else if(w&&w.status==="draft")up={wid:w.id,wk:w.week};
   /* The coming week's other posts, listed ahead as "Later" with their best times (Benton, Nov 17). No card is drawn
      until picks open, since swaps and the Wednesday line refresh can still change it, so these rows cannot be opened. */
+  /* Award Watch one-off (item 65): ready until the lock, then Skipped if never marked. Listed first. */
+  {const A=AWD();if(A){const key=`aw:${A.season}`;out.unshift({key,kind:"aw",wid:null,wk:null,ready:awOpen(),stale:!awOpen(),at:posted[key]||null,label:GM_KINDS.aw[0],when:GM_KINDS.aw[1],sk:!!gmSkipped()[key]})}}
   if(up)for(const k of ["live","last","lock","final"])out.push({key:`${k}:${up.wid}`,kind:k,wid:up.wid,wk:up.wk,ready:false,stale:false,ahead:true,at:null,label:GM_KINDS[k][0],when:GM_KINDS[k][1],sk:false});
   return out}
 /* Prototype tabs (Bowl Blitz, Army-Navy) get no action dot for now (Benton, Nov 12). Set true to bring it back. */
@@ -1968,7 +1979,7 @@ const PROTO_DOT=false;
    Wed: Picks live. Sat: Last call, then Locked once the lock passes. Sun: Final and recap. The optional Monday Preview never lights it. */
 const GM_DAY={live:3,last:6,lock:6,final:0};
 function gmDue(now=NOW()){const d=new Date(now).toLocaleString("en-US",{timeZone:TZ,weekday:"short"});const dow=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(d);
-  return gmQueue().some(x=>x.ready&&!x.at&&GM_DAY[x.kind]===dow)}
+  return gmQueue().some(x=>x.ready&&!x.at&&(GM_DAY[x.kind]===dow||x.kind==="aw"))}
 function gmNext(){const Q=gmQueue().filter(x=>!x.ahead);return Q.find(x=>x.ready&&!x.at)||Q.find(x=>!x.stale&&!x.at)||{ready:false}}
 /* Facts the cards share. Counts only before the lock, never sides. */
 function gmActive(){return (state.logins||[]).filter(a=>!a.removed)}
@@ -2010,6 +2021,15 @@ function gmFun(it,w){const strip=x=>String(x).replace(/\.$/,"");
 function gmModel(it){
   const w=state.weeks[it.wid];const M={league:(state.config&&state.config.name)||"Tator's Picks",kick:`Week ${it.wk}`,title:"",sub:"",rows:[],games:[],foot:""};
   const row=(ic,label,text,tone)=>M.rows.push({ic,label,text,tone});
+  if(it.kind==="aw"){const A=AWD(),act=gmActive();
+    M.kick="New contest · Just for fun";M.title="Award Watch";M.sub=`Lock: ${kick(A.lock)}`;M.confetti=true;
+    row("🏆",`Pick ${A.list.length} winners`,"Heisman, Davey O'Brien, Doak Walker, Biletnikoff, Bednarik, and Coach of the Year. 10 contenders each.","gold");
+    row("🐺","Go against the room","A right pick is worth pickers ÷ pickers on that winner. Alone on the right guy? You get the whole room.","purple");
+    row("✂️","Why Monday night","Most awards cut to 3 finalists Nov 24. Lock in before the field shrinks.","red");
+    row("📅","Winners","Most awards Thu Dec 10. Heisman Sat Dec 12.","blue");
+    if(A.n)row("📝","In so far",`${A.n} of ${act.length} pickers.`);
+    M.rows.push({ic:"🤖",label:"Beat the robot",text:"Robo-Sharp takes every favorite. Fade it and get paid.",fun:true});
+    M.foot="Award Watch tab in the app 👉";return M}
   if(it.kind==="pv"){const P=state.preview&&state.preview.week===it.wk?state.preview:null;
     M.title="Slate preview";M.sub=P&&P.autoOpen===false?"Picks open soon":"Picks open Wed 6 PM CT";
     row("📋","What this is","The likely 10 games and today's lines. Lines can move until picks open.");M.games=gmGameRows(P?P.games:(w?w.games:[]));M.foot="Start your homework"}
@@ -2143,7 +2163,7 @@ function renderGM(){const el=$("#v-groupme");if(!state.isOwner){el.innerHTML="";
   const Q=gmQueue(),nx=gmNext();
   const it=Q.find(x=>!x.ahead&&x.key===state.gmSel)||(nx.key?nx:null);
   const st=x=>x.at?(x.sk?`<span class="st skip">Skipped</span>`:`<span class="st done">Posted ${esc(kick(x.at).replace(/ CT$/,""))}</span>`):x.ready?`<span class="st ready">Ready</span>`:x.stale?`<span class="st skip">Skipped</span>`:`<span class="st later">${esc(GM_BEST[x.kind][0])}</span>`;
-  const list=()=>`<ol class="gmq" aria-label="This week's posts">${Q.map(x=>x.ahead?`<li class="ahead"><div><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</div></li>`:`<li><button type="button" data-gmsel="${esc(x.key)}" aria-current="${!!it&&x.key===it.key}"><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</button></li>`).join("")}</ol>${Q.some(x=>x.ahead)?`<p class="gmnote">Later posts draw once picks open Wednesday at 6 PM, since games and lines can still change before then.</p>`:""}`;
+  const list=()=>`<ol class="gmq" aria-label="This week's posts">${Q.map(x=>x.ahead?`<li class="ahead"><div><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</div></li>`:`<li><button type="button" data-gmsel="${esc(x.key)}" aria-current="${!!it&&x.key===it.key}"><span>${x.wk?`Week ${x.wk} · `:""}${esc(x.label)}</span>${st(x)}</button></li>`).join("")}</ol>${Q.some(x=>x.ahead)?`<p class="gmnote">Later posts draw once picks open Wednesday at 6 PM, since games and lines can still change before then.</p>`:""}`;
   let h=`<div class="gmwrap"><h2 class="gmh">GroupMe posts</h2><p class="gmnote">Save or copy the card, post it in GroupMe, then tap Posted. Only you can see this tab.</p>`;
   if(!it){h+=`<div class="game gmdone"><b>All caught up.</b><span>The next post shows up here when it is due. Best times: Picks live Wed 8:30 PM, Last call Sat 8:15 AM, Locked Sat 10:20 AM, Final Sun 12:15 PM.</span></div>${list()}${gmTimes()}</div>`;el.innerHTML=h;return}
   const M=gmModel(it),sig=it.key+"|"+JSON.stringify(M),have=state.gmImg&&state.gmImg.sig===sig;state.gmText=gmText(M);
@@ -2200,6 +2220,7 @@ function render(){
   if(state.view==="commish")renderCommish();
   if(state.isOwner){bwState();$("#bowlsTab").classList.toggle("hot",PROTO_DOT&&!bwDone());anState();$("#anTab").classList.toggle("hot",PROTO_DOT&&!anDone())}
   /* Picks gets the action dot while a week is open and this login has no saved sheet. */
+  $("#awTab").classList.toggle("hot",awOpen()&&!awDone());
   $("#picksTab").classList.toggle("hot",!!(state.db&&w&&w.status==="open"&&!(state.sheetsIn||[]).includes(state.uid)));
   if(state.view==="bowls")renderBowls();
   if(state.view==="armynavy")renderAN();
@@ -2282,6 +2303,7 @@ function renderPicks(){
   let nt="";
   if(rookie)h+=rookiePanel();else nt+=racePanel(wid);
   if(!rookie&&w.status!=="draft")nt+=beltLine();
+  nt+=awNotice();
   /* Sheets in sits under the 10 games (Nov 12, V2), so the first screen reaches game 1. */
   let sheetsNt="";
   if(w.status==="open"&&!pastDeadline(w)){const ids=(state.sheetsIn||[]).filter(p=>!removed().includes(p));const all=Object.keys(PLAYERS).filter(p=>!removed().includes(p)&&PLAYERS[p].setupDone);
@@ -2678,7 +2700,7 @@ function renderRecap(){
   el.innerHTML=h;
 }
 window.tpSurv={survRuns,survRunOf,survRunNow,survivorBoard,survivorGrid,survivorChampions,survivorUsedRun,survConf,botSurv,realStats,careerPanel,renderSurvivor,renderPicks,gmAlive,gmRunFirst,gmRunLast}; /* for the browser test */
-window.tpRecap={gmGameRows,weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
+window.tpRecap={refresh,awOpen,gmGameRows,weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */

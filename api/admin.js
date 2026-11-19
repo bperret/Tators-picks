@@ -6,6 +6,7 @@ import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../l
 import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings } from "../lib/league.js";
 import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES } from "../lib/auto.js";
 import { captureRobo } from "../lib/robo.js";
+import { AW_LIST, awardCfg, awardLock } from "../lib/awards.js";
 
 const BY = "Commissioner";
 
@@ -234,10 +235,31 @@ export default async function handler(req, res) {
         }
         return fail(res, 400, "Nothing to change.");
       }
+      case "award": {
+        // Award Watch (item 65): enter or clear a winner after the lock, or move the lock (no button; for a schedule change).
+        const cfg = await awardCfg();
+        if (b.lock) {
+          if (!Number.isFinite(Date.parse(b.lock))) return fail(res, 400, "Give the lock as a date and time.");
+          cfg.lock = new Date(b.lock).toISOString();
+          await setKv("awards", cfg);
+          await addLog(BY, "Moved the Award Watch lock", cfg.lock);
+          return send(res, 200, { ok: true });
+        }
+        const a = AW_LIST.find((x) => x.k === b.k);
+        if (!a) return fail(res, 400, "Unknown award.");
+        if (Date.now() < Date.parse(awardLock(cfg))) return fail(res, 409, "Winners go in after the lock.");
+        const w = b.winner == null || b.winner === "" ? null : String(b.winner);
+        if (w && !a.c.some((c) => c[0] === w)) return fail(res, 400, `${w} is not on the ${a.n} list.`);
+        cfg.res = cfg.res || {};
+        if (w) cfg.res[a.k] = w; else delete cfg.res[a.k];
+        await setKv("awards", cfg);
+        await addLog(BY, w ? "Entered an Award Watch winner" : "Cleared an Award Watch winner", w ? `${a.n}: ${w}` : a.n);
+        return send(res, 200, { ok: true });
+      }
       case "gmPosted": {
         // GroupMe tab: mark an announcement posted, or undo it. Private to the commissioner, so no public log entry.
         const key = String(b.key || "");
-        if (!/^(pv|live|last|lock|final):\d{4}-w\d{1,2}$/.test(key)) return fail(res, 400, "Unknown post.");
+        if (!(/^(pv|live|last|lock|final):\d{4}-w\d{1,2}$/.test(key) || /^aw:\d{4}$/.test(key))) return fail(res, 400, "Unknown post.");
         const gm = await getKv("groupme", { posted: {} });
         gm.posted = gm.posted || {};
         gm.skipped = gm.skipped || {};

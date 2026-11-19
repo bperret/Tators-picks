@@ -8,6 +8,7 @@ College football pick em against the spread for one league. Ten games a week, a 
 * `api/` holds five Vercel functions: `state`, `auth`, `picks`, `admin`, and `cron`.
 * Data lives in Neon Postgres. Tables are created on the first request.
 * The server clock enforces the lock. Any pick saved at or after a week's deadline is refused.
+* Award Watch (2026, just for fun): pick the winner of 6 national awards. `lib/awards.js` holds the list and the lock (Mon Nov 23, 10 PM CT). Picks save in `award_picks`; the commissioner enters winners on the Awards tab after the lock.
 
 ## Setup
 

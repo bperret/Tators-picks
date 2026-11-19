@@ -3,6 +3,7 @@ import { q, one } from "../lib/db.js";
 import { readBody, send, fail, currentPlayer } from "../lib/http.js";
 import { getConfig, effectiveStatus, survivorUsed, survivorRunOf, survivorCheck, confMap, confOf, saveNote } from "../lib/league.js";
 import { getKv } from "../lib/db.js";
+import { saveAwardPicks } from "../lib/awards.js";
 
 const canon = (s) => String(s || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
 
@@ -13,6 +14,12 @@ export default async function handler(req, res) {
     if (!me) return fail(res, 401, "Log in first.");
     if (me.removed) return fail(res, 403, "You are not active in the league. Contact the commissioner.");
     const b = await readBody(req);
+    // Award Watch (item 65): its own sheet, its own lock.
+    if (b.awards) {
+      const r = await saveAwardPicks(me, b.awards);
+      if (r.error) return fail(res, r.status, r.error);
+      return send(res, 200, { ok: true, awards: r.data });
+    }
     const row = await one("select data from weeks where id = $1", [b.weekId]);
     if (!row) return fail(res, 404, "That week does not exist.");
     const w = row.data;
