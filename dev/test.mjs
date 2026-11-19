@@ -961,10 +961,10 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   for (const t of tabs) {
     await m.evaluate((h) => (location.hash = h), t); await m.waitForTimeout(80);
     const got = await m.$$eval("#goFoot .gotile", (a) => a.map((x) => x.getAttribute("href")));
-    const want = t === "#picks" ? 8 : 0;
+    const want = 8;
     if (got.length !== want || got.includes(t) || (want && !tabs.filter((x) => x !== t).every((x) => got.includes(x)))) tileMiss.push(t + ":" + got.join(","));
   }
-  check("Picks links to all the other tabs, and no other tab has tiles", tileMiss.length === 0, tileMiss.join(" | "));
+  check("every standing tab links to the other 8 tabs and never to itself", tileMiss.length === 0, tileMiss.join(" | "));
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
   check("the tiles sit below the sheet and are not warnings", await m.evaluate(() => { const t = document.querySelector(".gotiles"), b = document.querySelector(".savebar"); return !t.closest(".warn,.savebar") && (!b || !!(b.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING)) }));
   check("the tiles add no sideways scroll on a phone", (await m.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0);
@@ -972,6 +972,9 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   check("a tile opens its tab at the top of the page", (await m.isVisible("#v-rules")) && (await m.evaluate(() => scrollY)) === 0);
   await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
   await c.evaluate(() => (location.hash = "#picks")); await c.waitForSelector("#goFoot .gotile");
+  await m.evaluate(() => (location.hash = "#awards")); await m.waitForTimeout(100);
+  check("the Awards tab has no tiles", (await m.locator("#goFoot .gotile").count()) === 0);
+  await m.evaluate(() => (location.hash = "#picks")); await m.waitForTimeout(100);
   check("the commissioner's tiles never link to Commish", !(await c.locator("#goFoot .gotile[href='#commish']").count()));
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(150);
   check("the Commish tab has no tiles", (await c.locator("#goFoot .gotile").count()) === 0);

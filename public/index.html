@@ -2307,8 +2307,9 @@ const GO_TILES=[
   ["profile","\u{1F454}","Profile","Suit up","Your look and theme"]];
 function goTiles(cur){return `<h2 class="gohead">Around the league</h2><nav class="gotiles" aria-label="Other tabs">${GO_TILES.filter(t=>t[0]!==cur).map(([v,ic,tab,head,sub])=>`<a class="gotile" href="#${v}"><span class="goic" aria-hidden="true">${ic}</span><span><b>${tab}</b><strong>${head}</strong><small>${sub}</small></span></a>`).join("")}</nav>`}
 /* render() runs on every poll, so the footer only redraws when the tab changes. */
-/* Tiles only on Picks (Nov 12, V10): the one row tab bar is always on screen, and Picks is where a new picker lands. */
-function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=v==="picks"?goTiles(v):""}
+/* Tiles on every standing tab (back Nov 18, Benton; Picks only from Nov 12, V10). Never on Commish, GroupMe, Demo, Scoreboard,
+   or the contest tabs (Awards, Bowl Blitz, Army-Navy), and no tile links to them. Each tab lists the other 8. */
+function goFoot(){const el=$("#goFoot"),v=state.db?state.view:"";if(el.dataset.v===v)return;el.dataset.v=v;el.innerHTML=GO_TILES.some(t=>t[0]===v)?goTiles(v):""}
 /* Red with unsaved changes, green once a sheet is saved, plain when there is nothing to save yet. */
 function saveBtnH(){const saved=!state.dirty&&(state.sheetsIn||[]).includes(state.uid);return `<button class="btn primary${state.dirty?" unsaved":saved?" saved":""}" id="saveBtn" ${state.dirty?"":"disabled"}>${saved?"Saved":"Save picks"}</button>`}
 /* A rookie has no saved pick on any sheet yet. Until the first save, Picks leads with a plain step list. */
