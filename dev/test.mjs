@@ -1141,6 +1141,10 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   }
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);
 
+  {
+    const sv = await m.evaluate(() => { const T = window.tpRecap, p = T.state.uid; return { one: T.survTag(p, { [p]: [1] }), two: T.survTag(p, { [p]: [1, 2] }), none: T.survTag(p, {}), bot: T.survTag("robo", {}) }; });
+    check("a Survivor run winner gets a skull mark, and a skull times N for more runs", /\u{1F480}<\/span>/u.test(sv.one) && /Run 1"/.test(sv.one) && /\u{1F480}×2/u.test(sv.two) && /Run 1 and Run 2/.test(sv.two) && sv.none === "" && sv.bot === "", JSON.stringify(sv));
+  }
   // ---- GroupMe tab ----
   {
     const rk = await c.evaluate(() => window.tpRecap.gmGameRows([{ slot: 1, away: "Alabama", home: "LSU", awayRank: 99, homeRank: 7, homeLine: -3.5 }, { slot: 2, away: "Utah", home: "Ohio State", awayRank: 0, homeRank: 25, homeLine: 7.5 }]));
@@ -1204,9 +1208,44 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const gmS = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
     check("Posted saves on the server and moves on", !!(gmS.groupme && gmS.groupme.posted[gmKey]) && (await c.getAttribute(`#v-groupme [data-gmsel="${gmKey}"]`, "aria-current")) !== "true", gmKey);
     check("the posted row says Posted", (await c.textContent(`#v-groupme [data-gmsel="${gmKey}"]`)).includes("Posted"));
+    {
+      // Item 66: the posted card shows once per device on a picker's next visit.
+      const ms = await m.evaluate(() => fetch("/api/state").then((r) => r.json()));
+      check("Posted saves the card image and lists it for pickers", (ms.gmCards || []).some((x) => x.key === gmKey) && !(ms.gmCards[0] || {}).png, JSON.stringify(ms.gmCards));
+      const img = await m.evaluate((k) => fetch("/api/state?part=card&key=" + encodeURIComponent(k)).then((r) => r.headers.get("content-type")), gmKey);
+      check("the card image comes back as a PNG", img === "image/png", img);
+      const pop = async () => { await m.evaluate(() => window.tpRecap.refresh(true)); await m.waitForTimeout(150);
+        return m.evaluate(() => { document.querySelectorAll("#reveal").forEach((x) => x.remove()); localStorage.removeItem("tp-gmcard-" + window.tpRecap.state.uid); window.tpRecap.revealCard(); return !!document.querySelector("#reveal.gmpop"); }); };
+      await m.evaluate(() => window.tpRecap.refresh(true)); await m.waitForTimeout(200);
+      const dbg = await m.evaluate((k) => { const T = window.tpRecap, S = T.state; const c = (S.gmCards || []).find((x) => x.key === k); return { c, n: (S.gmCards || []).length, rookie: !S.pickedIn.includes(S.uid), rm: (S.config.removed || []).includes(S.uid), cw: S.canWrite, exp: c && T.gcExpired(c), weeks: Object.keys(S.weeks).map((w) => w + ":" + S.weeks[w].status), owner: S.isOwner }; }, gmKey);
+      check("a picker who has not seen it gets the card full screen", await pop(), JSON.stringify(dbg));
+      await m.waitForFunction(() => { const i = document.querySelector("#reveal.gmpop .gpimg"); return i && i.complete && i.naturalWidth > 0; }, null, { timeout: 5000 }).catch(() => {});
+      check("the pop-up shows the exact 1179 px image", (await m.evaluate(() => document.querySelector("#reveal.gmpop .gpimg").naturalWidth)) === 1179);
+      if (process.env.SHOT) { await m.waitForTimeout(500); await m.screenshot({ path: process.env.SHOT + "/gc-pop.png" }); }
+      await m.click("#reveal.gmpop .gpdone");
+      check("Got it closes the card", (await m.locator("#reveal.gmpop").count()) === 0);
+      await m.evaluate(() => window.tpRecap.revealCard());
+      check("the same card never shows twice on a device", (await m.locator("#reveal.gmpop").count()) === 0);
+      await m.waitForTimeout(300); await c.evaluate(() => window.tpRecap.refresh(true)); await c.waitForTimeout(200);
+      await c.evaluate(() => { window.tpRecap.state.gmSel = null; window.tpRecap.renderGM(); });
+      const sby = await c.evaluate((k) => window.tpRecap.gcSeenBy(k), gmKey);
+      check("Commish sees who has seen it in the app", sby.n === 1 && sby.of >= 1 && /Seen in the app by 1 of/.test(await c.textContent(`#v-groupme [data-gmsel="${gmKey}"]`)), JSON.stringify(sby));
+      const drop = await m.evaluate(() => { const T = window.tpRecap; localStorage.removeItem("tp-gmcard-" + T.state.uid); const d = document.createElement("div"); d.id = "reveal"; document.body.appendChild(d);
+        T.revealCard(); const shown = !!document.querySelector("#reveal.gmpop"); d.remove(); T.revealCard(); return { shown, after: !!document.querySelector("#reveal.gmpop") }; });
+      check("another pop-up wins and the card is dropped for good", !drop.shown && !drop.after, JSON.stringify(drop));
+      await m.evaluate(() => document.querySelectorAll("#reveal").forEach((x) => x.remove()));
+      check("the commissioner never gets the card", await c.evaluate(() => { localStorage.removeItem("tp-gmcard-" + window.tpRecap.state.uid); window.tpRecap.revealCard(); return !document.querySelector("#reveal.gmpop"); }));
+      const ex = await m.evaluate(() => { const T = window.tpRecap, S = T.state, now = Date.now(), at = new Date(now - 3600e3).toISOString(), keep = S.weeks;
+        S.weeks = { "2030-w01": { id: "2030-w01", status: "open", deadline: new Date(now + 864e5).toISOString() }, "2030-w02": { id: "2030-w02", status: "open", deadline: new Date(now - 60e3).toISOString() }, "2030-w03": { id: "2030-w03", status: "final", deadline: new Date(now - 864e5).toISOString() } };
+        const r = { liveOpen: T.gcExpired({ kind: "live", wid: "2030-w01", at }), liveLocked: T.gcExpired({ kind: "live", wid: "2030-w02", at }), lockLive: T.gcExpired({ kind: "lock", wid: "2030-w02", at }), lockFinal: T.gcExpired({ kind: "lock", wid: "2030-w03", at }),
+          finalNext: T.gcExpired({ kind: "final", wid: "2030-w00", at }), finalLast: T.gcExpired({ kind: "final", wid: "2030-w03", at }), old: T.gcExpired({ kind: "live", wid: "2030-w01", at: new Date(now - 9 * 864e5).toISOString() }), pvOpen: T.gcExpired({ kind: "pv", wid: "2030-w01", at }) };
+        S.weeks = keep; return r; });
+      check("cards expire on schedule (Picks live at the lock, Locked at final, Final when the next week opens, Preview at open, 8 days at most)", !ex.liveOpen && ex.liveLocked && !ex.lockLive && ex.lockFinal && ex.finalNext && !ex.finalLast && ex.old && ex.pvOpen, JSON.stringify(ex));
+    }
     await c.click(`#v-groupme [data-gmsel="${gmKey}"]`); await c.click('#v-groupme [data-gm="undo"]'); await c.waitForTimeout(400);
     const gmU = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
     check("Undo posted clears the mark", !gmU.groupme.posted[gmKey]);
+    check("Undo posted removes the card from the app", !((await m.evaluate(() => fetch("/api/state").then((r) => r.json()))).gmCards || []).some((x) => x.key === gmKey));
     await c.click(`#v-groupme [data-gmsel="${gmKey}"]`);
     check("GroupMe has one About this note", (await c.locator("#v-groupme details.info").count()) === 1);
     {

@@ -1,5 +1,5 @@
 import { send, fail, currentPlayer, readBody } from "../lib/http.js";
-import { getKv } from "../lib/db.js";
+import { getKv, one } from "../lib/db.js";
 import { buildState, commishExists, teamGamesView, recordEngage } from "../lib/league.js";
 
 export default async function handler(req, res) {
@@ -17,6 +17,16 @@ export default async function handler(req, res) {
     if (part === "teams") return send(res, 200, await teamGamesView());
     // ?part=board sends the game day scoreboard (item 48), read only while the Scoreboard tab is open.
     if (part === "board") return send(res, 200, (await getKv("dayBoard", null)) || { day: null, at: null, games: [] });
+    // ?part=card&key=... sends a posted GroupMe card as a PNG (item 66).
+    if (part === "card") {
+      const key = new URL(req.url || "/", "http://x").searchParams.get("key") || "";
+      const row = await one("select png from gm_cards where key = $1", [key]);
+      if (!row) return fail(res, 404, "No such card.");
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Cache-Control", "private, max-age=86400");
+      return res.end(Buffer.from(row.png, "base64"));
+    }
     send(res, 200, await buildState(me, { poll: true }));
   } catch (e) {
     console.error(e);

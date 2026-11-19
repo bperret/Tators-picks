@@ -376,6 +376,7 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .gmq{list-style:none;padding:0;margin:16px auto 10px;max-width:440px;display:flex;flex-direction:column;gap:4px}
 .gmq button{width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:8px;font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left}
 .gmq button[aria-current="true"]{box-shadow:0 0 0 2px var(--flag)}
+.gmq button{flex-wrap:wrap}.gmq .gmseen{flex-basis:100%;color:var(--muted);font-size:.8rem;margin-top:-2px}
 .gmq li.ahead>div{min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:8px;background:transparent;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
 .gmq .st{font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:2px 8px;white-space:nowrap}
 .st.done{background:var(--turf);color:var(--chalk)}.st.ready{background:var(--flag);color:var(--flag-ink)}.st.later{color:var(--muted);border:1px solid var(--line)}.st.skip{color:var(--muted);text-decoration:line-through}
@@ -437,6 +438,14 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .rvcard .gp{width:34px;height:34px;flex:none;stroke:#fff;stroke-width:2.4;margin:0}
 #reveal.fggood .rvflash{background:#e0b13a;animation-iteration-count:3}#reveal.fggood .rvcard{background:#14602f;border-color:#f2c94c}#reveal.fggood h2{color:#f2c94c;font-size:1.9rem}
 #reveal.fgno .rvflash{background:#5a5f66}#reveal.fgno .rvcard{background:#3a3d42}
+#reveal.gmpop{align-items:center;background:rgba(0,0,0,.6);pointer-events:auto;padding:12px}
+#reveal.gmpop .gpbox{position:relative;width:min(440px,100%);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;background:#0b0f14;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.5);animation:gpin .25s ease-out}
+#reveal.gmpop .gpbar{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 8px 8px 14px;background:#0b0f14;color:#f2c94c;font-family:var(--cond);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:.9rem}
+#reveal.gmpop .gpx{width:44px;height:44px;border-radius:50%;border:1px solid #444;background:#1b2229;color:#fff;font-size:1.1rem;cursor:pointer}
+#reveal.gmpop .gpimg{display:block;width:100%;height:auto}
+#reveal.gmpop .gpdone{display:block;width:calc(100% - 24px);margin:12px;min-height:48px;border:0;border-radius:10px;background:#f2c94c;color:#111;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer}
+@keyframes gpin{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#reveal.gmpop .gpbox{animation:none}}
 #reveal.sealed{align-items:center;background:rgba(0,0,0,.35);pointer-events:auto}
 #reveal.sealed .rvflash{background:#c9a227}#reveal.sealed.fggood .rvflash{background:#e0b13a}#reveal.sealed.fgno .rvflash{background:#5a5f66}
 #reveal.sealed .rvcard{background:#1b2a3a;max-height:88vh;overflow-y:auto}
@@ -453,7 +462,7 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .belt{width:26px;height:14px;vertical-align:-2px}
 .beltic .belt{width:22px;height:12px}
 .notice .nic .belt{width:26px;height:14px;vertical-align:middle}
-.hot{white-space:nowrap;font-size:.9em}
+.hot,.svwin{white-space:nowrap;font-size:.9em}
 .marks{display:inline-flex;align-items:center;gap:2px;font-size:.85rem;line-height:1.25;white-space:nowrap}
 th.aw,td.aw{min-width:3.6em;padding-left:2px;padding-right:2px;white-space:nowrap}
 @media (max-width:420px){th.aw,td.aw{min-width:0;padding-left:1px;padding-right:1px}td.aw .marks{font-size:.72rem;gap:1px;flex-wrap:wrap;justify-content:center;max-width:2.9em;row-gap:0}td.aw .marks .belt{width:18px;height:10px}td.pn{max-width:5em;white-space:normal;overflow-wrap:anywhere;line-height:1.2}}
@@ -1257,7 +1266,7 @@ function applyState(S){
   const names={};S.players.forEach(p=>names[p.id]=p.name||p.invited||"Picker");
   Object.assign(state,{db:true,user:{profiles:async ids=>{const o={};ids.forEach(id=>o[id]={name:names[id]||""});return o}},
     uid:S.me.id,isOwner:!!S.me.isCommish,canWrite:true,names,config:S.config,weeks:S.weeks,reveals:S.reveals,roster:S.roster,pickedIn:S.pickedIn||[],classOf:S.classOf||{},
-    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[],awards:S.awards||null,groupme:S.groupme||{posted:{}}});
+    myPicks:S.myPicks,rankings:S.rankings,history:S.history||{},log:S.log||[],logins:S.logins||null,sheetCount:S.sheetCount||{},sheetStatus:S.sheetStatus||{},engage:S.engage||null,auto:S.auto||null,upcoming:S.upcoming||null,preview:S.preview||null,sheetsIn:S.sheetsIn||[],awards:S.awards||null,gmCards:S.gmCards||[],groupme:S.groupme||{posted:{}}});
   $("#commishTab").hidden=!state.isOwner;$("#bowlsTab").hidden=!state.isOwner;$("#anTab").hidden=!state.isOwner;$("#awTab").hidden=!state.awards;$("#gmTab").hidden=!state.isOwner;$("#demoTab").hidden=!state.isOwner;requestAnimationFrame(tabsEdge);
   syncDraft();
 }
@@ -1273,6 +1282,7 @@ async function refresh(quiet){
   if(!POLL)POLL=setInterval(()=>{if(!document.hidden&&!state.dirty)refresh(true)},60000);
   revealFinals();
   revealLive();
+  revealCard();
   return true;
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ME&&!state.dirty)refresh(true)});
@@ -2192,7 +2202,8 @@ function gmTimes(){return info("gmhow",`<b>How it works.</b> The tab follows the
 function renderGM(){const el=$("#v-groupme");if(!state.isOwner){el.innerHTML="";return}
   const Q=gmQueue(),nx=gmNext();
   const it=Q.find(x=>!x.ahead&&x.key===state.gmSel)||(nx.key?nx:null);
-  const st=x=>x.at?(x.sk?`<span class="st skip">Skipped</span>`:`<span class="st done">Posted ${esc(kick(x.at).replace(/ CT$/,""))}</span>`):x.ready?`<span class="st ready">Ready</span>`:x.stale?`<span class="st skip">Skipped</span>`:`<span class="st later">${esc(GM_BEST[x.kind][0])}</span>`;
+  const sb=x=>{if(!gcHas(x.key))return "";const S=gcSeenBy(x.key);return `<small class="gmseen">Seen in the app by ${S.n} of ${S.of}</small>`};
+  const st=x=>x.at?(x.sk?`<span class="st skip">Skipped</span>`:`<span class="st done">Posted ${esc(kick(x.at).replace(/ CT$/,""))}</span>${sb(x)}`):x.ready?`<span class="st ready">Ready</span>`:x.stale?`<span class="st skip">Skipped</span>`:`<span class="st later">${esc(GM_BEST[x.kind][0])}</span>`;
   const list=()=>`<ol class="gmq" aria-label="This week's posts">${Q.map(x=>x.ahead?`<li class="ahead"><div><span>Week ${x.wk} · ${esc(x.label)}</span>${st(x)}</div></li>`:`<li><button type="button" data-gmsel="${esc(x.key)}" aria-current="${!!it&&x.key===it.key}"><span>${x.wk?`Week ${x.wk} · `:""}${esc(x.label)}</span>${st(x)}</button></li>`).join("")}</ol>${Q.some(x=>x.ahead)?`<p class="gmnote">Later posts draw once picks open Wednesday at 6 PM, since games and lines can still change before then.</p>`:""}`;
   let h=`<div class="gmwrap"><h2 class="gmh">GroupMe posts</h2><p class="gmnote">Save or copy the card, post it in GroupMe, then tap Posted. Only you can see this tab.</p>`;
   if(!it){h+=`<div class="game gmdone"><b>All caught up.</b><span>The next post shows up here when it is due. Best times: Picks live Wed 8:30 PM, Last call Sat 8:15 AM, Locked Sat 10:20 AM, Final Sun 12:15 PM.</span></div>${list()}${gmTimes()}</div>`;el.innerHTML=h;return}
@@ -2202,6 +2213,7 @@ function renderGM(){const el=$("#v-groupme");if(!state.isOwner){el.innerHTML="";
   {const B=GM_BEST[it.kind];if(!it.at)h+=`<div class="gmbest"><span class="nic" aria-hidden="true">\u{1F552}</span><div><b>Best time to post: ${esc(B[0])}</b><span>${esc(B[1])}</span></div></div>`}
   h+=`<div class="gmtools" role="group" aria-label="Get the card"><button type="button" class="btn gmsave" data-gm="share">Save or share image</button><button type="button" class="btn" data-gm="copyimg">Copy image</button><button type="button" class="btn" data-gm="copyurl">Copy URL</button></div>`;
   h+=`<div class="gmbar">${it.at?`<button type="button" class="btn" data-gm="undo" data-key="${esc(it.key)}">Undo ${it.sk?"skipped":"posted"}</button>`:`<button type="button" class="btn gmpost" data-gm="post" data-key="${esc(it.key)}" ${can?"":"disabled"}>Posted</button><button type="button" class="btn gmskip" data-gm="skip" data-key="${esc(it.key)}">Skipped</button>`}</div>`;
+  if(it.at&&!it.sk&&gcHas(it.key)){const S=gcSeenBy(it.key);h+=`<p class="gmnote gmseenp">📣 In the app: seen by <b>${S.n} of ${S.of}</b> pickers so far. Each picker sees it once on their next visit.</p>`}
   if(!it.at&&!can)h+=`<p class="gmnote">Not ready yet. It unlocks ${esc(it.when)}.</p>`;
   if(!it.at&&it.stale)h+=`<p class="gmnote">This post's moment has passed. Tap Posted if you posted it, or Skipped to move on.</p>`;
   h+=list()+gmTimes();
@@ -2217,7 +2229,13 @@ document.addEventListener("click",e=>{const s=e.target.closest("#v-groupme [data
   if(k==="copyimg"){if(navigator.clipboard&&window.ClipboardItem)navigator.clipboard.write([new ClipboardItem({"image/png":B.blob})]).then(()=>toast("Image copied. Paste it in GroupMe.","info"),()=>toast("This browser cannot copy images. Use Save or share."));else toast("This browser cannot copy images. Use Save or share.");return}
   if(k==="copyurl"){const t=location.origin;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Site link copied.","info"),()=>toast("Could not copy. The link is "+t));return}
   gmMark(b)});
-async function gmMark(b){b.disabled=true;const undo=b.dataset.gm==="undo",skip=b.dataset.gm==="skip";const r=await api("/api/admin",{action:"gmPosted",key:b.dataset.key,undo,skip});
+/* Posted also saves the exact PNG on the server, so each picker sees it once on their next visit (item 66). */
+const gmB64=blob=>new Promise(res=>{const f=new FileReader();f.onload=()=>res(String(f.result));f.onerror=()=>res(null);f.readAsDataURL(blob)});
+async function gmMark(b){const undo=b.dataset.gm==="undo",skip=b.dataset.gm==="skip",key=b.dataset.key;let png=null;
+  if(!undo&&!skip){const B=state.gmImg;if(!B||!B.blob||!String(B.sig).startsWith(key+"|")){toast("The image is still drawing. Try again in a second.");return}png=await gmB64(B.blob)}
+  b.disabled=true;const r=await api("/api/admin",{action:"gmPosted",key,undo,skip,png});
+  if(r&&r.ok&&!undo&&!skip){const k=state.gmCards||[];state.gmCards=[{key,kind:key.split(":")[0],wid:key.split(":")[1],at:new Date().toISOString()},...k.filter(c=>c.key!==key)]}
+  if(r&&r.ok&&(undo||skip))state.gmCards=(state.gmCards||[]).filter(c=>c.key!==key);
   if(r&&r.ok){state.groupme={...(state.groupme||{}),posted:r.posted||{},skipped:r.skipped||{}};state.gmSel=undo?b.dataset.key:null;renderGM();$("#gmTab").classList.toggle("hot",gmDue());window.scrollTo(0,0);toast(undo?"Mark cleared.":skip?"Skipped. The next one is below.":"Posted. The next one is ready below.","info")}
   else{b.disabled=false;toast((r&&r.error)||"Could not save. Try again.")}}
 function render(){
@@ -2530,6 +2548,17 @@ function revealItems(w,mine,games){const rs=w.results||{};const items=[];
     items.push({g,won,by,fg:mine.lock===g.id,txt:`${teamLook(team,g,pick).abbr} ${fmtLine(pick==="home"?g.homeLine:-g.homeLine)}`})}
   return items}
 const DEMOS=[
+  {key:"gc-latest",group:"Latest GroupMe card on open (item 66)",title:"The latest card you posted",
+   about:"What a picker sees on their next visit after you tap Posted: the exact image, full screen. Close, Got it, tap outside, swipe down, or Escape. Nothing is marked seen.",
+   run:()=>{const c=(state.gmCards||[])[0];if(!c){toast("No posted card with an image yet. Tap Posted on a card in GroupMe first.");return}const r=$("#reveal");if(r)r.remove();showCard(c,`/api/state?part=card&key=${encodeURIComponent(c.key)}`)}},
+  {key:"gc-aw",group:"Latest GroupMe card on open (item 66)",title:"Award Watch opener",
+   about:"The Award Watch card drawn now and shown as the pop-up. The real one shows what you posted, at the moment you tapped Posted.",run:()=>gcDemo("aw")},
+  {key:"gc-awr",group:"Latest GroupMe card on open (item 66)",title:"Award Watch last call",
+   about:"Monday's last call card as the pop-up. Drawn now, so the counts are today's.",run:()=>gcDemo("awr")},
+  {key:"gc-final",group:"Latest GroupMe card on open (item 66)",title:"Final and recap",
+   about:"The Final card for the current week as the pop-up, if the week is final. A picker with a fresh sealed sheet never gets this card: the sealed sheet wins.",run:()=>gcDemo("final")},
+  {key:"gc-live",group:"Latest GroupMe card on open (item 66)",title:"Picks live",
+   about:"The Picks live card as the pop-up, while a week is open. Once you post it, it replaces the old Picks are live pop-up.",run:()=>gcDemo("live")},
   {key:"seal-good",group:"Sealed sheet (item 49)",title:"Big week",
    about:"What a picker sees on the first visit after a week goes final: picks face down, tap to flip, field goal last. This one is 8 of 10, field goal good, a hot week, and the belt.",
    run:()=>{const d=demoWeek([1,1,1,0,1,1,1,0,1,1].map(Boolean),3,true,{win:true});showSealed(d.w,d.mine,d.items)}},
@@ -2592,6 +2621,7 @@ const LIVE_MEM={};
 function revealLive(){
   const w=curWeek();if(!state.uid||!w||w.status!=="open"||pastDeadline(w)||removed().includes(state.uid)||state.canWrite===false||$("#reveal"))return;
   if(isRookie())return; /* the rookie steps on Picks cover it */
+  if(gcHas("live:"+w.id))return; /* item 66: once the Picks live card is posted, it replaces this pop-up (revealCard) */
   const key="tp-seen-live-"+state.uid;let seen=LIVE_MEM[key]||null;try{seen=localStorage.getItem(key)||seen}catch(e){}
   if(seen===w.id)return;LIVE_MEM[key]=w.id;try{localStorage.setItem(key,w.id)}catch(e){}
   if((state.sheetsIn||[]).includes(state.uid))return;
@@ -2600,6 +2630,62 @@ function revealLive(){
   document.body.appendChild(el);
   clearTimeout(showReveal._t);showReveal._t=setTimeout(()=>{const r=$("#reveal");if(r)r.remove()},12000);
 }
+/* Latest GroupMe card on open (item 66, Benton Nov 18). The newest card Benton marked Posted, shown once per device
+   (localStorage tp-gmcard-<uid>), full screen, the exact PNG he posted. Rules:
+   - never for the commissioner, removed pickers, rookies, or during the walk-on (refresh stops before this);
+   - each kind expires (gcExpired); only the newest live unseen card counts, and acting on it marks the older ones seen too;
+   - any other pop-up wins (anything already in #reveal) and the card is dropped for good on this device;
+   - Picks live: the posted card replaces the "Picks are live" pop-up; a device that saw that pop-up, or a picker whose sheet
+     is in, never gets the Picks live card; while the open week's Picks live card is unseen, it goes ahead of every other card.
+   The first view pings the server (engage cards) for Seen by N of M in the GroupMe tab. */
+function gcHas(key){return (state.gmCards||[]).some(c=>c.key===key)}
+function gcSeenKey(){return "tp-gmcard-"+state.uid}
+function gcSeen(){let a;try{a=JSON.parse(localStorage.getItem(gcSeenKey())||"[]")}catch(e){a=GC_MEM[state.uid]||[]}return new Set(Array.isArray(a)?a:[])}
+const GC_MEM={};
+function gcMark(keys){const S=gcSeen();keys.forEach(k=>S.add(k));const a=[...S].slice(-40);GC_MEM[state.uid]=a;try{localStorage.setItem(gcSeenKey(),JSON.stringify(a))}catch(e){}}
+function gcExpired(c,now=NOW()){if(now-Date.parse(c.at)>8*864e5)return true;const W=state.weeks||{},w=W[c.wid];
+  switch(c.kind){
+    case "aw":case "awr":return !awOpen();
+    case "awl":return !AWD()||Object.keys(AWD().res||{}).length>0;
+    case "pv":return !!w&&w.status!=="draft";
+    case "live":case "last":return !w||w.status!=="open"||pastDeadline(w);
+    case "lock":return !w||w.status==="final";
+    case "final":return !w||Object.values(W).some(x=>x.id>c.wid&&x.status!=="draft");
+    default:return true}}
+function revealCard(){
+  if(!state.uid||state.isOwner||removed().includes(state.uid)||state.canWrite===false)return;
+  const seen=gcSeen();let C=(state.gmCards||[]).filter(c=>!seen.has(c.key)&&!gcExpired(c));if(!C.length)return;
+  const w=curWeek(),lk=w&&"live:"+w.id;const lc=lk&&C.find(c=>c.key===lk);
+  if(lc){let saw=LIVE_MEM["tp-seen-live-"+state.uid]||null;try{saw=localStorage.getItem("tp-seen-live-"+state.uid)||saw}catch(e){}
+    if(saw===w.id||(state.sheetsIn||[]).includes(state.uid)){gcMark([lc.key]);C=C.filter(c=>c!==lc)}}
+  if(!C.length)return;
+  const pick=C.find(c=>c.key===lk)||C[0];
+  gcMark(C.map(c=>c.key));
+  if(isRookie()||$("#reveal"))return; /* rookies get no card; any other pop-up wins and the card is dropped */
+  if(pick.key===lk){LIVE_MEM["tp-seen-live-"+state.uid]=w.id;try{localStorage.setItem("tp-seen-live-"+state.uid,w.id)}catch(e){}}
+  showCard(pick)}
+function showCard(c,demoSrc){const el=document.createElement("div");el.id="reveal";el.className="gmpop";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");el.setAttribute("aria-label","Latest from the commissioner");
+  el.innerHTML=`<div class="gpbox"><div class="gpbar"><span>📣 Latest from the commish</span><button type="button" class="gpx" data-rvclose aria-label="Close">✕</button></div>
+    <img class="gpimg" src="${demoSrc||`/api/state?part=card&key=${encodeURIComponent(c.key)}`}" alt="The latest league announcement card.">
+    <button type="button" class="gpdone" data-rvclose>Got it</button></div>`;
+  document.body.appendChild(el);
+  const box=el.querySelector(".gpbox");el.querySelector(".gpimg").addEventListener("error",()=>{const r=$("#reveal.gmpop");if(r)r.remove()});
+  el.addEventListener("click",e=>{if(e.target===el)el.remove()});
+  /* Flick it away: a downward swipe from the top of the card, or a fast flick either way. */
+  let y0=null,t0=0,top0=0;box.addEventListener("touchstart",e=>{y0=e.touches[0].clientY;t0=Date.now();top0=box.scrollTop},{passive:true});
+  box.addEventListener("touchend",e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0,dt=Date.now()-t0;y0=null;
+    if((top0<=0&&dy>90)||(dt<250&&Math.abs(dy)>120&&(top0<=0||box.scrollTop+box.clientHeight>=box.scrollHeight-2)))el.remove()},{passive:true});
+  setTimeout(()=>{const x=el.querySelector(".gpx");if(x)x.focus()},50);
+  if(!demoSrc)fetch("/api/state",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cardSeen:c.key})}).catch(()=>{})}
+/* Demo: draw a card from the GroupMe queue right now and show it the way pickers will. Nothing saves, nothing is marked seen. */
+async function gcDemo(kind){const it=gmQueue().find(x=>!x.ahead&&x.kind===kind);if(!it){toast("That card is not in the queue right now.");return}
+  const M=gmModel(it);const sc=document.createElement("canvas");sc.width=10;sc.height=10;const H=Math.ceil(gmDraw(sc.getContext("2d"),M,0));
+  const cv=document.createElement("canvas");cv.width=Math.round(GM_W*GM_S);cv.height=Math.round(H*GM_S);const ctx=cv.getContext("2d");ctx.scale(GM_S,GM_S);gmDraw(ctx,M,H);
+  const r=$("#reveal");if(r)r.remove();showCard({key:"demo"},cv.toDataURL("image/png"))}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){const r=$("#reveal.gmpop");if(r)r.remove()}});
+/* Seen by N of M: active pickers, not the commissioner. Reads engage.cards from the server. */
+function gcSeenBy(key){const E=state.engage||{};const act=(state.logins||[]).filter(a=>!a.removed&&!a.isCommish&&!(PLAYERS[a.id]||{}).isCommish);
+  return {n:act.filter(a=>((E[a.id]||{}).cards||{})[key]).length,of:act.length}}
 function showRoster(w){let el=$("#reveal");if(el)el.remove();
   const cls=w.season===2026?"the Redshirt Class of 2026":"the Class of "+w.season;
   el=document.createElement("div");el.id="reveal";el.className="live roster";el.setAttribute("role","status");
@@ -2729,7 +2815,7 @@ function renderRecap(){
   el.innerHTML=h;
 }
 window.tpSurv={survRuns,survRunOf,survRunNow,survivorBoard,survivorGrid,survivorChampions,survivorUsedRun,survConf,botSurv,realStats,careerPanel,renderSurvivor,renderPicks,gmAlive,gmRunFirst,gmRunLast}; /* for the browser test */
-window.tpRecap={refresh,awOpen,gmGameRows,weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
+window.tpRecap={survTag,revealCard,gcExpired,gcSeenBy,refresh,awOpen,gmGameRows,weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */
@@ -2973,7 +3059,15 @@ function rankMoves(ids){const ws=seasonWeeks();if(ws.length<2)return {};const pl
   const rank=list=>{const t=tallySeason(list,k=>state.weeks[k],pl,ids).rows;const o={};t.forEach((r,i)=>{const p=t[i-1];r.rk=p&&p.cpts===r.cpts&&p.clw===r.clw&&p.ctb===r.ctb?p.rk:i+1;o[r.pid]={rk:r.rk,weeks:r.weeks}});return o};
   const a=rank(ws.slice(0,-1)),b=rank(ws);const out={};for(const p of ids)if(a[p]&&b[p])out[p]=a[p].weeks?a[p].rk-b[p].rk:"new";return out}
 /* Iron Man, the belt, and hot hand sit on their own small line under the name, so a long name cannot cut them off. */
-function marksH(pid){const t=ironTag(pid)+beltTag(pid)+hotTag(pid);return t?`<span class="marks">${t.trim()}</span>`:""}
+/* Survivor runs won this season (Benton, Nov 18): 💀 for one, 💀×N for more. Co-champions each get it. Never Robo-Sharp.
+   Worked out once per data refresh, since it reads every run's grid. */
+let SURV_WON=null;
+function survWonMap(){if(SURV_WON&&SURV_WON.w===state.weeks&&SURV_WON.c===state.config)return SURV_WON.m;const m={};
+  for(const r of survRuns()){let ch=[];try{ch=survivorChampions(r)}catch(e){}for(const p of ch)if(p!==BOT)(m[p]=m[p]||[]).push(r.n)}
+  SURV_WON={w:state.weeks,c:state.config,m};return m}
+function survTag(pid,m=survWonMap()){const runs=m[pid];if(!runs||!runs.length)return "";const t=`Survivor champion: Run ${runs.join(" and Run ")}`;
+  return ` <span class="svwin" title="${t}" aria-label="${t}">\u{1F480}${runs.length>1?"×"+runs.length:""}</span>`}
+function marksH(pid){const t=ironTag(pid)+beltTag(pid)+hotTag(pid)+survTag(pid);return t?`<span class="marks">${t.trim()}</span>`:""}
 function moveTag(m){return m==="new"?'<i class="mv new">new</i>':m>0?`<i class="mv up" aria-label="up ${m}">▲${m}</i>`:m<0?`<i class="mv dn" aria-label="down ${-m}">▼${-m}</i>`:""}
 
 /* ---------- class badges ---------- */
@@ -3066,7 +3160,7 @@ function renderStandings(){
   const byPct=state.seasonSort==="pct";const sortBtn=(k,t,title)=>`<button class="ssort" data-seasonsort="${k}" aria-pressed="${(k==="pct")===byPct}" title="${title}">${t}</button>`;
   if(!active.length)h+='<p class="note">No picks in yet.</p>';
   else h+=`<div class="tablewrap"><table class="stk szt"><thead><tr><th>#</th><th class="pnh">Picker</th><th class="aw"><span class="sr">Marks</span></th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num rkc">${r.rk}${showMv&&r.pid!==BOT?moveTag(mv[r.pid]):""}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="aw">${marksH(r.pid)}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${(state.isOwner?seasonSort(out):[]).map(r=>`<tr class="out"><td class="num rkc"></td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}</td><td class="aw"></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}${info("season",`Ranked by points, then field goals made, then smallest total tiebreaker miss. A week with no sheet scores 0 with a tiebreaker guess of 0. Drop worst week: each picker's lowest regular week comes off the season total once ${DROP_MIN} regular weeks are final, and Conference Champion Week never drops. Until then, If it ended today shows the projection. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. Robo-Sharp 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.`)}`;
-  {const keys=[];if(active.some(r=>ironTag(r.pid)))keys.push("\u{1F9BE} Iron Man: every pick in, every week.");if(active.some(r=>beltTag(r.pid)))keys.push(BELT+" The belt: last week's winner.");if(active.some(r=>hotTag(r.pid)))keys.push(`\u{1F525} Hot week: ${HOT_MIN} or more correct. \u{1F525}\u00d7N: a heater, N straight hot weeks.`);if(showMv&&Object.keys(mv).length)keys.push("\u25B2\u25BC Places moved since the latest week began.");if(keys.length)h+=`<p class="note keys">${keys.join(" ")}</p>`}
+  {const keys=[];if(active.some(r=>ironTag(r.pid)))keys.push("\u{1F9BE} Iron Man: every pick in, every week.");if(active.some(r=>beltTag(r.pid)))keys.push(BELT+" The belt: last week's winner.");if(active.some(r=>hotTag(r.pid)))keys.push(`\u{1F525} Hot week: ${HOT_MIN} or more correct. \u{1F525}\u00d7N: a heater, N straight hot weeks.`);if(active.some(r=>survTag(r.pid)))keys.push("\u{1F480} Survivor champion this season. \u{1F480}\u00d7N: N runs won.");if(showMv&&Object.keys(mv).length)keys.push("\u25B2\u25BC Places moved since the latest week began.");if(keys.length)h+=`<p class="note keys">${keys.join(" ")}</p>`}
   {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of Robo-Sharp.</p>`}}
   h+="</div>";
   h+=titlesPanel()+beatBotPanel()+closePanel(realStats());
@@ -3454,7 +3548,7 @@ function renderPlayers(){
       const team=pick==="home"?g.home:g.away;st.teams[team]=st.teams[team]||[0,0];st.teams[team][win]++}}
   const rec=a=>a[0]+"-"+a[1];const pct=(a,b)=>a+b?Math.round(a/(a+b)*100)+"%":"–";
   const teams=Object.entries(st.teams).sort((a,b)=>(b[1][0]+b[1][1])-(a[1][0]+a[1][1])||b[1][0]-a[1][0]);
-  h+=`<div class="panel"><h2>${chip(sel,true)}${esc(nm(sel))}${beltTag(sel)}${hotTag(sel)}</h2>${classBadge(sel)?`<p class="clsrow">${classBadge(sel)}</p>`:""}${talkLine(sel)}<div class="stats">
+  h+=`<div class="panel"><h2>${chip(sel,true)}${esc(nm(sel))}${beltTag(sel)}${hotTag(sel)}${survTag(sel)}</h2>${classBadge(sel)?`<p class="clsrow">${classBadge(sel)}</p>`:""}${talkLine(sel)}<div class="stats">
     <div><span class="note">Against the spread</span><b>${st.w}-${st.l}</b><span class="note">${pct(st.w,st.l)}</span></div>
     <div><span class="note">Field goals</span><b>${st.lw}-${st.ll}</b></div>
     <div><span class="note">Favorites</span><b>${rec(st.fav)}</b></div>

@@ -264,6 +264,15 @@ export default async function handler(req, res) {
         gm.posted = gm.posted || {};
         gm.skipped = gm.skipped || {};
         // Skip marks the post done without posting it (gray Skipped); it shares the posted time list so the queue moves on.
+        // Item 66: Posted saves the exact PNG so pickers see it once on their next visit. Undo and Skipped remove it.
+        if (b.undo || b.skip) await q("delete from gm_cards where key = $1", [key]);
+        else if (typeof b.png === "string" && b.png.length) {
+          const png = b.png.replace(/^data:image\/png;base64,/, "");
+          if (png.length > 4e6 || !/^[A-Za-z0-9+/=]+$/.test(png)) return fail(res, 400, "That image is too big or not a PNG.");
+          await q(`insert into gm_cards (key, kind, wid, posted_at, png) values ($1, $2, $3, now(), $4)
+                   on conflict (key) do update set posted_at = now(), png = excluded.png`, [key, key.split(":")[0], key.split(":")[1], png]);
+          await q("delete from gm_cards where key not in (select key from gm_cards order by posted_at desc limit 10)");
+        }
         if (b.undo) { delete gm.posted[key]; delete gm.skipped[key]; }
         else { gm.posted[key] = new Date().toISOString(); if (b.skip) gm.skipped[key] = true; else delete gm.skipped[key]; }
         // Keep the newest 80 marks so the row stays small.
