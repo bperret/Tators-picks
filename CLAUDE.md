@@ -142,7 +142,7 @@ Build order across the tracker. Item details are below; this only sets the order
 3. Shipped Nov 18 (1.52): 65 (Award Watch), open to everyone. Before Fri Dec 4: 1 (Conference Champion Week).
 4. Postseason, in deadline order: 31 (Army-Navy, Dec 12), 3 (Bowl Blitz, lock Dec 15), 2 (CFP bracket, lock Dec 18), plus 47's Bowl part. 55 (Awards Night) is built alongside, ready before the title game Jan 25.
 5. Lower priority, any time: 54 (Humans vs the Computer), 47's scoreboard and retune parts.
-6. 2027 preseason (before the August opener): 60 (Report to camp), 59 (Letterman years), 33 and 34 (badge list), 8 (ghosts), 4 (Survivor runs), 35 (GroupMe bot), 44 (segments), 57 (week phase card, tentative), 58 (Ring of Honor, bottom of the list).
+6. 2027 preseason (before the August opener): 67 (The Picker title), 60 (Report to camp), 59 (Letterman years), 33 and 34 (badge list), 8 (ghosts), 4 (Survivor runs), 35 (GroupMe bot), 44 (segments), 57 (week phase card, tentative), 58 (Ring of Honor, bottom of the list).
 7. Not scheduled: 21 (investigate), 19, 20, 30 (shape later), back burner.
 
 ### This season and postseason (target, not started)
@@ -242,6 +242,11 @@ Build note for 33 and 34: one saved badge list per picker, drawn by one helper, 
 58. Ring of Honor. Approved for 2027, bottom of the list. Permanent champion banners at the top of Standings and on Rules, starting with the 2026 champion.
 59. Letterman years. Approved for 2027. The class badge gains a star for each season played, so the badge records loyalty. Part of the one badge list for 33 and 34. Start over wipes it, the same as other badges.
 60. Report to camp. Approved for 2027. Two onboarding paths: the walk-on for new pickers (shipped, item 36) and a new returning picker path on the first login of each season. Returning path: re-sign, restyle the jersey, see last season's line, and a countdown to the Week 1 lock. Pairs with the first real buy-in. Must not show to a ghost as a returning paid picker (item 8).
+67. The Picker: the season champion's title. Decided Nov 18 (Benton). Everyone is a picker; the season champion is crowned The Picker for that year. Today the champion has no name or mark (only the Season titles career tile), while the weekly winner has the belt and Survivor winners the skull.
+   - Mark: ☝️ (the pointing pick plus the "We're No. 1" foam finger). Unused in the app as of Nov 18. Icon: a gold foam finger SVG in the same style as `BELT`, so the belt (weekly) and the foam finger (season) read as a set.
+   - Shows in the season table marks, the Pickers profile, and Career wins (Season titles become The Picker titles). Never the Computer.
+   - Pairs with Ring of Honor (58: "The Picker, 2026"), Awards Night (55: crowning The Picker), and Report to camp (60: "Who's The Picker this year?").
+   - Undecided: whether the app itself is renamed The Picker (Benton likes it; app stays Tator's Picks for now), and whether the 2026 champion gets the title retroactively.
 Buy-in amount for 2027 is not set.
 
 ### Engagement review (Nov 2): Benton's calls
