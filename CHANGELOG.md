@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.52.1 | Nov 18, 7:05 PM | Awards, GroupMe | A gold Award Watch banner at the top of Picks links to the Awards tab (picked count and lock, then everyone's picks, then standings), replacing the Picks notice. GroupMe adds an Award Watch last call card (ready Mon, lock day) and a locked card (ready after the lock, most picked per award and lone wolves) | M | 77 | `2d4ec20` |
 | 1.52 | Nov 18, 6:50 PM | Awards, GroupMe | Award Watch (item 65) opens to every login. Picks save on the server by name, the server clock locks it Mon Nov 23 at 10 PM CT, splits and values show after the lock, and the commissioner enters winners on each card. Red tab dot and a Picks notice until your six are in. GroupMe gets a one-off Award Watch card, best posted Thu 12:15 PM | L | 323 | `4dd527e` |
 | 1.51.2 | Nov 18, 5:55 PM | GroupMe, Awards | GroupMe slate cards no longer show unranked teams as #99. Award Watch locks Mon Nov 23 at 10 PM CT, before the Nov 24 finalist cut | S | 14 | `581e533` |
 | 1.51.1 | Nov 18, 1:53 PM | Awards | Award Watch now lists each award's projected top 10, most likely first, from the Nov 10 to 17 semifinalist lists, Heisman markets, Coach of the Year coverage, and stats. Stand-ins are gone. Robo-Sharp takes each top pick | S | 35 | `655e4eb` |
