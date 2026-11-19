@@ -139,9 +139,9 @@ Rules page rule: every change that affects how the league plays, scores, or pays
 Build order across the tracker. Item details are below; this only sets the order. Benton still gives the go for each build.
 1. Shipped Nov 15 (1.49): 10, with 47's Survivor part.
 2. Shipped Nov 11 (1.43): 49, 50, 51, 52, 53, 56, and 40.
-3. Shipped Nov 18 (1.52): 65 (Award Watch), open to everyone. Before Fri Dec 4: 1 (Conference Champion Week).
+3. Shipped Nov 18 (1.52): 65 (Award Watch), open to everyone. Before Fri Dec 4: 1 (Conference Champion Week). Then 54 (Humans vs the Computer), moved up Nov 18 (Benton: do it sooner), ahead of the postseason contests.
 4. Postseason, in deadline order: 31 (Army-Navy, Dec 12), 3 (Bowl Blitz, lock Dec 15), 2 (CFP bracket, lock Dec 18), plus 47's Bowl part. 55 (Awards Night) is built alongside, ready before the title game Jan 25.
-5. Lower priority, any time: 54 (Humans vs the Computer), 47's scoreboard and retune parts.
+5. Lower priority, any time: 47's scoreboard, backtest, and retune parts.
 6. 2027 preseason (before the August opener): 67 (The Picker title), 60 (Report to camp), 59 (Letterman years), 33 and 34 (badge list), 8 (ghosts), 4 (Survivor runs), 35 (GroupMe bot), 44 (segments), 57 (week phase card, tentative), 58 (Ring of Honor, bottom of the list).
 7. Not scheduled: 21 (investigate), 19, 20, 30 (shape later), back burner.
 
@@ -176,9 +176,12 @@ Build order across the tracker. Item details are below; this only sets the order
    - Bowl Blitz Computer (`bwGames`) still uses FPI alone; switch it to the consensus when the real contest is built. No market signal until real bowl lines exist.
    - Model scoreboard grades slate games only. Saving pool games too would grow the sample faster; not built.
    - Retune `ROBO_W` after about 150 graded games. A weight change must not rewrite old weeks: add a new mode for new weeks.
+   - Backtest (Benton asked Nov 18, not approved to build). What the data allows: the weekly `snapshots` table saves the full rankings at each lock, so ratings as they stood that week exist for the weeks since the app started (SP+ only since Nov 2; VSiN only when Update ratings ran). The game log (`teamGames`) holds every finished FBS game with its last pregame line. So the ratings half of the model can be graded on every logged FBS game in a snapshot week, roughly 200 games by season end (estimate). The market half cannot: `atsAuto.lines` overwrites each game's line on every run, so only the last pregame line exists, and the opening line is gone for every game off our slate. Never grade past games with today's ratings: they already include those results, so the backtest would look far better than it is. 200 games tells direction, not tuning: the margin of error on a win rate is about plus or minus 7 points at 95% confidence. It must run in the app (a Commish panel), since a Claude session cannot reach the Neon database.
+   - Cheap fix that makes a real backtest possible next year: keep the first line the ATS job sees for each game beside the last one (`atsAuto.first` or similar). Then the market half can be graded on every FBS game, not just our 10.
 
 From the Nov 11 dopamine review (Benton's calls Nov 11). Goal: make the payoffs hit harder and give people a reason to look forward to next year.
-54. Humans vs the Computer. Approved, lower priority. A season team score: the league's combined ATS record against the Computer's, so every correct pick helps, even from last place. Recognition only.
+54. Humans vs the Computer. Approved; moved up Nov 18 (Benton: do it sooner), next after item 1. A season team score: the league's combined ATS record against the Computer's, so every correct pick helps, even from last place. Recognition only.
+   - Design (Nov 18): compare win rates, not totals ("League 52.8% ATS vs the Computer 54.1%"), since the league makes many times more picks. Shares the Picks rival lines with item 67 (beat The Picker, beat the bot), so build it to fit that layout.
 55. Awards Night. Approved; build while working on the postseason, ready before the title game Jan 25. One season finale page: season champion, Survivor winners, contest winners, and superlatives from the whole season (for example most lone wolves, worst beats, the Computer beaters, Iron Man). To settle: how it relates to item 19's personal season recap, and the superlative list.
 
 From the Nov 12 full app review (Benton's calls Nov 12: good ideas, logged as future plans; no go to build yet, timing not set).
