@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.52 | Nov 18, 6:50 PM | Awards, GroupMe | Award Watch (item 65) opens to every login. Picks save on the server by name, the server clock locks it Mon Nov 23 at 10 PM CT, splits and values show after the lock, and the commissioner enters winners on each card. Red tab dot and a Picks notice until your six are in. GroupMe gets a one-off Award Watch card, best posted Thu 12:15 PM | L | 323 | `4dd527e` |
 | 1.51.2 | Nov 18, 5:55 PM | GroupMe, Awards | GroupMe slate cards no longer show unranked teams as #99. Award Watch locks Mon Nov 23 at 10 PM CT, before the Nov 24 finalist cut | S | 14 | `581e533` |
 | 1.51.1 | Nov 18, 1:53 PM | Awards | Award Watch now lists each award's projected top 10, most likely first, from the Nov 10 to 17 semifinalist lists, Heisman markets, Coach of the Year coverage, and stats. Stand-ins are gone. Robo-Sharp takes each top pick | S | 35 | `655e4eb` |
 | 1.51 | Nov 18, 12:49 PM | Awards (new, commissioner only) | Item 65 prototype: Award Watch. Pick the winner of 6 awards (Heisman, Davey O'Brien, Doak Walker, Biletnikoff, Bednarik, Coach of the Year) from sample candidates. League contrarian scoring: a right pick is worth pickers ÷ pickers who took that winner. Values show after the lock. Robo-Sharp takes every favorite, unranked. Before lock / After lock / Final preview with sample pickers. Picks save on this device only | M | 102 | `3beb2aa` |
