@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.55 | Nov 20, 8:47 AM | Rules, Awards, GroupMe | Payout plan revised: season 30 / 10 / 5, Conference Champion Week 5%, Award Watch 1% (from 2027), Bowl winner only 5%, CFP 10 / 5; the calculator adds Award Watch. Award Watch tiebreaker: guess the Heisman winner's total points (blank = 0), commissioner enters the real total after the lock, standings rank by the smaller miss and show a TB column. The tab dot and banner wait for the tiebreaker too. The Monday last call card's fun row names the tiebreaker | M | 120 | `e7554ce` |
 | 1.54.1 | Nov 20, 8:06 AM | GroupMe | Posted and Skipped work on the Friday Set your lineup card. The server did not know its key and answered Unknown post | S | 3 | `b16eccf` |
 | 1.53.2 | Nov 18, 8:45 PM | All tabs | Robo-Sharp is now The Computer everywhere pickers see it: Picks, pick columns, Standings, Recap, Pickers (Beat the Computer), Survivor, Matchup, Rules, Awards, GroupMe cards, Commish, and the job messages. Code names stay the same | M | 140 | `2e303bb` |
 | 1.54 | Nov 19, 4:25 PM | GroupMe | Friday Set your lineup card between Picks live and Last call: ready Friday until the lock, sheets in count (or Everyone's in), Survivor alive, any special contest locking within 10 days (Award Watch this week), and the slate with kickoff times. Best time Fri 12:15 PM, Friday dot, app pop-up, Demo view | M | 67 | `60b03d9` |
