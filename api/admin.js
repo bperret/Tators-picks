@@ -6,7 +6,7 @@ import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../l
 import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings } from "../lib/league.js";
 import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES } from "../lib/auto.js";
 import { captureRobo } from "../lib/robo.js";
-import { AW_LIST, AW_TB_MAX, awardCfg, awardLock } from "../lib/awards.js";
+import { AW_LIST, AW_TB_MAX, awardCfg, awardLock, saveAwardChamps } from "../lib/awards.js";
 
 const BY = "Commissioner";
 
@@ -251,6 +251,7 @@ export default async function handler(req, res) {
           const n = b.tb == null || b.tb === "" ? null : Number(b.tb);
           if (n != null && (!Number.isInteger(n) || n < 0 || n > AW_TB_MAX)) return fail(res, 400, `Give the Heisman points as a whole number from 0 to ${AW_TB_MAX}.`);
           if (n == null) delete cfg.tb; else cfg.tb = n;
+          await saveAwardChamps(cfg);
           await setKv("awards", cfg);
           await addLog(BY, n == null ? "Cleared the Award Watch tiebreaker" : "Entered the Award Watch tiebreaker", n == null ? "" : `Heisman winner: ${n} points`);
           return send(res, 200, { ok: true });
@@ -262,6 +263,7 @@ export default async function handler(req, res) {
         if (w && !a.c.some((c) => c[0] === w)) return fail(res, 400, `${w} is not on the ${a.n} list.`);
         cfg.res = cfg.res || {};
         if (w) cfg.res[a.k] = w; else delete cfg.res[a.k];
+        await saveAwardChamps(cfg);
         await setKv("awards", cfg);
         await addLog(BY, w ? "Entered an Award Watch winner" : "Cleared an Award Watch winner", w ? `${a.n}: ${w}` : a.n);
         return send(res, 200, { ok: true });

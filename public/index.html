@@ -1786,7 +1786,7 @@ function awBanner(){const A=AWD();if(!A)return "";const L=A.list.length,R=Object
 function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";return}
   if(A.list.every(a=>(A.res||{})[a.k])){try{localStorage.setItem("tp-aw-final-"+state.uid,"1")}catch(e){}}
   const L=A.list,d=awState(),pre=awOpen(),R=awRes(),P=pre?[]:awField(),nRes=Object.keys(R).length,fin=nRes===L.length;
-  let h=`<div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">No season points. 2026 is free; starting in 2027 the winner gets 1% of the pot.</p>
+  let h=`<div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">No season points. The winner gets an Award Watch win in Career wins. 2026 is free; starting in 2027 the winner also gets 1% of the pot.</p>
       <p class="awwhen">${pre?`Locks ${esc(kick(A.lock))}, the night before most awards cut to three finalists.`:`Locked ${esc(kick(A.lock))}.`} Winners Thu Dec 10; Heisman Sat Dec 12, the same day as Army-Navy.</p></div>`;
   if(pre)h+=`<p class="note awcount">${awCount()} of ${L.length} awards picked. ${A.n} picker${A.n===1?"":"s"} in so far. Picks save as you tap.</p>`;
   else h+=`<p class="note awcount">${P.length} picker${P.length===1?"":"s"} in. ${nRes?`${nRes} of ${L.length} winners in.`:"Winners come in Dec 10 and Dec 12."}</p>`;
@@ -1810,7 +1810,7 @@ function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";retur
       <li>A right pick is worth the number of pickers who picked that award ÷ the number who took that winner. If you are the only one of 12 on him, that is 12 points. If all 12 had him, everyone gets 1.</li>
       <li>A wrong or blank pick is 0. Most points wins.</li>
       <li>Tiebreaker: guess the Heisman winner's total points. Voters rank three players: 3 points for 1st, 2 for 2nd, 1 for 3rd, from about 930 ballots. The 2025 winner, Fernando Mendoza, had 2,362. Closest guess wins the tie; a blank counts as 0. Exact ties share.</li>
-      <li>No season points. 2026 is free, like everything else. Starting in 2027 the winner gets 1% of the pot.</li>
+      <li>No season points. The winner, or everyone tied for 1st after the tiebreaker, gets an Award Watch win in Career wins. 2026 is free, like everything else. Starting in 2027 the winner also gets 1% of the pot.</li>
       <li>Values show after the lock, so nobody can chase the room. A player cut from the finalists on Nov 24 can no longer win.</li>
       <li>The Computer takes the top pick every time (the betting favorite for the Heisman). It plays unranked and cannot win.</li></ul></div>
     ${info("awproto",`Each list is the projected top 10 as of Nov 18, most likely first. Sources: the semifinalist lists (Bednarik Nov 10, Biletnikoff Nov 16, Davey O'Brien and Doak Walker Nov 17), Heisman prediction markets and sportsbooks (Nov 15 to 17), Coach of the Year coverage, and season stats. The awards show date is Dec 10 per the Maxwell Award's release; some school releases say Dec 11.`)}`;
@@ -3620,7 +3620,7 @@ function renderPlayers(){
 /* Past picks, career wins, personal insights, and Beat the close. Every panel reads a data object D,
    so each panel can be tested with any data. The Computer gets no history here. */
 function realStats(){const cfg=state.config||{};return {wids:countedWeeks(),week:k=>state.weeks[k],players:k=>weekPlayers(k),closing:state.closing||{},
-  done:s=>s<cfg.season,survivor:s=>s===cfg.season?survRuns().map(r=>survivorChampions(r)).filter(l=>l.length):[],bowl:()=>[],cfp:()=>[]}}
+  done:s=>s<cfg.season,survivor:s=>s===cfg.season?survRuns().map(r=>survivorChampions(r)).filter(l=>l.length):[],bowl:()=>[],cfp:()=>[],armynavy:()=>[],award:s=>((state.awards&&state.awards.champs)||{})[s]||[]}}
 /* Champions of one run: everyone alive after the run's last week, else the last ones out. Each run is its own career win (Benton, Nov 15). */
 function survivorChampions(run=survRunNow()){const G=survivorGrid(run);if(!G||!G.weeks.length)return [];const last=state.weeks[G.weeks[G.weeks.length-1]];if(last.status!=="final"||!survivorFinalWeek(last.id))return [];
   const rows=G.rows.filter(r=>r.pid!==BOT);const alive=rows.filter(r=>r.alive);if(alive.length)return alive.map(r=>r.pid);const lw=Math.max(...rows.map(r=>r.outWeek||0));return rows.filter(r=>r.outWeek===lw).map(r=>r.pid)}
@@ -3631,14 +3631,14 @@ function seasonChamp(D,season){const ks=D.wids.filter(k=>D.week(k).season===seas
   return r.length?r.filter(x=>x.cpts===r[0].cpts&&x.clw===r[0].clw&&x.ctb===r[0].ctb).map(x=>x.pid):[]}
 /* Pickers: the team record list shows the most picked teams first, the rest behind Show all (Nov 12, V11). In memory, not saved. */
 const TR_TOP=6;
-function careerPanel(D,pid){const c={season:0,week:0,conf:0,surv:0,bowl:0,cfp:0,co:0};const count=(list,key)=>{if(list.includes(pid)){c[key]++;if(list.length>1)c.co++}};
+function careerPanel(D,pid){const c={season:0,week:0,conf:0,surv:0,bowl:0,cfp:0,an:0,aw:0,co:0};const count=(list,key)=>{if(list.includes(pid)){c[key]++;if(list.length>1)c.co++}};
   /* Conference Champion Week scores like any week for the season, but its win is its own stat, not a weekly win. */
   for(const k of D.wids)count(statWinners(D,k),D.week(k).confChamp?"conf":"week");
-  for(const s of statSeasons(D)){if(D.done(s))count(seasonChamp(D,s),"season");{const sv=D.survivor(s)||[];(Array.isArray(sv[0])?sv:[sv]).forEach(l=>count(l,"surv"))}count(D.bowl(s),"bowl");count(D.cfp(s),"cfp")}
+  for(const s of statSeasons(D)){if(D.done(s))count(seasonChamp(D,s),"season");{const sv=D.survivor(s)||[];(Array.isArray(sv[0])?sv:[sv]).forEach(l=>count(l,"surv"))}count(D.bowl(s),"bowl");count(D.cfp(s),"cfp");count(D.armynavy?D.armynavy(s):[],"an");count(D.award?D.award(s):[],"aw")}
   /* Only earned tiles show (Nov 12, V11), so a first season is not a wall of zeros. */
-  const T=[["Season titles",c.season],["Weekly wins",c.week],["Conf Champ wins",c.conf],["Survivor wins",c.surv],["Bowl wins",c.bowl],["CFP wins",c.cfp],["Co-Champion",c.co],["Iron Man seasons",ironSeasons(D,pid)]].filter(x=>x[1]>0);
+  const T=[["Season titles",c.season],["Weekly wins",c.week],["Conf Champ wins",c.conf],["Survivor wins",c.surv],["Bowl wins",c.bowl],["CFP wins",c.cfp],["Army-Navy wins",c.an],["Award Watch wins",c.aw],["Co-Champion",c.co],["Iron Man seasons",ironSeasons(D,pid)]].filter(x=>x[1]>0);
   const tile=(t,n)=>`<div><span class="note">${t}</span><b>${n}</b></div>`;
-  return `<div class="panel"><h2>Career wins</h2>${T.length?`<div class="stats">${T.map(x=>tile(x[0],x[1])).join("")}</div>`:'<p class="note">No titles yet. Weekly wins, Survivor wins, and season titles show here once earned.</p>'}${(()=>{const ss=statSeasons(D);const r=ss.length?ironOf(D,pid,ss[ss.length-1]):null;return r?`<p class="note">\u{1F9BE} Iron Man: every pick in for ${r.weeks} week${r.weeks===1?"":"s"} straight.</p>`:""})()}${info("career",`Co-Champion counts the wins above that were shared with another picker. Conference Champion Week wins are counted apart from weekly wins. Conf Champ, Bowl, and CFP wins start when those contests do.`)}</div>`}
+  return `<div class="panel"><h2>Career wins</h2>${T.length?`<div class="stats">${T.map(x=>tile(x[0],x[1])).join("")}</div>`:'<p class="note">No titles yet. Weekly wins, Survivor wins, and season titles show here once earned.</p>'}${(()=>{const ss=statSeasons(D);const r=ss.length?ironOf(D,pid,ss[ss.length-1]):null;return r?`<p class="note">\u{1F9BE} Iron Man: every pick in for ${r.weeks} week${r.weeks===1?"":"s"} straight.</p>`:""})()}${info("career",`Co-Champion counts the wins above that were shared with another picker. Conference Champion Week wins are counted apart from weekly wins. Each extra contest (Award Watch, Army-Navy, Bowl, CFP) counts its own wins. A tile shows once you have one.`)}</div>`}
 function statPicks(D,pid){const out=[];for(const k of D.wids){const w=D.week(k);const p=D.players(k)[pid];if(!p)continue;const rs=w.results||{};
     for(const g of [...w.games].sort((a,b)=>a.slot-b.slot)){const c=coverSide(g,rs[g.id]);const pick=(p.sel||{})[g.id];if(!c||!pick)continue;const r=rs[g.id];out.push({k,w,g,pick,won:pick===c,by:Math.abs(margin(g,r)),fg:p.lock===g.id})}}
   return out}
@@ -3691,7 +3691,7 @@ function pastPanel(D,pid,surv){const ks=[...D.wids].filter(k=>D.players(k)[pid])
     let sv="";if(p.surv){const g=w.games.find(x=>x.id===p.surv.g);if(g){const team=p.surv.s==="home"?g.home:g.away;const c=coverSide(g,rs[g.id]);sv=`Survivor: ${esc(teamLook(team,g,p.surv.s).abbr)}, ${rs[g.id]&&rs[g.id].void?"void":c?(c===p.surv.s?"survived":"out"):"not final"}.`}}
     return `<details class="wkh"${i===0?" open":""}><summary><b>Week ${w.week}${statSeasons(D).length>1?" \u00b7 "+esc(w.season):""}</b><span class="note">${s.pts} pts \u00b7 ${s.w}-${s.l} \u00b7 ${tied?"T-":""}${ordinal(rank)} of ${all.length}${k===dr?(TD.official?" \u00b7 dropped":" \u00b7 would drop"):""}</span></summary><ul class="pplist">${rows}</ul>${tb||sv?`<p class="note">${tb} ${sv}</p>`:""}</details>`}).join("");
   return `<div class="panel"><h2>Past picks</h2>${dropLine}${body}</div>`}
-window.tpStats={tallySeason,classYear,classLabel,classBadge,classPanel,seasonRows,pickPct,pctText,seasonSort,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel};
+window.tpStats={tallySeason,classYear,classLabel,classBadge,classPanel,seasonRows,pickPct,pctText,seasonSort,closeOf,statPicks,statWinners,careerPanel,insightPanel,pastPanel,closePanel,realStats};
 
 function titlesPanel(){const weeks=countedWeeks(state.incTest).filter(w=>state.weeks[w].status==="final");if(!weeks.length)return "";
   /* One line per picker with every week they won, most titles first. The belt marks a weekly title. */

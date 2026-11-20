@@ -1155,6 +1155,18 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     check("standings show the guess and the miss", /2,400100 off/.test(await m.textContent("#v-awards .bwt")) && /Actual: 2,300 \(100 off\)/.test(await m.textContent("#v-awards .awtb")), await m.textContent("#v-awards .bwt"));
     const rk = await m.evaluate(() => window.tpRecap.awRank([{ id: "a", pts: 4, hits: 1, miss: 50 }, { id: "b", pts: 4, hits: 1, miss: 10 }, { id: "c", pts: 4, hits: 2, miss: 10 }, { id: "d", pts: 6, hits: 1, miss: 900 }]).map((x) => x.id + x.rk).join());
     check("ranking: points, then the smaller tiebreaker miss, exact ties share", rk === "d1,c2,b2,a4", rk);
+    check("no Award Watch champion until all six winners are in", !((await st(m)).champs || {})[2026]);
+    {
+      const L = (await st(c)).list, pick = { heis: "Devon Dampier", qb: "Darian Mensah", wr: "Jeremiah Smith" };
+      for (const a of L) await adm({ action: "award", k: a.k, winner: pick[a.k] || a.c[a.c.length - 1][0] });
+      const fin = await st(m), muid = await m.evaluate(() => window.tpRecap.state.uid);
+      check("all six in: the Heisman points break the tie and the champion is saved", JSON.stringify(fin.champs[2026]) === JSON.stringify([muid]), JSON.stringify(fin.champs));
+      await re(m);
+      const car = await m.evaluate((u) => { const d = document.createElement("div"); d.innerHTML = window.tpStats.careerPanel(window.tpStats.realStats(), u); return d.textContent; }, muid);
+      check("the Award Watch win shows in Career wins", /Award Watch wins1/.test(car), car);
+      await adm({ action: "award", k: "coach", winner: null });
+      check("clearing a winner clears the champion", !((await st(m)).champs || {})[2026]);
+    }
     const awOv = await m.evaluate(() => [...document.querySelectorAll("#v-awards *")].filter((e) => e.getBoundingClientRect().right > document.documentElement.clientWidth + 1).slice(0, 4).map((e) => e.tagName + "." + e.className + ":" + Math.round(e.getBoundingClientRect().right)).join());
     check("the Awards tab adds no sideways scroll on a phone", (await m.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0, awOv);
     if (process.env.SHOT) await m.screenshot({ path: process.env.SHOT + "/aw-lock.png", fullPage: true });
