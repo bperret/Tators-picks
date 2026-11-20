@@ -1288,6 +1288,8 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const gmK2 = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
     check("Undo skipped clears both marks", !gmK2.groupme.posted[gmKey] && !(gmK2.groupme.skipped || {})[gmKey]);
   } else check("GroupMe has a ready post to mark", false, gm1.cur);
+  const gmFriKey = await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "gmPosted", key: "fri:2026-w99", undo: true }) }).then((r) => r.status));
+  check("GroupMe accepts the Friday Set your lineup key", gmFriKey === 200, String(gmFriKey));
   const gmBadKey = await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "gmPosted", key: "x:<b>" }) }).then((r) => r.status));
   check("GroupMe refuses an unknown post key", gmBadKey === 400, String(gmBadKey));
   check("pickers never receive GroupMe marks", !(await m.evaluate(() => fetch("/api/state").then((r) => r.json()))).groupme);
