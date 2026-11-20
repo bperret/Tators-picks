@@ -6,7 +6,7 @@ import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../l
 import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings } from "../lib/league.js";
 import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES } from "../lib/auto.js";
 import { captureRobo } from "../lib/robo.js";
-import { AW_LIST, awardCfg, awardLock } from "../lib/awards.js";
+import { AW_LIST, AW_TB_MAX, awardCfg, awardLock } from "../lib/awards.js";
 
 const BY = "Commissioner";
 
@@ -243,6 +243,16 @@ export default async function handler(req, res) {
           cfg.lock = new Date(b.lock).toISOString();
           await setKv("awards", cfg);
           await addLog(BY, "Moved the Award Watch lock", cfg.lock);
+          return send(res, 200, { ok: true });
+        }
+        if ("tb" in b) {
+          // The tiebreaker answer: the Heisman winner's total points, entered after the lock.
+          if (Date.now() < Date.parse(awardLock(cfg))) return fail(res, 409, "The tiebreaker answer goes in after the lock.");
+          const n = b.tb == null || b.tb === "" ? null : Number(b.tb);
+          if (n != null && (!Number.isInteger(n) || n < 0 || n > AW_TB_MAX)) return fail(res, 400, `Give the Heisman points as a whole number from 0 to ${AW_TB_MAX}.`);
+          if (n == null) delete cfg.tb; else cfg.tb = n;
+          await setKv("awards", cfg);
+          await addLog(BY, n == null ? "Cleared the Award Watch tiebreaker" : "Entered the Award Watch tiebreaker", n == null ? "" : `Heisman winner: ${n} points`);
           return send(res, 200, { ok: true });
         }
         const a = AW_LIST.find((x) => x.k === b.k);

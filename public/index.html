@@ -396,7 +396,7 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .awc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
 .awc small{color:var(--muted);font-size:.78rem}.awc .awn{font-weight:700}
 .awadm{display:grid;gap:4px;padding:10px 12px}.awadm span{color:var(--muted);font-size:.9rem}
-.awset{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700;font-size:.9rem}.awset select{flex:1;min-height:40px;font:inherit}
+.awset{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700;font-size:.9rem}.awset select,.awset input{flex:1;min-height:40px;font:inherit}.awtb .note{margin:6px 0 0}.awoff{display:block;color:var(--muted);font-size:.75rem;white-space:nowrap}
 .awc.on{border:2px solid #c9a227;box-shadow:0 0 0 1px #c9a227 inset}.awc.win{background:rgba(46,160,67,.14);border-color:#2ea043}.awc.miss{opacity:.6;text-decoration:line-through}
 .awc:disabled{cursor:default}.awv{font-family:var(--cond);font-size:.8rem;color:var(--muted)}
 .awyou{margin:6px 0 0;font-family:var(--cond);font-weight:700}
@@ -1079,9 +1079,10 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <div class="tablewrap"><table class="paytab"><thead><tr><th>Prize</th><th class="num">Share</th><th class="num">Dollars</th></tr></thead><tbody id="payRows"></tbody></table></div>
       <ul>
         <li>The regular season has 13 weekly slates plus Conference Champion Week, 14 weeks in all.</li>
-        <li>Conference Champion Week is the last regular season week, and its points count toward the season prizes. Its winner gets 6% instead of the 1% weekly prize. It is not one of the 13 weekly prizes.</li>
+        <li>Conference Champion Week is the last regular season week, and its points count toward the season prizes. Its winner gets 5% instead of the 1% weekly prize. It is not one of the 13 weekly prizes.</li>
         <li>Weekly wins pay 1% each, 13% over 13 weeks. Survivor's 15% is split evenly across its 4 runs, 3.75% a run.</li>
-        <li>Army-Navy pays 1%. Winners who tie exactly split it.</li>
+        <li>Army-Navy pays 1%, and so does Award Watch. Winners who tie exactly split it.</li>
+        <li>The Bowl challenge pays its winner only, 5%. The CFP bracket pays 10% for 1st and 5% for 2nd.</li>
         <li>Ties split the combined prizes for the tied places. If two pickers tie for 1st, they split 1st and 2nd.</li>
         <li>Everyone who wins a Survivor run together splits that run's prize.</li>
         <li>The Computer cannot win money. Its prize goes to the next best picker.</li>
@@ -1096,13 +1097,14 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <div class="bar paychips" aria-label="Quick buy-in"><button type="button" class="btn sm" data-paybuy="25">$25</button><button type="button" class="btn sm" data-paybuy="50">$50</button><button type="button" class="btn sm" data-paybuy="100">$100</button></div>
       <p id="payPot" class="paypot"></p>
       <div class="payform">
-        <label>Season finish <select id="paySeason"><option value="0">No prize</option><option value="20">1st</option><option value="10">2nd</option><option value="5">3rd</option></select></label>
+        <label>Season finish <select id="paySeason"><option value="0">No prize</option><option value="30">1st</option><option value="10">2nd</option><option value="5">3rd</option></select></label>
         <label>Weekly wins <input type="number" id="payWeeks" min="0" max="13" value="0" inputmode="numeric"></label>
-        <label>Conference Champion Week <select id="payConf"><option value="0">No</option><option value="6">Won it</option></select></label>
+        <label>Conference Champion Week <select id="payConf"><option value="0">No</option><option value="5">Won it</option></select></label>
         <label>Survivor runs won <input type="number" id="payRuns" min="0" max="4" value="0" inputmode="numeric"></label>
         <label>Winners in each run <input type="number" id="paySplit" min="1" max="200" value="1" inputmode="numeric"></label>
         <label>Army-Navy <select id="payAN"><option value="0">No</option><option value="1">Won it</option></select></label>
-        <label>Bowl challenge <select id="payBowl"><option value="0">No prize</option><option value="10">1st</option><option value="5">2nd</option></select></label>
+        <label>Award Watch <select id="payAW"><option value="0">No</option><option value="1">Won it</option></select></label>
+        <label>Bowl challenge <select id="payBowl"><option value="0">No</option><option value="5">Won it</option></select></label>
         <label>CFP bracket <select id="payCfp"><option value="0">No prize</option><option value="10">1st</option><option value="5">2nd</option></select></label>
       </div>
       <p id="payTotal" class="paytotal" role="status"></p>
@@ -1763,29 +1765,32 @@ function awIdx(a,name){const i=a.c.findIndex(c=>c[0]===name);return i<0?null:i}
 function awPicksOf(o){const p={};for(const a of AW_LIST_()){const i=awIdx(a,o&&o[a.k]);if(i!=null)p[a.k]=i}return p}
 function awState(){return awPicksOf(AWD()&&AWD().mine)}
 function awCount(){return Object.keys(awState()).length}
-function awDone(){return awCount()===AW_LIST_().length}
+const awTb=()=>{const m=AWD()&&AWD().mine;return m&&Number.isInteger(m.tb)?m.tb:null};
+function awDone(){return awCount()===AW_LIST_().length&&awTb()!=null}
 function awRes(){const A=AWD();const r={};if(!A)return r;for(const a of A.list){const i=awIdx(a,(A.res||{})[a.k]);if(i!=null)r[a.k]=i}return r}
 /* Everyone after the lock: active pickers with at least one pick. */
 function awField(){const A=AWD();if(!A)return [];const src=A.picks||(Object.keys(A.mine||{}).length?{[state.uid]:A.mine}:{});
-  return Object.entries(src).filter(([pid])=>!removed().includes(pid)).map(([pid,o])=>({id:pid,name:nm(pid),p:awPicksOf(o)}))}
+  return Object.entries(src).filter(([pid])=>!removed().includes(pid)).map(([pid,o])=>({id:pid,name:nm(pid),p:awPicksOf(o),tb:Number.isInteger(o&&o.tb)?o.tb:null}))}
 function awSplit(P,k,n){const c=Array(n).fill(0);let in_=0;for(const x of P){if(Number.isInteger(x.p[k])){c[x.p[k]]++;in_++}}return {c,in_}}
 const awVal=(S,i)=>S.c[i]?Math.round(S.in_/S.c[i]*10)/10:null;
-function awScore(P,R){return P.map(x=>{let pts=0,hits=0;for(const a of AW_LIST_()){if(!(a.k in R))continue;const S=awSplit(P,a.k,a.c.length),w=R[a.k];if(x.p[a.k]===w){pts+=awVal(S,w);hits++}}return {...x,pts:Math.round(pts*10)/10,hits}})}
+function awScore(P,R){return P.map(x=>{let pts=0,hits=0;for(const a of AW_LIST_()){if(!(a.k in R))continue;const S=awSplit(P,a.k,a.c.length),w=R[a.k];if(x.p[a.k]===w){pts+=awVal(S,w);hits++}}const ans=AWD()&&AWD().tbAns;return {...x,pts:Math.round(pts*10)/10,hits,miss:Number.isInteger(ans)?Math.abs((x.tb||0)-ans):null}})}
+/* Rank: points, then the smaller tiebreaker miss once the Heisman points are in. Exact ties share. */
+function awRank(Sc){Sc.sort((x,y)=>y.pts-x.pts||(x.miss??0)-(y.miss??0)||y.hits-x.hits);let rk=0,pk=null;for(let i=0;i<Sc.length;i++){const k=Sc[i].pts+"|"+(Sc[i].miss??"");if(k!==pk){rk=i+1;pk=k}Sc[i].rk=rk}return Sc}
 /* Banner at the very top of Picks (Benton, Nov 18): links to the Awards tab for the whole contest.
    Open: how many you have picked and the lock. Locked: everyone's picks, then the standings. Final: until you open the tab once. */
 function awBanner(){const A=AWD();if(!A)return "";const L=A.list.length,R=Object.keys(A.res||{}).length,lk=esc(kick(A.lock));let t;
-  if(awOpen()){const n=awCount();t=n===L?`Your ${L} Award Watch picks are in. Change them until ${lk}.`:`Award Watch: pick ${L} award winners. ${n?`${n} of ${L} picked. `:""}Locks ${lk}.`}
+  if(awOpen()){const n=awCount();t=n===L?(awTb()!=null?`Your ${L} Award Watch picks and tiebreaker are in. Change them until ${lk}.`:`Award Watch: your ${L} picks are in. Add the Heisman tiebreaker by ${lk}.`):`Award Watch: pick ${L} award winners. ${n?`${n} of ${L} picked. `:""}Locks ${lk}.`}
   else if(R<L)t=R?`Award Watch: ${R} of ${L} winners are in. See the standings.`:"Award Watch is locked. See everyone's picks.";
   else{let seen=null;try{seen=localStorage.getItem("tp-aw-final-"+state.uid)}catch(e){}if(seen)return "";t="Award Watch is final. See who called it."}
   return `<a class="awban${awOpen()&&!awDone()?" due":""}" href="#awards"><span aria-hidden="true">🏆</span><span>${t}</span><span aria-hidden="true">›</span></a>`}
 function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";return}
   if(A.list.every(a=>(A.res||{})[a.k])){try{localStorage.setItem("tp-aw-final-"+state.uid,"1")}catch(e){}}
   const L=A.list,d=awState(),pre=awOpen(),R=awRes(),P=pre?[]:awField(),nRes=Object.keys(R).length,fin=nRes===L.length;
-  let h=`<div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">Just for fun. No season points, no payout.</p>
+  let h=`<div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">No season points. 2026 is free; starting in 2027 the winner gets 1% of the pot.</p>
       <p class="awwhen">${pre?`Locks ${esc(kick(A.lock))}, the night before most awards cut to three finalists.`:`Locked ${esc(kick(A.lock))}.`} Winners Thu Dec 10; Heisman Sat Dec 12, the same day as Army-Navy.</p></div>`;
   if(pre)h+=`<p class="note awcount">${awCount()} of ${L.length} awards picked. ${A.n} picker${A.n===1?"":"s"} in so far. Picks save as you tap.</p>`;
   else h+=`<p class="note awcount">${P.length} picker${P.length===1?"":"s"} in. ${nRes?`${nRes} of ${L.length} winners in.`:"Winners come in Dec 10 and Dec 12."}</p>`;
-  if(state.isOwner&&pre&&A.entered){const E=Object.entries(A.entered);h+=`<div class="game awadm"><b>Commish: who is in</b><span>${E.length?E.map(([p,c])=>`${esc(nm(p))} (${c})`).join(", "):"Nobody yet."}</span></div>`}
+  if(state.isOwner&&pre&&A.entered){const E=Object.entries(A.entered);h+=`<div class="game awadm"><b>Commish: who is in</b><span>${E.length?E.map(([p,c])=>`${esc(nm(p))} (${c}${(A.tbIn||[]).includes(p)?", TB":""})`).join(", "):"Nobody yet."}</span></div>`}
   for(const a of L){const S=awSplit(P,a.k,a.c.length),mine=d[a.k],w=a.k in R?R[a.k]:null;
     h+=`<div class="game awcard"><div class="awhead"><span class="awe" aria-hidden="true">${a.e}</span><div><b>${esc(a.n)}</b><small>${esc(a.what)} · ${esc(a.when)}</small></div></div>
       <div class="awcs" role="radiogroup" aria-label="${esc(a.n)}">${a.c.map(([nm_,pos,tm],i)=>{const v=awVal(S,i),on=mine===i,win=w===i;
@@ -1794,15 +1799,18 @@ function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";retur
         return `<button type="button" class="awc${on?" on":""}${win?" win":""}${w!=null&&on&&!win?" miss":""}" role="radio" aria-checked="${on}" data-aw="${a.k}" data-awi="${i}" ${pre?"":"disabled"}><span class="awn">${win?"🏆 ":""}${esc(nm_)}</span>${sub?`<small>${esc(sub)}</small>`:""}${tag}</button>`}).join("")}</div>
       ${!pre&&Number.isInteger(mine)?`<p class="awyou">${w!=null?(mine===w?`You got it: +${awVal(S,w)}`:"Missed: 0"):`If ${esc(a.c[mine][0])} wins: +${awVal(S,mine)}`}</p>`:""}
       ${state.isOwner&&!pre?`<label class="awset">Winner <select data-awset="${a.k}"><option value="">Not in yet</option>${a.c.map(c=>`<option${w!=null&&a.c[w][0]===c[0]?" selected":""}>${esc(c[0])}</option>`).join("")}</select></label>`:""}</div>`}
-  if(!pre&&nRes&&P.length){const Sc=awScore(P,R).sort((x,y)=>y.pts-x.pts||y.hits-x.hits);let rk=0,prev=null;
+  h+=awTbCard(A,pre);
+  if(!pre&&nRes&&P.length){const Sc=awRank(awScore(P,R)),ans=A.tbAns;
     const robo=L.reduce((t,a)=>t+(R[a.k]===0?awVal(awSplit(P,a.k,a.c.length),0):0),0);
-    h+=`<h3 class="rh">${fin?"Final standings":"Standings so far"}</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th></tr></thead><tbody>${Sc.map((r,i)=>{if(r.pts!==prev){rk=i+1;prev=r.pts}return `<tr class="${r.id===state.uid?"me":""}"><td>${rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td></tr>`}).join("")}
-      <tr><td>—</td><td>🤖 The Computer (all top picks)</td><td class="n">${L.filter(a=>R[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td></tr></tbody></table>
-      <p class="note">Exact ties share.</p>`}
+    h+=`<h3 class="rh">${fin?"Final standings":"Standings so far"}</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th><th class="n">TB</th></tr></thead><tbody>${Sc.map(r=>`<tr class="${r.id===state.uid?"me":""}"><td>${r.rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td><td class="n">${r.tb==null?"—":r.tb.toLocaleString("en-US")}${r.miss!=null?`<small class="awoff">${r.miss.toLocaleString("en-US")} off</small>`:""}</td></tr>`).join("")}
+      <tr><td>—</td><td>🤖 The Computer<small class="awoff">all top picks</small></td><td class="n">${L.filter(a=>R[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td><td class="n">—</td></tr></tbody></table>
+      <p class="note">${Number.isInteger(ans)?`Tiebreaker: the Heisman winner had ${ans.toLocaleString("en-US")} points. A blank guess counts as 0.`:"The tiebreaker counts once the Heisman points are in, Dec 12."} Exact ties share.</p>`}
   h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul>
       <li>Pick one winner for each of the ${L.length} awards before the lock. Tap again to clear a pick. You can change picks until the lock.</li>
       <li>A right pick is worth the number of pickers who picked that award ÷ the number who took that winner. If you are the only one of 12 on him, that is 12 points. If all 12 had him, everyone gets 1.</li>
-      <li>A wrong or blank pick is 0. Most points wins. Exact ties share. Just for fun: no season points, no payout.</li>
+      <li>A wrong or blank pick is 0. Most points wins.</li>
+      <li>Tiebreaker: guess the Heisman winner's total points. Voters rank three players: 3 points for 1st, 2 for 2nd, 1 for 3rd, from about 930 ballots. The 2025 winner, Fernando Mendoza, had 2,362. Closest guess wins the tie; a blank counts as 0. Exact ties share.</li>
+      <li>No season points. 2026 is free, like everything else. Starting in 2027 the winner gets 1% of the pot.</li>
       <li>Values show after the lock, so nobody can chase the room. A player cut from the finalists on Nov 24 can no longer win.</li>
       <li>The Computer takes the top pick every time (the betting favorite for the Heisman). It plays unranked and cannot win.</li></ul></div>
     ${info("awproto",`Each list is the projected top 10 as of Nov 18, most likely first. Sources: the semifinalist lists (Bednarik Nov 10, Biletnikoff Nov 16, Davey O'Brien and Doak Walker Nov 17), Heisman prediction markets and sportsbooks (Nov 15 to 17), Coach of the Year coverage, and season stats. The awards show date is Dec 10 per the Maxwell Award's release; some school releases say Dec 11.`)}`;
@@ -1813,12 +1821,32 @@ document.addEventListener("click",async e=>{const b=e.target.closest("#v-awards 
   if(next[a.k]===a.c[i][0])delete next[a.k];else next[a.k]=a.c[i][0];
   A.mine=next;renderAW();$("#awTab").classList.toggle("hot",awOpen()&&!awDone());
   const r=await api("/api/picks",{awards:next});
-  if(r&&r.ok){A.mine=r.awards||next;toast(`You have picked ${Object.keys(A.mine).length} of ${A.list.length} awards. Saved.`,"info")}
+  if(r&&r.ok){A.mine=r.awards||next;toast(`You have picked ${Object.keys(A.mine).filter(k=>k!=="tb").length} of ${A.list.length} awards. Saved.`,"info")}
   else{A.mine=was;toast((r&&r.error)||"Could not save. Try again.")}
   renderAW();$("#awTab").classList.toggle("hot",awOpen()&&!awDone())});
 document.addEventListener("change",async e=>{const s=e.target.closest("#v-awards [data-awset]");if(!s)return;s.disabled=true;
   const r=await api("/api/admin",{action:"award",k:s.dataset.awset,winner:s.value||null});
   if(r&&r.ok){toast(s.value?`Winner saved: ${s.value}.`:"Winner cleared.","info");await refresh(true);renderAW()}else{s.disabled=false;toast((r&&r.error)||"Could not save. Try again.")}});
+
+/* Award Watch tiebreaker (Nov 20, Benton): the Heisman winner's total points. Saves with the whole sheet on change.
+   After the lock it shows your guess; the commissioner enters the real total. */
+function awTbCard(A,pre){const t=awTb();
+  let h=`<div class="game awcard awtb"><div class="awhead"><span class="awe" aria-hidden="true">🎯</span><div><b>Tiebreaker</b><small>The Heisman winner's total points · Sat Dec 12</small></div></div>`;
+  if(pre)h+=`<label class="awset awtbin">Your guess <input type="number" id="awTbIn" min="0" max="${A.tbMax||3000}" step="1" inputmode="numeric" placeholder="Total" value="${t==null?"":t}"></label><p class="note">3 points for a 1st place vote, 2 for 2nd, 1 for 3rd. The 2025 winner had 2,362. Blank counts as 0.</p>`;
+  else h+=`<p class="awyou">${t==null?"No guess. It counts as 0.":`Your guess: ${t.toLocaleString("en-US")}`}${Number.isInteger(A.tbAns)?` · Actual: ${A.tbAns.toLocaleString("en-US")} (${Math.abs((t||0)-A.tbAns).toLocaleString("en-US")} off)`:""}</p>`;
+  if(state.isOwner&&!pre)h+=`<label class="awset">Heisman points <input type="number" id="awTbAns" min="0" max="${A.tbMax||3000}" step="1" inputmode="numeric" value="${A.tbAns??""}"></label>`;
+  return h+`</div>`}
+document.addEventListener("change",async e=>{const el=e.target.closest("#v-awards #awTbIn");if(!el)return;const A=AWD();if(!A)return;
+  const v=el.value.trim(),was={...(A.mine||{})},next={...was};
+  if(v==="")delete next.tb;else{const n=Number(v);if(!Number.isInteger(n)||n<0||n>(A.tbMax||3000)){toast(`Give a whole number from 0 to ${(A.tbMax||3000).toLocaleString("en-US")}.`);el.value=was.tb??"";return}next.tb=n}
+  el.blur();A.mine=next;
+  const r=await api("/api/picks",{awards:next});
+  if(r&&r.ok){A.mine=r.awards||next;toast(v===""?"Tiebreaker cleared.":`Tiebreaker saved: ${next.tb.toLocaleString("en-US")}.`,"info")}
+  else{A.mine=was;toast((r&&r.error)||"Could not save. Try again.")}
+  renderAW();$("#awTab").classList.toggle("hot",awOpen()&&!awDone())});
+document.addEventListener("change",async e=>{const el=e.target.closest("#v-awards #awTbAns");if(!el)return;el.disabled=true;
+  const r=await api("/api/admin",{action:"award",tb:el.value.trim()===""?null:el.value.trim()});
+  if(r&&r.ok){toast(el.value?"Heisman points saved.":"Heisman points cleared.","info");await refresh(true);renderAW()}else{el.disabled=false;toast((r&&r.error)||"Could not save. Try again.")}});
 
 /* Bowl challenge prototype (item 3). Commissioner only, on the hidden Bowl Blitz tab. Picks save on this device only; nothing reaches the server.
    Teams: Athlon's Nov 1 projections. Dates: ESPN's 2026-27 schedule. Lines are samples from the SP+ gap, neutral site, half-point rule. */
@@ -2060,7 +2088,7 @@ function gmModel(it){
     row("✂️","Why tonight","Most awards cut to 3 finalists tomorrow. Lock in while all 10 names are live.","red");
     row("🐺","Go against the room","A right pick is worth pickers ÷ pickers on that winner. Alone on the right guy? You get the whole room.","purple");
     row("📅","Winners","Most awards Thu Dec 10. Heisman Sat Dec 12.","blue");
-    M.rows.push({ic:"🙈",label:"No peeking",text:"Nobody sees anyone's picks until the lock.",fun:true});
+    M.rows.push({ic:"🎯",label:"Tiebreaker",text:"Guess the Heisman winner's total points. Blank counts as 0.",fun:true});
     M.foot="Award Watch tab in the app 👉";return M}
   if(it.kind==="awl"){const A=AWD(),P=A.picks||{},ps=Object.values(P);
     M.kick="Award Watch · Locked";M.title="Picks are locked";M.sub=`${ps.length} picker${ps.length===1?"":"s"} in. Every pick is public now.`;
@@ -2838,19 +2866,19 @@ function renderRecap(){
   el.innerHTML=h;
 }
 window.tpSurv={survRuns,survRunOf,survRunNow,survivorBoard,survivorGrid,survivorChampions,survivorUsedRun,survConf,botSurv,realStats,careerPanel,renderSurvivor,renderPicks,gmAlive,gmRunFirst,gmRunLast}; /* for the browser test */
-window.tpRecap={survTag,revealCard,gcExpired,gcSeenBy,refresh,awOpen,gmGameRows,weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
+window.tpRecap={awRank,survTag,revealCard,gcExpired,gcSeenBy,refresh,awOpen,gmGameRows,weekFacts,gmDue,gmQueue,gmNext,renderGM,state,showSealed,sealFlip,nearMiss,beltOf,beltTag,hotOf,rankMoves,renderStandings,render,renderCommish,revealLive,recapFacts,renderRecap,currentWeekId,showReveal,seenKey,survivorBoard,survivorGrid,survivorRevived,survivorOpen,renderSurvivor,survNeeded,rivalOf,raceFacts,yourWeek,ironOf,ironSeasons,realStats,renderPicks,missingItems,curWeek,currentWeekId,weekPlayers,coverSide,margin,suRec}; /* for the browser test */
 document.addEventListener("change",e=>{if(e.target.id==="recapWeek"){state.recapWeek=e.target.value;renderRecap()}});
 
 /* ---------- payouts ---------- */
 /* Shares of the pot in percent. They total 100 at 13 weeks and 4 Survivor runs. Money stays off the site; this only does the math. */
-const PAY=[["Season standings","1st",20],["Season standings","2nd",10],["Season standings","3rd",5],["Weekly winner","Each week (13)",1],["Conference Champion Week","Winner",6],["Army-Navy","Winner",1],["Survivor","Each run (4)",3.75],["Bowl challenge","1st",10],["Bowl challenge","2nd",5],["CFP bracket","1st",10],["CFP bracket","2nd",5]];
+const PAY=[["Season standings","1st",30],["Season standings","2nd",10],["Season standings","3rd",5],["Weekly winner","Each week (13)",1],["Conference Champion Week","Winner",5],["Army-Navy","Winner",1],["Award Watch","Winner",1],["Survivor","Each run (4)",3.75],["Bowl challenge","Winner",5],["CFP bracket","1st",10],["CFP bracket","2nd",5]];
 function payNum(id,lo,hi){const v=Math.floor(Number($("#"+id).value));return isNaN(v)?lo:Math.min(hi,Math.max(lo,v))}
 function payMoney(n){return "$"+Math.round(n).toLocaleString("en-US")}
 function payUpdate(){if(!$("#payRows"))return;
   const buy=payNum("payBuy",0,10000),n=payNum("payN",1,200);const pot=buy*n;const of=p=>pot*p/100;
   $("#payRows").innerHTML=PAY.map(([c,pr,sh])=>`<tr><td>${esc(c)} \u00b7 ${esc(pr)}</td><td class="num">${sh}%</td><td class="num">${payMoney(of(sh))}</td></tr>`).join("");
   $("#payPot").textContent=`Pot: ${payMoney(pot)} from ${n} picker${n===1?"":"s"} at ${payMoney(buy)}.`;
-  const sum=+$("#paySeason").value+payNum("payWeeks",0,13)+ +$("#payConf").value+ +$("#payAN").value+payNum("payRuns",0,4)*3.75/payNum("paySplit",1,200)+ +$("#payBowl").value+ +$("#payCfp").value;
+  const sum=+$("#paySeason").value+payNum("payWeeks",0,13)+ +$("#payConf").value+ +$("#payAN").value+ +$("#payAW").value+payNum("payRuns",0,4)*3.75/payNum("paySplit",1,200)+ +$("#payBowl").value+ +$("#payCfp").value;
   const won=of(sum);const net=won-buy;$("#payTotal").textContent=`You would win ${payMoney(won)}. After your buy-in, that is ${net<0?"-":"+"}${payMoney(Math.abs(net))}.`}
 document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});
 document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#payouts"))payUpdate()});
