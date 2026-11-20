@@ -1092,6 +1092,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     check("pickers see the Awards tab and a banner at the top of Picks while it is open", !(await m.isHidden("#awTab")) && (await m.evaluate(() => { const b = document.querySelector("#v-picks").firstElementChild; return !!b && b.matches("a.awban[href='#awards']") && /pick 6 award winners/.test(b.textContent); })) && (await m.evaluate(() => document.querySelector("#awTab").classList.contains("hot"))));
     await m.evaluate(() => (location.hash = "#awards")); await m.waitForSelector("#v-awards .awcard");
     check("Awards shows six award cards and ten contenders each, with no prototype banner", (await m.locator("#v-awards .awcard:not(.awtb)").count()) === 6 && (await m.locator("#v-awards .awc").count()) === 60 && !/Prototype/.test(await m.textContent("#v-awards")));
+    if (process.env.SHOT) { await m.locator("#v-awards").screenshot({ path: process.env.SHOT + "/aw-open.png" }); await m.evaluate(() => document.documentElement.setAttribute("data-theme", "dark")); await m.locator("#v-awards").screenshot({ path: process.env.SHOT + "/aw-open-dark.png" }); await m.evaluate(() => document.documentElement.removeAttribute("data-theme")); }
     await m.click('#v-awards [data-aw="heis"][data-awi="2"]'); await m.waitForTimeout(250); await m.click('#v-awards [data-aw="wr"][data-awi="0"]'); await m.waitForTimeout(250);
     const mine = (await st(m)).mine;
     check("award picks save on the server by name", mine.heis === "Devon Dampier" && mine.wr === "Jeremiah Smith" && Object.keys(mine).length === 2, JSON.stringify(mine));
@@ -1169,7 +1170,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     }
     const awOv = await m.evaluate(() => [...document.querySelectorAll("#v-awards *")].filter((e) => e.getBoundingClientRect().right > document.documentElement.clientWidth + 1).slice(0, 4).map((e) => e.tagName + "." + e.className + ":" + Math.round(e.getBoundingClientRect().right)).join());
     check("the Awards tab adds no sideways scroll on a phone", (await m.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 0, awOv);
-    if (process.env.SHOT) await m.screenshot({ path: process.env.SHOT + "/aw-lock.png", fullPage: true });
+    if (process.env.SHOT) { await m.screenshot({ path: process.env.SHOT + "/aw-lock.png", fullPage: true }); await m.locator("#v-awards").screenshot({ path: process.env.SHOT + "/aw-lock-el.png" }); }
     await c.evaluate(() => { window.tpRecap.state.gmSel = null; });
   }
   await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(100);

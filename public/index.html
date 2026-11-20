@@ -389,8 +389,53 @@ nav.tabs a.hot::after{content:"";display:inline-block;width:8px;height:8px;borde
 .bwlist{display:flex;flex-direction:column;gap:10px}
 .bwwho{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:.76rem;color:var(--muted);line-height:1.3}
 .bwfin{font-family:var(--cond);font-size:.9rem;color:var(--muted)}
-.awhero{border-radius:12px;padding:14px 16px;margin-bottom:10px;background:linear-gradient(135deg,#2a1f00,#5a4300);color:#fff4cf;border:1px solid #c9a227}
-.awhero h2{margin:0 0 4px;color:#f2c230}.awhero p{margin:2px 0}.awhero .awwhen{font-size:.86rem;opacity:.85}
+/* Award Watch: black and gold awards night (Nov 20). Fixed colors in both themes, like Army-Navy. */
+.awhero{position:relative;margin:10px 0 12px;border-radius:12px;overflow:hidden;background:repeating-conic-gradient(from 0deg at 50% 115%,rgba(201,162,39,.2) 0 5deg,transparent 5deg 10deg),radial-gradient(ellipse at 50% 0,#2b2208,#0a0a0a 70%);border:2px solid #c9a227;box-shadow:inset 0 0 0 4px #0a0a0a,inset 0 0 0 5px #7a6118,0 2px 10px rgba(0,0,0,.35)}
+.awbulbs{height:16px;background:radial-gradient(circle,#fff3c4 0 2.6px,#e0b93a 3px,transparent 4px) 0 50%/18px 16px repeat-x}
+@media (prefers-reduced-motion:no-preference){.awbulbs{animation:awchase 1.6s steps(2) infinite}}
+@keyframes awchase{to{background-position:18px 50%}}
+.awplate{padding:4px 16px 12px;text-align:center;color:#f5ecd0}
+.awkick{font-family:var(--cond);font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#c9a227;font-size:.74rem}
+.awcup{display:block;margin:6px auto 0;filter:drop-shadow(0 0 10px rgba(255,214,90,.45))}
+.awh1{margin:2px 0 2px;font-family:var(--cond);font-weight:800;text-transform:uppercase;letter-spacing:.1em;font-size:clamp(1.6rem,9vw,2.4rem);line-height:1.05;background:linear-gradient(180deg,#fff2b8,#f2c230 45%,#a77d16);-webkit-background-clip:text;background-clip:text;color:transparent}
+.awdress{font-size:1.35rem;letter-spacing:.35em;margin:2px 0 6px}
+.awtag{margin:0 0 8px;font-size:.95rem;line-height:1.35}
+.awhero .awwhen{display:inline-block;margin:0 0 8px;padding:4px 12px;border:1px solid #c9a227;border-radius:999px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;color:#f2c230;font-size:.9rem}
+.awfine{margin:0;font-size:.8rem;color:#c8b47a;line-height:1.35}
+.awrun{margin:0 0 12px;border:1px solid #c9a227;border-radius:10px;background:#0f0f0f;color:#f5ecd0;padding:8px 10px}
+.awruntt{font-family:var(--cond);font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#c9a227;font-size:.74rem;text-align:center;margin-bottom:6px}
+.awrun ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;position:relative}
+.awrun ol::before{content:"";position:absolute;left:12%;right:12%;top:15px;border-top:1px dashed #7a6118}
+.awrun li{position:relative;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1px}
+.awri{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#1b1b1b;border:1px solid #7a6118;font-size:1rem}
+.awrun b{font-size:.78rem;line-height:1.15}.awrun small{font-size:.7rem;color:#b9a874;line-height:1.15}
+.awrun li.done{opacity:.5}.awrun li.next .awri{border:2px solid #ffe08a;box-shadow:0 0 10px rgba(255,214,90,.6)}.awrun li.next b{color:#f2c230}
+.awticket{display:flex;align-items:stretch;margin:0 0 12px;border-radius:8px;background:#f2c230;color:#1a1300;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.awadmit{display:grid;place-items:center;padding:6px 10px;font-family:var(--cond);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;line-height:1.1;text-align:center;border-right:2px dashed #1a1300;background:#e0b93a}
+.awticket .awcount{margin:0;padding:8px 12px;font-weight:700;font-size:.9rem;line-height:1.35;align-self:center}
+#v-awards .game.awcard,#v-awards .game.awadm{position:relative;background:linear-gradient(180deg,#151515,#0b0b0b);color:#f5ecd0;border:1px solid #c9a227;box-shadow:inset 0 0 0 3px #0b0b0b,inset 0 0 0 4px #4a3d15}
+#v-awards .awcard::before,#v-awards .awcard::after{content:"";position:absolute;width:14px;height:14px;border:2px solid #c9a227;pointer-events:none}
+#v-awards .awcard::before{top:6px;left:6px;border-right:0;border-bottom:0}#v-awards .awcard::after{bottom:6px;right:6px;border-left:0;border-top:0}
+.awcat{font-family:var(--cond);font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#c9a227;font-size:.7rem;text-align:center;margin:2px 0 4px}
+#v-awards .awhead b{color:#f2c230;font-family:var(--cond);font-size:1.15rem;letter-spacing:.04em;text-transform:uppercase}
+#v-awards .awhead small,#v-awards .awadm span{color:#c8b47a}
+.awnom{font-family:var(--cond);font-style:italic;color:#c8b47a;font-size:.82rem;margin:0 0 6px;text-align:center;letter-spacing:.06em}
+#v-awards .awc{background:#1b1b1b;border:1px solid #4a3d15;color:#f5ecd0}
+#v-awards .awc small,#v-awards .awc .awv{color:#b9a874}
+#v-awards .awc:not(:disabled):hover{border-color:#c9a227}
+#v-awards .awc.on{background:linear-gradient(135deg,#ffe08a,#c9a227);border:1px solid #ffe08a;color:#1a1300;box-shadow:0 0 8px rgba(255,214,90,.35)}
+#v-awards .awc.on small,#v-awards .awc.on .awv{color:#3d2f00}
+#v-awards .awc.win{border:2px solid #ffe08a;box-shadow:0 0 14px rgba(255,214,90,.6);background:linear-gradient(180deg,#3a2c05,#1b1b1b)}
+#v-awards .awc.on.win{background:linear-gradient(135deg,#fff2b8,#f2c230)}
+#v-awards .awc.miss{opacity:.45}
+#v-awards .awyou{color:#f2c230}#v-awards .awset{color:#f5ecd0}#v-awards .awtb .note{color:#c8b47a}
+#v-awards .awtb .awset input{background:#1b1b1b;color:#f2c230;border:1px solid #c9a227;border-radius:6px;padding:0 10px;font-family:var(--cond);font-weight:700;font-size:1.1rem}
+#v-awards .awrh{color:#a77d16}
+#v-awards .bwt th{background:#111;color:#f2c230}
+.awrules{border-left:3px solid #c9a227}
+.awcarpet{display:flex;flex-direction:column;align-items:center;margin:14px 0 6px;padding:14px 12px;border-radius:10px;text-align:center;color:#fff4cf;background:linear-gradient(90deg,#4a0a12,#8e1424 50%,#4a0a12);border:1px solid #c9a227}
+.awcarpet p{margin:0;font-family:var(--cond);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:1.1rem}.awcarpet .awcs2{font-weight:700;font-size:.85rem;color:#f2c230;letter-spacing:.06em;margin-top:2px}
+.awrope{display:block;width:80%;height:8px;margin:6px 0;background:radial-gradient(circle,#ffe08a 0 3px,transparent 3.5px) 0 50%/24px 8px repeat-x,linear-gradient(#c9a227,#c9a227) 0 50%/100% 2px no-repeat}
 .awcard{padding:10px 12px}.awhead{display:flex;gap:10px;align-items:center;margin-bottom:6px}.awhead .awe{font-size:1.6rem}.awhead small{display:block;color:var(--muted);font-size:.82rem}
 .awcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
 .awc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
@@ -1783,29 +1828,44 @@ function awBanner(){const A=AWD();if(!A)return "";const L=A.list.length,R=Object
   else if(R<L)t=R?`Award Watch: ${R} of ${L} winners are in. See the standings.`:"Award Watch is locked. See everyone's picks.";
   else{let seen=null;try{seen=localStorage.getItem("tp-aw-final-"+state.uid)}catch(e){}if(seen)return "";t="Award Watch is final. See who called it."}
   return `<a class="awban${awOpen()&&!awDone()?" due":""}" href="#awards"><span aria-hidden="true">🏆</span><span>${t}</span><span aria-hidden="true">›</span></a>`}
+/* Award Watch look (Nov 20, Benton: black and gold, awards night, as flavorful as Army-Navy). A generic gold cup, not any award's real statuette. */
+const AW_TROPHY=`<svg class="awcup" viewBox="0 0 64 80" width="56" height="70" aria-hidden="true"><defs><linearGradient id="awgold" x1="0" x2="1"><stop offset="0" stop-color="#8a6a12"/><stop offset=".45" stop-color="#ffe08a"/><stop offset="1" stop-color="#a77d16"/></linearGradient></defs><path d="M14 12H6c0 10 5 15 11 15M50 12h8c0 10-5 15-11 15" fill="none" stroke="url(#awgold)" stroke-width="3"/><path d="M14 6h36v12c0 13-8 23-18 23S14 31 14 18z" fill="url(#awgold)"/><path d="M32 12l2.4 5 5.4.6-4 3.7 1.1 5.3-4.9-2.7-4.9 2.7 1.1-5.3-4-3.7 5.4-.6z" fill="#fff6d0"/><rect x="28" y="41" width="8" height="11" fill="url(#awgold)"/><path d="M20 52h24l3 8H17z" fill="url(#awgold)"/><rect x="13" y="60" width="38" height="9" rx="1.5" fill="#141414" stroke="url(#awgold)" stroke-width="2"/></svg>`;
+/* Run of show: the lock, finalist day, the awards show, the Heisman. Past steps dim; the next one glows. */
+function awShow(A){const lk=Date.parse(A.lock),now=Date.now(),Y=new Date(lk).getUTCFullYear();
+  const at=(m,d)=>Date.UTC(Y,m,d,23,59);
+  const S=[["🔏","Ballots seal",kick(A.lock),lk],["📋","Finalists named","Tue Nov 24",at(10,24)],["🎬","Awards show","Thu Dec 10",at(11,10)],["🏆","Heisman night","Sat Dec 12",at(11,12)]];
+  const nx=S.findIndex(x=>x[3]>now);
+  return `<div class="awrun"><div class="awruntt">Run of show</div><ol>${S.map((x,i)=>`<li class="${i<nx||nx<0?"done":i===nx?"next":""}"><span class="awri" aria-hidden="true">${x[0]}</span><b>${esc(x[1])}</b><small>${esc(x[2])}</small></li>`).join("")}</ol></div>`}
 function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";return}
   if(A.list.every(a=>(A.res||{})[a.k])){try{localStorage.setItem("tp-aw-final-"+state.uid,"1")}catch(e){}}
   const L=A.list,d=awState(),pre=awOpen(),R=awRes(),P=pre?[]:awField(),nRes=Object.keys(R).length,fin=nRes===L.length;
-  let h=`<div class="awhero"><h2>🏆 Award Watch</h2><p>Pick who wins college football's big awards. Go against the room and it pays.</p><p class="awwhen">No season points. The winner gets an Award Watch win in Career wins. 2026 is free; starting in 2027 the winner also gets 1% of the pot.</p>
-      <p class="awwhen">${pre?`Locks ${esc(kick(A.lock))}, the night before most awards cut to three finalists.`:`Locked ${esc(kick(A.lock))}.`} Winners Thu Dec 10; Heisman Sat Dec 12, the same day as Army-Navy.</p></div>`;
-  if(pre)h+=`<p class="note awcount">${awCount()} of ${L.length} awards picked. ${A.n} picker${A.n===1?"":"s"} in so far. Picks save as you tap.</p>`;
-  else h+=`<p class="note awcount">${P.length} picker${P.length===1?"":"s"} in. ${nRes?`${nRes} of ${L.length} winners in.`:"Winners come in Dec 10 and Dec 12."}</p>`;
+  let h=`<div class="awhero"><div class="awbulbs" aria-hidden="true"></div><div class="awplate">
+      <div class="awkick">College football presents</div>${AW_TROPHY}
+      <h2 class="awh1">Award Watch</h2>
+      <div class="awdress" aria-hidden="true">🎩 🤵 👔 🥂 🎬</div>
+      <p class="awtag">Black tie. Gold hardware. Pick who takes home college football's big awards. Go against the room and it pays.</p>
+      <p class="awwhen">${pre?`Ballots seal ${esc(kick(A.lock))}`:`Ballots sealed ${esc(kick(A.lock))}`}</p>
+      <p class="awfine">No season points. The winner gets an Award Watch win in Career wins. 2026 is free; starting in 2027 the winner also gets 1% of the pot.</p>
+    </div><div class="awbulbs" aria-hidden="true"></div></div>`;
+  h+=awShow(A);
+  h+=`<div class="awticket"><span class="awadmit" aria-hidden="true">Admit<br>one</span><p class="awcount">${pre?`${awCount()} of ${L.length} awards picked. ${A.n} picker${A.n===1?"":"s"} in so far. Picks save as you tap.`:`${P.length} picker${P.length===1?"":"s"} in. ${nRes?`${nRes} of ${L.length} winners in.`:"Winners come in Dec 10 and Dec 12."}`}</p></div>`;
   if(state.isOwner&&pre&&A.entered){const E=Object.entries(A.entered);h+=`<div class="game awadm"><b>Commish: who is in</b><span>${E.length?E.map(([p,c])=>`${esc(nm(p))} (${c}${(A.tbIn||[]).includes(p)?", TB":""})`).join(", "):"Nobody yet."}</span></div>`}
-  for(const a of L){const S=awSplit(P,a.k,a.c.length),mine=d[a.k],w=a.k in R?R[a.k]:null;
-    h+=`<div class="game awcard"><div class="awhead"><span class="awe" aria-hidden="true">${a.e}</span><div><b>${esc(a.n)}</b><small>${esc(a.what)} · ${esc(a.when)}</small></div></div>
+  L.forEach((a,ai)=>{const S=awSplit(P,a.k,a.c.length),mine=d[a.k],w=a.k in R?R[a.k]:null;
+    h+=`<div class="game awcard"><div class="awcat">Category ${ai+1} of ${L.length}</div><div class="awhead"><span class="awe" aria-hidden="true">${a.e}</span><div><b>${esc(a.n)}</b><small>${esc(a.what)} · ${esc(a.when)}</small></div></div>
+      <div class="awnom">${w!=null?"And the winner is…":"The nominees"}</div>
       <div class="awcs" role="radiogroup" aria-label="${esc(a.n)}">${a.c.map(([nm_,pos,tm],i)=>{const v=awVal(S,i),on=mine===i,win=w===i;
         const sub=[pos,tm].filter(Boolean).join(", ")+(i===0?" · top pick":"");
         const tag=pre?"":`<span class="awv">${S.c[i]} of ${S.in_}${v!=null?` · worth ${v}`:" · nobody"}</span>`;
         return `<button type="button" class="awc${on?" on":""}${win?" win":""}${w!=null&&on&&!win?" miss":""}" role="radio" aria-checked="${on}" data-aw="${a.k}" data-awi="${i}" ${pre?"":"disabled"}><span class="awn">${win?"🏆 ":""}${esc(nm_)}</span>${sub?`<small>${esc(sub)}</small>`:""}${tag}</button>`}).join("")}</div>
       ${!pre&&Number.isInteger(mine)?`<p class="awyou">${w!=null?(mine===w?`You got it: +${awVal(S,w)}`:"Missed: 0"):`If ${esc(a.c[mine][0])} wins: +${awVal(S,mine)}`}</p>`:""}
-      ${state.isOwner&&!pre?`<label class="awset">Winner <select data-awset="${a.k}"><option value="">Not in yet</option>${a.c.map(c=>`<option${w!=null&&a.c[w][0]===c[0]?" selected":""}>${esc(c[0])}</option>`).join("")}</select></label>`:""}</div>`}
+      ${state.isOwner&&!pre?`<label class="awset">Winner <select data-awset="${a.k}"><option value="">Not in yet</option>${a.c.map(c=>`<option${w!=null&&a.c[w][0]===c[0]?" selected":""}>${esc(c[0])}</option>`).join("")}</select></label>`:""}</div>`});
   h+=awTbCard(A,pre);
   if(!pre&&nRes&&P.length){const Sc=awRank(awScore(P,R)),ans=A.tbAns;
     const robo=L.reduce((t,a)=>t+(R[a.k]===0?awVal(awSplit(P,a.k,a.c.length),0):0),0);
-    h+=`<h3 class="rh">${fin?"Final standings":"Standings so far"}</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th><th class="n">TB</th></tr></thead><tbody>${Sc.map(r=>`<tr class="${r.id===state.uid?"me":""}"><td>${r.rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td><td class="n">${r.tb==null?"—":r.tb.toLocaleString("en-US")}${r.miss!=null?`<small class="awoff">${r.miss.toLocaleString("en-US")} off</small>`:""}</td></tr>`).join("")}
+    h+=`<h3 class="rh awrh">🏆 ${fin?"Final standings":"Standings so far"}</h3><table class="bwt"><thead><tr><th>#</th><th>Picker</th><th class="n">Right</th><th class="n">Pts</th><th class="n">TB</th></tr></thead><tbody>${Sc.map(r=>`<tr class="${r.id===state.uid?"me":""}"><td>${r.rk}</td><td>${esc(r.name)}</td><td class="n">${r.hits}</td><td class="n">${r.pts}</td><td class="n">${r.tb==null?"—":r.tb.toLocaleString("en-US")}${r.miss!=null?`<small class="awoff">${r.miss.toLocaleString("en-US")} off</small>`:""}</td></tr>`).join("")}
       <tr><td>—</td><td>🤖 The Computer<small class="awoff">all top picks</small></td><td class="n">${L.filter(a=>R[a.k]===0).length}</td><td class="n">${Math.round(robo*10)/10}</td><td class="n">—</td></tr></tbody></table>
       <p class="note">${Number.isInteger(ans)?`Tiebreaker: the Heisman winner had ${ans.toLocaleString("en-US")} points. A blank guess counts as 0.`:"The tiebreaker counts once the Heisman points are in, Dec 12."} Exact ties share.</p>`}
-  h+=`<div class="rulesbox"><h3 class="rh">How it works</h3><ul>
+  h+=`<div class="rulesbox awrules"><h3 class="rh">📜 Program notes: how it works</h3><ul>
       <li>Pick one winner for each of the ${L.length} awards before the lock. Tap again to clear a pick. You can change picks until the lock.</li>
       <li>A right pick is worth the number of pickers who picked that award ÷ the number who took that winner. If you are the only one of 12 on him, that is 12 points. If all 12 had him, everyone gets 1.</li>
       <li>A wrong or blank pick is 0. Most points wins.</li>
@@ -1813,6 +1873,7 @@ function renderAW(){const el=$("#v-awards"),A=AWD();if(!A){el.innerHTML="";retur
       <li>No season points. The winner, or everyone tied for 1st after the tiebreaker, gets an Award Watch win in Career wins. 2026 is free, like everything else. Starting in 2027 the winner also gets 1% of the pot.</li>
       <li>Values show after the lock, so nobody can chase the room. A player cut from the finalists on Nov 24 can no longer win.</li>
       <li>The Computer takes the top pick every time (the betting favorite for the Heisman). It plays unranked and cannot win.</li></ul></div>
+    <div class="awcarpet"><span class="awrope" aria-hidden="true"></span><p>🎤 The envelope, please.</p><p class="awcs2">Awards Thu Dec 10 · Heisman Sat Dec 12</p><span class="awrope" aria-hidden="true"></span></div>
     ${info("awproto",`Each list is the projected top 10 as of Nov 18, most likely first. Sources: the semifinalist lists (Bednarik Nov 10, Biletnikoff Nov 16, Davey O'Brien and Doak Walker Nov 17), Heisman prediction markets and sportsbooks (Nov 15 to 17), Coach of the Year coverage, and season stats. The awards show date is Dec 10 per the Maxwell Award's release; some school releases say Dec 11.`)}`;
   el.innerHTML=h}
 /* Each tap saves the whole sheet. The page shows the change at once and puts it back if the server refuses. */
@@ -1831,7 +1892,7 @@ document.addEventListener("change",async e=>{const s=e.target.closest("#v-awards
 /* Award Watch tiebreaker (Nov 20, Benton): the Heisman winner's total points. Saves with the whole sheet on change.
    After the lock it shows your guess; the commissioner enters the real total. */
 function awTbCard(A,pre){const t=awTb();
-  let h=`<div class="game awcard awtb"><div class="awhead"><span class="awe" aria-hidden="true">🎯</span><div><b>Tiebreaker</b><small>The Heisman winner's total points · Sat Dec 12</small></div></div>`;
+  let h=`<div class="game awcard awtb"><div class="awcat">The tiebreaker</div><div class="awhead"><span class="awe" aria-hidden="true">🎯</span><div><b>Tiebreaker</b><small>The Heisman winner's total points · Sat Dec 12</small></div></div>`;
   if(pre)h+=`<label class="awset awtbin">Your guess <input type="number" id="awTbIn" min="0" max="${A.tbMax||3000}" step="1" inputmode="numeric" placeholder="Total" value="${t==null?"":t}"></label><p class="note">3 points for a 1st place vote, 2 for 2nd, 1 for 3rd. The 2025 winner had 2,362. Blank counts as 0.</p>`;
   else h+=`<p class="awyou">${t==null?"No guess. It counts as 0.":`Your guess: ${t.toLocaleString("en-US")}`}${Number.isInteger(A.tbAns)?` · Actual: ${A.tbAns.toLocaleString("en-US")} (${Math.abs((t||0)-A.tbAns).toLocaleString("en-US")} off)`:""}</p>`;
   if(state.isOwner&&!pre)h+=`<label class="awset">Heisman points <input type="number" id="awTbAns" min="0" max="${A.tbMax||3000}" step="1" inputmode="numeric" value="${A.tbAns??""}"></label>`;
