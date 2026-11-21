@@ -360,7 +360,8 @@ try {
 
   // ---- scores and final ----
   await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
-  await c.click('[data-act="run"][data-job="scores"]');
+  check("a locked week shows Pull scores now in This week", (await c.locator('[data-sec="week"] [data-act="run"][data-job="scores"]').count()) === 1);
+  await c.click('[data-sec="week"] [data-act="run"][data-job="scores"]');
   await c.waitForFunction(() => document.querySelector("#v-commish").textContent.includes("Pull scores failed"), null, { timeout: 30000 });
   check("a failed ESPN pull shows as a flag", true);
   await c.evaluate(() => window.scrollTo(0, 0)); await c.screenshot({ path: "dev/test-auto.png", fullPage: false });
