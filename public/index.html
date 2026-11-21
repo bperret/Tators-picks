@@ -842,6 +842,10 @@ td.svc.next{border:1px dashed var(--line)}
 .mbwho{min-width:0}.mbwho b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mbwho small{display:block;font-size:.76rem;line-height:1.2;color:var(--muted)}
 .mbdetail{display:flex;flex-direction:column;gap:4px;align-items:flex-start;padding:2px 0 10px}
 .mbdetail .lgbtns{margin-top:4px;justify-content:flex-start}
+.enform{display:flex;flex-direction:column;gap:6px;align-self:stretch;margin-top:8px;padding:10px;border:1px dashed var(--line,#999);border-radius:10px}
+.enform textarea,.enform input,.enform select{width:100%}
+.enrow{display:flex;flex-direction:column;gap:2px}.enrow .lgbtns{justify-content:flex-start}
+.btn.ensel{background:var(--gold,#c9a227);color:#111;border-color:var(--gold,#c9a227)}
 .pinbox{border:2px solid var(--flag);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .pinbox p{margin:0}
 .bigpin{font-family:var(--cond);font-size:2rem;letter-spacing:.2em;font-variant-numeric:tabular-nums}
@@ -1342,7 +1346,7 @@ document.addEventListener("scroll",e=>{if(e.target&&e.target.id==="rcards"){cons
 
 /* ---------- forms ---------- */
 document.addEventListener("submit",async e=>{
-  const f=e.target;if(!["firstForm","loginForm","setupForm","profileForm","pinForm","addPlayerForm","slateForm","rankForm"].includes(f.id))return;
+  const f=e.target;if(!["firstForm","loginForm","setupForm","profileForm","pinForm","addPlayerForm","slateForm","rankForm","enterForm"].includes(f.id))return;
   e.preventDefault();const btn=f.querySelector("button[type=submit]");if(btn)btn.disabled=true;
   try{
   if(f.id==="firstForm"){
@@ -1378,6 +1382,12 @@ document.addEventListener("submit",async e=>{
     const r=await api("/api/admin",{action:"addPlayer",phone:$("#apPhone").value,name:$("#apName").value.trim()});
     if(!r.ok){toast(r.error);return}state.shownPin={num:r.phone,pin:r.pin,what:"added"};await refresh();renderCommish();{const pb=$("#pinbox");if(pb)pb.scrollIntoView({block:"center"})}
   }
+  if(f.id==="enterForm"){const E=state.mbEnter,w=E&&state.weeks[E.wid];if(!w)return;
+    const tbs=String(E.tb||"").trim();if(tbs&&!/^\d+$/.test(tbs)){toast("The tiebreaker must be a whole number.");return}
+    const [sg,ss]=(E.surv||"").split("|");
+    const r=await api("/api/admin",{action:"enterSheet",id:E.id,weekId:E.wid,sel:E.sel,lock:E.lock||null,tb:tbs?Number(tbs):null,surv:sg?{g:sg,s:ss}:null,abbr:abbrMap(w)});
+    if(!r.ok){toast(r.error);return}
+    toast((r.late?"Late sheet saved. ":"Sheet saved. ")+r.note,"info");state.mbEnter=null;await refresh();renderCommish()}
   if(f.id==="slateForm"){
     let week;try{week=JSON.parse($("#slateJson").value)}catch(x){toast("That is not valid JSON. Check the slate JSON and paste it again.");return}
     const r=await api("/api/admin",{action:"importWeek",week});if(!r.ok){toast(r.error);return}
@@ -1397,6 +1407,8 @@ document.addEventListener("click",async e=>{
   const d=e.target.closest("[data-dact]");if(!d)return;const k=d.dataset.dact;
   if(k==="logout"){await api("/api/auth",{action:"logout"});ME=null;location.hash="#picks";showAuth("loginForm")}
   if(k==="reset"){const r=await api("/api/admin",{action:"resetPin",id:d.dataset.id});if(!r.ok){toast(r.error);return}const who=(state.logins||[]).find(x=>x.id===d.dataset.id);state.shownPin={num:r.phone,pin:r.pin,what:"reset",self:r.self,who:who&&(who.name||who.invited)};if(!r.self)await refresh();renderCommish();const pb=$("#pinbox");if(pb)pb.scrollIntoView({block:"center"})}
+  if(k==="enter"){const SC=sheetCheck();if(!SC)return;state.mbEnter={id:d.dataset.id,wid:SC.w.id,sel:{},lock:"",tb:"",surv:"",names:"",msg:""};mbPaint(d.dataset.id);return}
+  if(k==="enterx"){state.mbEnter=null;mbPaint(d.dataset.id);return}
   if(k==="hidepin"){const self=state.shownPin&&state.shownPin.self;state.shownPin=null;if(self){showAuth("loginForm");return}renderCommish()}
   if(k==="startover"){if(!soArmed(d.dataset.id)){state.soArm={id:d.dataset.id,at:Date.now()};d.textContent="Tap again: wipe picks and profile";return}
     state.soArm=null;d.disabled=true;d.textContent="Starting over…";
@@ -1436,7 +1448,49 @@ function mbRow(a,SC,t){const v=mbSheet(a,SC),open=state.mbOpen===a.id,locked=a.l
   const facts=[a.invited&&a.invited!==a.name?"Nickname: "+esc(a.invited):"",v.s?`Week ${SC.w.week}: ${esc(v.s.label)}`:"",v.s&&v.s.at?"Last saved "+esc(when(v.s.at)):"",seen?"Last seen "+esc(when(seen)):"",a.setupDone?"":"Not logged in yet",a.lockouts?a.lockouts+" pause"+(a.lockouts>1?"s":""):""].filter(Boolean);
   const rm=a.isCommish?"":`<button class="btn sm${a.removed?"":" danger"}" data-dact="${a.removed?"restore":"remove"}" data-id="${esc(a.id)}">${a.removed?"Restore":"Remove"}</button>`+(a.removed?`<button class="btn sm danger" data-dact="startover" data-id="${esc(a.id)}">${soArmed(a.id)?"Tap again: wipe picks and profile":"Start over"}</button>`:"");
   const phone=a.isCommish||!a.phone||a.phone.length!==10?`<span>${fmtPhone(a.phone)}</span>`:`<a href="sms:+1${esc(a.phone)}">Text ${fmtPhone(a.phone)}</a>`;
-  return `<div class="mbitem"><button type="button" class="mbrow" data-mbr="${esc(a.id)}" aria-expanded="${open}"><span class="mbwho"><b>${chip(a.id)}${esc(mbName(a))}${a.isCommish?" (you)":""}</b>${sub?`<small>${esc(sub)}</small>`:""}</span><span>${v.pill}</span><span class="note">${esc(saved)}</span></button>${open?`<div class="mbdetail">${phone}${facts.map(x=>`<span class="note">${x}</span>`).join("")}<span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${rm}</span></div>`:""}</div>`}
+  return `<div class="mbitem"><button type="button" class="mbrow" data-mbr="${esc(a.id)}" aria-expanded="${open}"><span class="mbwho"><b>${chip(a.id)}${esc(mbName(a))}${a.isCommish?" (you)":""}</b>${sub?`<small>${esc(sub)}</small>`:""}</span><span>${v.pill}</span><span class="note">${esc(saved)}</span></button>${open?`<div class="mbdetail">${phone}${facts.map(x=>`<span class="note">${x}</span>`).join("")}<span class="lgbtns"><button class="btn sm" data-dact="reset" data-id="${esc(a.id)}">Reset PIN</button>${enBtn(a,SC)}${rm}</span>${enForm(a,SC)}</div>`:""}</div>`}
+/* Enter sheet (Nov 21, Benton): the commissioner enters or replaces a picker's sheet while picks are open or after the lock.
+   The form lives in state.mbEnter, so the 30 second redraw keeps it; the server checks the sheet like a picker's own save. */
+function enBtn(a,SC){if(!SC||a.removed||a.isCommish)return"";const on=state.mbEnter&&state.mbEnter.id===a.id;
+  return `<button class="btn sm" data-dact="${on?"enterx":"enter"}" data-id="${esc(a.id)}">${on?"Close sheet":"Enter sheet"}</button>`}
+const enNorm=x=>String(x||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"");
+/* Team names to slate sides. Exact name, alias, or letters win; else the longest slate name the text starts with ("LSU Tigers" is LSU). "FG" or * marks the field goal. */
+function enMatch(text,w){const rs=w.results||{},gs=w.games.filter(g=>!(rs[g.id]&&rs[g.id].void));
+  const sides=[];for(const g of gs)for(const side of ["away","home"]){const t=g[side],c=canon(t),keys=new Set([enNorm(t),enNorm(teamLook(t,g,side).abbr)]);
+    for(const [k,v] of Object.entries(ALIAS))if(v===c)keys.add(k);sides.push({g,side,t,keys:[...keys].filter(Boolean)})}
+  const sel={},miss=[],clash=[];let lock="";
+  for(let tok of String(text||"").split(/[,;\n]+|\band\b/i)){tok=tok.trim();if(!tok)continue;
+    let fg=/\*|\(?\bfg\b\)?|field goal/i.test(tok);const n=enNorm(tok.replace(/\*|\(?\bfg\b\)?|field goal/ig,""));if(!n)continue;
+    let best=null,bs=0;for(const x of sides)for(const k of x.keys){const sc=n===k?100:n.startsWith(k)?k.length:0;if(sc>bs){bs=sc;best=x}}
+    if(!best){miss.push(tok);continue}
+    if(sel[best.g.id]&&sel[best.g.id]!==best.side)clash.push(`${best.g.away} at ${best.g.home}`);
+    sel[best.g.id]=best.side;if(fg)lock=best.g.id}
+  return {sel,lock,miss,clash}}
+function enForm(a,SC){const E=state.mbEnter;if(!E||E.id!==a.id||!SC)return"";const w=SC.w,rs=w.results||{};
+  const gs=[...w.games].sort((x,y)=>(x.slot||0)-(y.slot||0)).filter(g=>!(rs[g.id]&&rs[g.id].void));
+  const late=w.status==="locked",sv=survivorOpen(w.id);
+  const side=(g,s)=>{const t=g[s],on=E.sel[g.id]===s;return `<button type="button" class="btn sm${on?" ensel":""}" aria-pressed="${on}" data-ens="${esc(g.id)}|${s}">${esc(teamLook(t,g,s).abbr)} ${esc(t)}</button>`};
+  const picked=gs.filter(g=>E.sel[g.id]);
+  return `<form id="enterForm" class="enform" data-id="${esc(a.id)}">
+    <p class="note"><b>Week ${w.week} sheet: ${esc(mbName(a))}</b><br> Saving replaces any sheet they have. ${late?"Picks are locked, so this goes in as a late sheet and the public log says so.":"Picks are open; they can still change it before the lock."}</p>
+    <label class="note" for="enNames">Fill from team names, comma or line separated. Add FG after the field goal team.</label>
+    <textarea id="enNames" rows="3" placeholder="BYU, Ohio State, Georgia FG, …">${esc(E.names||"")}</textarea>
+    <button type="button" class="btn sm" data-enfill="1">Fill</button>
+    ${E.msg?`<p class="note">${esc(E.msg)}</p>`:""}
+    <div class="enlist">${gs.map(g=>`<div class="enrow"><span class="note">${esc(g.away)} at ${esc(g.home)}</span><span class="lgbtns">${side(g,"away")}${side(g,"home")}</span></div>`).join("")}</div>
+    <label class="note" for="enFg">Field goal</label><select id="enFg"><option value="">None</option>${picked.map(g=>`<option value="${esc(g.id)}"${E.lock===g.id?" selected":""}>${esc(g[E.sel[g.id]])}</option>`).join("")}</select>
+    <label class="note" for="enTb">Tiebreaker (blank counts as 0)</label><input id="enTb" inputmode="numeric" value="${esc(E.tb||"")}">
+    ${sv?`<label class="note" for="enSurv">Survivor</label><select id="enSurv"><option value="">None</option>${gs.flatMap(g=>["away","home"].map(s=>`<option value="${esc(g.id)}|${s}"${E.surv===g.id+"|"+s?" selected":""}>${esc(g[s])} (${esc(survConf(g[s]).replace(/^team:.*/,"no conference on file"))})</option>`)).join("")}</select>`:""}
+    <span class="lgbtns"><button type="submit" class="btn sm">Save ${Object.keys(E.sel).length} pick${Object.keys(E.sel).length===1?"":"s"} for ${esc(mbName(a))}</button></span></form>`}
+window.tpEnter={enMatch}; /* for the browser test */
+document.addEventListener("click",e=>{const E=state.mbEnter;if(!E)return;
+  const s=e.target.closest("[data-ens]");if(s){const [g,side]=s.dataset.ens.split("|");if(E.sel[g]===side){delete E.sel[g];if(E.lock===g)E.lock=""}else E.sel[g]=side;E.msg="";mbPaint();return}
+  if(e.target.closest("[data-enfill]")){const w=state.weeks[E.wid];if(!w)return;const r=enMatch(E.names,w);
+    E.sel=r.sel;E.lock=r.lock;const n=Object.keys(r.sel).length;
+    E.msg=[`Matched ${n} pick${n===1?"":"s"}${r.lock?", field goal set":""}.`,r.miss.length?"No slate team for: "+r.miss.join(", ")+".":"",r.clash.length?"Both sides named in: "+r.clash.join("; ")+". The last one counts.":""].filter(Boolean).join(" ");
+    document.activeElement&&document.activeElement.blur();mbPaint()}});
+document.addEventListener("input",e=>{const E=state.mbEnter;if(!E)return;const id=e.target.id;
+  if(id==="enNames")E.names=e.target.value;if(id==="enTb")E.tb=e.target.value;if(id==="enFg")E.lock=e.target.value;if(id==="enSurv")E.surv=e.target.value});
 function mbBody(){const L=state.logins||[],t=NOW(),SC=sheetCheck();
   const has=k=>a=>mbSheet(a,SC).k===k;
   const F={all:a=>!a.removed,none:has("none"),part:has("part"),done:has("done"),never:a=>!a.removed&&!a.setupDone,removed:a=>a.removed};

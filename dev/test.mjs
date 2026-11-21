@@ -265,6 +265,32 @@ try {
   await pg.query("update weeks set data = jsonb_set(data, '{deadline}', to_jsonb($1::text)) where id = '2026-w10'", [past]);
   const refused = await m.evaluate(() => fetch("/api/picks", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ weekId: "2026-w10", sel: { g1: "home" } }) }).then((r) => r.status));
   check("server refuses a save after the deadline", refused === 423, String(refused));
+  // ---- Enter sheet: the commissioner enters a picker's sheet after the lock (Nov 21) ----
+  {
+    await c.reload(); await c.waitForSelector("#app:not([hidden])"); await c.evaluate(() => (location.hash = "#commish")); await c.waitForTimeout(300);
+    await c.evaluate(() => { const d = document.querySelector('#v-commish details[data-sec="members"], #v-commish details:has(#mbBox)'); if (d) d.open = true; });
+    const row = c.locator(".mbitem", { hasText: "Mike" });
+    await row.locator(".mbrow").click(); await c.waitForTimeout(100);
+    await row.locator('[data-dact="enter"]').click(); await c.waitForTimeout(100);
+    check("Enter sheet opens a form that says it is a late sheet", (await row.locator("#enterForm").textContent()).includes("late sheet"));
+    await c.fill("#enNames", "Florida, Alabama Crimson Tide FG, Ole Miss Rebels\nUtah Utes and Miami, Nowhere State");
+    await row.locator("[data-enfill]").click(); await c.waitForTimeout(100);
+    const msg = await row.locator("#enterForm").textContent();
+    check("Fill matches team names to slate sides, sets the field goal, and lists misses", msg.includes("Matched 5 picks, field goal set") && msg.includes("No slate team for: Nowhere State") && (await row.locator(".ensel").count()) === 5, msg);
+    const clash = await c.evaluate(() => { const w = window.tpRecap.state.weeks["2026-w10"]; return JSON.stringify(window.tpEnter.enMatch("Georgia, Florida", w)); });
+    check("Fill flags both sides of one game", clash.includes('"clash":["Florida at Georgia"]') && clash.includes('"g1":"away"'), clash);
+    await c.fill("#enTb", "51");
+    await c.selectOption("#enSurv", "g5|away");
+    await row.locator('#enterForm button[type="submit"]').click(); await c.waitForTimeout(500);
+    const pk = (await pg.query("select p.data from picks p join players u on u.id = p.player_id where p.week_id = '2026-w10' and u.name like 'Mike%'")).rows[0].data;
+    check("the late sheet saves with sides, field goal, tiebreaker, survivor, and a late mark", JSON.stringify(pk.sel) === JSON.stringify({ g1: "away", g2: "home", g3: "home", g4: "away", g5: "away" }) && pk.lock === "g2" && pk.tb === 51 && pk.surv && pk.surv.g === "g5" && pk.late === true && pk.by === "commish", JSON.stringify(pk));
+    const st2 = await c.evaluate(() => fetch("/api/state").then((r) => r.json()));
+    check("the public log names the late sheet", st2.log.some((l) => l.action === "Entered a late sheet" && l.detail.includes("after the lock")));
+    const self = await c.evaluate(() => fetch("/api/admin", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "enterSheet", id: window.tpRecap.state.uid, weekId: "2026-w10", sel: { g1: "home" } }) }).then((r) => r.status));
+    check("Enter sheet refuses the commissioner's own sheet", self === 400, String(self));
+    const still = await m.evaluate(() => fetch("/api/picks", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ weekId: "2026-w10", sel: { g1: "home" } }) }).then((r) => r.status));
+    check("a picker still cannot save after the lock", still === 423, String(still));
+  }
   await m.reload(); await m.waitForSelector("#app:not([hidden])");
   check("week shows locked", (await m.textContent("#statusBadge")).toLowerCase().includes("locked"));
   check("picks revealed after the lock", (await m.locator(".cbar").count()) > 0);

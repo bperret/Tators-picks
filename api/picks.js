@@ -1,11 +1,8 @@
 // Saving a pick sheet. The server clock enforces the lock: any save at or after the deadline is refused.
 import { q, one } from "../lib/db.js";
 import { readBody, send, fail, currentPlayer } from "../lib/http.js";
-import { getConfig, effectiveStatus, survivorUsed, survivorRunOf, survivorCheck, confMap, confOf, saveNote } from "../lib/league.js";
-import { getKv } from "../lib/db.js";
+import { getConfig, effectiveStatus, checkSheet, saveNote } from "../lib/league.js";
 import { saveAwardPicks } from "../lib/awards.js";
-
-const canon = (s) => String(s || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
 
 export default async function handler(req, res) {
   try {
@@ -27,38 +24,11 @@ export default async function handler(req, res) {
     if (status === "locked" || status === "final") return fail(res, 423, "Picks locked at the deadline. The site refused this save.");
     if (status !== "open") return fail(res, 409, "Picks are not open for this week yet.");
 
-    const games = w.games || [];
-    const ids = new Set(games.map((g) => g.id));
-    const voids = new Set(Object.entries(w.results || {}).filter(([, r]) => r && r.void).map(([k]) => k));
-    const sel = {};
-    for (const [gid, side] of Object.entries(b.sel || {})) {
-      if (!ids.has(gid) || voids.has(gid)) continue;
-      if (side !== "home" && side !== "away") return fail(res, 400, "A pick must be home or away.");
-      sel[gid] = side;
-    }
-    let lock = b.lock || null;
-    if (lock && !sel[lock]) return fail(res, 400, "Pick a side in your field goal game first.");
-    let tb = b.tb;
-    if (tb === "" || tb === undefined) tb = null;
-    if (tb !== null && (!Number.isInteger(tb) || tb < 0 || tb > 200)) return fail(res, 400, "The tiebreaker must be a whole number from 0 to 200.");
-    let surv = null;
     const config = await getConfig();
-    if (b.surv) {
-      if (!config.survivorStart || b.weekId < config.survivorStart) return fail(res, 400, "Survivor has not started.");
-      const run = survivorRunOf(w, config);
-      if (!run) return fail(res, 400, "Survivor is over for this season.");
-      const g = games.find((x) => x.id === b.surv.g);
-      if (!g || voids.has(g.id) || (b.surv.s !== "home" && b.surv.s !== "away")) return fail(res, 400, "That survivor pick is not on this slate.");
-      const team = b.surv.s === "home" ? g.home : g.away;
-      // Run 2 conference lock or the no-repeat team rule, checked by survivorCheck (lib/league.js).
-      const map = run.rule === "conf" ? confMap(await getKv("rankings", null)) : {};
-      const prior = await survivorUsed(me.id, b.weekId, config, run, map);
-      const err = survivorCheck({ rule: run.rule, team, games, voids, usedTeams: prior.teams, burned: new Set(prior.confs), map });
-      if (err) return fail(res, 400, err);
-      surv = run.rule === "conf" ? { g: g.id, s: b.surv.s, c: confOf(team, map) } : { g: g.id, s: b.surv.s };
-    }
+    const chk = await checkSheet(w, b, me.id, config);
+    if (chk.error) return fail(res, chk.status, chk.error);
+    const data = chk.data;
     const prevRow = await one("select data from picks where player_id = $1 and week_id = $2", [me.id, b.weekId]);
-    const data = { sel, lock, tb, surv };
     const abbr = (t) => (b.abbr && typeof b.abbr[t] === "string" ? b.abbr[t].slice(0, 6) : t);
     const note = saveNote(prevRow && prevRow.data, data, w, abbr);
     await q(

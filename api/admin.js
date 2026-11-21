@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { q, one, addLog, setKv, getKv } from "../lib/db.js";
 import { parseRedditText } from "../lib/polls.js";
 import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../lib/http.js";
-import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings } from "../lib/league.js";
+import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings, checkSheet, saveNote } from "../lib/league.js";
 import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES } from "../lib/auto.js";
 import { captureRobo } from "../lib/robo.js";
 import { AW_LIST, AW_TB_MAX, awardCfg, awardLock, saveAwardChamps } from "../lib/awards.js";
@@ -123,6 +123,36 @@ export default async function handler(req, res) {
         await putWeek(w);
         await addLog(BY, "Unlocked picks", `Week ${w.week} reopened ${ctTime(new Date())}. New deadline ${ctTime(w.deadline)}. Picks were showing from ${ctTime(was)} and are hidden again until the new deadline.`);
         return send(res, 200, { ok: true });
+      }
+      // Enter or replace a picker's sheet for them (Nov 21, Benton). Works while picks are open and after the lock,
+      // never on a final week. Same checks as a picker's own save. The public log names the picker and says
+      // whether it came in after the lock, and the pick history keeps the same mark.
+      case "enterSheet": {
+        const p = await one("select * from players where id = $1", [b.id]);
+        if (!p) return fail(res, 404, "Picker not found.");
+        if (p.removed) return fail(res, 409, "Restore this picker first.");
+        if (p.is_commish) return fail(res, 400, "Save your own sheet on Picks.");
+        const w = await getWeek(b.weekId);
+        if (!w) return fail(res, 404, "Week not found.");
+        const st = effectiveStatus(w);
+        if (st === "final") return fail(res, 409, "This week is final. Reopen scoring first.");
+        if (st !== "open" && st !== "locked") return fail(res, 409, "Picks are not open for this week yet.");
+        const chk = await checkSheet(w, b, p.id, await getConfig());
+        if (chk.error) return fail(res, chk.status, chk.error);
+        const late = Date.now() >= Date.parse(w.deadline);
+        const data = { ...chk.data, by: "commish", entered: new Date().toISOString(), ...(late ? { late: true } : {}) };
+        const prev = await one("select data from picks where player_id = $1 and week_id = $2", [p.id, w.id]);
+        const abbr = (t) => (b.abbr && typeof b.abbr[t] === "string" ? b.abbr[t].slice(0, 6) : t);
+        const note = `Entered by the commissioner${late ? " after the lock" : ""}: ` + saveNote(prev && prev.data, data, w, abbr);
+        await q(
+          `insert into picks (player_id, week_id, data, updated_at) values ($1, $2, $3::jsonb, now())
+           on conflict (player_id, week_id) do update set data = excluded.data, updated_at = now()`,
+          [p.id, w.id, JSON.stringify(data)]
+        );
+        await q("insert into pick_history (player_id, week_id, note) values ($1, $2, $3)", [p.id, w.id, note]);
+        const n = Object.keys(data.sel).length;
+        await addLog(BY, late ? "Entered a late sheet" : "Entered a sheet", `Week ${w.week}: ${prev ? "replaced" : "entered"} the sheet for ${label(p)} (${n} pick${n === 1 ? "" : "s"}${data.lock ? ", field goal" : ""}${data.tb != null ? ", tiebreaker" : ""}${data.surv ? ", survivor" : ""})${late ? ` at ${ctTime(new Date())}, after the lock` : ""}.`);
+        return send(res, 200, { ok: true, note, late });
       }
       case "swap": {
         const w = await getWeek(b.weekId);
