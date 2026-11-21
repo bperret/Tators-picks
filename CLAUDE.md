@@ -267,6 +267,13 @@ Keep the weekly rhythm, Picks, Recap, Survivor, weekly titles, and the Computer 
 
 Separate task, to investigate:
 21. Backup options in case of failure. Benton wants this looked at on its own. Cover what happens if Vercel pauses the site, Neon suspends or loses data, or ESPN blocks the app, and what backups or fallback hosting would get the league running again. Investigate only, nothing built yet.
+   - Live score sources, researched Nov 21 after ESPN 403s on Week 12 Saturday (Benton: "maybe permanently broken"). Nothing built; Benton picks. Free only, per his rule.
+     - NCAA.com scoreboard data (the feed behind ncaa.com/scoreboard/football/fbs; the open source henrygd/ncaa-api wraps it, public instance 3 requests a second per IP, or self host). Free, no key, live period and clock. Different owner than ESPN, so an ESPN block does not touch it. Unofficial, so it can change or block too. Names differ ("Ohio St."), needs a name map. Leading pick for the first fallback.
+     - The Odds API scores (`/v4/sports/americanfootball_ncaaf/scores`). Free plan 500 credits a month, 1 credit per live call, 2 with `daysFrom` (finals up to 3 days back), live scores about every 30 seconds. Official keyed API, lowest block risk. No period or clock fields, so the cover tier chip would lose minutes left. Budget: a 10 minute gap over a 12 hour Saturday is about 72 calls, about 300 a month; fits, but no room for a 5 minute gap. Names carry mascots ("Ohio State Buckeyes").
+     - API-Sports American Football (covers NCAA): free 100 requests a day. Not verified whether the free plan includes the current season.
+     - CollegeFootballData: free key is 1,000 calls a month, but the live scoreboard needs Patreon Tier 1 ($1 a month), so it breaks the free rule. Fine for finals after the fact.
+     - ESPN from GitHub's runners (other IPs) needs a workflow edit only Benton can make, and GitHub runs come hours apart. Low value.
+     - Shape: the scores job tries ESPN, and on a 403 or 429 (or a failed call) tries the next source, writes the same result fields, and notes the source in the job message. Hand entry stays the last resort. Feed shapes cannot be checked from a Claude session (the workspace reaches none of these sites), so check the first live run.
 
 Ideas to shape later, not approved:
 19. Your season recap replaces the Recap for everyone, personal to each picker. The league-wide stats move to a new area, maybe called the Record Book. Benton's idea, wording "maybe". To settle: how it fits with the current Recap, and when in the season it runs.
