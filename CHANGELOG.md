@@ -15,7 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
-| 1.58.1 | Nov 21, 7:45 PM | Commish | Test backup scores button in Setup and one-time tools: pulls NCAA.com and The Odds API for the newest week and reports what matched, with a sample score. Saves nothing | S | 60 | `COMMIT` |
+| 1.58.1 | Nov 21, 7:45 PM | Commish | Test backup scores button in Setup and one-time tools: pulls NCAA.com and The Odds API for the newest week and reports what matched, with a sample score. Saves nothing | S | 60 | `fc5e282` |
 | 1.58 | Nov 21, 7:30 PM | Automation, Picks | Backup score sources: when ESPN fails or is resting after a block, the scores job takes scores from NCAA.com (quarter and clock included), then The Odds API (needs `ODDS_API_KEY`, no game clock). Names map to ours, mascots dropped. During ESPN's rest, page visits keep running scores through the backups without calling ESPN. The job message, an Automation flag, the public log, and the Scores updated line name the source | L | 330 | `f9899d1` |
 | 1.57.2 | Nov 21, 4:10 PM | Automation | A 403 or 429 from ESPN now pauses page visit runs for 60 minutes (doubling on each block in a row, up to 4 hours) instead of turning the switch off. Any scheduled run, page visit, or button run where ESPN answers ends the pause. Cause: the 1 PM 403 turned page visits off, GitHub then ran only once (1:50 PM, which worked), and scores went stale | S | 120 | `c141638` |
 | 1.57.1 | Nov 21, 1:20 PM | Commish | Pull scores now also sits in This week while the week is locked, beside Mark week final. It was only at the bottom of the folded Scores section, below all 10 score rows | S | 4 | `0f35b13` |
