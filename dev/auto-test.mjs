@@ -6,6 +6,7 @@ import { setFetcher, SITE, CORE, FITT, halfPoint, STANDINGS, parseStandings } fr
 import { tick, runJob, autoView, chooseGames, dueJobs, liveDue, coolMinutes } from "../lib/auto.js";
 import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, survivorRunOf, survivorCheck, RUNS_2026, confMap, confOf, closingLines, buildState } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
+import { setBackupFetcher, NCAA_BASE, ODDS_BASE, teamOf as backupTeam, expand } from "../lib/backup.js";
 import { redditPage, pastedTable } from "./reddit-fixture.mjs";
 import { parseRedditText } from "../lib/polls.js";
 import { espnSpPage, vsinPage, vsinHub } from "./ratings-fixture.mjs";
@@ -96,9 +97,23 @@ const standingsFeed = () => ({ children: [
   ...Array.from({ length: 8 }, (_, c) => ({ name: `Conference ${c + 1}`, abbreviation: `C${c + 1}`, standings: { entries: Array.from({ length: 12 }, (_, i) => stEntry(`School ${c}-${i}`, 6 - (i % 7), i % 7, 9 - (i % 9), i % 9)) } })),
 ] });
 
+// ---------- fake backup score sources (Nov 21, 1.58) ----------
+let espnBoardCalls = 0;
+let ncaaFeed = null; // (url) => games list, or null for a 503
+let oddsFeed = null, oddsLeft = 480;
+const backupUrls = [];
+setBackupFetcher(async (url) => {
+  backupUrls.push(url);
+  if (url.startsWith(NCAA_BASE)) { const g = ncaaFeed && ncaaFeed(url); return g ? { status: 200, json: { games: g } } : { status: 503, json: null }; }
+  if (url.startsWith(ODDS_BASE)) return oddsFeed ? { status: 200, json: oddsFeed, headers: { remaining: String(oddsLeft) } } : { status: 503, json: null };
+  return { status: 404, json: null };
+});
+const ng = (away, home, as, hs, state, per, clock, kick) => ({ game: { away: { names: { short: away }, score: as }, home: { names: { short: home }, score: hs }, gameState: state, currentPeriod: per, contestClock: clock, startTimeEpoch: String(Math.floor(Date.parse(kick) / 1000)) } });
+
 setFetcher(async (url) => {
   if (url === STANDINGS) { if (standingsBad) return { children: [] }; return standingsFeed(); }
   if (url.startsWith(SITE + "/scoreboard")) {
+    espnBoardCalls++;
     if (blockStatus) throw Object.assign(new Error(`ESPN answered ${blockStatus} for /scoreboard.`), { status: blockStatus });
     if (failScoreboard) throw new Error("ESPN answered 503 for /scoreboard.");
     const wk = (url.match(/[&?]week=(\d+)/) || [])[1];
@@ -334,6 +349,59 @@ try {
   a2 = await getKv("auto", {});
   check("manual Pull scores clears the failure", out.ran.scores.ok && !a2.flags.some((f) => f.key === "scores:failed"));
 
+  // ---- backup score sources (Nov 21, 1.58) ----
+  {
+    check("backup names map to ours", backupTeam("Ohio St.") === "Ohio State" && backupTeam("Western Mich.") === "Western Michigan" && backupTeam("Miami (OH)") === "Miami (OH)" && backupTeam("Miami (FL)") === "Miami" && backupTeam("Texas Tech Red Raiders") === "Texas Tech" && backupTeam("Texas Longhorns") === "Texas" && backupTeam("Michigan Wolverines") === "Michigan" && backupTeam("Ohio Bobcats") === "Ohio" && backupTeam("Hawaii Rainbow Warriors") === "Hawai'i" && backupTeam("San Jose St.") === "San José State" && expand("Fla. Atlantic") === "Florida Atlantic");
+    const saved = await getWeek("2026-w11"), savedAuto = await getKv("auto", {});
+    const gs = [...saved.games].sort((x, y) => x.slot - y.slot);
+    const NC = { "Ohio State": "Ohio St.", "San José State": "San Jose St.", "Hawai'i": "Hawaii" };
+    const nn = (t) => NC[t] || t;
+    ncaaFeed = (url) => url.includes("/2026/11/") ? gs.map((g, i) =>
+      i === 0 ? ng(nn(g.home), nn(g.away), "10", "24", "live", "3rd", "08:42", g.kickoff) // listed the other way round
+      : i === 1 ? ng(nn(g.away), nn(g.home), "31", "17", "final", "FINAL", "00:00", g.kickoff)
+      : i === 2 ? ng(nn(g.away), nn(g.home), "7", "14", "live", "HALF", "00:00", g.kickoff)
+      : ng(nn(g.away), nn(g.home), "", "", "pre", "", "", g.kickoff)) : [];
+    failScoreboard = true;
+    backupUrls.length = 0;
+    out = await runJob("scores", { now: CT("2026-11-07T14:40:00-06:00") });
+    let w = await getWeek("2026-w11"), a3 = await getKv("auto", {}), st = await buildState({ ...picker, is_commish: true });
+    const r0 = w.results[gs[0].id], r1 = w.results[gs[1].id], r2 = w.results[gs[2].id];
+    check("when ESPN fails, scores come from NCAA.com", out.ran.scores.ok && out.ran.scores.msg.includes("Scores came from NCAA.com") && backupUrls[0] === `${NCAA_BASE}/scoreboard/football/fbs/2026/11/all-conf`, JSON.stringify(out.ran.scores));
+    check("NCAA.com scores save in the slate's order, with the quarter and clock", r0 && r0.via === "ncaa" && r0.away === 24 && r0.home === 10 && r0.period === 3 && r0.dclock === "8:42" && r0.clock === 522 && !r0.final, JSON.stringify(r0));
+    check("NCAA.com finals and halftime read right", r1 && r1.final && r1.away === 31 && r1.home === 17 && r2 && r2.status === "Halftime" && r2.period === 2 && !r2.final, JSON.stringify([r1, r2]));
+    check("a backup never moves a kickoff", gs.every((g) => w.games.find((x) => x.id === g.id).kickoff === g.kickoff));
+    check("a backup run flags which source gave the scores", a3.flags.some((f) => f.key === "backup:used" && f.msg.includes("NCAA.com")) && st.log.some((l) => l.action === "Updated scores from NCAA.com"));
+    // NCAA.com down too: The Odds API, with mascots in the names.
+    ncaaFeed = null;
+    process.env.ODDS_API_KEY = "test-key";
+    oddsFeed = [
+      { home_team: "Georgia Bulldogs", away_team: "Florida Gators", commence_time: gs[0].kickoff, completed: false, scores: [{ name: "Georgia Bulldogs", score: "27" }, { name: "Florida Gators", score: "13" }] },
+      ...gs.slice(1).map((g, i) => ({ home_team: g.home + (i % 2 ? " Tigers" : ""), away_team: g.away, commence_time: g.kickoff, completed: i === 0, scores: i < 2 ? [{ name: g.home + (i % 2 ? " Tigers" : ""), score: "20" }, { name: g.away, score: "21" }] : null })),
+    ];
+    backupUrls.length = 0;
+    out = await runJob("scores", { now: CT("2026-11-07T14:45:00-06:00") });
+    w = await getWeek("2026-w11"); a3 = await getKv("auto", {});
+    const o0 = w.results[gs[0].id];
+    check("when NCAA.com fails too, scores come from The Odds API", out.ran.scores.ok && out.ran.scores.msg.includes("Scores came from The Odds API") && out.ran.scores.msg.includes("NCAA.com:") && backupUrls.some((u) => u.startsWith(ODDS_BASE)), JSON.stringify(out.ran.scores));
+    check("Odds API scores match by name with the mascot dropped", gs[0].home === "Georgia" ? o0.home === 27 && o0.away === 13 && o0.via === "odds" : o0.via === "odds", JSON.stringify(o0));
+    check("the Odds API asks for finals once a game could be over, and saves its credits left", backupUrls.some((u) => u.includes("daysFrom=1")) && (await getKv("oddsApi", {})).remaining === 480);
+    check("the Odds API flag says the game clock is missing", a3.flags.some((f) => f.key === "backup:used" && f.msg.includes("no game clock")));
+    await setKv("oddsApi", { remaining: 10 });
+    out = await runJob("scores", { now: CT("2026-11-07T14:50:00-06:00") });
+    a3 = await getKv("auto", {});
+    check("a near empty Odds API month is skipped, and all sources down is a flag", !out.ran.scores.ok && out.ran.scores.msg.includes("credits left") && a3.flags.some((f) => f.key === "scores:failed"), JSON.stringify(out.ran.scores));
+    delete process.env.ODDS_API_KEY;
+    out = await runJob("scores", { now: CT("2026-11-07T14:55:00-06:00") });
+    check("no key means the Odds API is skipped with a plain reason", !out.ran.scores.ok && out.ran.scores.msg.includes("not set up"), JSON.stringify(out.ran.scores));
+    failScoreboard = false; oddsFeed = null;
+    out = await runJob("scores", { now: CT("2026-11-07T15:00:00-06:00") });
+    a3 = await getKv("auto", {});
+    check("ESPN back clears the backup flag", out.ran.scores.ok && !out.ran.scores.msg.includes("came from") && !a3.flags.some((f) => f.job === "backup"));
+    await putWeek(saved);
+    await setKv("auto", savedAuto);
+    await q("delete from kv where key = $1", ["oddsApi"]);
+  }
+
   // ---- commissioner enters one score by hand ----
   wk = await getWeek("2026-w11");
   wk.results.e109 = { away: 21, home: 20, final: true, void: false, src: "manual" };
@@ -512,13 +580,16 @@ try {
   blockStatus = null;
   let aL = await getKv("auto", {});
   const coolAt = async () => { const x = await lr(); return x.coolUntil ? new Date(x.coolUntil).getTime() : null; };
-  check("a 429 pauses page visits for 60 minutes with a flag, keeps the switch on, and the page still loads", (await getConfig()).liveRun.on === true && aL.flags.some((f) => f.key === "live:cool" && f.msg.includes("429") && f.msg.includes("try again by themselves")) && (await coolAt()) === CT("2026-11-14T12:56:00-06:00") && !!blockedState.weeks, aL.flags.map((f) => f.key).join(","));
+  check("a 429 pauses page visits for 60 minutes with a flag, keeps the switch on, and the page still loads", (await getConfig()).liveRun.on === true && aL.flags.some((f) => f.key === "live:cool" && f.msg.includes("429") && f.msg.includes("tries it again by itself")) && (await coolAt()) === CT("2026-11-14T12:56:00-06:00") && !!blockedState.weeks, aL.flags.map((f) => f.key).join(","));
   await setKv("config", { ...(await getConfig()), liveRun: { on: true, gap: 10, cap: 10 } });
+  ncaaFeed = (url) => url.includes("/2026/12/") ? [ng("Rice", "Navy", "14", "10", "live", "3rd", "08:42", "2026-11-14T17:00:00Z")] : [];
+  const espnBefore = espnBoardCalls;
   await visit("2026-11-14T12:10:00-06:00");
-  check("no runs during the pause", (await lr()).count === 3);
+  const w12 = await getWeek("2026-w12");
+  check("during the rest a page visit still runs scores, through NCAA.com, without calling ESPN", (await lr()).count === 4 && espnBoardCalls === espnBefore && w12.results.e999 && w12.results.e999.via === "ncaa" && w12.results.e999.away === 14 && !!(await coolAt()), JSON.stringify([espnBoardCalls - espnBefore, w12.results]));
   await visit("2026-11-14T12:57:00-06:00");
   aL = await getKv("auto", {});
-  check("after the pause a visit runs again, and a clean run clears the pause and the flag", (await lr()).count === 4 && !(await lr()).strikes && !(await coolAt()) && !aL.flags.some((f) => f.job === "live"));
+  check("after the rest a visit tries ESPN again, and a clean ESPN run ends the rest and clears the flags", (await lr()).count === 5 && espnBoardCalls > espnBefore && !(await lr()).strikes && !(await coolAt()) && !aL.flags.some((f) => f.job === "live" || f.job === "backup"));
   blockStatus = 403;
   await visit("2026-11-14T13:10:00-06:00");
   await visit("2026-11-14T14:11:00-06:00");
@@ -528,15 +599,16 @@ try {
   aL = await getKv("auto", {});
   check("Pull scores now that works ends the pause", out.ran.scores.ok && !(await coolAt()) && !aL.flags.some((f) => f.job === "live"), JSON.stringify(out.ran.scores));
   check("the pause tops out at 4 hours", coolMinutes(1) === 60 && coolMinutes(2) === 120 && coolMinutes(3) === 240 && coolMinutes(6) === 240);
-  await setKv("config", { ...(await getConfig()), liveRun: { on: true, gap: 10, cap: 6 } });
+  await setKv("config", { ...(await getConfig()), liveRun: { on: true, gap: 10, cap: 7 } });
   await visit("2026-11-14T14:45:00-06:00");
-  check("the daily cap holds", (await lr()).count === 6);
+  check("the daily cap holds", (await lr()).count === 7);
   await visit("2026-11-15T01:00:00-06:00");
   v = await autoView(CT("2026-11-15T01:00:00-06:00"), await getConfig());
-  check("a postponed game stops calling ESPN after 12 hours", (await lr()).count === 6 && v.live.today === 0, JSON.stringify(v.live));
+  check("a postponed game stops calling ESPN after 12 hours", (await lr()).count === 7 && v.live.today === 0, JSON.stringify(v.live));
   const dr = { id: "2026-w13", status: "draft", deadline: "2026-11-21T16:15:00Z", games: [] };
   check("a page visit can run a late open", liveDue([dr], { currentWeek: dr.id }, CT("2026-11-18T18:30:00-06:00")).includes("open"));
   check("not before Wednesday 6 p.m., with the box off, or on a held week", !liveDue([dr], { currentWeek: dr.id }, CT("2026-11-18T17:30:00-06:00")).length && !liveDue([dr], { currentWeek: dr.id, autoOpen: false }, CT("2026-11-18T18:30:00-06:00")).length && !liveDue([{ ...dr, holdOpen: true }], { currentWeek: dr.id }, CT("2026-11-18T18:30:00-06:00")).length);
+  ncaaFeed = null;
   await q("delete from weeks where id = $1", ["2026-w12"]);
   await q("delete from kv where key = $1", ["liveRun"]);
   await setKv("config", cfg0);

@@ -18,6 +18,8 @@ College football pick em against the spread for one league. Ten games a week, a 
    * `SESSION_SECRET`: a random string of 48 or more characters. Keeps players signed in.
    * `SETUP_CODE`: a one-time code. Enter it on the site's first visit to create the commissioner account.
    * `CRON_SECRET`: a random string of 16 or more characters. Lets the schedule run the weekly jobs.
+   * `ODDS_API_KEY` (optional): a free key from the-odds-api.com. The second backup score source, used only when ESPN and NCAA.com both fail. Without it that backup is skipped.
+   * `NCAA_API_URL` (optional): your own copy of henrygd/ncaa-api. Without it the public copy at ncaa-api.henrygd.me is used.
 4. Redeploy, open the site, and enter the setup code with your cell number.
 5. In GitHub, Settings, Secrets and variables, Actions, add two repository secrets:
    * `SITE_URL`: the site's address, for example `https://tators-picks.vercel.app`.

@@ -1217,6 +1217,9 @@ function scoreWeek(w,p){
 
 /* ---------- data ---------- */
 function currentWeekId(){return state.config&&state.config.currentWeek}
+/* Backup score source (Nov 21, 1.58): the newest live result names it when ESPN did not give the scores. */
+const SCORE_VIA={ncaa:"NCAA.com",odds:"The Odds API"};
+function scoreVia(w){const rs=Object.values(w.results||{}).filter(r=>r&&r.at&&r.src!=="manual").sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));const v=rs[0]&&rs[0].via;return v&&SCORE_VIA[v]?` (from ${SCORE_VIA[v]}${v==="odds"?", no game clock":""})`:""}
 function liveOn(){return !!(state.config&&state.config.liveRun&&state.config.liveRun.on)}
 function liveGap(){return (state.config&&state.config.liveRun&&state.config.liveRun.gap)||10}
 function curWeek(){return state.weeks[currentWeekId()]||null}
@@ -2088,7 +2091,7 @@ function renderBoard(){const el=$("#v-scoreboard");const w=boardWeek();if(!w){el
   const list=(f==="ours"?ours:f==="top"?top:all).slice().sort(sbSort);
   const live=ours.filter(t=>t.st==="in").length,fin=ours.filter(t=>t.st==="post").length;
   const seg=`<div class="seg sbseg" role="group" aria-label="Which games">${[["ours","Our 10"],["top","Top 25"],["all","All FBS"]].map(([k,l])=>`<button class="segb" data-sbf="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>`;
-  const upd=w.scoresAt?`Scores updated ${new Date(w.scoresAt).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"})} CT`:"No scores yet";
+  const upd=w.scoresAt?`Scores updated ${new Date(w.scoresAt).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"})} CT${scoreVia(w)}`:"No scores yet";
   let body;if(f!=="ours"&&!state.board)body='<p class="note">Loading the scoreboard…</p>';
   else if(f!=="ours"&&state.board.error)body=`<p class="note">${esc(state.board.error)}</p>`;
   else if(!list.length)body='<p class="note">No games yet. The board fills in once the scores job runs on game day.</p>';
@@ -2530,7 +2533,7 @@ function renderPicks(){
   const tg=tbGame(w);
   const flag=GP;
   if(locked){const ats=w.games.map(g=>rs[g.id]&&rs[g.id].at).filter(Boolean).sort();const up=w.scoresAt||ats[ats.length-1];
-    if(up&&w.games.some(g=>rs[g.id]&&!rs[g.id].final&&!rs[g.id].void))h+=`<p class="note updated">Scores updated ${esc(new Date(up).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}))} CT. ${liveOn()?`They refresh about every ${liveGap()} minutes while games are live and someone has the site open.`:"They refresh when the schedule runs, which can be hours apart."}</p>`}
+    if(up&&w.games.some(g=>rs[g.id]&&!rs[g.id].final&&!rs[g.id].void))h+=`<p class="note updated">Scores updated ${esc(new Date(up).toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"}))} CT${scoreVia(w)}. ${liveOn()?`They refresh about every ${liveGap()} minutes while games are live and someone has the site open.`:"They refresh when the schedule runs, which can be hours apart."}</p>`}
   for(const g of gs){
     const r=rs[g.id];const isVoid=r&&r.void;const c=coverSide(g,r);
     const live=r&&!r.final&&!r.void&&(r.away||r.home)?(margin(g,r)>0?"home":"away"):null;
