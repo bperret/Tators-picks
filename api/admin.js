@@ -4,7 +4,7 @@ import { q, one, addLog, setKv, getKv } from "../lib/db.js";
 import { parseRedditText } from "../lib/polls.js";
 import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../lib/http.js";
 import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings, checkSheet, saveNote } from "../lib/league.js";
-import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES } from "../lib/auto.js";
+import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES, testBackups } from "../lib/auto.js";
 import { captureRobo } from "../lib/robo.js";
 import { AW_LIST, AW_TB_MAX, awardCfg, awardLock, saveAwardChamps } from "../lib/awards.js";
 
@@ -198,6 +198,9 @@ export default async function handler(req, res) {
         if (!JOB_NAMES.includes(b.job)) return fail(res, 400, "Unknown job.");
         const out = await runJob(b.job, { by: BY, force: !!b.force });
         return send(res, 200, { ok: true, ...out });
+      }
+      case "testBackups": {
+        return send(res, 200, { ok: true, ...(await testBackups()) });
       }
       case "dismissFlag": {
         await dismissFlag(String(b.key || ""));

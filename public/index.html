@@ -1545,6 +1545,9 @@ async function savePicks(force){
 async function commishAct(act,ds){
   const wid=commishWeekId(),w=state.weeks[wid];if(!state.isOwner)return;
   let r={ok:true},msg="";
+  if(act==="testbk"){const b=document.querySelector('[data-act="testbk"]');if(b){b.disabled=true;b.textContent="Testing…"}
+    r=await api("/api/admin",{action:"testBackups"});
+    if(r.ok){state.testBk=`${r.ncaa} ${r.odds}`.trim();msg="Backup test done. The result is under the button."}else if(b){b.disabled=false;b.textContent="Test backup scores"}}
   if(act==="run"){const b=document.querySelector(`[data-act="run"][data-job="${ds.job}"]${ds.force?'[data-force]':''}`);if(b){b.disabled=true;b.textContent="Working…"}
     r=await api("/api/admin",{action:"runJob",job:ds.job,force:!!ds.force});
     if(r.ok){const o=(r.ran||{})[ds.job]||{};msg=(o.busy?"":o.idle?"Nothing to do. ":o.ok?"Done. ":"Failed. ")+(o.msg||"");if(["gamelog","lines","ats","scores"].includes(ds.job))state.teamGames=null}else if(b){b.disabled=false}}
@@ -3915,6 +3918,7 @@ function toolsPanel(){
   return `${secTag("tools",false,"manual tools",false,"data-noall")}${secHead("Setup and one-time tools","rarely needed")}
     <p class="note">Set-once settings, backfills, and manual backups. Expand all skips this section.</p>
     ${A?`<h3 class="rh">Backfill jobs</h3><p class="note">One-time fills. The game log rechecks the last two weeks by itself each Sunday, and Fill lines stops itself once nothing is missing.</p><div class="lglist">${TOOL_JOBS.map(([j,b])=>jobRow(A,j,b)).join("")}</div>
+    <h3 class="rh">Backup score sources</h3><p class="note">When ESPN fails or rests after a block, scores come from NCAA.com, then The Odds API. This pulls both for the newest week and says what matched. It saves no scores. The Odds API call uses 1 of its 500 free monthly credits (2 once the week is locked).</p><div class="lgbtns"><button class="btn sm" data-act="testbk">Test backup scores</button></div>${state.testBk?`<p class="note testbk">${esc(state.testBk)}</p>`:""}
     <h3 class="rh">Page visit runs</h3>
     <div class="autobar"><label class="note"><input type="checkbox" id="liveChk" ${Lv.on?"checked":""}> Let page visits run overdue scores and the Wednesday open</label></div>
     <div class="autobar"><label class="note">Every <input type="number" id="liveGap" min="5" max="60" value="${Lv.gap}" style="width:4.5em"> minutes</label><label class="note">Daily cap <input type="number" id="liveCap" min="1" max="160" value="${Lv.cap}" style="width:4.5em"></label></div>

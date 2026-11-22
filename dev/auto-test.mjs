@@ -3,7 +3,7 @@
 import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
 import { setFetcher, SITE, CORE, FITT, halfPoint, STANDINGS, parseStandings } from "../lib/espn.js";
-import { tick, runJob, autoView, chooseGames, dueJobs, liveDue, coolMinutes } from "../lib/auto.js";
+import { tick, runJob, autoView, chooseGames, dueJobs, liveDue, coolMinutes, testBackups } from "../lib/auto.js";
 import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, survivorRunOf, survivorCheck, RUNS_2026, confMap, confOf, closingLines, buildState } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 import { setBackupFetcher, NCAA_BASE, ODDS_BASE, teamOf as backupTeam, expand } from "../lib/backup.js";
@@ -393,6 +393,15 @@ try {
     delete process.env.ODDS_API_KEY;
     out = await runJob("scores", { now: CT("2026-11-07T14:55:00-06:00") });
     check("no key means the Odds API is skipped with a plain reason", !out.ran.scores.ok && out.ran.scores.msg.includes("not set up"), JSON.stringify(out.ran.scores));
+    // Test backup scores: both sources, nothing saved.
+    const before = JSON.stringify((await getWeek("2026-w11")).results);
+    ncaaFeed = (url) => url.includes("/2026/11/") ? gs.map((g) => ng(nn(g.away), nn(g.home), "3", "0", "live", "1st", "12:00", g.kickoff)) : [];
+    process.env.ODDS_API_KEY = "test-key";
+    const tb = await testBackups(CT("2026-11-07T15:00:00-06:00"));
+    check("Test backup scores reports both sources and saves no scores", tb.ncaa.includes(`Matched ${gs.length} of ${gs.length} Week 11 games (${gs.length} live`) && tb.odds.startsWith("The Odds API: worked.") && tb.odds.includes("480 credits left") && JSON.stringify((await getWeek("2026-w11")).results) === before, JSON.stringify(tb));
+    ncaaFeed = null; delete process.env.ODDS_API_KEY;
+    const tb2 = await testBackups(CT("2026-11-07T15:00:00-06:00"));
+    check("Test backup scores says plainly when a source fails", tb2.ncaa.includes("NCAA.com: failed.") && tb2.odds.includes("not set up"), JSON.stringify(tb2));
     failScoreboard = false; oddsFeed = null;
     out = await runJob("scores", { now: CT("2026-11-07T15:00:00-06:00") });
     a3 = await getKv("auto", {});
