@@ -4,7 +4,7 @@ import { q, one, addLog, setKv, getKv } from "../lib/db.js";
 import { parseRedditText } from "../lib/polls.js";
 import { readBody, send, fail, currentPlayer, digits, newPin, newId } from "../lib/http.js";
 import { getConfig, validateWeek, effectiveStatus, getWeek, putWeek, saveDraft, snapshotRankings, checkSheet, saveNote } from "../lib/league.js";
-import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES, testBackups } from "../lib/auto.js";
+import { runJob, dismissFlag, clearLiveFlags, liveCfg, LIVE_LIMITS, JOB_NAMES, testBackups, withJobLock } from "../lib/auto.js";
 import { captureRobo } from "../lib/robo.js";
 import { AW_LIST, AW_TB_MAX, awardCfg, awardLock, saveAwardChamps } from "../lib/awards.js";
 
@@ -21,7 +21,22 @@ export default async function handler(req, res) {
     if (!me) return fail(res, 401, "Log in first.");
     if (!me.is_commish) return fail(res, 403, "Only the commissioner can do that.");
     const b = await readBody(req);
+    // Item 63: actions that write a week, the config, or the automation status wait for any running job.
+    if (LOCKED.has(b.action)) {
+      const r = await withJobLock(() => act(res, me, b));
+      if (r.busy) return fail(res, 409, "Automation is running right now. Nothing was saved. Try again in a minute.");
+      return r.value;
+    }
+    return await act(res, me, b);
+  } catch (e) {
+    console.error(e);
+    fail(res, 500, e.message || "Server error");
+  }
+}
 
+const LOCKED = new Set(["importWeek", "setStatus", "lockNow", "unlock", "swap", "scores", "robo", "dismissFlag", "autoSettings", "config", "importRankings", "importRedditPoll"]);
+
+async function act(res, me, b) {
     switch (b.action) {
       case "addPlayer": {
         const phone = digits(b.phone);
@@ -367,8 +382,4 @@ export default async function handler(req, res) {
       default:
         return fail(res, 400, "Unknown action.");
     }
-  } catch (e) {
-    console.error(e);
-    fail(res, 500, e.message || "Server error");
-  }
 }

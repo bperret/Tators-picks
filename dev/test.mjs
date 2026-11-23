@@ -446,6 +446,8 @@ try {
   const st = await m.textContent("#v-standings");
   check("standings show the week", st.includes("Week 10") && st.includes("Mike T."));
   check("The Computer plays", st.includes("The Computer"));
+  { const hv = m.locator("#v-standings .hvc"); if (await hv.count()) { await hv.scrollIntoViewIfNeeded(); await hv.locator("xpath=..").screenshot({ path: "dev/test-hvc.png" }); } }
+  check("Standings show Humans vs the Computer as win rates", /Humans vs the Computer: league \d+-\d+ \(\d+\.\d%\), the Computer \d+-\d+ \(\d+\.\d%\)/.test(st), (st.match(/Humans vs[^.]*\./) || [""])[0]);
   // The belt, hot hand, rank arrows, near miss, and the week dropdown (items 51, 56, 53, 52, 40), drawn on the page with three made-up weeks.
   const pz = await m.evaluate(() => {
     const T = window.tpRecap; const { state } = T;
@@ -921,6 +923,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const out = {};
     out.leaderRival = rivalOf("a", "2026-w21"); out.myRival = rivalOf(me, "2026-w21"); out.bRival = rivalOf("b", "2026-w21");
     out.locked = raceFacts("2026-w21");
+    games.forEach((g) => (g.modelLine = -6)); renderPicks(); out.vs = ((document.querySelector("#v-picks .vsbox") || {}).textContent || ""); window.__vsHtml = (document.querySelector("#v-picks .notices") || {}).outerHTML || ""; games.forEach((g) => delete g.modelLine);
     out.noRivalFirstWeek = rivalOf(me, "2026-w20");
     state.weeks["2026-w21"].results = { ...all(homeWin), x3: awayWin };
     state.weeks["2026-w21"].status = "final";
@@ -964,6 +967,9 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.evaluate(() => { const { state, renderPicks } = window.tpRecap; const keep = { ...window.__was }; Object.assign(state, keep); renderPicks(); document.querySelector("#v-picks .notices").scrollIntoView(); window.scrollBy(0, -20); });
   await m.waitForTimeout(150); await m.screenshot({ path: "dev/test-notices.png" });
   await m.evaluate((h) => { const { state, renderPicks } = window.tpRecap; Object.assign(state, window.__was); renderPicks(); location.hash = h; }, hash0); await m.waitForTimeout(150);
+  await m.evaluate(() => { const d = document.createElement("div"); d.id = "vsShot"; d.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99999;padding:12px;background:var(--bg)"; d.innerHTML = window.__vsHtml; document.body.appendChild(d); });
+  await m.locator("#vsShot").screenshot({ path: "dev/test-vsbox.png" }); await m.evaluate(() => document.querySelector("#vsShot").remove());
+  check("after the lock, one This week vs box holds the rival, the Computer, and the league lines", /This week vs/.test(race.vs) && /Your rival .*: \d+\. You: \d+\./.test(race.vs) && /The Computer: \d+\. You: \d+\./.test(race.vs) && /League \d+-\d+ \(\d+\.\d%\), the Computer \d+-\d+/.test(race.vs), race.vs);
   check("the leader's rival is the picker right behind", race.leaderRival === "b", JSON.stringify(race));
   check("your rival is the picker just above you", race.myRival === "b" && race.bRival === "a", JSON.stringify([race.myRival, race.bRival]));
   check("no rival before there are standings", race.noRivalFirstWeek === null);
@@ -1462,6 +1468,23 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
   await m.fill("#loginPhone", "2145550123"); await m.fill("#loginPin", pin2); await m.click("#loginBtn");
   await m.waitForSelector("#welcomeCard:not([hidden])");
   check("the same PIN logs in and the walk-on runs again", (await m.textContent("#welcomeCard")).includes("You made the roster"));
+  // ---- PIN change signs out other devices; wrong guesses at the same moment all count (item 62) ----
+  {
+    const m2 = await newPage(); await m2.goto(BASE);
+    const call = (p, b, path = "/api/auth") => p.evaluate(([b, path]) => fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then((r) => r.status), [b, path]);
+    const st = (p) => p.evaluate(() => fetch("/api/state").then((r) => r.status));
+    await call(m2, { action: "login", phone: "2145550123", pin: pin2 });
+    const before = await st(m2);
+    const ch = await call(m, { action: "pin", current: pin2, newPin: "135790" });
+    check("a PIN change signs out the other device and keeps this one", before === 200 && ch === 200 && (await st(m2)) === 401 && (await st(m)) === 200, JSON.stringify([before, ch]));
+    await call(m, { action: "pin", current: "135790", newPin: pin2 });
+    const m3 = await newPage(); await m3.goto(BASE);
+    await Promise.all(Array.from({ length: 6 }, () => call(m3, { action: "login", phone: "2145550123", pin: "000001" })));
+    const fc = (await pg.query("select fail_count from players where phone = '2145550123'")).rows[0].fail_count;
+    check("wrong PINs sent at once each count", fc === 6, String(fc));
+    await pg.query("update players set fail_count = 0 where phone = '2145550123'");
+    await m2.context().close(); await m3.context().close();
+  }
   // ---- the Computer: new model, inputs, switch, flip alert ----
   {
     const ev = await c.evaluate(() => {

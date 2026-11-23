@@ -151,6 +151,7 @@ nav.tabs a:focus-visible,button:focus-visible,input:focus-visible,select:focus-v
 .res .bb{display:inline-block;font-family:var(--cond);font-weight:700;font-size:.74rem;letter-spacing:.06em;background:#6b2a8a;color:#fff;border-radius:3px;padding:1px 6px}
 .notices{display:grid;gap:8px}
 .notices .notice{margin:0}
+.vsbox{align-items:flex-start}.vsbox ul{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:4px}
 .notice{display:flex;align-items:center;gap:10px;min-height:44px;box-sizing:border-box;margin:8px 0;padding:8px 12px;border-radius:8px;background:var(--card);border:1px solid var(--line);font-size:.93rem;line-height:1.3}
 .notice .nic{flex:none;width:26px;text-align:center;font-size:1.25rem;line-height:1}
 .lnmv{margin:4px 0 0}
@@ -1050,6 +1051,7 @@ svg.trend .dot{fill:var(--flag);stroke:var(--ink);stroke-width:1}
       <details><summary class="rh">The Computer</summary>
       <ul id="roboRulesNew">
         <li>The Computer is the league's robot picker. It plays every week and cannot win anything. Beat the Computer.</li>
+        <li><b>Humans vs the Computer.</b> The whole league plays as one team against it. Standings shows the league's combined record against the spread next to the Computer's, as win rates. Every correct pick helps, from first place to last. Bragging rights only.</li>
         <li><b>Its line.</b> It blends three computer power ratings (SP+, FPI, and VSiN) into one line of its own.</li>
         <li><b>The market.</b> Our lines freeze Wednesday night. The betting market keeps moving. When the market moves away from our line, the Computer takes the side our line now gives value. It trusts the market more than the ratings.</li>
         <li><b>How sure it is.</b> Each game shows Coin flip, Slight lean, Leans, or Heavy lean, from how likely it thinks its side is to cover. Even a Heavy lean loses plenty.</li>
@@ -2952,7 +2954,8 @@ function recapFacts(wid){
   if(track&&track.tot>=60)add("Track meet",`${track.tot} points in ${teamLook(track.g.away,track.g,"away").abbr} at ${teamLook(track.g.home,track.g,"home").abbr}`,"Defense was optional.","");
 
   /* The Computer */
-  const bp=botPicks(w);if(bp&&Object.keys(bp.sel||{}).length){const s=scoreWeek(w,bp);const beat=rows.filter(r=>r.pts<s.pts).length;add("\u{1F916} The Computer",`${s.w}-${s.l} ATS, ${s.pts} point${pl(s.pts)}`,`Better than ${beat} of ${rows.length} pickers. It feels nothing either way.`,"")}
+  const bp=botPicks(w);if(bp&&Object.keys(bp.sel||{}).length){const s=scoreWeek(w,bp);const beat=rows.filter(r=>r.pts<s.pts).length;add("\u{1F916} The Computer",`${s.w}-${s.l} ATS, ${s.pts} point${pl(s.pts)}`,`Better than ${beat} of ${rows.length} pickers. It feels nothing either way.`,"")
+    const T=hvcStats([wid]),Z=hvcStats(seasonWeeks().filter(k=>k<=wid));if(T.hn&&T.bn)add("\u{1F91D} Humans vs the Computer",`League ${hvcPct(T.hp)}, the Computer ${hvcPct(T.bp)}`,`Season so far: league ${hvcPct(Z.hp)}, the Computer ${hvcPct(Z.bp)}. ${hvcLead(Z)}`,T.hp>T.bp?"good":T.hp<T.bp?"bad":"")}
 
   /* Survivor */
   const srun=survRunOf(wid);const sb=srun?survivorBoard(srun):null;if(sb){const hum=sb.filter(r=>r.pid!==BOT);const gone=hum.filter(r=>r.out&&r.out.week===w.week&&!survLate(r.pid,srun));const alive=hum.filter(r=>r.alive).length;
@@ -3125,8 +3128,31 @@ function raceFacts(wid){const w=state.weeks[wid],me=state.uid,rs=w.results||{};c
   if(riv){const rp=ps[riv];if(!rp)out.rival=`Your rival ${first(riv)} has no sheet this week.`;else{const R=scoreWeek(w,rp).pts;
       out.rival=w.status!=="final"?`Your rival ${first(riv)}: ${R}. You: ${S.pts}.`:S.pts>R?`You beat your rival ${first(riv)}, ${S.pts} to ${R}.`:S.pts<R?`Your rival ${first(riv)} beat you, ${R} to ${S.pts}.`:`You and your rival ${first(riv)} tied at ${R}.`}}
   return out}
-function racePanel(wid){const w=state.weeks[wid];if(!state.uid||!w||w.status==="draft"||removed().includes(state.uid))return "";const F=raceFacts(wid);if(!F.need&&!F.rival)return "";
-  return `${F.need?notice("🧮",`<b>What you need:</b> ${esc(F.need)}`):""}${F.rival?notice("👿",esc(F.rival),"rivalln"):""}`}
+function racePanel(wid){const w=state.weeks[wid];if(!state.uid||!w||w.status==="draft"||removed().includes(state.uid))return "";const F=raceFacts(wid);
+  const locked=pastDeadline(w)||w.status==="final";
+  /* Item 54: before the lock, the season team score. After the lock, one "This week vs" box with live head to head lines. */
+  if(!locked){const team=hvcLine(seasonWeeks().filter(k=>k!==wid));
+    return `${F.need?notice("🧮",`<b>What you need:</b> ${esc(F.need)}`):""}${F.rival?notice("👿",esc(F.rival),"rivalln"):""}${team?notice("🤝",team,"hvcln"):""}`}
+  return `${F.need?notice("🧮",`<b>What you need:</b> ${esc(F.need)}`):""}${vsBox(wid,F)}`}
+/* Humans vs the Computer (item 54): the league's combined ATS record against the Computer's, as win rates,
+   since the league makes many times more picks. Active pickers only. Weeks are revealed weeks, so a live week moves it. */
+function hvcStats(wids){const o={hw:0,hl:0,bw:0,bl:0};for(const wid of wids){const w=state.weeks[wid];if(!w)continue;
+    for(const p of Object.values(weekPlayers(wid))){const s=scoreWeek(w,p);o.hw+=s.w;o.hl+=s.l}
+    const b=botPicks(w);if(b){const s=scoreWeek(w,b);o.bw+=s.w;o.bl+=s.l}}
+  o.hn=o.hw+o.hl;o.bn=o.bw+o.bl;o.hp=o.hn?100*o.hw/o.hn:null;o.bp=o.bn?100*o.bw/o.bn:null;return o}
+const hvcPct=x=>x==null?"\u2013":x.toFixed(1)+"%";
+function hvcLead(S){if(S.hp==null||S.bp==null)return "";const d=Math.round((S.hp-S.bp)*10)/10;return d>0?`The league is ahead by ${d.toFixed(1)} percentage points.`:d<0?`The Computer is ahead by ${(-d).toFixed(1)} percentage points.`:"Dead even."}
+function hvcLine(wids){const S=hvcStats(wids);if(!S.hn||!S.bn)return "";
+  return `<b>Humans vs the Computer:</b> the league is ${hvcPct(S.hp)} ATS this season, the Computer ${hvcPct(S.bp)}. ${hvcLead(S)} Every correct pick counts.`}
+function vsBox(wid,F){const w=state.weeks[wid],me=state.uid,ps=weekPlayers(wid),mine=ps[me];const lines=[];
+  const fin=w.status==="final";
+  if(mine){const S=scoreWeek(w,mine).pts;
+    if(F.rival)lines.push(["👿",esc(F.rival)]);
+    const b=botPicks(w);if(b){const B=scoreWeek(w,b).pts;lines.push(["🤖",!fin?`The Computer: ${B}. You: ${S}.`:S>B?`You beat the Computer, ${S} to ${B}.`:S<B?`The Computer beat you, ${B} to ${S}.`:`You and the Computer tied at ${B}.`])}}
+  const T=hvcStats([wid]);
+  if(T.hn&&T.bn)lines.push(["🤝",`League ${T.hw}-${T.hl} (${hvcPct(T.hp)}), the Computer ${T.bw}-${T.bl} (${hvcPct(T.bp)}) this week.`]);
+  if(!lines.length)return "";
+  return `<div class="notice vsbox"><span class="nic" aria-hidden="true">🆚</span><div><b>This week vs</b><ul>${lines.map(([ic,t])=>`<li><span aria-hidden="true">${ic}</span> ${t}</li>`).join("")}</ul></div></div>`}
 /* Notices on Picks: one look for the rival, belt, and sheets lines, an icon on the left and the same height. */
 function notice(ic,html,cls){return `<p class="notice${cls?" "+cls:""}"><span class="nic" aria-hidden="true">${ic}</span><span>${html}</span></p>`}
 function yourWeek(wid){const w=state.weeks[wid],me=state.uid,ps=weekPlayers(wid),mine=ps[me];if(!mine)return null;const rs=w.results||{};
@@ -3334,6 +3360,7 @@ function renderStandings(){
   else h+=`<div class="tablewrap"><table class="stk szt"><thead><tr><th>#</th><th class="pnh">Picker</th><th class="aw"><span class="sr">Marks</span></th><th class="num">${sortBtn("pts","Pts","Sort by points")}</th><th class="num">ATS</th><th class="num">${sortBtn("pct","Pct","Sort by correct pick %")}</th><th class="num" title="Field goals good and no good">FG</th><th class="num">TB</th></tr></thead><tbody>${seasonSort(active).map((r,i)=>`<tr class="${r.pid===state.uid?"me":""}${r.pid===BOT?" botrow":""}"><td class="num rkc">${r.rk}${showMv&&r.pid!==BOT?moveTag(mv[r.pid]):""}</td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}<div class="yd" aria-hidden="true"><span style="width:${Math.round(r.pts/max*100)}%"></span></div></td><td class="aw">${marksH(r.pid)}</td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}${(state.isOwner?seasonSort(out):[]).map(r=>`<tr class="out"><td class="num rkc"></td><td class="pn">${chip(r.pid)}${esc(nm(r.pid))}${dropTag(r)}</td><td class="aw"></td><td class="num">${r.pts}</td><td class="num">${r.w}-${r.l}</td><td class="num">${pctText(r)}</td><td class="num">${r.lw}-${r.ll}</td><td class="num">${r.tb}</td></tr>`).join("")}</tbody></table></div>${byPct?'<p class="note"><b>Sorted by correct pick %.</b> The # column still shows the real standings, which go by points.</p>':""}${info("season",`Ranked by points, then field goals made, then smallest total tiebreaker miss. A week with no sheet scores 0 with a tiebreaker guess of 0. Drop worst week: each picker's lowest regular week comes off the season total once ${DROP_MIN} regular weeks are final, and Conference Champion Week never drops. Until then, If it ended today shows the projection. Pct is correct picks out of graded picks, tap Pts or Pct to sort. It does not affect the standings. FG shows field goals good and no good. TB is the season total of tiebreaker misses. The Computer 🤖 plays every week but takes no rank and wins nothing. If it finishes on top, the best picker wins.`)}`;
   {const keys=[];if(active.some(r=>ironTag(r.pid)))keys.push("\u{1F9BE} Iron Man: every pick in, every week.");if(active.some(r=>beltTag(r.pid)))keys.push(BELT+" The belt: last week's winner.");if(active.some(r=>hotTag(r.pid)))keys.push(`\u{1F525} Hot week: ${HOT_MIN} or more correct. \u{1F525}\u00d7N: a heater, N straight hot weeks.`);if(active.some(r=>survTag(r.pid)))keys.push("\u{1F480} Survivor champion this season. \u{1F480}\u00d7N: N runs won.");if(showMv&&Object.keys(mv).length)keys.push("\u25B2\u25BC Places moved since the latest week began.");if(keys.length)h+=`<p class="note keys">${keys.join(" ")}</p>`}
   {const bot=active.find(r=>r.pid===BOT);const hum=active.filter(r=>r.pid!==BOT);if(bot&&hum.length&&countedWeeks(false).length){const ahead=hum.filter(r=>r.pts>bot.pts).length;h+=`<p class="botline">🤖 ${ahead} of ${hum.length} picker${hum.length===1?" is":"s are"} ahead of the Computer.</p>`}}
+  {const S=hvcStats(seasonWeeks());if(S.hn&&S.bn)h+=`<p class="botline hvc">🤝 Humans vs the Computer: league ${S.hw}-${S.hl} (${hvcPct(S.hp)}), the Computer ${S.bw}-${S.bl} (${hvcPct(S.bp)}). ${hvcLead(S)}</p>`}
   h+="</div>";
   h+=titlesPanel()+beatBotPanel()+closePanel(realStats());
   const sb=survivorBoard();

@@ -3,7 +3,7 @@
 import { PGlite } from "@electric-sql/pglite";
 import { setTestDb, setKv, getKv, q } from "../lib/db.js";
 import { setFetcher, SITE, CORE, FITT, halfPoint, STANDINGS, parseStandings } from "../lib/espn.js";
-import { tick, runJob, autoView, chooseGames, dueJobs, liveDue, coolMinutes, testBackups } from "../lib/auto.js";
+import { tick, runJob, autoView, chooseGames, dueJobs, liveDue, coolMinutes, testBackups, withJobLock } from "../lib/auto.js";
 import { getConfig, getWeek, putWeek, teamGamesView, survivorClosed, survivorRunOf, survivorCheck, RUNS_2026, confMap, confOf, closingLines, buildState } from "../lib/league.js";
 import seed from "../data/rankings-seed.js";
 import { setBackupFetcher, NCAA_BASE, ODDS_BASE, teamOf as backupTeam, expand } from "../lib/backup.js";
@@ -313,6 +313,8 @@ try {
     await runJob("ats", { now: CT("2026-11-07T10:30:00-06:00") });
     slateGames[0][4] = "-7";
     check("after the lock the Computer's inputs stay frozen", JSON.stringify((await getWeek("2026-w11")).robo.last) === before);
+    const fl = await getKv("atsAuto", {});
+    check("the first line seen is kept when the line moves", fl.first && fl.first["101"] && fl.first["101"].l === -7 && fl.lines["101"] === -9, JSON.stringify(fl.first && fl.first["101"]) + " last " + fl.lines["101"]);
   }
 
   // ---- Saturday afternoon: live scores, a postponement, a failure ----
@@ -631,6 +633,16 @@ try {
   // The fake ESPN has no games on Nov 14, so the button runs and reports that plainly.
   const a3 = await getKv("auto", {});
   check("buttons still run while paused", out.ran.slate && !out.ran.slate.ok && a3.flags.some((f) => f.key === "slate:failed" && f.msg.includes("paste a slate")), out.ran.slate && out.ran.slate.msg);
+
+  // ---- commissioner changes wait for a running job (item 63) ----
+  await setKv("autolock", { until: new Date(Date.now() + 60e3).toISOString() });
+  let ran = false;
+  const busy = await withJobLock(async () => { ran = true; }, { waitMs: 600, stepMs: 200 });
+  check("a commissioner change waits, then gives up while a job holds the lock", busy.busy === true && !ran);
+  await q("delete from kv where key = 'autolock'");
+  const got = await withJobLock(async () => 7, { waitMs: 600, stepMs: 200 });
+  const left = await getKv("autolock", null);
+  check("with no job running it saves and frees the lock", got.value === 7 && !left);
 
   // ---- choose rule with fewer than 10 games ----
   const few = chooseGames([{ away: {}, home: {}, homeLine: 3.5, r: 3 }], (g, s) => (s === "home" ? g.r : null));

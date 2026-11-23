@@ -8,6 +8,12 @@ import rankingsSeed from "../data/rankings-seed.js";
 const MAX_TRIES = 10;
 const PAUSE_MIN = 15;
 
+// A new PIN signs out every other device (item 62), the same as Reset PIN. This device gets a fresh cookie.
+async function changePin(me, pin) {
+  const p = await one("update players set pin_hash = $2, session_v = session_v + 1, fail_count = 0, locked_until = null where id = $1 returning *", [me.id, await bcrypt.hash(String(pin), 10)]);
+  return sessionCookie(p);
+}
+
 function validPin(p) {
   return /^\d{6}$/.test(String(p || ""));
 }
@@ -50,13 +56,18 @@ export default async function handler(req, res) {
       }
       const ok = await bcrypt.compare(String(b.pin || ""), p.pin_hash);
       if (!ok) {
-        const n = p.fail_count + 1;
+        // One statement counts the miss (item 62), so wrong guesses that land at the same moment each count.
+        // It skips a login that another request has just paused.
+        const c = await one("update players set fail_count = fail_count + 1 where id = $1 and (locked_until is null or locked_until <= now()) returning fail_count", [p.id]);
+        const paused = () => send(res, 423, { error: `Too many wrong PINs. Try again in ${PAUSE_MIN} minutes, or text the commissioner to reset it.`, paused: true });
+        if (!c) return paused();
+        const n = c.fail_count;
         if (n >= MAX_TRIES) {
-          await q("update players set fail_count = 0, locked_until = now() + ($2 || ' minutes')::interval, lockouts = lockouts + 1 where id = $1", [p.id, String(PAUSE_MIN)]);
-          await addLog("Site", "Paused a login after 10 wrong PINs", p.name || p.invited || "A picker");
-          return send(res, 423, { error: `Too many wrong PINs. Try again in ${PAUSE_MIN} minutes, or text the commissioner to reset it.`, paused: true });
+          // Only the request that reaches the limit first sets the pause and writes the log.
+          const hit = await one("update players set fail_count = 0, locked_until = now() + ($2 || ' minutes')::interval, lockouts = lockouts + 1 where id = $1 and fail_count >= $3 returning id", [p.id, String(PAUSE_MIN), MAX_TRIES]);
+          if (hit) await addLog("Site", "Paused a login after 10 wrong PINs", p.name || p.invited || "A picker");
+          return paused();
         }
-        await q("update players set fail_count = $2 where id = $1", [p.id, n]);
         const left = MAX_TRIES - n;
         return send(res, 401, { error: `Wrong PIN. ${left} ${left === 1 ? "try" : "tries"} left before a ${PAUSE_MIN} minute pause.` });
       }
@@ -79,20 +90,20 @@ export default async function handler(req, res) {
       if (!isOneEmoji(b.emoji)) return fail(res, 400, "Pick one emoji.");
       if (!SWATCH.includes(b.c1) || !SWATCH.includes(b.c2)) return fail(res, 400, "Pick both colors.");
       if (b.c1 === b.c2) return fail(res, 400, "Pick two different colors.");
+      let cookie = null;
       if (b.newPin) {
         if (!validPin(b.newPin)) return fail(res, 400, "A PIN is 6 digits.");
-        await q("update players set pin_hash = $2 where id = $1", [me.id, await bcrypt.hash(String(b.newPin), 10)]);
+        cookie = await changePin(me, b.newPin);
       }
       await q("update players set name = $2, emoji = $3, c1 = $4, c2 = $5, setup_done = true where id = $1", [me.id, name, b.emoji.trim(), b.c1, b.c2]);
       if (!me.setup_done) await addLog("Site", "A picker finished first login", name);
-      return send(res, 200, { ok: true });
+      return send(res, 200, { ok: true }, cookie ? { "Set-Cookie": cookie } : {});
     }
 
     if (action === "pin") {
       if (!(await bcrypt.compare(String(b.current || ""), me.pin_hash))) return fail(res, 403, "Your current PIN is not right.");
       if (!validPin(b.newPin)) return fail(res, 400, "A PIN is 6 digits.");
-      await q("update players set pin_hash = $2 where id = $1", [me.id, await bcrypt.hash(String(b.newPin), 10)]);
-      return send(res, 200, { ok: true });
+      return send(res, 200, { ok: true }, { "Set-Cookie": await changePin(me, b.newPin) });
     }
 
     fail(res, 400, "Unknown action.");
