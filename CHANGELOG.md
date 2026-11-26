@@ -15,6 +15,7 @@ Every shipped feature and fix, newest first. Ideas not built yet are in the Idea
 
 | Version | Date | Area | Change | Effort | Lines | Commit |
 |---|---|---|---|---|---|---|
+| 1.59.4 | Nov 26, 8:46 AM | Awards, Picks | The gold Award Watch banner leaves the top of Picks once Award Watch locks (no more "Award Watch is locked. See everyone's picks."). It still shows while picks are open. The Awards tab is unchanged | S | 8 | `1b197ea` |
 | 1.59.3 | Nov 23, 7:25 AM | Automation | The ATS job keeps the first line and total it sees for each FBS game (kv `atsAuto.first`) beside the last one, and never changes it. Makes a real backtest of the Computer's market half possible next season (item 47) | S | 8 | `fdf2b0b` |
 | 1.59.2 | Nov 23, 7:25 AM | Login | Item 62: each wrong PIN counts in one database step, so guesses sent at the same moment all count, and only one sets the 15 minute pause. Changing your PIN signs out your other devices and keeps this one signed in | S | 29 | `fdf2b0b` |
 | 1.59.1 | Nov 23, 7:25 AM | Commish, Automation | Item 63: commissioner changes to a week, the config, rankings, or automation status wait for a running job (up to 20 seconds) instead of racing it, so a hand score can no longer be overwritten by the scores job. If the job is still running, nothing saves and the message says to try again in a minute | S | 41 | `fdf2b0b` |
