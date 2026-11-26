@@ -1167,7 +1167,7 @@ function sampleStats(){if(sampleStats.D)return sampleStats.D;let seed=11;const r
     const vals = await m.evaluate(() => [...document.querySelectorAll('#v-awards [data-aw="heis"] .awv')].map((x) => x.textContent));
     check("after the lock each candidate shows its split and its worth", vals[2] === "2 of 2 · worth 1" && vals[0] === "0 of 2 · nobody", JSON.stringify(vals));
     await m.evaluate(() => { location.hash = "#picks"; }); await m.waitForTimeout(150);
-    check("at the lock the tab dot goes and the banner points to everyone's picks", !(await m.evaluate(() => document.querySelector("#awTab").classList.contains("hot"))) && /See everyone's picks/.test(await m.textContent("#v-picks .awban")));
+    check("at the lock the tab dot and the Picks banner both go", !(await m.evaluate(() => document.querySelector("#awTab").classList.contains("hot"))) && (await m.locator("#v-picks .awban").count()) === 0);
     await m.evaluate(() => (location.hash = "#awards")); await m.waitForTimeout(150);
     await re(c);
     const gq4 = await c.evaluate(() => { const q = window.tpRecap.gmQueue().slice(0, 3); window.tpRecap.state.gmSel = "awl:2026"; window.tpRecap.renderGM(); return q.map((x) => x.kind + ":" + (x.ready ? "r" : x.stale ? "s" : "l")).join(); });
